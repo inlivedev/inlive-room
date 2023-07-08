@@ -1,0 +1,13 @@
+# Ignore everything
+/*
+
+# Except these files & folders
+!/app
+!/public
+!/.vscode
+!tsconfig.json
+!tailwind.config.js
+!postcss.config.js
+!package.json
+!next.config.js
+!.eslintrc.js
