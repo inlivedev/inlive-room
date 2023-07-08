@@ -2,7 +2,7 @@
 /*
 
 # Except these files & folders
-!/src
+!/app
 !/public
 !/.vscode
 !tsconfig.json
