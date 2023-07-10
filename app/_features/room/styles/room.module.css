@@ -1,0 +1,40 @@
+.room-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.room-grid-screen {
+  min-width: 280px;
+  flex: 1 0 0;
+}
+
+@media (min-width: 600px) {
+  .room-grid {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .room-grid {
+    gap: 1rem;
+  }
+
+  .room-grid-screen {
+    min-width: 360px;
+
+  }
+
+  .room-grid-screen:nth-child(1):not(:last-child),
+  .room-grid-screen:nth-child(1):not(:last-child) ~ .room-grid-screen {
+    max-width: 576px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .room-grid-screen {
+    min-width: 480px;
+  }
+}
