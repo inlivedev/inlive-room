@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation';
 import RoomContainer from '@/_features/room/components/room-container';
 import RoomLayout from '@/_features/room/components/room-layout';
@@ -5,6 +6,12 @@ import RoomLayout from '@/_features/room/components/room-layout';
 type PageProps = {
   params: {
     roomId: string;
+  };
+};
+
+export const generateMetadata = ({ params }: PageProps): Metadata => {
+  return {
+    title: `Room - ${params.roomId}`,
   };
 };
 
