@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 import HomeHeader from '@/_features/home/components/header';
 import HomeFooter from '@/_features/home/components/footer';
 import HomeJoin from '@/_features/home/components/join';
@@ -7,7 +7,7 @@ import HomeCTA from '@/_features/home/components/cta';
 export const metadata: Metadata = {
   title: 'inLive Room',
   description: 'Conference room for real-time video and audio calls',
-}
+};
 
 export default function Page() {
   return (
