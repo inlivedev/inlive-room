@@ -1,0 +1,32 @@
+steps:
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "${_IMAGE}", "."]
+    env:
+      - "NEXT_PUBLIC_APP_ENV=${_NEXT_PUBLIC_APP_ENV}"
+      - "NEXT_PUBLIC_HUB_ORIGIN=${_NEXT_PUBLIC_HUB_ORIGIN}"
+      - "NEXT_PUBLIC_API_VERSION=${_NEXT_PUBLIC_API_VERSION}"
+
+  # Push the container image to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "${_IMAGE}"]
+
+  # Deploy container image to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      [
+        "run",
+        "deploy",
+        "room-inlive",
+        "--image",
+        "${_IMAGE}",
+        "--region",
+        "asia-southeast2",
+        "--allow-unauthenticated",
+      ]
+
+images: ["${_IMAGE}"]
+
+substitutions:
+  _IMAGE: "gcr.io/${PROJECT_ID}/room-inlive:$COMMIT_SHA"
