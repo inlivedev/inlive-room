@@ -25,6 +25,7 @@ export class Room {
   media;
 
   static ROOM_TRACK_ADDED = 'roomTrackAdded';
+  static ROOM_TRACK_ENDED = 'roomTrackEnded';
 
   constructor({
     roomId = '',
@@ -52,24 +53,30 @@ export class Room {
   }
 
   #addListener() {
-    this.#peerConnection.addEventListener(
-      'iceconnectionstatechange',
-      (event) => {
-        console.log('ice connection state change', event);
-      }
-    );
+    this.#peerConnection.addEventListener('iceconnectionstatechange', () => {
+      console.log(
+        'ice connection state changed to',
+        this.#peerConnection.iceConnectionState
+      );
+    });
 
     this.#peerConnection.addEventListener('track', (event) => {
-      console.log('track event', event);
-      const streams = event.streams;
-      const stream = event.streams[0];
+      const track = event.track;
 
-      if (stream.id in streams) return;
+      const trackSettings = track.getSettings();
 
-      this.media.addStream(stream);
-      this.#event.emit(Room.ROOM_TRACK_ADDED, {
-        stream: stream,
-        type: 'remote',
+      const streams = this.media.getRemoteStreams();
+      event.streams.forEach((stream) => {
+        if (streams[stream.id] === undefined) {
+          this.addStream(stream, 'remote');
+
+          track.addEventListener('ended', (event) => {
+            this.#event.emit(Room.ROOM_TRACK_ENDED, {
+              track: track,
+            });
+            // video.remove();
+          });
+        }
       });
     });
 
@@ -92,8 +99,6 @@ export class Room {
         this.#peerConnection.localDescription
       );
 
-      console.log('response', response);
-
       const data = response.data || {};
       const answer = data.answer;
       const sdpAnswer = new RTCSessionDescription(answer);
@@ -101,7 +106,6 @@ export class Room {
     });
 
     this.#channel.addEventListener('candidate', (event) => {
-      console.log('candidate event', event);
       if (this.#peerConnection.remoteDescription) {
         const candidate = new RTCIceCandidate(JSON.parse(event.data));
         this.#peerConnection.addIceCandidate(candidate);
@@ -109,7 +113,6 @@ export class Room {
     });
 
     this.#channel.addEventListener('offer', async (event) => {
-      console.log('offer event', event);
       const offer = JSON.parse(event.data);
       await this.#peerConnection.setRemoteDescription(offer);
       const answer = await this.#peerConnection.createAnswer();
@@ -126,9 +129,12 @@ export class Room {
     });
   }
 
-  addStream(stream: MediaStream) {
+  addStream(stream: MediaStream, type: string) {
     this.media.addStream(stream);
-    this.#event.emit();
+    this.#event.emit(Room.ROOM_TRACK_ADDED, {
+      stream: stream,
+      type: type,
+    });
   }
 
   #addLocalTrack() {
