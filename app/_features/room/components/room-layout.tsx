@@ -1,34 +1,42 @@
 'use client';
 
-import { useContext, useMemo } from 'react';
-import RoomContainer from '@/_features/room/components/room-container';
+import { useMemo } from 'react';
 import RoomScreen from '@/_features/room/components/room-screen';
 import styles from '@/_features/room/styles/room.module.css';
-import { Context } from '@/_features/room/modules/context';
+import { useRoomContext } from '@/_features/room/modules/context';
 
-type RoomLayoutProps = {
-  roomId: string;
-};
-
-export default function RoomLayout({ roomId }: RoomLayoutProps) {
-  const context = useContext(Context);
+export default function RoomLayout() {
+  const context = useRoomContext();
+  console.log(context.streams);
 
   const streams = useMemo(() => {
-    console.log('context', context);
+    const streams = context.streams;
+    return Object.entries(streams).map((data) => {
+      const value = data[1];
+      return {
+        data: value.data,
+        type: value.type,
+      };
+    });
   }, [context.streams]);
 
   return (
-    <RoomContainer roomId={roomId}>
-      <div className="mx-auto flex min-h-screen w-full max-w-screen-xl flex-col">
-        <div className={`w-full flex-1 p-4 ${styles['room-grid']}`}>
-          <div className={`${styles['room-grid-screen']}`}>
-            <RoomScreen />
-          </div>
-        </div>
-        <div className="flex justify-center p-4">
-          <button className="rounded-full bg-red-600 p-3"></button>
-        </div>
+    <div className="mx-auto flex min-h-screen w-full max-w-screen-xl flex-col">
+      <div className={`w-full flex-1 p-4 ${styles['room-grid']}`}>
+        {streams.map((stream) => {
+          return (
+            <div
+              key={stream.data.id}
+              className={`${styles['room-grid-screen']}`}
+            >
+              <RoomScreen stream={stream} />
+            </div>
+          );
+        })}
       </div>
-    </RoomContainer>
+      <div className="flex justify-center p-4">
+        <button className="rounded-full bg-red-600 p-3"></button>
+      </div>
+    </div>
   );
 }

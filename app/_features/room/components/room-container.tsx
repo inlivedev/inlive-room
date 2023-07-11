@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from '@/_shared/hooks/useLocalStorage';
-import { MediaManager, StreamsType } from '@/_features/room/modules/media';
+import { MediaManager } from '@/_features/room/modules/media';
 import { EventManager } from '@/_features/room/modules/event';
 import { Room } from '@/_features/room/modules/room';
-import { Context } from '@/_features/room/modules/context';
+import { RoomContext } from '@/_features/room/modules/context';
 
 type RoomClientProps = {
   roomId: string;
@@ -18,7 +18,7 @@ const hubBaseURL = `${hubOrigin}/${hubVersion}`;
 
 export default function RoomContainer({ roomId, children }: RoomClientProps) {
   const { value: clientId } = useLocalStorage<string>('clientId', '');
-  const [streams, setStreams] = useState<StreamsType>({});
+  const [streams, setStreams] = useState({});
   const [room, setRoom] = useState<Room | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,6 @@ export default function RoomContainer({ roomId, children }: RoomClientProps) {
           video: true,
           audio: true,
         });
-
         const room = new Room({
           roomId: roomId,
           clientId: clientId,
@@ -37,23 +36,31 @@ export default function RoomContainer({ roomId, children }: RoomClientProps) {
           event: new EventManager(),
         });
 
-        console.log('room', room);
+        setRoom(room);
 
         room.on(Room.ROOM_TRACK_ADDED, (event) => {
-          console.log('room track');
-          const data = event.data || {};
-          const stream = data.stream || {};
-          setStreams(stream);
+          const stream: MediaStream = event.stream || {};
+          const type: string = event.type;
+
+          setStreams((prevState) => {
+            return {
+              ...prevState,
+              [stream.id]: {
+                data: stream,
+                type: type,
+              },
+            };
+          });
         });
 
-        setRoom(room);
+        room.init();
       })();
     }
   }, [roomId, clientId]);
 
   return (
-    <Context.Provider value={{ streams: streams, room: room }}>
+    <RoomContext.Provider value={{ streams: streams, room: room }}>
       {children}
-    </Context.Provider>
+    </RoomContext.Provider>
   );
 }
