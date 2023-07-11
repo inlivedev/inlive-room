@@ -115,10 +115,6 @@ const joinRoomFactory = (fetcher: TypeFetch) => {
       throw new Error('Room ID, client ID, RTC local description are required');
     }
 
-    const body = {
-      localDescription: localDescription,
-    };
-
     const response = fetcher.post(`/rooms/${roomId}/join/${clientId}`, {
       body: JSON.stringify(localDescription.toJSON()),
     });
@@ -140,10 +136,6 @@ const leaveRoomFactory = (fetcher: TypeFetch) => {
     if (!roomId || !clientId || !candidate) {
       throw new Error('Room ID, client ID, RTC ice candidate are required');
     }
-
-    const body = {
-      candidate: candidate,
-    };
 
     const response = fetcher.delete(`/rooms/${roomId}/leave/${clientId}`, {
       body: JSON.stringify(candidate.toJSON()),
