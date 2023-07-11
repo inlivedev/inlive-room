@@ -23,6 +23,10 @@ export class MediaManager {
     return this.#localStream;
   }
 
+  getStreams() {
+    return this.#streams;
+  }
+
   addStream(stream: MediaStream) {
     stream.addEventListener('removetrack', (event) => {
       const target = event.target as MediaStream;
