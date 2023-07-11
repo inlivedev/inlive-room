@@ -16,7 +16,7 @@ export default function Page({ params: { roomId } }: PageProps) {
   return (
     <RoomContainer roomId={roomId}>
       <div className="bg-neutral-900 text-neutral-200">
-        <RoomLayout />
+        <RoomLayout roomId={roomId} />
       </div>
     </RoomContainer>
   );
