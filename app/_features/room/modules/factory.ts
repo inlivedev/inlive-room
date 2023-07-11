@@ -2,8 +2,8 @@ import { Fetch } from '@/_shared/lib/fetch';
 import type { TypeFetch } from '@/_shared/lib/fetch';
 
 const hubOrigin = process.env.NEXT_PUBLIC_HUB_ORIGIN;
-const hubVersion = process.env.NEXT_PUBLIC_HUB_VERSION;
-const hubBaseURL = `${hubOrigin}/${hubVersion}`;
+const apiVersion = process.env.NEXT_PUBLIC_API_VERSION;
+const hubBaseURL = `${hubOrigin}/${apiVersion}`;
 
 const fetcher = new Fetch(hubBaseURL);
 

@@ -13,8 +13,8 @@ type RoomClientProps = {
 };
 
 const hubOrigin = process.env.NEXT_PUBLIC_HUB_ORIGIN;
-const hubVersion = process.env.NEXT_PUBLIC_HUB_VERSION;
-const hubBaseURL = `${hubOrigin}/${hubVersion}`;
+const apiVersion = process.env.NEXT_PUBLIC_API_VERSION;
+const hubBaseURL = `${hubOrigin}/${apiVersion}`;
 
 export default function RoomContainer({ roomId, children }: RoomClientProps) {
   const { value: clientId } = useLocalStorage<string>('clientId', '');
