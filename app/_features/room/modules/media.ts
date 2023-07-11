@@ -23,7 +23,7 @@ export class MediaManager {
     return this.#localStream;
   }
 
-  getStreams() {
+  getRemoteStreams() {
     return this.#streams;
   }
 
