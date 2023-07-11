@@ -16,6 +16,10 @@ export default function RootLayout({
         <meta httpEquiv="X-UA-Compatible" content="ie=edge" />
         <meta name="title" content="" />
         <meta name="description" content="" />
+        <link rel="icon" href="/images/favicon/favicon.ico" sizes="any" />
+        <link rel="icon" href="/images/favicon/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/images/favicon/apple-touch-icon.png" />
+        <link rel="manifest" href="/images/favicon/manifest.webmanifest" />
       </head>
       <body className={inter.className} suppressHydrationWarning={true}>
         {children}
