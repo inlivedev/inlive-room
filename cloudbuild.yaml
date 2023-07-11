@@ -18,15 +18,15 @@ steps:
       [
         "run",
         "deploy",
-        "room-inlive",
+        "${_SERVICE_NAME}",
         "--image",
         "${_IMAGE}",
         "--region",
-        "asia-southeast2",
+        "${_SERVICE_REGION}",
         "--allow-unauthenticated",
       ]
 
 images: ["${_IMAGE}"]
 
 substitutions:
-  _IMAGE: "gcr.io/${PROJECT_ID}/room-inlive:$COMMIT_SHA"
+  _IMAGE: "gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:$COMMIT_SHA"
