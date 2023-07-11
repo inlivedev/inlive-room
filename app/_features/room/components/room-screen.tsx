@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { StreamStateType } from '@/_features/room/modules/context';
+import styles from '@/_features/room/styles/room.module.css';
 
 export default function RoomScreen({ stream }: { stream: StreamStateType }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -15,8 +16,8 @@ export default function RoomScreen({ stream }: { stream: StreamStateType }) {
   }, [stream]);
 
   return (
-    <div className="h-full w-full ">
-      <video className="h-full w-full object-cover" ref={videoRef}></video>
+    <div className={styles['wrapper-video']}>
+      <video className="" ref={videoRef}></video>
     </div>
   );
 }
