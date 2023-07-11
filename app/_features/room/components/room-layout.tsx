@@ -2,12 +2,16 @@
 
 import { useMemo } from 'react';
 import RoomScreen from '@/_features/room/components/room-screen';
+import RoomActionsBar from '@/_features/room/components/room-actions-bar';
 import styles from '@/_features/room/styles/room.module.css';
 import { useRoomContext } from '@/_features/room/modules/context';
 
-export default function RoomLayout() {
+type RoomLayoutProps = {
+  roomId: string;
+};
+
+export default function RoomLayout({ roomId }: RoomLayoutProps) {
   const context = useRoomContext();
-  console.log(context.streams);
 
   const streams = useMemo(() => {
     const streams = context.streams;
@@ -34,9 +38,7 @@ export default function RoomLayout() {
           );
         })}
       </div>
-      <div className="flex justify-center p-4">
-        <button className="rounded-full bg-red-600 p-3"></button>
-      </div>
+      <RoomActionsBar roomId={roomId} room={context.room} />
     </div>
   );
 }
