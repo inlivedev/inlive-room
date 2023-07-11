@@ -65,14 +65,10 @@ const sendIceCandidateFactory = (fetcher: TypeFetch) => {
       throw new Error('Room ID, client ID, RTC ice candidate are required');
     }
 
-    const body = {
-      candidate: candidate,
-    };
-
     const response = await fetcher.post(
       `/rooms/${roomId}/candidate/${clientId}`,
       {
-        body: JSON.stringify(body),
+        body: JSON.stringify(candidate.toJSON()),
       }
     );
 
@@ -94,14 +90,10 @@ const renegotiatePeerFactory = (fetcher: TypeFetch) => {
       throw new Error('Room ID, client ID, RTC local description are required');
     }
 
-    const body = {
-      localDescription: localDescription,
-    };
-
     const response = await fetcher.put(
       `/rooms/${roomId}/renegotiate/${clientId}`,
       {
-        body: JSON.stringify(body),
+        body: JSON.stringify(localDescription.toJSON()),
       }
     );
 
@@ -128,7 +120,7 @@ const joinRoomFactory = (fetcher: TypeFetch) => {
     };
 
     const response = fetcher.post(`/rooms/${roomId}/join/${clientId}`, {
-      body: JSON.stringify(body),
+      body: JSON.stringify(localDescription.toJSON()),
     });
 
     if (!response) {
@@ -154,7 +146,7 @@ const leaveRoomFactory = (fetcher: TypeFetch) => {
     };
 
     const response = fetcher.delete(`/rooms/${roomId}/leave/${clientId}`, {
-      body: JSON.stringify(body),
+      body: JSON.stringify(candidate.toJSON()),
     });
 
     if (!response) {
