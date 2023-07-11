@@ -1,13 +1,25 @@
-import { createContext } from 'react';
-import type { StreamsType } from '@/_features/room/modules/media';
+'use client';
+
+import { createContext, useContext } from 'react';
 import type { Room } from '@/_features/room/modules/room';
 
-type ContextType = {
-  streams: StreamsType;
+export type StreamStateType = {
+  data: MediaStream;
+  type: 'local' | 'remote';
+};
+
+export type RoomStreamsStateType = {
+  [key: string]: StreamStateType;
+};
+
+export type RoomContextType = {
+  streams: RoomStreamsStateType;
   room: Room | null;
 };
 
-export const Context = createContext({
+export const RoomContext = createContext({
   streams: {},
   room: null,
-} as ContextType);
+} as RoomContextType);
+
+export const useRoomContext = () => useContext(RoomContext);
