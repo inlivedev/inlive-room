@@ -44,7 +44,9 @@ export class Room {
     this.#channel = new EventSource(
       `${this.#baseUrl}/rooms/${this.#roomId}/events/${this.#clientId} `
     );
+  }
 
+  init() {
     this.#addListener();
     this.#addLocalTrack();
   }
@@ -67,6 +69,7 @@ export class Room {
       this.media.addStream(stream);
       this.#event.emit(Room.ROOM_TRACK_ADDED, {
         stream: stream,
+        type: 'remote',
       });
     });
 
@@ -94,26 +97,22 @@ export class Room {
       const data = response.data || {};
       const answer = data.answer;
       const sdpAnswer = new RTCSessionDescription(answer);
-      this.#peerConnection.setRemoteDescription(sdpAnswer);
+      await this.#peerConnection.setRemoteDescription(sdpAnswer);
     });
 
     this.#channel.addEventListener('candidate', (event) => {
       console.log('candidate event', event);
-      const candidate = new RTCIceCandidate(JSON.parse(event.data));
-      this.#peerConnection.addIceCandidate(candidate);
+      if (this.#peerConnection.remoteDescription) {
+        const candidate = new RTCIceCandidate(JSON.parse(event.data));
+        this.#peerConnection.addIceCandidate(candidate);
+      }
     });
 
     this.#channel.addEventListener('offer', async (event) => {
       console.log('offer event', event);
       const offer = JSON.parse(event.data);
-      const promiseCreateAnswer = this.#peerConnection.createAnswer();
-      const promiseSetRemoteDescription =
-        this.#peerConnection.setRemoteDescription(offer);
-
-      const [answer] = await Promise.all([
-        promiseCreateAnswer,
-        promiseSetRemoteDescription,
-      ]);
+      await this.#peerConnection.setRemoteDescription(offer);
+      const answer = await this.#peerConnection.createAnswer();
 
       await this.#peerConnection.setLocalDescription(answer);
 
@@ -134,11 +133,14 @@ export class Room {
 
   #addLocalTrack() {
     const localStream = this.media.getLocalStream();
+
     localStream.getTracks().forEach((track) => {
       this.#peerConnection.addTrack(track, localStream);
     });
+
     this.#event.emit(Room.ROOM_TRACK_ADDED, {
       stream: localStream,
+      type: 'local',
     });
   }
 
