@@ -1,31 +1,38 @@
 steps:
   # Build the container image
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["build", "-t", "${_IMAGE}", "."]
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
+      - .
+      - --cache-from
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
     env:
-      - "NEXT_PUBLIC_APP_ENV=${_NEXT_PUBLIC_APP_ENV}"
-      - "NEXT_PUBLIC_HUB_ORIGIN=${_NEXT_PUBLIC_HUB_ORIGIN}"
-      - "NEXT_PUBLIC_API_VERSION=${_NEXT_PUBLIC_API_VERSION}"
+      - NEXT_PUBLIC_APP_ENV=${_NEXT_PUBLIC_APP_ENV}
+      - NEXT_PUBLIC_HUB_ORIGIN=${_NEXT_PUBLIC_HUB_ORIGIN}
+      - NEXT_PUBLIC_API_VERSION=${_NEXT_PUBLIC_API_VERSION}
 
   # Push the container image to Container Registry
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "${_IMAGE}"]
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$SHORT_SHA
 
   # Deploy container image to Cloud Run
-  - name: "gcr.io/cloud-builders/gcloud"
+  - name: gcr.io/cloud-builders/gcloud
     args:
-      [
-        "run",
-        "deploy",
-        "${_SERVICE_NAME}",
-        "--image",
-        "${_IMAGE}",
-        "--region",
-        "${_REGION}",
-        "--allow-unauthenticated",
-      ]
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$SHORT_SHA
+      - --region
+      - ${_REGION}
+      - --allow-unauthenticated
 
-images: ["${_IMAGE}"]
-
-substitutions:
-  _IMAGE: "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/$REPO_NAME/${_SERVICE_NAME}:$COMMIT_SHA"
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
