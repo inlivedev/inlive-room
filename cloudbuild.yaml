@@ -1,32 +1,31 @@
 steps:
   # Build the container image
   - name: "gcr.io/cloud-builders/docker"
-    args: ["build", "--no-cache", "-t", "$_IMAGE", "."]
+    args: ["build", "-t", "${_IMAGE}", "."]
     env:
-      - "NEXT_PUBLIC_APP_ENV=$_NEXT_PUBLIC_APP_ENV"
-      - "NEXT_PUBLIC_HUB_ORIGIN=$_NEXT_PUBLIC_HUB_ORIGIN"
-      - "NEXT_PUBLIC_API_VERSION=$_NEXT_PUBLIC_API_VERSION"
+      - "NEXT_PUBLIC_APP_ENV=${_NEXT_PUBLIC_APP_ENV}"
+      - "NEXT_PUBLIC_HUB_ORIGIN=${_NEXT_PUBLIC_HUB_ORIGIN}"
+      - "NEXT_PUBLIC_API_VERSION=${_NEXT_PUBLIC_API_VERSION}"
 
   # Push the container image to Container Registry
   - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "$_IMAGE"]
+    args: ["push", "${_IMAGE}"]
 
   # Deploy container image to Cloud Run
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: gcloud
+  - name: "gcr.io/cloud-builders/gcloud"
     args:
       [
         "run",
         "deploy",
-        "$_SERVICE_NAME",
+        "${_SERVICE_NAME}",
         "--image",
-        "$_IMAGE",
+        "${_IMAGE}",
         "--region",
-        "$_DEPLOY_REGION",
+        "${_REGION}",
         "--allow-unauthenticated",
       ]
 
-images: ["$_IMAGE"]
+images: ["${_IMAGE}"]
 
 substitutions:
-  _IMAGE: "gcr.io/$PROJECT_ID/$_SERVICE_NAME:$COMMIT_SHA"
+  _IMAGE: "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/$REPO_NAME/${_SERVICE_NAME}:$COMMIT_SHA"
