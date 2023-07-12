@@ -1,3 +1,4 @@
+import 'webrtc-adapter';
 import { iceServers } from '@/_features/room/modules/constant';
 import {
   sendIceCandidate,
