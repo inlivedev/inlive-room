@@ -6,7 +6,7 @@ FROM base AS dependencies
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install --production=true
+RUN npm install --omit=dev --production=true
 
 # Stage 2
 FROM base AS builder
