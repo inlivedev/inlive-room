@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { registerClient } from '@/_features/room/modules/factory';
 
 export default function HomeJoin() {
   const router = useRouter();
@@ -17,8 +16,6 @@ export default function HomeJoin() {
     event.preventDefault();
 
     try {
-      const client = await registerClient(roomId);
-      window.localStorage.setItem('clientId', client.clientId);
       router.push(`/room/${roomId}`);
       router.refresh();
     } catch (error) {
