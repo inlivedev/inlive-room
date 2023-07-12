@@ -1,4 +1,19 @@
 steps:
+  - name: node:18.16.1
+    entrypoint: npm
+    args:
+      - install
+
+  - name: node:18.16.1
+    entrypoint: npm
+    args:
+      - run
+      - create:env
+    env:
+      - NEXT_PUBLIC_APP_ENV=${_NEXT_PUBLIC_APP_ENV}
+      - NEXT_PUBLIC_HUB_ORIGIN=${_NEXT_PUBLIC_HUB_ORIGIN}
+      - NEXT_PUBLIC_API_VERSION=${_NEXT_PUBLIC_API_VERSION}
+
   # Build the container image
   - name: gcr.io/cloud-builders/docker
     args:
@@ -10,10 +25,8 @@ steps:
       - .
       - --cache-from
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
-    env:
-      - NEXT_PUBLIC_APP_ENV=${_NEXT_PUBLIC_APP_ENV}
-      - NEXT_PUBLIC_HUB_ORIGIN=${_NEXT_PUBLIC_HUB_ORIGIN}
-      - NEXT_PUBLIC_API_VERSION=${_NEXT_PUBLIC_API_VERSION}
+      - -f
+      - Dockerfile
 
   # Push the container image to Container Registry
   - name: gcr.io/cloud-builders/docker
