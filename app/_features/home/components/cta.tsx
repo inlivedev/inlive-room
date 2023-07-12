@@ -1,6 +1,6 @@
 'use client';
 
-import { createRoom, registerClient } from '@/_features/room/modules/factory';
+import { createRoom } from '@/_features/room/modules/factory';
 import { useRouter } from 'next/navigation';
 
 export default function HomeCTA() {
@@ -9,8 +9,6 @@ export default function HomeCTA() {
   const handleCreateRoom = async () => {
     try {
       const room = await createRoom();
-      const client = await registerClient(room.roomId);
-      window.localStorage.setItem('clientId', client.clientId);
       router.push(`/room/${room.roomId}`);
       router.refresh();
     } catch (error) {

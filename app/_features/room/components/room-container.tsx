@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useLocalStorage } from '@/_shared/hooks/useLocalStorage';
 import { MediaManager } from '@/_features/room/modules/media';
 import { EventManager } from '@/_features/room/modules/event';
 import { Room } from '@/_features/room/modules/room';
 import { RoomContext } from '@/_features/room/modules/context';
+import { registerClient } from '@/_features/room/modules/factory';
 
 type RoomClientProps = {
   roomId: string;
@@ -17,20 +17,27 @@ const apiVersion = process.env.NEXT_PUBLIC_API_VERSION;
 const hubBaseURL = `${hubOrigin}/${apiVersion}`;
 
 export default function RoomContainer({ roomId, children }: RoomClientProps) {
-  const { value: clientId } = useLocalStorage<string>('clientId', '');
   const [streams, setStreams] = useState({});
   const [room, setRoom] = useState<Room | null>(null);
 
   useEffect(() => {
-    if (roomId && clientId) {
+    if (roomId) {
       (async () => {
-        const mediaStream = await MediaManager.getUserMedia({
+        const promiseMediaStream = MediaManager.getUserMedia({
           video: true,
           audio: true,
         });
+
+        const promiseClient = registerClient(roomId);
+
+        const [mediaStream, client] = await Promise.all([
+          promiseMediaStream,
+          promiseClient,
+        ]);
+
         const room = new Room({
           roomId: roomId,
-          clientId: clientId,
+          clientId: client.clientId,
           baseUrl: hubBaseURL,
           media: new MediaManager(mediaStream),
           event: new EventManager(),
@@ -56,7 +63,7 @@ export default function RoomContainer({ roomId, children }: RoomClientProps) {
         room.init();
       })();
     }
-  }, [roomId, clientId]);
+  }, [roomId]);
 
   return (
     <RoomContext.Provider value={{ streams: streams, room: room }}>

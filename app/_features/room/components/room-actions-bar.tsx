@@ -20,8 +20,6 @@ export default function RoomActionsBar({ roomId, room }: RoomActionsBarProps) {
     event.preventDefault();
 
     try {
-      if (!clientId || !roomId || !room) return;
-
       // const peerConnection = room.getPeerConnection();
       router.push(`/`);
       router.refresh();
