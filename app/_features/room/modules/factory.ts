@@ -137,7 +137,9 @@ const leaveRoomFactory = (fetcher: TypeFetch) => {
       throw new Error('Room ID, and client ID are required');
     }
 
-    const response = await fetcher.delete(`/rooms/${roomId}/leave/${clientId}`);
+    const response = await fetcher.delete(`/rooms/${roomId}/leave/${clientId}`, {
+      keepalive: true
+    });
 
     if (!response) {
       throw new Error('Something went wrong. Please try again later!');
