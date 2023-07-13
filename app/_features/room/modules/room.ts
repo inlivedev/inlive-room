@@ -62,22 +62,23 @@ export class Room {
 
     this.#peerConnection.addEventListener('track', (event) => {
       const track = event.track;
+      const stream = event.streams.find((stream) => stream.active);
 
-      const trackSettings = track.getSettings();
+      if (!stream) return;
 
-      const streams = this.media.getRemoteStreams();
-      event.streams.forEach((stream) => {
-        if (streams[stream.id] === undefined) {
-          this.addStream(stream, 'remote');
-
-          track.addEventListener('ended', (event) => {
-            this.#event.emit(Room.ROOM_TRACK_ENDED, {
-              track: track,
-            });
-            // video.remove();
+      track.addEventListener('ended', () => {
+        if (track.readyState === 'ended') {
+          this.#event.emit(Room.ROOM_TRACK_ENDED, {
+            track: track,
+            stream: stream,
           });
         }
       });
+
+      const remoteStreams = this.media.getRemoteStreams();
+      if (remoteStreams[stream.id] === undefined) {
+        this.addStream(stream, 'remote');
+      }
     });
 
     this.#peerConnection.addEventListener(
