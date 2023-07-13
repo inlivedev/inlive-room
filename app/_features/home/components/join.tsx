@@ -16,10 +16,14 @@ export default function HomeJoin() {
     event.preventDefault();
 
     try {
+      if (roomId.trim().length === 0) {
+        throw new Error('Please enter the room code');
+      }
+
       router.push(`/room/${roomId}`);
       router.refresh();
     } catch (error) {
-      alert('Something went wrong. Please try again later! ');
+      alert(error);
       console.error(error);
     }
   };

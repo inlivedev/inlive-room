@@ -28,15 +28,12 @@ export class MediaManager {
   }
 
   addStream(stream: MediaStream) {
-    stream.addEventListener('removetrack', (event) => {
-      const target = event.target as MediaStream;
-      if (target) {
-        if (target.id in this.#streams && target.getTracks().length == 0) {
-          delete this.#streams[target.id];
-          // video.remove();
-        }
-      }
-    });
-    this.#streams[stream.id] = stream;
+    if (stream instanceof MediaStream) {
+      this.#streams[stream.id] = stream;
+    }
+  }
+
+  removeStream(streamId: string) {
+    delete this.#streams[streamId];
   }
 }

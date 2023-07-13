@@ -8,9 +8,10 @@ import { useRoomContext } from '@/_features/room/modules/context';
 
 type RoomLayoutProps = {
   roomId: string;
+  clientId: string;
 };
 
-export default function RoomLayout({ roomId }: RoomLayoutProps) {
+export default function RoomLayout({ roomId, clientId }: RoomLayoutProps) {
   const context = useRoomContext();
 
   const streams = useMemo(() => {
@@ -38,7 +39,7 @@ export default function RoomLayout({ roomId }: RoomLayoutProps) {
           );
         })}
       </div>
-      <RoomActionsBar roomId={roomId} room={context.room} />
+      <RoomActionsBar roomId={roomId} clientId={clientId} room={context.room} />
     </div>
   );
 }

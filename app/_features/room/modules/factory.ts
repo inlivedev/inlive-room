@@ -26,8 +26,12 @@ const createRoomFactory = (fetcher: TypeFetch) => {
     }
 
     const data: CreateRoomDataType = response.data || {};
+
     const room = {
-      roomId: data.id || '',
+      code: parseInt(response.code, 10) || 500,
+      data: {
+        roomId: data.id || '',
+      },
     };
 
     return room;
@@ -115,7 +119,7 @@ const joinRoomFactory = (fetcher: TypeFetch) => {
       throw new Error('Room ID, client ID, RTC local description are required');
     }
 
-    const response = fetcher.post(`/rooms/${roomId}/join/${clientId}`, {
+    const response = await fetcher.post(`/rooms/${roomId}/join/${clientId}`, {
       body: JSON.stringify(localDescription.toJSON()),
     });
 
@@ -128,24 +132,24 @@ const joinRoomFactory = (fetcher: TypeFetch) => {
 };
 
 const leaveRoomFactory = (fetcher: TypeFetch) => {
-  return async (
-    roomId = '',
-    clientId = '',
-    candidate: RTCIceCandidate | null = null
-  ) => {
-    if (!roomId || !clientId || !candidate) {
-      throw new Error('Room ID, client ID, RTC ice candidate are required');
+  return async (roomId = '', clientId = '') => {
+    if (!roomId || !clientId) {
+      throw new Error('Room ID, and client ID are required');
     }
 
-    const response = fetcher.delete(`/rooms/${roomId}/leave/${clientId}`, {
-      body: JSON.stringify(candidate.toJSON()),
+    const response = await fetcher.delete(`/rooms/${roomId}/leave/${clientId}`, {
+      keepalive: true
     });
 
     if (!response) {
       throw new Error('Something went wrong. Please try again later!');
     }
 
-    return response;
+    const result = {
+      code: parseInt(response.code, 10) || 500,
+    };
+
+    return result;
   };
 };
 
@@ -158,21 +162,11 @@ const terminateRoomFactory = (fetcher: TypeFetch) => {
         throw new Error('Something went wrong. Please try again later!');
       }
 
-      return response;
-    }
-  };
-};
+      const result = {
+        code: parseInt(response.code, 10) || 500,
+      };
 
-const removeRoomFactory = (fetcher: TypeFetch) => {
-  return async (roomId: string) => {
-    if (roomId) {
-      const response = await fetcher.delete(`/rooms/${roomId}/delete`);
-
-      if (!response) {
-        throw new Error('Something went wrong. Please try again later!');
-      }
-
-      return response;
+      return result;
     }
   };
 };
@@ -184,4 +178,3 @@ export const renegotiatePeer = renegotiatePeerFactory(fetcher);
 export const joinRoom = joinRoomFactory(fetcher);
 export const leaveRoom = leaveRoomFactory(fetcher);
 export const terminateRoom = terminateRoomFactory(fetcher);
-export const removeRoom = removeRoomFactory(fetcher);
