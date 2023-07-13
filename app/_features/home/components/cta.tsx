@@ -9,7 +9,11 @@ export default function HomeCTA() {
   const handleCreateRoom = async () => {
     try {
       const room = await createRoom();
-      router.push(`/room/${room.roomId}`);
+      if (!room.data.roomId) {
+        throw new Error('Failed to create a room');
+      }
+
+      router.push(`/room/${room.data.roomId}`);
       router.refresh();
     } catch (error) {
       alert('Something went wrong. Please try again later! ');

@@ -1,17 +1,20 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useLocalStorage } from '@/_shared/hooks/useLocalStorage';
 import { leaveRoom } from '@/_features/room/modules/factory';
 import type { Room } from '@/_features/room/modules/room';
 
 type RoomActionsBarProps = {
   room: Room | null;
   roomId: string;
+  clientId: string;
 };
 
-export default function RoomActionsBar({ roomId, room }: RoomActionsBarProps) {
-  const { value: clientId } = useLocalStorage<string>('clientId', '');
+export default function RoomActionsBar({
+  roomId,
+  clientId,
+  room,
+}: RoomActionsBarProps) {
   const router = useRouter();
 
   const handleLeaveRoom = async (
@@ -20,7 +23,13 @@ export default function RoomActionsBar({ roomId, room }: RoomActionsBarProps) {
     event.preventDefault();
 
     try {
-      // const peerConnection = room.getPeerConnection();
+      if (!room || !room.getPeerConnection || !clientId) return;
+      const leave = await leaveRoom(roomId, clientId);
+
+      if (leave.code >= 300) {
+        throw new Error('Failed to end the conversation');
+      }
+
       router.push(`/`);
       router.refresh();
     } catch (error) {
