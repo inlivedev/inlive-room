@@ -54,129 +54,48 @@ export class Room {
   }
 
   disconnect() {
-    if (this.#peerConnection) {
-      const localStream = this.media.getLocalStream();
+    this.#closeConnection();
+    this.#removeListener();
+  }
 
-      for (const track of localStream.getTracks()) {
-        track.stop();
-      }
+  on(eventName: string, callback: (event: any) => any) {
+    this.#event.on(eventName, callback);
+  }
 
-      for (const sender of this.#peerConnection.getSenders()) {
-        this.#peerConnection.removeTrack(sender);
-      }
-
-      this.#peerConnection.close();
-      this.#peerConnection = null;
-    }
+  getPeerConnection() {
+    return this.#peerConnection;
   }
 
   #addListener() {
-    window.addEventListener('beforeunload', (event) => {
-      event.preventDefault();
-
-      (() => {
-        this.disconnect();
-        leaveRoom(this.#roomId, this.#clientId);
-      })();
-    });
+    window.addEventListener('beforeunload', this.#beforeUnloadHandler);
 
     if (!this.#peerConnection) return;
 
-    this.#peerConnection.addEventListener('iceconnectionstatechange', () => {
-      if (this.#peerConnection) {
-        console.log(
-          'ice connection state changed to',
-          this.#peerConnection.iceConnectionState
-        );
-      }
-    });
-
-    this.#peerConnection.addEventListener('track', (event) => {
-      const stream = event.streams.find((stream) => stream.active);
-
-      if (!(stream instanceof MediaStream)) return;
-
-      stream.addEventListener('removetrack', (event) => {
-        const target = event.target;
-
-        if (target instanceof MediaStream) {
-          const remoteStreams = this.media.getRemoteStreams();
-
-          if (target.id in remoteStreams && target.getTracks().length === 0) {
-            const stream = target;
-            this.media.removeStream(target.id);
-            this.#event.emit(Room.PARTICIPANT_REMOVED, {
-              stream: stream,
-            });
-          }
-        }
-      });
-
-      const remoteStreams = this.media.getRemoteStreams();
-      if (remoteStreams[stream.id] === undefined) {
-        this.addStream(stream, 'remote');
-      }
-    });
-
+    this.#peerConnection.addEventListener(
+      'iceconnectionstatechange',
+      this.#peerIceconnectionStateChangeHandler
+    );
+    this.#peerConnection.addEventListener('track', this.#peerTrackHandler);
     this.#peerConnection.addEventListener(
       'icecandidate',
-      async ({ candidate }) => {
-        if (candidate) {
-          sendIceCandidate(this.#roomId, this.#clientId, candidate);
-        }
-      }
+      this.#peerIceCandidateHandler
     );
-
-    this.#peerConnection.addEventListener('negotiationneeded', async () => {
-      if (!this.#peerConnection) return;
-
-      const offer = await this.#peerConnection.createOffer();
-      await this.#peerConnection.setLocalDescription(offer);
-
-      const response = await joinRoom(
-        this.#roomId,
-        this.#clientId,
-        this.#peerConnection.localDescription
-      );
-
-      const data = response.data || {};
-      const answer = data.answer;
-      const sdpAnswer = new RTCSessionDescription(answer);
-      await this.#peerConnection.setRemoteDescription(sdpAnswer);
-    });
-
-    this.#channel.addEventListener('candidate', (event) => {
-      if (!this.#peerConnection || !this.#peerConnection.remoteDescription) {
-        return;
-      }
-
-      const candidate = new RTCIceCandidate(JSON.parse(event.data));
-      this.#peerConnection.addIceCandidate(candidate);
-    });
-
-    this.#channel.addEventListener('offer', async (event) => {
-      if (!this.#peerConnection) return;
-
-      const offer = JSON.parse(event.data);
-      await this.#peerConnection.setRemoteDescription(offer);
-      const answer = await this.#peerConnection.createAnswer();
-
-      await this.#peerConnection.setLocalDescription(answer);
-
-      renegotiatePeer(
-        this.#roomId,
-        this.#clientId,
-        this.#peerConnection.localDescription
-      );
-    });
+    this.#peerConnection.addEventListener(
+      'negotiationneeded',
+      this.#peerNegotiationNeededHandler
+    );
+    this.#channel.addEventListener('candidate', this.#channelCandidateHandler);
+    this.#channel.addEventListener('offer', this.#channelOfferHandler);
   }
 
-  addStream(stream: MediaStream, type: string) {
-    this.media.addStream(stream);
-    this.#event.emit(Room.PARTICIPANT_ADDED, {
-      stream: stream,
-      type: type,
-    });
+  #removeListener() {
+    window.removeEventListener('beforeunload', this.#beforeUnloadHandler);
+  }
+
+  #beforeUnloadHandler(event: BeforeUnloadEvent) {
+    event.preventDefault();
+    this.disconnect();
+    leaveRoom(this.#roomId, this.#clientId);
   }
 
   #addLocalTrack() {
@@ -194,11 +113,120 @@ export class Room {
     });
   }
 
-  on(eventName: string, callback: (event: any) => any) {
-    this.#event.on(eventName, callback);
+  #addParticipant(stream: MediaStream, type: string) {
+    this.media.addStream(stream);
+    this.#event.emit(Room.PARTICIPANT_ADDED, {
+      stream: stream,
+      type: type,
+    });
   }
 
-  getPeerConnection() {
-    return this.#peerConnection;
+  #channelCandidateHandler(event: MessageEvent<any>) {
+    if (!this.#peerConnection || !this.#peerConnection.remoteDescription) {
+      return;
+    }
+
+    const candidate = new RTCIceCandidate(JSON.parse(event.data));
+    this.#peerConnection.addIceCandidate(candidate);
+  }
+
+  #channelOfferHandler(event: MessageEvent<any>) {
+    (async (event) => {
+      if (!this.#peerConnection) return;
+
+      const offer = JSON.parse(event.data);
+      await this.#peerConnection.setRemoteDescription(offer);
+      const answer = await this.#peerConnection.createAnswer();
+
+      await this.#peerConnection.setLocalDescription(answer);
+
+      renegotiatePeer(
+        this.#roomId,
+        this.#clientId,
+        this.#peerConnection.localDescription
+      );
+    })(event);
+  }
+
+  #peerIceconnectionStateChangeHandler() {
+    if (this.#peerConnection) {
+      console.log(
+        'ice connection state changed to',
+        this.#peerConnection.iceConnectionState
+      );
+    }
+  }
+
+  #peerTrackHandler(event: RTCTrackEvent) {
+    const stream = event.streams.find((stream) => stream.active);
+
+    if (!(stream instanceof MediaStream)) return;
+
+    stream.addEventListener('removetrack', (event) => {
+      const target = event.target;
+
+      if (target instanceof MediaStream) {
+        const remoteStreams = this.media.getRemoteStreams();
+
+        if (target.id in remoteStreams && target.getTracks().length === 0) {
+          const stream = target;
+          this.media.removeStream(target.id);
+          this.#event.emit(Room.PARTICIPANT_REMOVED, {
+            stream: stream,
+          });
+        }
+      }
+    });
+
+    const remoteStreams = this.media.getRemoteStreams();
+
+    if (remoteStreams[stream.id] === undefined) {
+      this.#addParticipant(stream, 'remote');
+    }
+  }
+
+  #peerIceCandidateHandler(event: RTCPeerConnectionIceEvent) {
+    (async ({ candidate }) => {
+      if (candidate) {
+        sendIceCandidate(this.#roomId, this.#clientId, candidate);
+      }
+    })(event);
+  }
+
+  #peerNegotiationNeededHandler() {
+    (async () => {
+      if (!this.#peerConnection) return;
+
+      const offer = await this.#peerConnection.createOffer();
+      await this.#peerConnection.setLocalDescription(offer);
+
+      const response = await joinRoom(
+        this.#roomId,
+        this.#clientId,
+        this.#peerConnection.localDescription
+      );
+
+      const data = response.data || {};
+      const answer = data.answer;
+      const sdpAnswer = new RTCSessionDescription(answer);
+      await this.#peerConnection.setRemoteDescription(sdpAnswer);
+    })();
+  }
+
+  #closeConnection() {
+    if (this.#peerConnection) {
+      const localStream = this.media.getLocalStream();
+
+      for (const track of localStream.getTracks()) {
+        track.stop();
+      }
+
+      for (const sender of this.#peerConnection.getSenders()) {
+        this.#peerConnection.removeTrack(sender);
+      }
+
+      this.#peerConnection.close();
+      this.#peerConnection = null;
+    }
   }
 }
