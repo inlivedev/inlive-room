@@ -68,17 +68,12 @@ export class Room {
       this.#peerConnection.close();
       this.#peerConnection = null;
     }
+
+    this.#removeListener();
   }
 
   #addListener() {
-    window.addEventListener('beforeunload', (event) => {
-      event.preventDefault();
-
-      (() => {
-        this.disconnect();
-        leaveRoom(this.#roomId, this.#clientId);
-      })();
-    });
+    window.addEventListener('beforeunload', this.#beforeUnloadHandler);
 
     if (!this.#peerConnection) return;
 
@@ -169,6 +164,16 @@ export class Room {
         this.#peerConnection.localDescription
       );
     });
+  }
+
+  #removeListener() {
+    window.removeEventListener('beforeunload', this.#beforeUnloadHandler);
+  }
+
+  #beforeUnloadHandler(event: BeforeUnloadEvent) {
+    event.preventDefault();
+    this.disconnect();
+    leaveRoom(this.#roomId, this.#clientId);
   }
 
   addStream(stream: MediaStream, type: string) {
