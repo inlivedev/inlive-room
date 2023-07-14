@@ -22,7 +22,7 @@ cp .env.local.example .env.local
 
 **Install the dependencies**
 
-Install the dependencies using package managers such as [npm](https://www.npmjs.com/package/@inlivedev/inlive-js-sdk), [yarn](https://yarnpkg.com/package/@inlivedev/inlive-js-sdk), or [pnpm](https://pnpm.io).
+Install the dependencies using package managers such as [npm](https://npmjs.com), [yarn](https://yarnpkg.com), or [pnpm](https://pnpm.io).
 ```bash
 npm install
 # or
