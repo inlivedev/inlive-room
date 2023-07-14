@@ -15,7 +15,7 @@ cd inlive-room
 
 **Setting the environment variables**
 
-Copy all the variables to `.env.local`
+Copy all the variables from `.env.local.example` to `.env.local`
 ```bash
 cp .env.local.example .env.local
 ```
@@ -31,7 +31,7 @@ yarn install
 
 **Start the local development server**
 
-Run `dev` command to start the local development server in http://localhost:3000
+Run `dev` script to start the local development server in http://localhost:3000
 
 ```bash
 npm run dev
@@ -41,7 +41,7 @@ yarn dev
 
 **Build the project**
 
-Run `build` command to build the project
+Run `build` script to build the project
 ```bash
 npm run build
 # or
@@ -52,14 +52,14 @@ yarn build
 
 You need to install [docker](https://docs.docker.com/get-docker/) in your local machine.
 
-**Build image**
+**Build the image**
 ```
 docker build -t inlive-room:latest .
 ```
 
 You can view your images with `docker images`.
 
-**Run image**
+**Run the image**
 ```
 docker run -p 3000:3000 inlive-room:latest
 ```
