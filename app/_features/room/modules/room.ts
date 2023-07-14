@@ -54,7 +54,6 @@ export class Room {
   }
 
   disconnect() {
-    this.#stopLocalTracks();
     this.#closeConnection();
     this.#removeListener();
   }
@@ -69,9 +68,6 @@ export class Room {
 
   #addListener() {
     window.addEventListener('beforeunload', this.#beforeUnloadHandler);
-
-    this.#channel.addEventListener('candidate', this.#channelCandidateHandler);
-    this.#channel.addEventListener('offer', this.#channelOfferHandler);
 
     if (!this.#peerConnection) return;
 
@@ -88,32 +84,12 @@ export class Room {
       'negotiationneeded',
       this.#peerNegotiationNeededHandler
     );
+    this.#channel.addEventListener('candidate', this.#channelCandidateHandler);
+    this.#channel.addEventListener('offer', this.#channelOfferHandler);
   }
 
   #removeListener() {
     window.removeEventListener('beforeunload', this.#beforeUnloadHandler);
-
-    this.#channel.removeEventListener(
-      'candidate',
-      this.#channelCandidateHandler
-    );
-    this.#channel.removeEventListener('offer', this.#channelOfferHandler);
-
-    if (!this.#peerConnection) return;
-
-    this.#peerConnection.removeEventListener(
-      'iceconnectionstatechange',
-      this.#peerIceconnectionStateChangeHandler
-    );
-    this.#peerConnection.removeEventListener('track', this.#peerTrackHandler);
-    this.#peerConnection.removeEventListener(
-      'icecandidate',
-      this.#peerIceCandidateHandler
-    );
-    this.#peerConnection.removeEventListener(
-      'negotiationneeded',
-      this.#peerNegotiationNeededHandler
-    );
   }
 
   #beforeUnloadHandler(event: BeforeUnloadEvent) {
@@ -237,16 +213,14 @@ export class Room {
     })();
   }
 
-  #stopLocalTracks() {
-    const localStream = this.media.getLocalStream();
-
-    for (const track of localStream.getTracks()) {
-      track.stop();
-    }
-  }
-
   #closeConnection() {
     if (this.#peerConnection) {
+      const localStream = this.media.getLocalStream();
+
+      for (const track of localStream.getTracks()) {
+        track.stop();
+      }
+
       for (const sender of this.#peerConnection.getSenders()) {
         this.#peerConnection.removeTrack(sender);
       }
