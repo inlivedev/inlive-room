@@ -23,7 +23,9 @@ export default function RoomActionsBar({
     event.preventDefault();
 
     try {
-      if (!room || !clientId) return;
+      if (!room || !roomId || !clientId) return;
+
+      room.disconnect();
       const leave = await leaveRoom(roomId, clientId);
 
       if (leave.code >= 300) {
