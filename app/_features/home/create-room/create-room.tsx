@@ -1,48 +1,23 @@
-'use client';
+import { useCreateRoom } from './useCreateRoom';
 
-import Heading from '@/_features/home/create-room/heading';
-import SubHeading from '@/_features/home/create-room/subheading';
-import CreateButton from '@/_features/home/create-room/create-button';
-import { createRoom } from '@/_features/room/modules/factory';
-import { useNavigate } from '@/_shared/hooks/useNavigate';
-
-type CreateRoomProps = {
-  heading: React.ReactNode;
-  subHeading: React.ReactNode;
-  actionButton: (handleCreateRoom: () => void) => React.ReactNode;
-};
-
-export default function CreateRoom({
-  heading,
-  subHeading,
-  actionButton,
-}: CreateRoomProps) {
-  const { navigateTo } = useNavigate();
-
-  const handleCreateRoom = () => {
-    createRoom()
-      .then((room) => {
-        if (!room.data.roomId) {
-          throw new Error('Failed to create a room. Please try again later!');
-        }
-
-        navigateTo(`/room/${room.data.roomId}`);
-      })
-      .catch((error) => {
-        alert('Something went wrong. Please try again later! ');
-        console.error(error);
-      });
-  };
+export default function CreateRoom() {
+  const { createRoom } = useCreateRoom();
 
   return (
     <section className="max-w-xl lg:max-w-lg">
-      {heading}
-      {subHeading}
-      <div className="mt-8">{actionButton(handleCreateRoom)}</div>
+      <h2 className="text-3xl font-bold tracking-wide lg:text-4xl">
+        Conference room for real-time video and audio calls
+      </h2>
+      <p className="mt-4 text-base text-neutral-400 lg:text-lg">
+        The alternative for Google Meet and Zoom video and audio calls. Get
+        started now by creating a room or join to other rooms with room code.
+      </p>
+      <button
+        className="mt-8 w-full rounded-md border border-red-700 bg-red-700 px-6 py-2 text-sm font-medium lg:w-auto"
+        onClick={createRoom}
+      >
+        Create a new room
+      </button>
     </section>
   );
 }
-
-CreateRoom.Heading = Heading;
-CreateRoom.SubHeading = SubHeading;
-CreateRoom.CreateButton = CreateButton;
