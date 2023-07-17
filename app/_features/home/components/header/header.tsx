@@ -1,8 +1,7 @@
 import Title from './title';
 import Icon from './icon';
-import type Home from '@/_features/home/types/types';
 
-export default function Header({ children }: Home.HeaderProps) {
+export default function Header({ children }: { children: React.ReactNode }) {
   return (
     <header className="py-6 lg:py-8">
       <div className="mx-auto max-w-5xl">

@@ -1,9 +1,8 @@
 import LearnMore from './learn-more';
 import Separator from './separator';
 import Copyright from './copyright';
-import type Home from '@/_features/home/types/types';
 
-export default function Footer({ children }: Home.FooterProps) {
+export default function Footer({ children }: { children: React.ReactNode }) {
   return (
     <footer className="mx-auto flex w-full max-w-xl flex-col gap-5 px-4 py-6 lg:max-w-5xl lg:py-8">
       {children}
