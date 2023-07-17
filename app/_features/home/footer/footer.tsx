@@ -1,6 +1,6 @@
-import LearnMore from './learn-more';
-import Separator from './separator';
-import Copyright from './copyright';
+import LearnMore from '@/_features/home/footer/learn-more';
+import Separator from '@/_features/home/footer/separator';
+import Copyright from '@/_features/home/footer/copyright';
 
 export default function Footer({ children }: { children: React.ReactNode }) {
   return (

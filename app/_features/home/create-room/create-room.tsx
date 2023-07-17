@@ -1,8 +1,8 @@
 'use client';
 
-import Heading from './heading';
-import SubHeading from './subheading';
-import CreateButton from './create-button';
+import Heading from '@/_features/home/create-room/heading';
+import SubHeading from '@/_features/home/create-room/subheading';
+import CreateButton from '@/_features/home/create-room/create-button';
 import { createRoom } from '@/_features/room/modules/factory';
 import { useNavigate } from '@/_shared/hooks/useNavigate';
 

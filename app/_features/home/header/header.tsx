@@ -1,5 +1,5 @@
-import Title from './title';
-import Icon from './icon';
+import Title from '@/_features/home/header/title';
+import Icon from '@/_features/home/header/icon';
 
 export default function Header({ children }: { children: React.ReactNode }) {
   return (

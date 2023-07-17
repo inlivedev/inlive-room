@@ -1,11 +1,11 @@
 'use client';
 
-import Heading from './heading';
-import InputRoom from './input-room';
-import SubHeading from './subheading';
+import Heading from '@/_features/home/join-room/heading';
+import InputRoom from '@/_features/home/join-room/input-room';
+import SubHeading from '@/_features/home/join-room/subheading';
 import { useNavigate } from '@/_shared/hooks/useNavigate';
 import { useInput } from '@/_shared/hooks/useInput';
-import JoinButton from './join-button';
+import JoinButton from '@/_features/home/join-room/join-button';
 
 type JoinRoomProps = {
   heading: React.ReactNode;
