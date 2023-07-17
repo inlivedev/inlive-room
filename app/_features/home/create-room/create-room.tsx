@@ -1,3 +1,5 @@
+'use client';
+
 import { useCreateRoom } from './use-create-room';
 
 export default function CreateRoom() {
