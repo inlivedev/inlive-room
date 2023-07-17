@@ -1,8 +1,8 @@
-import Header from '@/_features/home/components/header/header';
-import Main from '@/_features/home/components/main/main';
-import Footer from '@/_features/home/components/footer/footer';
+import Header from '@/_features/home/header';
+import Main from '@/_features/home/main';
+import Footer from '@/_features/home/footer';
 
-export default function Home() {
+export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col gap-10 bg-neutral-900 text-neutral-200">
       <Header>

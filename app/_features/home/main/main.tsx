@@ -1,7 +1,7 @@
 'use client';
 
-import CreateRoom from '@/_features/home/components/create-room/create-room';
-import JoinRoom from '@/_features/home/components/join-room/join-room';
+import CreateRoom from '@/_features/home/create-room';
+import JoinRoom from '@/_features/home/join-room';
 
 export default function Main() {
   return (

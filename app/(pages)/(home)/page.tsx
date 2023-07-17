@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Home from '@/_features/home/components/home';
+import Home from '@/_features/home/layout';
 
 export const metadata: Metadata = {
   title: 'inLive Room',
