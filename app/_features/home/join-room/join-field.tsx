@@ -1,6 +1,6 @@
 'use client';
 
-import { useJoinRoom } from './use-join-room';
+import { useJoinRoom } from '@/_features/home/join-room/use-join-room';
 
 export default function JoinField() {
   const { bindField, joinRoom } = useJoinRoom();

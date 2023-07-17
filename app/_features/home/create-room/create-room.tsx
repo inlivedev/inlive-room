@@ -1,6 +1,6 @@
 'use client';
 
-import { useCreateRoom } from './use-create-room';
+import { useCreateRoom } from '@/_features/home/create-room/use-create-room';
 
 export default function CreateRoom() {
   const { createRoom } = useCreateRoom();

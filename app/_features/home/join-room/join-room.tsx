@@ -1,4 +1,4 @@
-import JoinField from './join-field';
+import JoinField from '@/_features/home/join-room/join-field';
 
 export default function JoinRoom() {
   return (
