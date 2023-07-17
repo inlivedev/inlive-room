@@ -3,8 +3,8 @@
 import Heading from '@/_features/home/join-room/heading';
 import InputRoom from '@/_features/home/join-room/input-room';
 import SubHeading from '@/_features/home/join-room/subheading';
-import { useNavigate } from '@/_shared/hooks/useNavigate';
-import { useInput } from '@/_shared/hooks/useInput';
+import { useNavigate } from '@/_shared/hooks/use-navigate';
+import { useInput } from '@/_shared/hooks/use-input';
 import JoinButton from '@/_features/home/join-room/join-button';
 
 type JoinRoomProps = {

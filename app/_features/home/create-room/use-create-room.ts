@@ -1,5 +1,5 @@
 import { createRoom } from '@/_features/room/modules/factory';
-import { useNavigate } from '@/_shared/hooks/useNavigate';
+import { useNavigate } from '@/_shared/hooks/use-navigate';
 
 export const useCreateRoom = () => {
   const { navigateTo } = useNavigate();

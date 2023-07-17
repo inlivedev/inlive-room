@@ -1,4 +1,4 @@
-import { useCreateRoom } from './useCreateRoom';
+import { useCreateRoom } from './use-create-room';
 
 export default function CreateRoom() {
   const { createRoom } = useCreateRoom();
