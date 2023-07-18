@@ -1,4 +1,23 @@
-export default function LogoIcon() {
+export default function Header() {
+  return (
+    <header className="py-6 lg:py-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="flex items-center justify-center gap-2 px-4">
+          <Icon />
+          <Title text="inLive Room" />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function Title({ text }: { text: string }) {
+  return (
+    <h1 className="text-lg font-semibold tracking-wide lg:text-xl">{text}</h1>
+  );
+}
+
+function Icon() {
   return (
     <svg
       className="h-6 w-6 lg:h-7 lg:w-7"
