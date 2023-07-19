@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { leaveRoom } from '@/_features/room/modules/factory';
-import type { Room } from '@/_features/room/modules/room';
+import { Room } from '@/_features/room/modules/room';
+import { MediaManager } from '@/_features/room/modules/media';
 
 type RoomActionsBarProps = {
   room: Room | null;
@@ -40,8 +41,55 @@ export default function RoomActionsBar({
     }
   };
 
+  const handleScreenSharing = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+
+    try {
+      if (!room || !roomId || !clientId) return;
+
+      const stream = await MediaManager.getDisplayMedia({
+        audio: true,
+        video: true,
+      });
+
+      room.addStream(stream, 'local');
+
+      for (const track of stream.getTracks()) {
+        const sender = room.getPeerConnection()?.addTrack(track, stream);
+
+        track.onended = () => {
+          room.removeLocalStream(stream);
+          if (!sender) return;
+          room.getPeerConnection()?.removeTrack(sender);
+        };
+      }
+    } catch (error) {
+      alert('Something went wrong. Please try again!');
+    }
+  };
+
   return (
-    <div className="flex justify-center p-4">
+    <div className="flex justify-center gap-3 p-4">
+      <button
+        className="rounded-full bg-neutral-700 p-3 text-neutral-50"
+        aria-label="Screen share"
+        onClick={handleScreenSharing}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19.75 4A2.25 2.25 0 0 1 22 6.25v11.5A2.25 2.25 0 0 1 19.75 20H4.25A2.25 2.25 0 0 1 2 17.75V6.25A2.25 2.25 0 0 1 4.25 4zM12 7.245a.75.75 0 0 0-.53.22L8.22 10.72a.75.75 0 0 0 1.06 1.06l1.97-1.972v6.445a.75.75 0 1 0 1.5 0V9.806l1.974 1.974a.75.75 0 1 0 1.06-1.06L12.53 7.465a.75.75 0 0 0-.53-.22z"
+            fill="currentColor"
+            fillRule="nonzero"
+          />
+        </svg>
+      </button>
+
       <button
         className="rounded-full bg-red-500 p-3"
         aria-label="Leave room"
