@@ -98,7 +98,6 @@ export class Room {
       if (!(stream instanceof MediaStream)) return;
 
       stream.addEventListener('removetrack', (event) => {
-        console.log('got remove track event', event);
         const target = event.target;
 
         if (target instanceof MediaStream) {

@@ -57,7 +57,6 @@ export default function RoomContainer({
       });
 
       room.on(Room.PARTICIPANT_REMOVED, (data) => {
-        console.log('PARTICIPANT_REMOVED', data);
         const stream: MediaStream = data.stream || {};
 
         setStreams((prevState) => {
