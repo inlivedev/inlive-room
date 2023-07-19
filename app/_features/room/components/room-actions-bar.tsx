@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { leaveRoom } from '@/_features/room/modules/factory';
 import { Room } from '@/_features/room/modules/room';
 import { MediaManager } from '@/_features/room/modules/media';
-import { send } from 'process';
 
 type RoomActionsBarProps = {
   room: Room | null;
@@ -51,7 +50,6 @@ export default function RoomActionsBar({
       if (!room || !roomId || !clientId) return;
 
       const stream = await MediaManager.getDisplayMedia({
-        audio: true,
         video: true,
       });
 
@@ -61,15 +59,13 @@ export default function RoomActionsBar({
         const sender = room.getPeerConnection()?.addTrack(track, stream);
 
         track.onended = () => {
-          console.log('local track ended');
           room.removeLocalStream(stream);
           if (!sender) return;
           room.getPeerConnection()?.removeTrack(sender);
-          console.log('screen track removed');
         };
       }
     } catch (error) {
-      alert('Something went wrong. Please try');
+      alert('Something went wrong. Please try again!');
     }
   };
 
