@@ -6,74 +6,74 @@ export type TypeFetch = {
   delete(endpoint: string, options?: RequestInit | undefined): Promise<any>;
 };
 
-function factoryFetch() {
-  return class Fetch implements TypeFetch {
-    #baseURL;
+export class Fetch implements TypeFetch {
+  #baseURL;
 
-    constructor(baseURL: string) {
-      this.#baseURL = baseURL;
+  constructor(baseURL: string) {
+    this.#baseURL = baseURL;
+  }
+
+  #fetch(endpoint: string, options: RequestInit = {}) {
+    const fetchOptions = typeof options === 'object' ? options : {};
+    const headersOptions =
+      typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {};
+
+    return fetch(`${this.#baseURL}${endpoint}`, {
+      headers: {
+        'Content-type': 'application/json; charset=utf-8',
+        ...headersOptions,
+      },
+      ...fetchOptions,
+    })
+      .then(this.#resolution)
+      .catch(this.#rejection);
+  }
+
+  #resolution(response: Response) {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      return response.text();
     }
+  }
 
-    #fetch(endpoint: string, options: RequestInit = {}) {
-      const fetchOptions = typeof options === 'object' ? options : {};
-      const headersOptions =
-        typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {};
+  #rejection(error: any) {
+    throw error;
+  }
 
-      return fetch(`${this.#baseURL}${endpoint}`, {
-        headers: {
-          'Content-type': 'application/json; charset=utf-8',
-          ...headersOptions,
-        },
-        ...fetchOptions,
-      })
-        .then(async (response) => {
-          const contentType = response.headers.get('content-type');
-          const data = await (contentType &&
-          contentType.includes('application/json')
-            ? response.json()
-            : response.text());
-          return data;
-        })
-        .catch((error) => {
-          throw error;
-        });
-    }
+  get(endpoint: string, options: RequestInit | undefined = {}) {
+    return this.#fetch(endpoint, {
+      ...options,
+      method: 'get',
+    });
+  }
 
-    get(endpoint: string, options: RequestInit | undefined = {}) {
-      return this.#fetch(endpoint, {
-        ...options,
-        method: 'get',
-      });
-    }
+  post(endpoint: string, options: RequestInit | undefined = {}) {
+    return this.#fetch(endpoint, {
+      ...options,
+      method: 'post',
+    });
+  }
 
-    post(endpoint: string, options: RequestInit | undefined = {}) {
-      return this.#fetch(endpoint, {
-        ...options,
-        method: 'post',
-      });
-    }
+  put(endpoint: string, options: RequestInit | undefined = {}) {
+    return this.#fetch(endpoint, {
+      ...options,
+      method: 'put',
+    });
+  }
 
-    put(endpoint: string, options: RequestInit | undefined = {}) {
-      return this.#fetch(endpoint, {
-        ...options,
-        method: 'put',
-      });
-    }
+  patch(endpoint: string, options: RequestInit | undefined = {}) {
+    return this.#fetch(endpoint, {
+      ...options,
+      method: 'patch',
+    });
+  }
 
-    patch(endpoint: string, options: RequestInit | undefined = {}) {
-      return this.#fetch(endpoint, {
-        ...options,
-        method: 'patch',
-      });
-    }
-
-    delete(endpoint: string, options: RequestInit | undefined = {}) {
-      return this.#fetch(endpoint, {
-        ...options,
-        method: 'delete',
-      });
-    }
-  };
+  delete(endpoint: string, options: RequestInit | undefined = {}) {
+    return this.#fetch(endpoint, {
+      ...options,
+      method: 'delete',
+    });
+  }
 }
-
-export const Fetch = factoryFetch();
