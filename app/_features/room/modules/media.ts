@@ -3,11 +3,13 @@ export type StreamsType = {
 };
 
 export class MediaManager {
-  #localStream;
+  #localStreams: StreamsType;
   #streams: StreamsType;
   constructor(localStream: MediaStream) {
-    this.#localStream = localStream;
+    this.#localStreams = {};
     this.#streams = {};
+
+    this.#localStreams[localStream.id] = localStream;
   }
 
   static async getUserMedia(constraints: MediaStreamConstraints) {
@@ -19,12 +21,31 @@ export class MediaManager {
       });
   }
 
-  getLocalStream() {
-    return this.#localStream;
+  static async getDisplayMedia(constraints: MediaStreamConstraints) {
+    return navigator.mediaDevices
+      .getDisplayMedia(constraints)
+      .then((mediaStream) => mediaStream)
+      .catch((error) => {
+        throw error;
+      });
+  }
+
+  getLocalStreams() {
+    return this.#localStreams;
   }
 
   getRemoteStreams() {
     return this.#streams;
+  }
+
+  addLocalStream(stream: MediaStream) {
+    if (stream instanceof MediaStream) {
+      this.#localStreams[stream.id] = stream;
+    }
+  }
+
+  removeLocalStream(streamId: string) {
+    delete this.#localStreams[streamId];
   }
 
   addStream(stream: MediaStream) {

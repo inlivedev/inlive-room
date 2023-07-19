@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { leaveRoom } from '@/_features/room/modules/factory';
-import type { Room } from '@/_features/room/modules/room';
+import { Room } from '@/_features/room/modules/room';
+import { MediaManager } from '@/_features/room/modules/media';
+import { send } from 'process';
 
 type RoomActionsBarProps = {
   room: Room | null;
@@ -40,8 +42,47 @@ export default function RoomActionsBar({
     }
   };
 
+  const handleScreenSharing = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+
+    try {
+      if (!room || !roomId || !clientId) return;
+
+      const stream = await MediaManager.getDisplayMedia({
+        audio: true,
+        video: true,
+      });
+
+      room.addStream(stream, 'local');
+
+      for (const track of stream.getTracks()) {
+        const sender = room.getPeerConnection()?.addTrack(track, stream);
+
+        track.onended = () => {
+          console.log('local track ended');
+          room.removeLocalStream(stream);
+          if (!sender) return;
+          room.getPeerConnection()?.removeTrack(sender);
+          console.log('screen track removed');
+        };
+      }
+    } catch (error) {
+      alert('Something went wrong. Please try');
+    }
+  };
+
   return (
-    <div className="flex justify-center p-4">
+    <div className="action-bar flex justify-center p-4">
+      <button
+        className="rounded-full bg-red-500 p-3"
+        aria-label="Screen share"
+        onClick={handleScreenSharing}
+      >
+        SS
+      </button>
+
       <button
         className="rounded-full bg-red-500 p-3"
         aria-label="Leave room"

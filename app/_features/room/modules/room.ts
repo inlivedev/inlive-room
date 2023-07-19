@@ -53,12 +53,14 @@ export class Room {
     this.#addLocalTrack();
   }
 
-  disconnect() {
+  async disconnect() {
     if (this.#peerConnection) {
-      const localStream = this.media.getLocalStream();
+      const localStreams = this.media.getLocalStreams();
 
-      for (const track of localStream.getTracks()) {
-        track.stop();
+      for (const id in localStreams) {
+        for (const track of localStreams[id].getTracks()) {
+          track.stop();
+        }
       }
 
       for (const sender of this.#peerConnection.getSenders()) {
@@ -89,9 +91,14 @@ export class Room {
     this.#peerConnection.addEventListener('track', (event) => {
       const stream = event.streams.find((stream) => stream.active);
 
+      event.track.addEventListener('ended', () => {
+        console.log('remote track ended');
+      });
+
       if (!(stream instanceof MediaStream)) return;
 
       stream.addEventListener('removetrack', (event) => {
+        console.log('got remove track event', event);
         const target = event.target;
 
         if (target instanceof MediaStream) {
@@ -170,10 +177,12 @@ export class Room {
     window.removeEventListener('beforeunload', this.#beforeUnloadHandler);
   }
 
-  #beforeUnloadHandler(event: BeforeUnloadEvent) {
+  async #beforeUnloadHandler(event: BeforeUnloadEvent) {
     event.preventDefault();
     this.disconnect();
-    leaveRoom(this.#roomId, this.#clientId);
+    await leaveRoom(this.#roomId, this.#clientId);
+    window.confirm('Are you sure you want to leave?');
+    return false;
   }
 
   addStream(stream: MediaStream, type: string) {
@@ -184,19 +193,44 @@ export class Room {
     });
   }
 
-  #addLocalTrack() {
-    const localStream = this.media.getLocalStream();
-
-    for (const track of localStream.getTracks()) {
-      if (this.#peerConnection) {
-        this.#peerConnection.addTrack(track, localStream);
-      }
-    }
-
+  addLocalStream(stream: MediaStream) {
+    this.media.addLocalStream(stream);
     this.#event.emit(Room.PARTICIPANT_ADDED, {
-      stream: localStream,
+      stream: stream,
       type: 'local',
     });
+  }
+
+  removeLocalStream(stream: MediaStream) {
+    this.media.removeLocalStream(stream.id);
+    this.#event.emit(Room.PARTICIPANT_REMOVED, {
+      stream: stream,
+      type: 'local',
+    });
+  }
+
+  removeStream(stream: MediaStream) {
+    this.media.removeStream(stream.id);
+    this.#event.emit(Room.PARTICIPANT_REMOVED, {
+      stream: stream,
+    });
+  }
+
+  #addLocalTrack() {
+    const localStreams = this.media.getLocalStreams();
+
+    for (const id in localStreams) {
+      for (const track of localStreams[id].getTracks()) {
+        if (this.#peerConnection) {
+          this.#peerConnection.addTrack(track, localStreams[id]);
+        }
+      }
+
+      this.#event.emit(Room.PARTICIPANT_ADDED, {
+        stream: localStreams[id],
+        type: 'local',
+      });
+    }
   }
 
   on(eventName: string, callback: (event: any) => any) {
@@ -205,5 +239,20 @@ export class Room {
 
   getPeerConnection() {
     return this.#peerConnection;
+  }
+
+  async renegotiate(iceRestart: boolean) {
+    if (!this.#peerConnection) return;
+
+    const offer = await this.#peerConnection.createOffer({
+      iceRestart: iceRestart,
+    });
+    await this.#peerConnection.setLocalDescription(offer);
+
+    await renegotiatePeer(
+      this.#roomId,
+      this.#clientId,
+      this.#peerConnection.localDescription
+    );
   }
 }

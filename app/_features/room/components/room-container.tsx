@@ -57,11 +57,14 @@ export default function RoomContainer({
       });
 
       room.on(Room.PARTICIPANT_REMOVED, (data) => {
+        console.log('PARTICIPANT_REMOVED', data);
         const stream: MediaStream = data.stream || {};
-        const newStreams = streams || {};
-        delete newStreams[stream.id];
 
-        setStreams(newStreams);
+        setStreams((prevState) => {
+          const newStreams = prevState || {};
+          delete newStreams[stream.id];
+          return Object.assign({}, newStreams);
+        });
       });
 
       if (streams) return;
