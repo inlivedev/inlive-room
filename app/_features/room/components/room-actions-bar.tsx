@@ -50,6 +50,7 @@ export default function RoomActionsBar({
       if (!room || !roomId || !clientId) return;
 
       const stream = await MediaManager.getDisplayMedia({
+        audio: true,
         video: true,
       });
 
