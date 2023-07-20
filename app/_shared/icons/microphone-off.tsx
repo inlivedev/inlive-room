@@ -1,6 +1,6 @@
 import type { SVGElementPropsType } from '@/_shared/types/types.d.ts';
 
-export default function MicOff(props: SVGElementPropsType) {
+export default function MicrophoneOff(props: SVGElementPropsType) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
