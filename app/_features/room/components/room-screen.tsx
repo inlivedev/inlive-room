@@ -22,7 +22,7 @@ export default function Screen({ stream }: { stream: StreamStateType }) {
     >
       <div className="absolute left-0 top-0 h-full w-full">
         <video
-          className="absolute left-0 top-0 h-full w-full object-fill object-center"
+          className="absolute left-0 top-0 h-full w-full object-cover object-center"
           ref={videoRef}
         ></video>
       </div>
