@@ -27,6 +27,10 @@ export class Room {
 
   static PARTICIPANT_ADDED = 'participantAdded';
   static PARTICIPANT_REMOVED = 'participantRemoved';
+  static PARTICIPANT_CAMERA_MUTED = 'participantCameraMuted';
+  static PARTICIPANT_CAMERA_UNMUTED = 'participantCameraUnmuted';
+  static PARTICIPANT_MICROPHONE_MUTED = 'participantMicrophoneMuted';
+  static PARTICIPANT_MICROPHONE_UNMUTED = 'participantMicrophoneUnmuted';
 
   constructor({
     roomId = '',
@@ -92,8 +96,18 @@ export class Room {
     this.#peerConnection.addEventListener('track', (event) => {
       const stream = event.streams.find((stream) => stream.active);
 
-      event.track.addEventListener('ended', () => {
+      const track = event.track;
+
+      track.addEventListener('ended', () => {
         console.log('remote track ended');
+      });
+
+      track.addEventListener('mute', (event) => {
+        console.log('mute event', track, event);
+      });
+
+      track.addEventListener('unmute', (event) => {
+        console.log('unmute event', track, event);
       });
 
       if (!(stream instanceof MediaStream)) return;
