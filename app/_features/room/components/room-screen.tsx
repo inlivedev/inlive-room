@@ -1,8 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import styles from '@/_features/room/styles/room.module.css';
 
-export default function RoomScreen({ stream }: { stream: StreamStateType }) {
+export default function Screen({ stream }: { stream: StreamStateType }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -15,8 +14,18 @@ export default function RoomScreen({ stream }: { stream: StreamStateType }) {
   }, [stream]);
 
   return (
-    <div className={styles['wrapper-video']}>
-      <video className="" ref={videoRef}></video>
+    <div
+      className="relative h-full w-full overflow-hidden rounded-md"
+      style={{
+        paddingBottom: 'calc(2 / 3 * 100%)',
+      }}
+    >
+      <div className="absolute left-0 top-0 h-full w-full">
+        <video
+          className="absolute left-0 top-0 h-full w-full object-cover object-center"
+          ref={videoRef}
+        ></video>
+      </div>
     </div>
   );
 }

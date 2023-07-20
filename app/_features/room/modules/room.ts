@@ -27,6 +27,10 @@ export class Room {
 
   static PARTICIPANT_ADDED = 'participantAdded';
   static PARTICIPANT_REMOVED = 'participantRemoved';
+  static PARTICIPANT_CAMERA_MUTED = 'participantCameraMuted';
+  static PARTICIPANT_CAMERA_UNMUTED = 'participantCameraUnmuted';
+  static PARTICIPANT_MICROPHONE_MUTED = 'participantMicrophoneMuted';
+  static PARTICIPANT_MICROPHONE_UNMUTED = 'participantMicrophoneUnmuted';
 
   constructor({
     roomId = '',
@@ -59,12 +63,13 @@ export class Room {
 
       for (const id in localStreams) {
         for (const track of localStreams[id].getTracks()) {
-          track.stop();
+          this.#stopTrack(track);
         }
       }
 
       for (const sender of this.#peerConnection.getSenders()) {
-        this.#peerConnection.removeTrack(sender);
+        if (!sender.track) return;
+        this.#stopTrack(sender.track);
       }
 
       this.#peerConnection.close();
@@ -91,8 +96,18 @@ export class Room {
     this.#peerConnection.addEventListener('track', (event) => {
       const stream = event.streams.find((stream) => stream.active);
 
-      event.track.addEventListener('ended', () => {
+      const track = event.track;
+
+      track.addEventListener('ended', () => {
         console.log('remote track ended');
+      });
+
+      track.addEventListener('mute', (event) => {
+        console.log('mute event', track, event);
+      });
+
+      track.addEventListener('unmute', (event) => {
+        console.log('unmute event', track, event);
       });
 
       if (!(stream instanceof MediaStream)) return;
@@ -253,5 +268,72 @@ export class Room {
       this.#clientId,
       this.#peerConnection.localDescription
     );
+  }
+
+  #stopTrack(track: MediaStreamTrack) {
+    if (track instanceof MediaStreamTrack) {
+      track.enabled = false;
+      track.stop();
+    }
+  }
+
+  turnOffMic() {
+    if (this.#peerConnection) {
+      for (const sender of this.#peerConnection.getSenders()) {
+        if (!sender.track) return;
+
+        if (sender.track.kind === 'audio') {
+          this.#stopTrack(sender.track);
+        }
+      }
+    }
+  }
+
+  async turnOnMic() {
+    if (this.#peerConnection) {
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      for (const track of localStream.getAudioTracks()) {
+        for (const sender of this.#peerConnection.getSenders()) {
+          if (!sender.track) return;
+
+          if (sender.track.kind === track.kind) {
+            sender.replaceTrack(track);
+          }
+        }
+      }
+    }
+  }
+
+  turnOffCamera() {
+    if (this.#peerConnection) {
+      for (const sender of this.#peerConnection.getSenders()) {
+        if (!sender.track) return;
+
+        if (sender.track.kind === 'video') {
+          this.#stopTrack(sender.track);
+        }
+      }
+    }
+  }
+
+  async turnOnCamera() {
+    if (this.#peerConnection) {
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+
+      for (const track of localStream.getVideoTracks()) {
+        for (const sender of this.#peerConnection.getSenders()) {
+          if (!sender.track) return;
+
+          if (sender.track.kind === track.kind) {
+            sender.replaceTrack(track);
+          }
+        }
+      }
+    }
   }
 }
