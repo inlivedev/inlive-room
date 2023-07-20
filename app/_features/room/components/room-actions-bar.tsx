@@ -10,6 +10,7 @@ import MicrophoneOnIcon from '@/_shared/icons/microphone-on';
 import MicrophoneOffIcon from '@/_shared/icons/microphone-off';
 import CameraOnIcon from '@/_shared/icons/camera-on';
 import CameraOffIcon from '@/_shared/icons/camera-off';
+import ScreenShareIcon from '@/_shared/icons/screen-share';
 
 type RoomActionsBarProps = {
   room: Room | null;
@@ -109,7 +110,11 @@ export default function RoomActionsBar({
           aria-label="Toggle Video Camera"
           onClick={toggleCamera}
         >
-          {activeCamera ? <CameraOnIcon /> : <CameraOffIcon />}
+          {activeCamera ? (
+            <CameraOnIcon width={24} height={24} />
+          ) : (
+            <CameraOffIcon width={24} height={24} />
+          )}
         </button>
       </div>
       <div>
@@ -120,7 +125,11 @@ export default function RoomActionsBar({
           aria-label="Toggle Micropphone"
           onClick={toggleMic}
         >
-          {activeMic ? <MicrophoneOnIcon /> : <MicrophoneOffIcon />}
+          {activeMic ? (
+            <MicrophoneOnIcon width={24} height={24} />
+          ) : (
+            <MicrophoneOffIcon width={24} height={24} />
+          )}
         </button>
       </div>
       <div>
@@ -129,17 +138,7 @@ export default function RoomActionsBar({
           aria-label="Screen share"
           onClick={handleScreenSharing}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M19.75 4A2.25 2.25 0 0 1 22 6.25v11.5A2.25 2.25 0 0 1 19.75 20H4.25A2.25 2.25 0 0 1 2 17.75V6.25A2.25 2.25 0 0 1 4.25 4zM12 7.245a.75.75 0 0 0-.53.22L8.22 10.72a.75.75 0 0 0 1.06 1.06l1.97-1.972v6.445a.75.75 0 1 0 1.5 0V9.806l1.974 1.974a.75.75 0 1 0 1.06-1.06L12.53 7.465a.75.75 0 0 0-.53-.22z"
-              fill="currentColor"
-              fillRule="nonzero"
-            />
-          </svg>
+          <ScreenShareIcon width={24} height={24} />
         </button>
       </div>
 
