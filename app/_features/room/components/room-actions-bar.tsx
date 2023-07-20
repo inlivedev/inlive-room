@@ -6,6 +6,10 @@ import { leaveRoom } from '@/_features/room/modules/factory';
 import { Room } from '@/_features/room/modules/room';
 import { MediaManager } from '@/_features/room/modules/media';
 import { useToggle } from '@/_shared/hooks/use-toggle';
+import MicrophoneOnIcon from '@/_shared/icons/microphone-on';
+import MicrophoneOffIcon from '@/_shared/icons/microphone-off';
+import CameraOnIcon from '@/_shared/icons/camera-on';
+import CameraOffIcon from '@/_shared/icons/camera-off';
 
 type RoomActionsBarProps = {
   room: Room | null;
@@ -105,7 +109,7 @@ export default function RoomActionsBar({
           aria-label="Toggle Video Camera"
           onClick={toggleCamera}
         >
-          {activeCamera ? <VideoCameraOnIcon /> : <VideoCameraOffIcon />}
+          {activeCamera ? <CameraOnIcon /> : <CameraOffIcon />}
         </button>
       </div>
       <div>
@@ -159,61 +163,5 @@ export default function RoomActionsBar({
         </button>
       </div>
     </div>
-  );
-}
-
-function MicrophoneOnIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="currentcolor"
-      viewBox="0 0 256 256"
-    >
-      <path d="M80,128V64a48,48,0,0,1,96,0v64a48,48,0,0,1-96,0Zm128,0a8,8,0,0,0-16,0,64,64,0,0,1-128,0,8,8,0,0,0-16,0,80.11,80.11,0,0,0,72,79.6V232a8,8,0,0,0,16,0V207.6A80.11,80.11,0,0,0,208,128Z"></path>
-    </svg>
-  );
-}
-
-function MicrophoneOffIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="currentcolor"
-      viewBox="0 0 256 256"
-    >
-      <path d="M213.38,221.92a8,8,0,0,1-11.3-.54l-26.46-29.1A79.74,79.74,0,0,1,136,207.59V232a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,100.79,52.36l-10.88-12A48,48,0,0,1,80,128V87.09L42.08,45.38A8,8,0,1,1,53.92,34.62l160,176A8,8,0,0,1,213.38,221.92Zm-51.3-92.11A8,8,0,0,0,176,124.43V64A48,48,0,0,0,87.16,38.78,8,8,0,0,0,88,48.37Zm30.1,31.83a8,8,0,0,0,10.36-4.55A79.62,79.62,0,0,0,208,128a8,8,0,0,0-16,0,63.71,63.71,0,0,1-4.36,23.27A8,8,0,0,0,192.18,161.64Z"></path>
-    </svg>
-  );
-}
-
-function VideoCameraOnIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="currentcolor"
-      viewBox="0 0 256 256"
-    >
-      <path d="M192,72V184a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V72A16,16,0,0,1,32,56H176A16,16,0,0,1,192,72Zm58,.25a8.23,8.23,0,0,0-6.63,1.22L209.78,95.86A4,4,0,0,0,208,99.19v57.62a4,4,0,0,0,1.78,3.33l33.78,22.52a8,8,0,0,0,8.58.19,8.33,8.33,0,0,0,3.86-7.17V80A8,8,0,0,0,250,72.25Z"></path>
-    </svg>
-  );
-}
-
-function VideoCameraOffIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="currentcolor"
-      viewBox="0 0 256 256"
-    >
-      <path d="M213.92,210.62a8,8,0,1,1-11.84,10.76L182.64,200H32a16,16,0,0,1-16-16V72A16,16,0,0,1,32,56H51.73L42.08,45.38A8,8,0,1,1,53.92,34.62ZM251.77,73a8,8,0,0,0-8.21.39l-32,21.34a8,8,0,0,0-3.56,6.65v53.34a8,8,0,0,0,3.56,6.65l32,21.34A8,8,0,0,0,248,184a8,8,0,0,0,8-8V80A8,8,0,0,0,251.77,73Zm-73.69,74.46A8,8,0,0,0,192,142V72a16,16,0,0,0-16-16H113.06a8,8,0,0,0-5.92,13.38Z"></path>
-    </svg>
   );
 }
