@@ -84,14 +84,28 @@ export class Room {
 
     if (!this.#peerConnection) return;
 
-    this.#peerConnection.addEventListener('iceconnectionstatechange', () => {
-      if (this.#peerConnection) {
+    this.#peerConnection.addEventListener(
+      'iceconnectionstatechange',
+      async () => {
+        if (!this.#peerConnection) return;
+
+        const { iceConnectionState } = this.#peerConnection;
+
         console.log(
           'ice connection state changed to',
           this.#peerConnection.iceConnectionState
         );
+
+        if (
+          iceConnectionState === 'disconnected' ||
+          iceConnectionState === 'failed'
+        ) {
+          await this.renegotiate({
+            iceRestart: true,
+          });
+        }
       }
-    });
+    );
 
     this.#peerConnection.addEventListener('track', (event) => {
       const stream = event.streams.find((stream) => stream.active);
@@ -255,7 +269,7 @@ export class Room {
     return this.#peerConnection;
   }
 
-  async renegotiate(iceRestart: boolean) {
+  async renegotiate({ iceRestart }: { iceRestart: boolean }) {
     if (!this.#peerConnection) return;
 
     const offer = await this.#peerConnection.createOffer({
