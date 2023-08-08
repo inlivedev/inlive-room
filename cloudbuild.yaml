@@ -13,6 +13,7 @@ steps:
       - NEXT_PUBLIC_APP_ENV=${_NEXT_PUBLIC_APP_ENV}
       - NEXT_PUBLIC_HUB_ORIGIN=${_NEXT_PUBLIC_HUB_ORIGIN}
       - NEXT_PUBLIC_API_VERSION=${_NEXT_PUBLIC_API_VERSION}
+      - NEXT_PUBLIC_MIXPANEL_TOKEN=${_NEXT_PUBLIC_MIXPANEL_TOKEN}
 
   # Build the container image
   - name: gcr.io/cloud-builders/docker
