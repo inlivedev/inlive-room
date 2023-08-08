@@ -30,6 +30,10 @@ export class Fetch implements TypeFetch {
   }
 
   #resolution(response: Response) {
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return response.json();

@@ -109,6 +109,28 @@ const renegotiatePeerFactory = (fetcher: TypeFetch) => {
   };
 };
 
+const allowRenegotationFactory = (fetcher: TypeFetch) => {
+  return async (roomId = '', clientId = ''): Promise<boolean> => {
+    if (!roomId || !clientId) {
+      throw new Error('Room ID, and client ID are required');
+    }
+
+    try {
+      const response = await fetcher.post(
+        `/rooms/${roomId}/isallownegotiate/${clientId}`
+      );
+
+      if (!response) {
+        throw new Error('Something went wrong. Please try again later!');
+      }
+    } catch (error) {
+      return false;
+    }
+
+    return true;
+  };
+};
+
 const joinRoomFactory = (fetcher: TypeFetch) => {
   return async (
     roomId = '',
@@ -181,6 +203,7 @@ export const createRoom = createRoomFactory(fetcher);
 export const registerClient = registerClientFactory(fetcher);
 export const sendIceCandidate = sendIceCandidateFactory(fetcher);
 export const renegotiatePeer = renegotiatePeerFactory(fetcher);
+export const allowRenegotation = allowRenegotationFactory(fetcher);
 export const joinRoom = joinRoomFactory(fetcher);
 export const leaveRoom = leaveRoomFactory(fetcher);
 export const terminateRoom = terminateRoomFactory(fetcher);

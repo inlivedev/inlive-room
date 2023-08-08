@@ -3,6 +3,7 @@ import {
   sendIceCandidate,
   renegotiatePeer,
   joinRoom,
+  allowRenegotation,
   leaveRoom,
 } from '@/_features/room/modules/factory';
 import { MediaManager } from '@/_features/room/modules/media';
@@ -20,6 +21,8 @@ export class Room {
   #roomId;
   #clientId;
   #peerConnection: RTCPeerConnection | null;
+  #pendingNegotation: boolean;
+  #inRenegotiation: boolean;
   #baseUrl;
   #event;
   #channel;
@@ -43,6 +46,8 @@ export class Room {
     this.#clientId = clientId;
     this.#baseUrl = baseUrl;
     this.#event = event;
+    this.#pendingNegotation = false;
+    this.#inRenegotiation = false;
     this.media = media;
     this.#peerConnection = new RTCPeerConnection({
       iceServers: iceServers,
@@ -96,10 +101,7 @@ export class Room {
           this.#peerConnection.iceConnectionState
         );
 
-        if (
-          iceConnectionState === 'disconnected' ||
-          iceConnectionState === 'failed'
-        ) {
+        if (iceConnectionState === 'failed') {
           await this.renegotiate({
             iceRestart: true,
           });
@@ -160,6 +162,32 @@ export class Room {
     this.#peerConnection.addEventListener('negotiationneeded', async () => {
       if (!this.#peerConnection) return;
 
+      try {
+        // won't throw an error if allowed
+        if (this.#pendingNegotation) {
+          // previously not allowed because we're waiting for this offer
+          // this event is a repeat event after previously rollbacked
+          console.log('negotiation needed after a pending negotiation');
+          this.#pendingNegotation = false;
+        } else if (this.#inRenegotiation) {
+          // there is a renegotiation in progress
+          console.log(
+            'negotiation in progress, canceling on negotiation needed'
+          );
+          this.#pendingNegotation = true;
+          return;
+        } else {
+          const allowed = await allowRenegotation(this.#roomId, this.#clientId);
+          if (!allowed) {
+            this.#pendingNegotation = true;
+            return;
+          }
+        }
+      } catch (error) {
+        // will try an error if not allowed
+        console.error(error);
+      }
+
       const offer = await this.#peerConnection.createOffer();
       await this.#peerConnection.setLocalDescription(offer);
 
@@ -184,20 +212,29 @@ export class Room {
       this.#peerConnection.addIceCandidate(candidate);
     });
 
+    this.#channel.addEventListener('allowed_renegotation', async (event) => {
+      // you can do the renegotation here
+      console.log('allowed_renegotation', event);
+    });
+
     this.#channel.addEventListener('offer', async (event) => {
+      this.#inRenegotiation = true;
+
+      console.log('get renegotiation offer');
+
       if (!this.#peerConnection) return;
 
       const offer = JSON.parse(event.data);
       await this.#peerConnection.setRemoteDescription(offer);
-      const answer = await this.#peerConnection.createAnswer();
-
-      await this.#peerConnection.setLocalDescription(answer);
+      await this.#peerConnection.setLocalDescription();
 
       renegotiatePeer(
         this.#roomId,
         this.#clientId,
         this.#peerConnection.localDescription
       );
+
+      this.#inRenegotiation = false;
     });
   }
 
