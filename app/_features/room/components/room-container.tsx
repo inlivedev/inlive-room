@@ -5,6 +5,7 @@ import RoomLayout from '@/_features/room/components/room-layout';
 import { MediaManager } from '@/_features/room/modules/media';
 import { EventManager } from '@/_features/room/modules/event';
 import { Room } from '@/_features/room/modules/room';
+import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 
 const hubOrigin = process.env.NEXT_PUBLIC_HUB_ORIGIN;
 const apiVersion = process.env.NEXT_PUBLIC_API_VERSION;
@@ -34,6 +35,10 @@ export default function RoomContainer({
         });
 
         setRoom(room);
+
+        Mixpanel.track('Join room', {
+          roomId: roomId,
+        });
       })();
     }
   }, [roomId, clientId, room]);
