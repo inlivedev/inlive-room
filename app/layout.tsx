@@ -1,5 +1,7 @@
 import '@/_shared/styles/tailwind.css';
 import { Inter } from 'next/font/google';
+import { MixpanelContainer } from '@/_shared/components/analytics/mixpanel';
+import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,6 +31,9 @@ export default function RootLayout({
         <link rel="manifest" href="/images/favicon/manifest.webmanifest" />
       </head>
       <body className={inter.className} suppressHydrationWarning={true}>
+        <Suspense fallback={null}>
+          <MixpanelContainer />
+        </Suspense>
         {children}
       </body>
     </html>
