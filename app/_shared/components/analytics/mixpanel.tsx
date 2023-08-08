@@ -49,7 +49,7 @@ const useNavigationChangeTrack = () => {
 
       Mixpanel.track('Open page', {
         title: document.title || '-',
-        description: metaDescription.content || '-',
+        description: metaDescription?.content || '-',
       });
     }
   }, [pathname, searchParams]);
