@@ -11,13 +11,13 @@ export default function Footer() {
 function LearnMore() {
   return (
     <p className="text-center text-xs text-neutral-400 lg:text-left">
-      inLive Room uses inLive Hub API. Learn more about{' '}
+      This is a project that demonstrates the capabilities of{' '}
       <a
-        href="https://inlive.app/realtime-interactive/"
+        href="https://inlive.app/docs/getting-started/using-hub-api/"
         target="_blank"
         className="underline underline-offset-4 hover:no-underline"
       >
-        inLive Hub
+        inLive Hub API
       </a>
       .
     </p>
@@ -27,7 +27,19 @@ function LearnMore() {
 function Copyright() {
   return (
     <p className="text-center text-xs text-neutral-400">
-      &copy; {new Date().getFullYear()} inLive. All rights reserved
+      &copy; {new Date().getFullYear()}{' '}
+      <a href="https://inlive.app" target="_blank">
+        inLive
+      </a>{' '}
+      &nbsp;—&nbsp; The source code is available on{' '}
+      <a
+        href="https://github.com/inlivedev/inlive-room/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline underline-offset-4 hover:no-underline"
+      >
+        GitHub
+      </a>
     </p>
   );
 }

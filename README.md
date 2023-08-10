@@ -1,5 +1,9 @@
+> [!NOTE]
+> This project is still in early development and currently only used for demonstration purposes. You may find many noticeable bugs when using it.
+
 # inLive Room
-This is a project built mainly using [Next.js](https://nextjs.org/) and [inLive Hub API](https://inlive.app/realtime-interactive/). This project gives example and demonstration of developing a conference room website using inLive Hub API.
+
+This project gives an example and demonstration of developing a conference room website using [Next.js](https://nextjs.org/) and [inLive Hub API](https://inlive.app/realtime-interactive/). To build a similar project using Hub API, you can start exploring the [inLive Hub API docs](https://inlive.app/docs/getting-started/using-hub-api/).
 
 ## Getting Started
 
