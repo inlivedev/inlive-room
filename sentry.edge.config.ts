@@ -7,6 +7,6 @@ if (SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: APP_ENV,
-    debug: APP_ENV === 'development',
+    debug: false,
   });
 }
