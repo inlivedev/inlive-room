@@ -8,5 +8,6 @@ if (SENTRY_DSN) {
     dsn: SENTRY_DSN,
     environment: APP_ENV,
     debug: false,
+    tracesSampleRate: 0.1
   });
 }
