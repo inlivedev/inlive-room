@@ -5,7 +5,15 @@
 
 This project gives an example and demonstration of developing a conference room website using [Next.js](https://nextjs.org/) and [inLive Hub API](https://inlive.app/realtime-interactive/). To build a similar project using Hub API, you can start exploring the [inLive Hub API docs](https://inlive.app/docs/getting-started/using-hub-api/).
 
-## Getting Started
+## How to use the live website
+1. Visit the inLive Room at https://room.inlive.app.
+2. Create a new room by clicking the "Create a new room" button.
+3. When prompted, give camera and microphone permission access so the website can start sending the user video camera and audio microphone to the server.
+4. Copy the room URL on the address bar and share the URL to others.
+5. Others can join to the room by using the room URL or using the room unique code in the URL.
+6. Properly leave from the room by clicking the hang up icon.
+
+## Getting started with this project
 
 ### Running the Project Locally
 
