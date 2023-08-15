@@ -11,7 +11,7 @@ This project gives an example and demonstration of developing a conference room 
 3. When prompted, give camera and microphone permission access so the website can start sending the user video camera and audio microphone to the server.
 4. Copy the room URL on the address bar and share the URL to others.
 5. Others can join to the room by using the room URL or using the room unique code in the URL.
-6. Properly leave from the room by clicking the hang up icon.
+6. Properly leave from the room by clicking the hang up button.
 
 ## Getting started with this project
 
