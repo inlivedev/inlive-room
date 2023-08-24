@@ -1,9 +1,10 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Header() {
   return (
     <header className="w-full py-6 lg:py-8">
-      <div className="flex items-center justify-center gap-2 px-4">
+      <Link href="/" className="flex items-center justify-center gap-2">
         <Image
           src="/images/favicon/favicon.svg"
           alt="Icon Logo"
@@ -12,7 +13,7 @@ export default function Header() {
           height={28}
         />
         <Title text="inLive Room" />
-      </div>
+      </Link>
     </header>
   );
 }
