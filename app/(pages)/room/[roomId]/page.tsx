@@ -4,6 +4,7 @@ import Layout from '@/_features/room/layout/layout';
 import { room } from '@/_shared/utils/sdk';
 import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
 import { cookies } from 'next/headers';
+import CookieContainer from '@/_features/room/containers/cookie-container';
 
 type PageProps = {
   params: {
@@ -23,15 +24,6 @@ const getHostCookie = () => {
   return !!host;
 };
 
-const deleteHostCookie = async () => {
-  'use server';
-  const cookieStore = cookies();
-
-  if (cookieStore.get('host')) {
-    cookieStore.delete('host');
-  }
-};
-
 export default async function Page({ params: { roomId } }: PageProps) {
   const response = await room.getRoom(roomId);
 
@@ -40,11 +32,12 @@ export default async function Page({ params: { roomId } }: PageProps) {
   }
 
   return (
-    <Layout
-      roomId={response.data.roomId}
-      host={getHostCookie()}
-      deleteHostCookie={deleteHostCookie}
-      origin={getOriginServerSide()}
-    />
+    <CookieContainer>
+      <Layout
+        roomId={response.data.roomId}
+        host={getHostCookie()}
+        origin={getOriginServerSide()}
+      />
+    </CookieContainer>
   );
 }
