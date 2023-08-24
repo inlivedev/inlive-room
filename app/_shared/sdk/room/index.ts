@@ -1,9 +1,8 @@
-import { createRoom, getRoom } from './api/api';
-import { createClient } from './client/client';
+import { createRoom, getRoom, registerClient } from './api/api';
 
 const factories = {
   createRoom,
-  createClient,
+  createClient: registerClient,
   getRoom,
 };
 
