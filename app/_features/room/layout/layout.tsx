@@ -23,14 +23,12 @@ export default function Layout({
   }, [deleteHostCookie]);
 
   return (
-    <div className="bg-neutral-900 text-neutral-200">
-      <div className="mx-auto flex min-h-screen w-full max-w-screen-xl flex-col">
-        {openConference ? (
-          <Conference />
-        ) : (
-          <Lobby setOpenConference={setOpenConference} />
-        )}
-      </div>
+    <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
+      {openConference ? (
+        <Conference />
+      ) : (
+        <Lobby setOpenConference={setOpenConference} />
+      )}
     </div>
   );
 }
