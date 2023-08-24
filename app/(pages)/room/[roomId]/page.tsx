@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { room } from '@/_shared/utils/sdk';
 import Layout from '@/_features/room/layout/layout';
+import { room } from '@/_shared/utils/sdk';
+import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
 import { cookies } from 'next/headers';
 
 type PageProps = {
@@ -43,6 +44,7 @@ export default async function Page({ params: { roomId } }: PageProps) {
       roomId={response.data.roomId}
       host={getHostCookie()}
       deleteHostCookie={deleteHostCookie}
+      origin={getOriginServerSide()}
     />
   );
 }
