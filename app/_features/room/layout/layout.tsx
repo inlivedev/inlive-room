@@ -23,7 +23,7 @@ export default function Layout({
   }, [deleteHostCookie]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
+    <div className="bg-neutral-900 text-neutral-200">
       {openConference ? (
         <Conference />
       ) : (
