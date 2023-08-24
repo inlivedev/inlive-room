@@ -24,16 +24,16 @@ export default function Lobby({ setOpenConference }: LobbyProps) {
               <b className="block text-3xl font-bold">wpdxrig0O</b>
             </div>
             <div className="mt-10">
-              <h3 className="font-medium">Ready to enter the room?</h3>
-              <p className="mt-1 text-neutral-400">
+              <h3 className="font-medium">You are about to enter this room</h3>
+              <p className="mt-0.5 text-sm text-neutral-400">
                 Anyone with the link or room ID can enter this room. Make sure
                 your device camera and microphone are working properly.
               </p>
             </div>
             <div className="mt-10 flex flex-col gap-6 rounded-lg px-4 py-5 ring-1 ring-neutral-700 lg:p-6">
               <div>
-                <h2 className="text-base font-semibold">Share this room</h2>
-                <p className="text-sm text-neutral-400">
+                <h2 className="font-medium">Share this room</h2>
+                <p className="mt-0.5 text-sm text-neutral-400">
                   Invite others to join by sending this link
                 </p>
               </div>
@@ -67,7 +67,7 @@ export default function Lobby({ setOpenConference }: LobbyProps) {
                   className="flex w-full min-w-[240px] justify-center rounded-md bg-red-700 px-4 py-2 text-sm font-medium hover:bg-red-700/90"
                   onClick={handleClick}
                 >
-                  Enter room
+                  Enter this room
                 </button>
               </div>
             </div>
