@@ -1,19 +1,20 @@
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
-import { Fetcher } from '@/_shared/utils/fetcher';
-import type { ResponseBodyPOST } from '@/api/rooms/create/route';
+import { room } from '@/_shared/utils/sdk';
+import { createHostCookieAction } from '@/_features/home/create-room/create-room-action';
 
 export const useCreateRoom = () => {
   const { navigateTo } = useNavigate();
 
   const createRoomHandler = async () => {
-    const fetcher = Fetcher(window.location.origin);
-    fetcher
-      .post('/api/rooms/create')
-      .then((response: ResponseBodyPOST) => {
+    room
+      .createRoom()
+      .then(async (response) => {
         if (!response || !response.ok) {
           throw response;
         }
+
+        await createHostCookieAction();
 
         Mixpanel.track('Create room', {
           roomId: response.data.roomId,
