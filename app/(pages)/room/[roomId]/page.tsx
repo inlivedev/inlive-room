@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import RoomContainer from '@/_features/room/components/room-container';
-import { registerClient } from '@/_features/room/modules/factory';
+import { room } from '@/_shared/utils/sdk';
+import Layout from '@/_features/room/layout/layout';
+import { cookies } from 'next/headers';
 
 type PageProps = {
   params: {
@@ -15,12 +16,33 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
   };
 };
 
+const getHostCookie = () => {
+  const cookieStore = cookies();
+  const host = cookieStore.get('host');
+  return !!host;
+};
+
+const deleteHostCookie = async () => {
+  'use server';
+  const cookieStore = cookies();
+
+  if (cookieStore.get('host')) {
+    cookieStore.delete('host');
+  }
+};
+
 export default async function Page({ params: { roomId } }: PageProps) {
-  if (!roomId) {
+  const response = await room.getRoom(roomId);
+
+  if (!response.data.roomId) {
     notFound();
   }
 
-  const client = await registerClient(roomId);
-
-  return <RoomContainer roomId={roomId} clientId={client.clientId} />;
+  return (
+    <Layout
+      roomId={response.data.roomId}
+      host={getHostCookie()}
+      deleteHostCookie={deleteHostCookie}
+    />
+  );
 }
