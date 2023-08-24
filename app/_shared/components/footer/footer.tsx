@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="mx-auto flex w-full max-w-xl flex-col gap-5 px-4 py-6 lg:max-w-5xl lg:py-8">
+    <footer className="flex flex-col gap-5 py-6 lg:py-8">
       <LearnMore />
       <hr className="border-t border-neutral-700" />
       <Copyright />
@@ -10,7 +10,7 @@ export default function Footer() {
 
 function LearnMore() {
   return (
-    <p className="text-center text-xs text-neutral-400 lg:text-left">
+    <p className="text-center text-xs text-neutral-400">
       This is a project that demonstrates the capabilities of{' '}
       <a
         href="https://inlive.app/docs/getting-started/using-hub-api/"
