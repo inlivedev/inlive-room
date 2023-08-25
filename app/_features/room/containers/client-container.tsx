@@ -1,28 +1,22 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { setClientCookie } from '@/_features/room/server-actions/cookie-action';
-
-type ClientType = {
-  roomId: string;
-  clientId: string;
-};
+import { registerClientToCookie } from '@/_features/room/server-actions/cookie-action';
 
 type Props = {
   roomId: string;
-  children({ client }: { client: ClientType }): React.ReactNode;
+  children({ clientId }: { clientId: string }): React.ReactNode;
 };
 
 export default function ClientContainer({ roomId, children }: Props) {
-  const [clientState, setClientState] = useState({
-    clientId: '',
-    roomId: '',
-  });
+  const [clientIdState, setClientIdState] = useState('');
 
   useEffect(() => {
-    setClientCookie(roomId).then((client) => {
-      setClientState(client);
-    });
-  }, [roomId]);
+    if (!clientIdState) {
+      registerClientToCookie(roomId).then(({ clientId }) => {
+        setClientIdState(clientId);
+      });
+    }
+  }, [roomId, clientIdState]);
 
-  return <>{children({ client: clientState })}</>;
+  return <>{children({ clientId: clientIdState })}</>;
 }

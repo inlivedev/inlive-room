@@ -16,8 +16,8 @@ export const deleteHostCookie = async () => {
   }
 };
 
-export const setClientCookie = async (roomId: string) => {
-  return new Promise<{ clientId: string; roomId: string }>(async (resolve) => {
+export const registerClientToCookie = async (roomId: string) => {
+  return new Promise<{ clientId: string }>(async (resolve) => {
     const cookiesStore = cookies();
     const clientIdCookie = cookiesStore.get('clientId');
     const roomIdCookie = cookiesStore.get('roomId');
@@ -31,12 +31,10 @@ export const setClientCookie = async (roomId: string) => {
       cookiesStore.set('roomId', roomId);
       resolve({
         clientId: data.clientId,
-        roomId: roomId,
       });
     } else {
       resolve({
         clientId: clientIdCookie.value,
-        roomId: roomIdCookie.value,
       });
     }
   });

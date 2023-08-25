@@ -15,11 +15,11 @@ export default function RoomContainer({
 }) {
   return (
     <ClientContainer roomId={roomId}>
-      {({ client }) => (
+      {({ clientId }) => (
         <CookieContainer>
           <ViewContainer
             roomId={roomId}
-            clientId={client.clientId}
+            clientId={clientId}
             host={host}
             origin={origin}
           />
