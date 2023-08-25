@@ -1,0 +1,35 @@
+import Link from 'next/link';
+import Header from '@/_shared/components/header/header';
+import Footer from '@/_shared/components/footer/footer';
+
+export default function NotFound() {
+  return (
+    <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
+        <Header />
+        <main className="mx-auto flex flex-1 flex-col justify-center">
+          <div className="flex items-center gap-5">
+            <div>
+              <b className="block text-2xl">404</b>
+            </div>
+            <div>
+              <b className="block text-base font-medium">Page Not Found</b>
+              <p className="mt-0.5 block text-sm text-neutral-400">
+                There is nothing to see on this page
+              </p>
+            </div>
+          </div>
+          <div className="mt-12 text-center">
+            <Link
+              href="/"
+              className="flex justify-center rounded-md bg-neutral-900 px-12 py-2 text-sm font-medium text-neutral-200  outline-none ring-1 ring-neutral-700 hover:bg-neutral-800/60"
+            >
+              Back to front page
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </div>
+  );
+}
