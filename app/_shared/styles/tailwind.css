@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
+
+:root {
+  -webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizespeed;
+}
+
 @tailwind utilities;

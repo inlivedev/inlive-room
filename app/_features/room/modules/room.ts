@@ -62,7 +62,7 @@ export class Room {
     this.#addLocalTrack();
   }
 
-  async disconnect() {
+  disconnect() {
     if (this.#peerConnection) {
       const localStreams = this.media.getLocalStreams();
 
@@ -242,13 +242,10 @@ export class Room {
     window.removeEventListener('beforeunload', this.#beforeUnloadHandler);
   }
 
-  async #beforeUnloadHandler(event: BeforeUnloadEvent) {
-    event.preventDefault();
+  #beforeUnloadHandler = async () => {
     this.disconnect();
-    await leaveRoom(this.#roomId, this.#clientId);
-    window.confirm('Are you sure you want to leave?');
-    return false;
-  }
+    leaveRoom(this.#roomId, this.#clientId);
+  };
 
   addStream(stream: MediaStream, type: string) {
     this.media.addStream(stream);
