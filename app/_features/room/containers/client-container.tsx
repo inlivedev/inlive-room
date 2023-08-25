@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { registerClientToCookie } from '@/_features/room/server-actions/cookie-action';
+import { room } from '@/_shared/utils/sdk';
 
 type Props = {
   roomId: string;
@@ -12,8 +12,8 @@ export default function ClientContainer({ roomId, children }: Props) {
 
   useEffect(() => {
     if (!clientIdState) {
-      registerClientToCookie(roomId).then(({ clientId }) => {
-        setClientIdState(clientId);
+      room.createClient(roomId).then((response) => {
+        setClientIdState(response.data.clientId);
       });
     }
   }, [roomId, clientIdState]);
