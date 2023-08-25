@@ -2,7 +2,7 @@
 
 import ClientContainer from '@/_features/room/containers/client-container';
 import CookieContainer from '@/_features/room/containers/cookie-container';
-import Layout from '@/_features/room/layout/layout';
+import ViewContainer from '@/_features/room/containers/view-container';
 
 export default function RoomContainer({
   roomId,
@@ -17,7 +17,7 @@ export default function RoomContainer({
     <ClientContainer roomId={roomId}>
       {({ client }) => (
         <CookieContainer>
-          <Layout
+          <ViewContainer
             roomId={roomId}
             clientId={client.clientId}
             host={host}

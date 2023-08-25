@@ -6,19 +6,19 @@ import LobbyCTA from '@/_features/room/lobby/lobby-cta';
 import Conference from '@/_features/room/conference/conference';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 
-type RoomLayoutProps = {
+type ViewContainerProps = {
   roomId: string;
   clientId: string;
   host: boolean;
   origin: string;
 };
 
-export default function Layout({
+export default function ViewContainer({
   roomId,
   clientId,
   host,
   origin,
-}: RoomLayoutProps) {
+}: ViewContainerProps) {
   const { active: openConference, setActive: setOpenConference } =
     useToggle(host);
 
