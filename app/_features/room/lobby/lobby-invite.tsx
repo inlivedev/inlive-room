@@ -1,3 +1,5 @@
+import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+
 export default function LobbyInvite({
   roomId,
   origin,
@@ -5,6 +7,15 @@ export default function LobbyInvite({
   roomId: string;
   origin: string;
 }) {
+  const handleCopyLink = async (text = '') => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      alert('Link has been successfully copied!');
+    } else {
+      alert('Fail to copy link');
+    }
+  };
+
   return (
     <div className="mt-10 flex flex-col gap-6 rounded-lg px-4 py-5 ring-1 ring-neutral-700 lg:p-6">
       <div>
@@ -23,7 +34,10 @@ export default function LobbyInvite({
           />
         </div>
         <div>
-          <button className="rounded-md bg-neutral-800 px-4 py-2 text-sm font-medium hover:bg-neutral-800/60">
+          <button
+            className="rounded-md bg-neutral-800 px-4 py-2 text-sm font-medium hover:bg-neutral-800/60"
+            onClick={() => handleCopyLink(`${origin}/room/${roomId}`)}
+          >
             Copy Link
           </button>
         </div>
