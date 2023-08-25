@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Layout from '@/_features/room/layout/layout';
 import { room } from '@/_shared/utils/sdk';
+import RoomContainer from '@/_features/room/containers/room-container';
 import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
-import { cookies } from 'next/headers';
-import CookieContainer from '@/_features/room/containers/cookie-container';
+import { getHostCookie } from '@/_features/room/server-actions/cookie-action';
 
 type PageProps = {
   params: {
@@ -18,12 +17,6 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
   };
 };
 
-const getHostCookie = () => {
-  const cookieStore = cookies();
-  const host = cookieStore.get('host');
-  return !!host;
-};
-
 export default async function Page({ params: { roomId } }: PageProps) {
   const response = await room.getRoom(roomId);
 
@@ -32,12 +25,10 @@ export default async function Page({ params: { roomId } }: PageProps) {
   }
 
   return (
-    <CookieContainer>
-      <Layout
-        roomId={response.data.roomId}
-        host={getHostCookie()}
-        origin={getOriginServerSide()}
-      />
-    </CookieContainer>
+    <RoomContainer
+      roomId={response.data.roomId}
+      origin={getOriginServerSide()}
+      host={getHostCookie()}
+    />
   );
 }
