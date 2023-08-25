@@ -8,18 +8,24 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 
 type RoomLayoutProps = {
   roomId: string;
+  clientId: string;
   host: boolean;
   origin: string;
 };
 
-export default function Layout({ roomId, host, origin }: RoomLayoutProps) {
+export default function Layout({
+  roomId,
+  clientId,
+  host,
+  origin,
+}: RoomLayoutProps) {
   const { active: openConference, setActive: setOpenConference } =
     useToggle(host);
 
   return (
-    <div className="bg-neutral-900 text-neutral-200">
+    <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
       {openConference ? (
-        <Conference roomId={roomId} />
+        <Conference roomId={roomId} clientId={clientId} />
       ) : (
         <Lobby>
           <LobbyHeader roomId={roomId} />
