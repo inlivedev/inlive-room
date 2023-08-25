@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <HTTPError
       code={404}
-      title="Page Not Found"
+      title="Room Not Found"
       description="There is nothing to see on this page"
     />
   );
