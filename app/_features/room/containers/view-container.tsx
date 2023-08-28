@@ -9,18 +9,16 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 type ViewContainerProps = {
   roomId: string;
   clientId: string;
-  host: boolean;
   origin: string;
 };
 
 export default function ViewContainer({
   roomId,
   clientId,
-  host,
   origin,
 }: ViewContainerProps) {
   const { active: openConference, setActive: setOpenConference } =
-    useToggle(host);
+    useToggle(false);
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
