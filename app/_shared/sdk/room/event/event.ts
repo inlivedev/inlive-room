@@ -15,6 +15,7 @@ export const Event = () => {
         }
       }
     },
+
     on(eventName: string, callback: (event: any) => any) {
       if (typeof eventName !== 'string' || eventName.trim().length === 0) {
         throw new Error('Valid string for event name is required');
