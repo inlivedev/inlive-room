@@ -1,12 +1,6 @@
-import { Fetcher } from '@/_shared/utils/fetcher';
+import { Fetcher } from './fetcher';
 
-const hubOrigin = process.env.NEXT_PUBLIC_HUB_ORIGIN;
-const apiVersion = process.env.NEXT_PUBLIC_API_VERSION;
-const hubBaseURL = `${hubOrigin}/${apiVersion}`;
-
-const fetcher = Fetcher(hubBaseURL);
-
-const createRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const createRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
   return async (name = '') => {
     const response: SDKRoomAPITypes.CreateRoomResponseBody = await fetcher.post(
       `/rooms/create`,
@@ -29,7 +23,7 @@ const createRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-const getRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const getRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
   return async (roomId = '') => {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
@@ -54,7 +48,7 @@ const getRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-const registerClientFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const registerClientFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
   return async (roomId = '') => {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
@@ -77,7 +71,7 @@ const registerClientFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-const sendIceCandidateFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const sendIceCandidateFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
   return async (
     roomId = '',
     clientId = '',
@@ -104,7 +98,9 @@ const sendIceCandidateFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-const checkNegotiateAllowedFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const checkNegotiateAllowedFactory = (
+  fetcher: SDKRoomAPITypes.ReturnFetcher
+) => {
   return async (roomId = '', clientId = '') => {
     if (!roomId || !clientId) {
       throw new Error('Room ID, and client ID are required');
@@ -124,7 +120,7 @@ const checkNegotiateAllowedFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-const negotiateConnectionFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const negotiateConnectionFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
   return async (
     roomId = '',
     clientId = '',
@@ -155,7 +151,7 @@ const negotiateConnectionFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-const leaveRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const leaveRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
   return async (roomId = '', clientId = '') => {
     if (!roomId || !clientId) {
       throw new Error('Room ID, and client ID are required');
@@ -178,7 +174,7 @@ const leaveRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-const terminateRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
+const terminateRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
   return async (roomId = '') => {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
@@ -198,11 +194,20 @@ const terminateRoomFactory = (fetcher: SDKRoomAPITypes.Fetcher) => {
   };
 };
 
-export const createRoom = createRoomFactory(fetcher);
-export const getRoom = getRoomFactory(fetcher);
-export const registerClient = registerClientFactory(fetcher);
-export const sendIceCandidate = sendIceCandidateFactory(fetcher);
-export const checkNegotiateAllowed = checkNegotiateAllowedFactory(fetcher);
-export const negotiateConnection = negotiateConnectionFactory(fetcher);
-export const leaveRoom = leaveRoomFactory(fetcher);
-export const terminateRoom = terminateRoomFactory(fetcher);
+const ApiFactory = () => {
+  return (baseURL = '') => {
+    const fetcher = Fetcher(baseURL);
+    return {
+      createRoom: createRoomFactory(fetcher),
+      getRoom: getRoomFactory(fetcher),
+      registerClient: registerClientFactory(fetcher),
+      sendIceCandidate: sendIceCandidateFactory(fetcher),
+      checkNegotiateAllowed: checkNegotiateAllowedFactory(fetcher),
+      negotiateConnection: negotiateConnectionFactory(fetcher),
+      leaveRoom: leaveRoomFactory(fetcher),
+      terminateRoom: terminateRoomFactory(fetcher),
+    };
+  };
+};
+
+export const Api = ApiFactory();
