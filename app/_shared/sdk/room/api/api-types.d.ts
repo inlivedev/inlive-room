@@ -30,6 +30,8 @@ export type NegotiateConnectionResponseBody = BaseResponseBody & {
   };
 };
 
-export type Fetcher = ReturnType<typeof Fetcher>;
+export type Fetcher = typeof Fetcher;
+
+export type ReturnFetcher = ReturnType<typeof Fetcher>;
 
 export as namespace SDKRoomAPITypes;
