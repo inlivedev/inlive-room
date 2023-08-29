@@ -1,13 +1,11 @@
-import type { Api } from '../api/api';
-import type { Peer } from '../peer/peer';
+import type { apiFactory } from '../api/api';
+import type { peerFactory } from '../peer/peer';
 
-type ReturnApi = ReturnType<typeof Api>;
-type ReturnPeer = ReturnType<typeof Peer>;
+type ReturnApi = ReturnType<typeof apiFactory>;
+type ReturnPeer = ReturnType<ReturnType<typeof peerFactory>['createPeer']>;
 
 export type ChannelProps = {
-  clientId: string;
-  roomId: string;
-  hubBaseURL: string;
+  baseUrl: string;
   api: ReturnApi;
   peer: ReturnPeer;
 };

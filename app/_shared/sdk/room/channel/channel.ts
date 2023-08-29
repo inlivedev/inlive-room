@@ -1,16 +1,33 @@
-export const Channel = ({
-  roomId,
-  clientId,
-  hubBaseURL,
-  api,
-  peer,
-}: RoomChannelTypes.ChannelProps) => {
-  const channel = new EventSource(
-    `${hubBaseURL}/rooms/${roomId}/events/${clientId} `
-  );
+class Channel {
+  _roomId = '';
+  _clientId = '';
+  _baseUrl;
+  _api;
+  _peer;
+  _channel: EventSource | null = null;
 
-  channel.addEventListener('candidate', async (event: MessageEvent<any>) => {
-    const peerConnection = peer.getPeerConnection();
+  constructor({ baseUrl, api, peer }: RoomChannelTypes.ChannelProps) {
+    this._baseUrl = baseUrl;
+    this._api = api;
+    this._peer = peer;
+  }
+
+  connect(roomId: string, clientId: string) {
+    if (this._channel) return;
+
+    this._roomId = roomId;
+    this._clientId = clientId;
+
+    this._channel = new EventSource(
+      `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
+    );
+
+    this._channel.addEventListener('candidate', this._onCandidate);
+    this._channel.addEventListener('offer', this._onOffer);
+  }
+
+  _onCandidate = async (event: MessageEvent<any>) => {
+    const peerConnection = this._peer.getPeerConnection();
 
     if (!peerConnection || !peerConnection.remoteDescription) {
       return;
@@ -18,10 +35,12 @@ export const Channel = ({
 
     const candidate = new RTCIceCandidate(JSON.parse(event.data));
     await peerConnection.addIceCandidate(candidate);
-  });
+  };
 
-  channel.addEventListener('offer', async (event: MessageEvent<any>) => {
-    const peerConnection = peer.getPeerConnection();
+  _onOffer = async (event: MessageEvent<any>) => {
+    if (!this._roomId || !this._clientId) return;
+
+    const peerConnection = this._peer.getPeerConnection();
 
     if (!peerConnection) return;
 
@@ -31,11 +50,27 @@ export const Channel = ({
     await peerConnection.setLocalDescription(answer);
 
     if (peerConnection.localDescription) {
-      await api.negotiateConnection(
-        roomId,
-        clientId,
+      await this._api.negotiateConnection(
+        this._roomId,
+        this._clientId,
         peerConnection.localDescription
       );
     }
+  };
+}
+
+export const channelFactory = ({
+  baseUrl,
+  api,
+  peer,
+}: RoomChannelTypes.ChannelProps) => {
+  const channel = new Channel({
+    baseUrl,
+    api,
+    peer,
   });
+
+  return {
+    connect: channel.connect,
+  };
 };
