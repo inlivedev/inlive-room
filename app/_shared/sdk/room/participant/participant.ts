@@ -31,23 +31,19 @@ class Participant {
 }
 
 export const participantFactory = () => {
-  return {
-    create() {
-      const {
-        addParticipant,
-        removeParticipant,
-        getAllParticipants,
-        getParticipant,
-        getTotalParticipants,
-      } = new Participant();
+  const {
+    addParticipant,
+    removeParticipant,
+    getAllParticipants,
+    getParticipant,
+    getTotalParticipants,
+  } = new Participant();
 
-      return {
-        addParticipant,
-        removeParticipant,
-        getAllParticipants,
-        getParticipant,
-        getTotalParticipants,
-      };
-    },
+  return {
+    addParticipant,
+    removeParticipant,
+    getAllParticipants,
+    getParticipant,
+    getTotalParticipants,
   };
 };

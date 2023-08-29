@@ -35,14 +35,10 @@ class Event {
 }
 
 export const eventFactory = () => {
-  return {
-    create() {
-      const { emit, on } = new Event();
+  const { emit, on } = new Event();
 
-      return {
-        emit,
-        on,
-      };
-    },
+  return {
+    emit,
+    on,
   };
 };

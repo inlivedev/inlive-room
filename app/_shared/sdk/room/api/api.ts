@@ -179,22 +179,18 @@ class Api {
   }
 }
 
-export const apiFactory = () => {
-  return {
-    create(baseURL = '') {
-      const fetcher = Fetcher(baseURL);
-      const api = new Api(fetcher);
+export const apiFactory = (baseURL = '') => {
+  const fetcher = Fetcher(baseURL);
+  const api = new Api(fetcher);
 
-      return {
-        createRoom: api.createRoom,
-        getRoom: api.getRoom,
-        registerClient: api.registerClient,
-        sendIceCandidate: api.sendIceCandidate,
-        checkNegotiateAllowed: api.checkNegotiateAllowed,
-        negotiateConnection: api.negotiateConnection,
-        leaveRoom: api.leaveRoom,
-        terminateRoom: api.terminateRoom,
-      };
-    },
+  return {
+    createRoom: api.createRoom,
+    getRoom: api.getRoom,
+    registerClient: api.registerClient,
+    sendIceCandidate: api.sendIceCandidate,
+    checkNegotiateAllowed: api.checkNegotiateAllowed,
+    negotiateConnection: api.negotiateConnection,
+    leaveRoom: api.leaveRoom,
+    terminateRoom: api.terminateRoom,
   };
 };
