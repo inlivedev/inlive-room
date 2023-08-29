@@ -1,8 +1,8 @@
 import { iceServers } from '../config/webrtc';
 
 const PeerEvent = {
-  STREAM_ADDED: 'streamAdded',
-  STREAM_REMOVED: 'streamRemoved',
+  PARTICIPANT_ADDED: 'participantAdded',
+  PARTICIPANT_REMOVED: 'participantRemoved',
 };
 
 class Peer {
@@ -52,6 +52,37 @@ class Peer {
         this._peerConnection.addTrack(track, stream);
       }
     }
+  }
+
+  addParticipant(key: string, value: RoomParticipantTypes.Participant) {
+    if (!this._peerConnection) return;
+
+    if (!key || !value || typeof value.type !== 'string' || !(value.stream instanceof MediaStream)) {
+      throw new Error('Wrong participant input!')
+    }
+
+    const { type, stream } = value;
+
+    if (type === 'local' || type === 'display') {
+      for (const track of stream.getTracks()) {
+        this._peerConnection.addTrack(track, stream);
+      }
+    }
+
+    this._participant.addParticipant(key, value);
+    this._event.emit(PeerEvent.PARTICIPANT_ADDED);
+  }
+
+  removeParticipant(key: string) {
+    return this._participant.removeParticipant(key);
+  }
+
+  getAllParticipants() {
+    return this._participant.getAllParticipants();
+  }
+
+  getParticipant(key: string) {
+    return this._participant.getParticipant(key);
   }
 
   _onIceConnectionStateChange = () => {
@@ -118,5 +149,9 @@ export const peerFactory = ({
     connect: peer.connect,
     getPeerConnection: peer.getPeerConnection,
     addTrack: peer.addTrack,
+    addParticipant: peer.addParticipant,
+    removeParticipant: peer.removeParticipant,
+    getAllParticipants: peer.getAllParticipants,
+    getParticipant: peer.getParticipant
   };
 };
