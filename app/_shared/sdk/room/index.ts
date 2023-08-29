@@ -29,7 +29,7 @@ export const Room = (config: RoomTypes.Config) => {
     createRoom: api.createRoom,
     createClient: api.registerClient,
     getRoom: api.getRoom,
-    createPeer: (roomId = '', clientId = '') => {
+    createPeer: (roomId: string, clientId: string) => {
       connectToPeer(roomId, clientId);
       connectToChannel(roomId, clientId);
 
