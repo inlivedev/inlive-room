@@ -35,6 +35,7 @@ export const Room = (config: RoomTypes.Config) => {
 
       return restOfPeer;
     },
+    on: event.on,
     leaveRoom: api.leaveRoom,
     terminateRoom: api.terminateRoom,
   };
