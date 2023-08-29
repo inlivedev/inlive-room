@@ -1,13 +1,17 @@
 import { Fetcher } from './fetcher';
 
-const createRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
-  return async (name = '') => {
-    const response: SDKRoomAPITypes.CreateRoomResponseBody = await fetcher.post(
-      `/rooms/create`,
-      {
+class Api {
+  _fetcher;
+
+  constructor(fetcher: SDKRoomAPITypes.ReturnFetcher) {
+    this._fetcher = fetcher;
+  }
+
+  async createRoom(name = '') {
+    const response: SDKRoomAPITypes.CreateRoomResponseBody =
+      await this._fetcher.post(`/rooms/create`, {
         body: JSON.stringify({ name: name }),
-      }
-    );
+      });
 
     const data = response.data || {};
 
@@ -20,18 +24,15 @@ const createRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     };
 
     return room;
-  };
-};
+  }
 
-const getRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
-  return async (roomId = '') => {
+  async getRoom(roomId = '') {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
     }
 
-    const response: SDKRoomAPITypes.GetRoomResponseBody = await fetcher.get(
-      `/rooms/${roomId}`
-    );
+    const response: SDKRoomAPITypes.GetRoomResponseBody =
+      await this._fetcher.get(`/rooms/${roomId}`);
 
     const data = response.data || {};
 
@@ -45,17 +46,15 @@ const getRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     };
 
     return room;
-  };
-};
+  }
 
-const registerClientFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
-  return async (roomId = '') => {
+  async registerClient(roomId = '') {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
     }
 
     const response: SDKRoomAPITypes.RegisterClientResponseBody =
-      await fetcher.post(`/rooms/${roomId}/register`);
+      await this._fetcher.post(`/rooms/${roomId}/register`);
 
     const data = response.data || {};
 
@@ -68,20 +67,18 @@ const registerClientFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     };
 
     return client;
-  };
-};
+  }
 
-const sendIceCandidateFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
-  return async (
+  async sendIceCandidate(
     roomId = '',
     clientId = '',
     candidate: RTCIceCandidate | null = null
-  ) => {
+  ) {
     if (!roomId || !clientId || !candidate) {
       throw new Error('Room ID, client ID, and RTC ice candidate are required');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody = await fetcher.post(
+    const response: SDKRoomAPITypes.BaseResponseBody = await this._fetcher.post(
       `/rooms/${roomId}/candidate/${clientId}`,
       {
         body: JSON.stringify(candidate.toJSON()),
@@ -95,18 +92,14 @@ const sendIceCandidateFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     };
 
     return result;
-  };
-};
+  }
 
-const checkNegotiateAllowedFactory = (
-  fetcher: SDKRoomAPITypes.ReturnFetcher
-) => {
-  return async (roomId = '', clientId = '') => {
+  async checkNegotiateAllowed(roomId = '', clientId = '') {
     if (!roomId || !clientId) {
       throw new Error('Room ID, and client ID are required');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody = await fetcher.post(
+    const response: SDKRoomAPITypes.BaseResponseBody = await this._fetcher.post(
       `/rooms/${roomId}/isallownegotiate/${clientId}`
     );
 
@@ -117,15 +110,13 @@ const checkNegotiateAllowedFactory = (
     };
 
     return result;
-  };
-};
+  }
 
-const negotiateConnectionFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
-  return async (
+  async negotiateConnection(
     roomId = '',
     clientId = '',
     localDescription: RTCSessionDescription | null = null
-  ) => {
+  ) {
     if (!roomId || !clientId || !localDescription) {
       throw new Error(
         'Room ID, client ID, and RTC local description are required'
@@ -133,7 +124,7 @@ const negotiateConnectionFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     }
 
     const response: SDKRoomAPITypes.NegotiateConnectionResponseBody =
-      await fetcher.put(`/rooms/${roomId}/negotiate/${clientId}`, {
+      await this._fetcher.put(`/rooms/${roomId}/negotiate/${clientId}`, {
         body: JSON.stringify(localDescription.toJSON()),
       });
 
@@ -148,21 +139,17 @@ const negotiateConnectionFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     };
 
     return result;
-  };
-};
+  }
 
-const leaveRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
-  return async (roomId = '', clientId = '') => {
+  async leaveRoom(roomId = '', clientId = '') {
     if (!roomId || !clientId) {
       throw new Error('Room ID, and client ID are required');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody = await fetcher.delete(
-      `/rooms/${roomId}/leave/${clientId}`,
-      {
+    const response: SDKRoomAPITypes.BaseResponseBody =
+      await this._fetcher.delete(`/rooms/${roomId}/leave/${clientId}`, {
         keepalive: true,
-      }
-    );
+      });
 
     const result = {
       code: response.code || 500,
@@ -171,16 +158,14 @@ const leaveRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     };
 
     return result;
-  };
-};
+  }
 
-const terminateRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
-  return async (roomId = '') => {
+  async terminateRoom(roomId = '') {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody = await fetcher.put(
+    const response: SDKRoomAPITypes.BaseResponseBody = await this._fetcher.put(
       `/rooms/${roomId}/end`
     );
 
@@ -191,23 +176,25 @@ const terminateRoomFactory = (fetcher: SDKRoomAPITypes.ReturnFetcher) => {
     };
 
     return result;
+  }
+}
+
+export const apiFactory = () => {
+  return {
+    create(baseURL = '') {
+      const fetcher = Fetcher(baseURL);
+      const api = new Api(fetcher);
+
+      return {
+        createRoom: api.createRoom,
+        getRoom: api.getRoom,
+        registerClient: api.registerClient,
+        sendIceCandidate: api.sendIceCandidate,
+        checkNegotiateAllowed: api.checkNegotiateAllowed,
+        negotiateConnection: api.negotiateConnection,
+        leaveRoom: api.leaveRoom,
+        terminateRoom: api.terminateRoom,
+      };
+    },
   };
 };
-
-const ApiFactory = () => {
-  return (baseURL = '') => {
-    const fetcher = Fetcher(baseURL);
-    return {
-      createRoom: createRoomFactory(fetcher),
-      getRoom: getRoomFactory(fetcher),
-      registerClient: registerClientFactory(fetcher),
-      sendIceCandidate: sendIceCandidateFactory(fetcher),
-      checkNegotiateAllowed: checkNegotiateAllowedFactory(fetcher),
-      negotiateConnection: negotiateConnectionFactory(fetcher),
-      leaveRoom: leaveRoomFactory(fetcher),
-      terminateRoom: terminateRoomFactory(fetcher),
-    };
-  };
-};
-
-export const Api = ApiFactory();
