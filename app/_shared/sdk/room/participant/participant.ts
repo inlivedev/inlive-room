@@ -5,29 +5,29 @@ class Participant {
     this._participants = new Map<string, RoomParticipantTypes.Participant>();
   }
 
-  addParticipant(key: string, value: RoomParticipantTypes.Participant) {
+  addParticipant = (key: string, value: RoomParticipantTypes.Participant) => {
     if (key.trim().length > 0) {
       this._participants.set(key, value);
     }
-  }
+  };
 
-  removeParticipant(key: string) {
+  removeParticipant = (key: string) => {
     if (key.trim().length > 0) {
       this._participants.delete(key);
     }
-  }
+  };
 
-  getAllParticipants() {
+  getAllParticipants = () => {
     return [...this._participants.values()];
-  }
+  };
 
-  getParticipant(key: string) {
+  getParticipant = (key: string) => {
     return this._participants.get(key);
-  }
+  };
 
-  getTotalParticipants() {
+  getTotalParticipants = () => {
     return this._participants.size;
-  }
+  };
 }
 
 export const participantFactory = () => {

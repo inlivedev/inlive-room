@@ -5,7 +5,7 @@ class Event {
     this._events = {};
   }
 
-  emit(eventName = '', data = {}) {
+  emit = (eventName = '', data = {}) => {
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       throw new Error('Valid string for event name is required');
     }
@@ -17,9 +17,9 @@ class Event {
         typeof callback === 'function' && callback(data);
       }
     }
-  }
+  };
 
-  on(eventName: string, callback: (event: any) => any) {
+  on = (eventName: string, callback: (event: any) => any) => {
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       throw new Error('Valid string for event name is required');
     }
@@ -31,7 +31,7 @@ class Event {
     }
 
     this._events[eventName].add(callback);
-  }
+  };
 }
 
 export const eventFactory = () => {
