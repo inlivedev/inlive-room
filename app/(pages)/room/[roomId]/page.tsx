@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { room } from '@/_shared/utils/sdk';
-import RoomContainer from '@/_features/room/containers/room-container';
+import RoomContainer from '@/_features/room/components/container';
 import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
 
 type PageProps = {
@@ -16,17 +16,20 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
   };
 };
 
-export default async function Page({ params: { roomId } }: PageProps) {
-  const response = await room.getRoom(roomId);
+export default async function Page({ params }: PageProps) {
+  const {
+    data: { roomId },
+  } = await room.getRoom(params.roomId);
 
-  if (!response.data.roomId) {
+  if (!roomId) {
     notFound();
   }
 
-  return (
-    <RoomContainer
-      roomId={response.data.roomId}
-      origin={getOriginServerSide()}
-    />
-  );
+  const {
+    data: { clientId },
+  } = await room.createClient(roomId);
+
+  const origin = getOriginServerSide();
+
+  return <RoomContainer roomId={roomId} clientId={clientId} origin={origin} />;
 }
