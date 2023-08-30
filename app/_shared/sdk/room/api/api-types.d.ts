@@ -1,5 +1,16 @@
 import type { Fetcher } from './fetcher';
 
+export type TrackSourcesRequestBody = {
+  track_id: string;
+  source: string;
+};
+
+export type SubscribeTracksRequestBody = {
+  client_id: string;
+  stream_id: string;
+  track_id: string;
+};
+
 export type BaseResponseBody = {
   code: number;
   ok: boolean;
@@ -34,4 +45,4 @@ export type Fetcher = typeof Fetcher;
 
 export type ReturnFetcher = ReturnType<typeof Fetcher>;
 
-export as namespace SDKRoomAPITypes;
+export as namespace RoomAPIType;

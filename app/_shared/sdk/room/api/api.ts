@@ -3,12 +3,12 @@ import { Fetcher } from './fetcher';
 class Api {
   _fetcher;
 
-  constructor(fetcher: SDKRoomAPITypes.ReturnFetcher) {
+  constructor(fetcher: RoomAPIType.ReturnFetcher) {
     this._fetcher = fetcher;
   }
 
   createRoom = async (name = '') => {
-    const response: SDKRoomAPITypes.CreateRoomResponseBody =
+    const response: RoomAPIType.CreateRoomResponseBody =
       await this._fetcher.post(`/rooms/create`, {
         body: JSON.stringify({ name: name }),
       });
@@ -31,8 +31,9 @@ class Api {
       throw new Error('Room ID must be a valid string');
     }
 
-    const response: SDKRoomAPITypes.GetRoomResponseBody =
-      await this._fetcher.get(`/rooms/${roomId}`);
+    const response: RoomAPIType.GetRoomResponseBody = await this._fetcher.get(
+      `/rooms/${roomId}`
+    );
 
     const data = response.data || {};
 
@@ -53,7 +54,7 @@ class Api {
       throw new Error('Room ID must be a valid string');
     }
 
-    const response: SDKRoomAPITypes.RegisterClientResponseBody =
+    const response: RoomAPIType.RegisterClientResponseBody =
       await this._fetcher.post(`/rooms/${roomId}/register`);
 
     const data = response.data || {};
@@ -78,7 +79,7 @@ class Api {
       throw new Error('Room ID, client ID, and RTC ice candidate are required');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody = await this._fetcher.post(
+    const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
       `/rooms/${roomId}/candidate/${clientId}`,
       {
         body: JSON.stringify(candidate.toJSON()),
@@ -99,7 +100,7 @@ class Api {
       throw new Error('Room ID, and client ID are required');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody = await this._fetcher.post(
+    const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
       `/rooms/${roomId}/isallownegotiate/${clientId}`
     );
 
@@ -123,7 +124,7 @@ class Api {
       );
     }
 
-    const response: SDKRoomAPITypes.NegotiateConnectionResponseBody =
+    const response: RoomAPIType.NegotiateConnectionResponseBody =
       await this._fetcher.put(`/rooms/${roomId}/negotiate/${clientId}`, {
         body: JSON.stringify(localDescription.toJSON()),
       });
@@ -141,15 +142,79 @@ class Api {
     return result;
   };
 
+  setTrackSources = async (
+    roomId: string,
+    clientId: string,
+    trackSources: RoomAPIType.TrackSourcesRequestBody[]
+  ) => {
+    if (!roomId || !clientId) {
+      throw new Error('Room ID, and client ID are required');
+    }
+
+    if (!Array.isArray(trackSources)) {
+      throw new Error(
+        'Third parameters must be a valid array of objects with source and track_id properties'
+      );
+    }
+
+    const response: RoomAPIType.BaseResponseBody = await this._fetcher.put(
+      `/rooms/${roomId}/settracksources/${clientId}`,
+      {
+        body: JSON.stringify(trackSources),
+      }
+    );
+
+    const result = {
+      code: response.code || 500,
+      ok: response.ok || false,
+      data: null,
+    };
+
+    return result;
+  };
+
+  subscribeTracks = async (
+    roomId: string,
+    clientId: string,
+    subscribeTracks: RoomAPIType.SubscribeTracksRequestBody[]
+  ) => {
+    if (!roomId || !clientId) {
+      throw new Error('Room ID, and client ID are required');
+    }
+
+    if (!Array.isArray(subscribeTracks)) {
+      throw new Error(
+        'Third parameters must be a valid array of objects with client_id, stream_id, and track_id properties'
+      );
+    }
+
+    const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
+      `/rooms/${roomId}/subscribetracks/${clientId}`,
+      {
+        body: JSON.stringify(subscribeTracks),
+      }
+    );
+
+    const result = {
+      code: response.code || 500,
+      ok: response.ok || false,
+      data: null,
+    };
+
+    return result;
+  };
+
   leaveRoom = async (roomId = '', clientId = '') => {
     if (!roomId || !clientId) {
       throw new Error('Room ID, and client ID are required');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody =
-      await this._fetcher.delete(`/rooms/${roomId}/leave/${clientId}`, {
+    const response: RoomAPIType.BaseResponseBody = await this._fetcher.delete(
+      `/rooms/${roomId}/leave/${clientId}`,
+      {
         keepalive: true,
-      });
+      }
+    );
 
     const result = {
       code: response.code || 500,
@@ -165,7 +230,7 @@ class Api {
       throw new Error('Room ID must be a valid string');
     }
 
-    const response: SDKRoomAPITypes.BaseResponseBody = await this._fetcher.put(
+    const response: RoomAPIType.BaseResponseBody = await this._fetcher.put(
       `/rooms/${roomId}/end`
     );
 
@@ -190,6 +255,8 @@ export const apiFactory = (baseURL = '') => {
     sendIceCandidate: api.sendIceCandidate,
     checkNegotiateAllowed: api.checkNegotiateAllowed,
     negotiateConnection: api.negotiateConnection,
+    setTrackSources: api.setTrackSources,
+    subscribeTracks: api.subscribeTracks,
     leaveRoom: api.leaveRoom,
     terminateRoom: api.terminateRoom,
   };
