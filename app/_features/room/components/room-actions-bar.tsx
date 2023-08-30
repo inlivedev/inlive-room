@@ -61,7 +61,7 @@ export default function RoomActionsBar({
         video: true,
       });
 
-      room.addStream(stream, 'local');
+      room.addLocalStream(stream, 'screen');
 
       for (const track of stream.getTracks()) {
         const sender = room.getPeerConnection()?.addTrack(track, stream);

@@ -15,6 +15,20 @@ type RegisterClientDataType = {
   client_id: string;
 };
 
+type TrackSource = {
+  track_id: string;
+  source: string;
+};
+
+export type TrackSources = TrackSource[];
+
+type SubscribeTrackRequestType = {
+  client_id: string;
+  stream_id: string;
+  track_id: string;
+};
+export type SubscribeTracksRequestType = SubscribeTrackRequestType[];
+
 const createRoomFactory = (fetcher: TypeFetch) => {
   return async (name = '') => {
     const response = await fetcher.post(`/rooms/create`, {
@@ -199,6 +213,56 @@ const terminateRoomFactory = (fetcher: TypeFetch) => {
   };
 };
 
+const setTrackSourcesFactory = (fetcher: TypeFetch) => {
+  return async (
+    roomId: string,
+    clientId: string,
+    trackSources: TrackSources
+  ) => {
+    const response = await fetcher.put(
+      `/rooms/${roomId}/settracksources/${clientId}`,
+      {
+        body: JSON.stringify(trackSources),
+      }
+    );
+
+    if (!response) {
+      throw new Error('Something went wrong. Please try again later!');
+    }
+
+    const result = {
+      code: parseInt(response.code, 10) || 500,
+    };
+
+    return result;
+  };
+};
+
+const subscribeTracksFactory = (fetcher: TypeFetch) => {
+  return async (
+    roomId: string,
+    clientId: string,
+    subscribeTracks: SubscribeTracksRequestType
+  ) => {
+    const response = await fetcher.post(
+      `/rooms/${roomId}/subscribetracks/${clientId}`,
+      {
+        body: JSON.stringify(subscribeTracks),
+      }
+    );
+
+    if (!response) {
+      throw new Error('Something went wrong. Please try again later!');
+    }
+
+    const result = {
+      code: parseInt(response.code, 10) || 500,
+    };
+
+    return result;
+  };
+};
+
 export const createRoom = createRoomFactory(fetcher);
 export const registerClient = registerClientFactory(fetcher);
 export const sendIceCandidate = sendIceCandidateFactory(fetcher);
@@ -207,3 +271,5 @@ export const allowRenegotation = allowRenegotationFactory(fetcher);
 export const joinRoom = joinRoomFactory(fetcher);
 export const leaveRoom = leaveRoomFactory(fetcher);
 export const terminateRoom = terminateRoomFactory(fetcher);
+export const setTrackSources = setTrackSourcesFactory(fetcher);
+export const subscribeTracks = subscribeTracksFactory(fetcher);
