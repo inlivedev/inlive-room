@@ -19,7 +19,9 @@ class Peer {
     this._participant = participant;
   }
 
-  connect(roomId: string, clientId: string) {
+  connect = (roomId: string, clientId: string) => {
+    if (this._peerConnection) return;
+
     this._roomId = roomId;
     this._clientId = clientId;
 
@@ -38,13 +40,13 @@ class Peer {
     );
 
     this._peerConnection.addEventListener('icecandidate', this._onIceCandidate);
-  }
+  };
 
-  getPeerConnection() {
+  getPeerConnection = () => {
     return this._peerConnection;
-  }
+  };
 
-  addTrack(stream: MediaStream) {
+  addTrack = (stream: MediaStream) => {
     if (!this._peerConnection) return;
 
     if (stream instanceof MediaStream) {
@@ -52,13 +54,18 @@ class Peer {
         this._peerConnection.addTrack(track, stream);
       }
     }
-  }
+  };
 
-  addParticipant(key: string, value: RoomParticipantTypes.Participant) {
+  addParticipant = (key: string, value: RoomParticipantTypes.Participant) => {
     if (!this._peerConnection) return;
 
-    if (!key || !value || typeof value.type !== 'string' || !(value.stream instanceof MediaStream)) {
-      throw new Error('Wrong participant input!')
+    if (
+      !key ||
+      !value ||
+      typeof value.type !== 'string' ||
+      !(value.stream instanceof MediaStream)
+    ) {
+      throw new Error('Wrong participant input!');
     }
 
     const { type, stream } = value;
@@ -70,20 +77,20 @@ class Peer {
     }
 
     this._participant.addParticipant(key, value);
-    this._event.emit(PeerEvent.PARTICIPANT_ADDED);
-  }
+    this._event.emit(PeerEvent.PARTICIPANT_ADDED, { participant: value });
+  };
 
-  removeParticipant(key: string) {
+  removeParticipant = (key: string) => {
     return this._participant.removeParticipant(key);
-  }
+  };
 
-  getAllParticipants() {
+  getAllParticipants = () => {
     return this._participant.getAllParticipants();
-  }
+  };
 
-  getParticipant(key: string) {
+  getParticipant = (key: string) => {
     return this._participant.getParticipant(key);
-  }
+  };
 
   _onIceConnectionStateChange = () => {
     if (!this._peerConnection) return;
@@ -152,6 +159,6 @@ export const peerFactory = ({
     addParticipant: peer.addParticipant,
     removeParticipant: peer.removeParticipant,
     getAllParticipants: peer.getAllParticipants,
-    getParticipant: peer.getParticipant
+    getParticipant: peer.getParticipant,
   };
 };

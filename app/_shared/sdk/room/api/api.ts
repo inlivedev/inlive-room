@@ -7,7 +7,7 @@ class Api {
     this._fetcher = fetcher;
   }
 
-  async createRoom(name = '') {
+  createRoom = async (name = '') => {
     const response: SDKRoomAPITypes.CreateRoomResponseBody =
       await this._fetcher.post(`/rooms/create`, {
         body: JSON.stringify({ name: name }),
@@ -24,9 +24,9 @@ class Api {
     };
 
     return room;
-  }
+  };
 
-  async getRoom(roomId = '') {
+  getRoom = async (roomId = '') => {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
     }
@@ -46,9 +46,9 @@ class Api {
     };
 
     return room;
-  }
+  };
 
-  async registerClient(roomId = '') {
+  registerClient = async (roomId = '') => {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
     }
@@ -67,13 +67,13 @@ class Api {
     };
 
     return client;
-  }
+  };
 
-  async sendIceCandidate(
+  sendIceCandidate = async (
     roomId = '',
     clientId = '',
     candidate: RTCIceCandidate | null = null
-  ) {
+  ) => {
     if (!roomId || !clientId || !candidate) {
       throw new Error('Room ID, client ID, and RTC ice candidate are required');
     }
@@ -92,9 +92,9 @@ class Api {
     };
 
     return result;
-  }
+  };
 
-  async checkNegotiateAllowed(roomId = '', clientId = '') {
+  checkNegotiateAllowed = async (roomId = '', clientId = '') => {
     if (!roomId || !clientId) {
       throw new Error('Room ID, and client ID are required');
     }
@@ -110,13 +110,13 @@ class Api {
     };
 
     return result;
-  }
+  };
 
-  async negotiateConnection(
+  negotiateConnection = async (
     roomId = '',
     clientId = '',
     localDescription: RTCSessionDescription | null = null
-  ) {
+  ) => {
     if (!roomId || !clientId || !localDescription) {
       throw new Error(
         'Room ID, client ID, and RTC local description are required'
@@ -139,9 +139,9 @@ class Api {
     };
 
     return result;
-  }
+  };
 
-  async leaveRoom(roomId = '', clientId = '') {
+  leaveRoom = async (roomId = '', clientId = '') => {
     if (!roomId || !clientId) {
       throw new Error('Room ID, and client ID are required');
     }
@@ -158,9 +158,9 @@ class Api {
     };
 
     return result;
-  }
+  };
 
-  async terminateRoom(roomId = '') {
+  terminateRoom = async (roomId = '') => {
     if (typeof roomId !== 'string' || roomId.trim().length === 0) {
       throw new Error('Room ID must be a valid string');
     }
@@ -176,7 +176,7 @@ class Api {
     };
 
     return result;
-  }
+  };
 }
 
 export const apiFactory = (baseURL = '') => {

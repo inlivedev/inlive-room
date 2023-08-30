@@ -12,7 +12,7 @@ class Channel {
     this._peer = peer;
   }
 
-  connect(roomId: string, clientId: string) {
+  connect = (roomId: string, clientId: string) => {
     if (this._channel) return;
 
     this._roomId = roomId;
@@ -24,7 +24,7 @@ class Channel {
 
     this._channel.addEventListener('candidate', this._onCandidate);
     this._channel.addEventListener('offer', this._onOffer);
-  }
+  };
 
   _onCandidate = async (event: MessageEvent<any>) => {
     const peerConnection = this._peer.getPeerConnection();
