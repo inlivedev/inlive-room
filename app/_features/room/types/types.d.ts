@@ -13,6 +13,7 @@ type RoomLayoutProps = {
 type StreamStateType = {
   data: MediaStream;
   type: 'local' | 'remote';
+  source: string;
 };
 
 type RoomStreamsStateType = {

@@ -5,6 +5,13 @@ import {
   joinRoom,
   allowRenegotation,
   leaveRoom,
+  setTrackSources,
+  subscribeTracks,
+} from '@/_features/room/modules/factory';
+
+import type {
+  TrackSources,
+  SubscribeTracksRequestType,
 } from '@/_features/room/modules/factory';
 import { MediaManager } from '@/_features/room/modules/media';
 import { EventManager } from '@/_features/room/modules/event';
@@ -67,7 +74,7 @@ export class Room {
       const localStreams = this.media.getLocalStreams();
 
       for (const id in localStreams) {
-        for (const track of localStreams[id].getTracks()) {
+        for (const track of localStreams[id].stream.getTracks()) {
           this.#stopTrack(track);
         }
       }
@@ -146,7 +153,7 @@ export class Room {
 
       const remoteStreams = this.media.getRemoteStreams();
       if (remoteStreams[stream.id] === undefined) {
-        this.addStream(stream, 'remote');
+        this.addStream(stream);
       }
     });
 
@@ -236,6 +243,42 @@ export class Room {
 
       this.#inRenegotiation = false;
     });
+
+    this.#channel.addEventListener('tracks_added', async (event) => {
+      const data = JSON.parse(event.data);
+      const trackSources: TrackSources = [];
+      Object.keys(data.tracks).forEach((id) => {
+        const track = data.tracks[id];
+        trackSources.push({
+          track_id: id,
+          source: this.media.getLocalStreamSource(track.stream_id),
+        });
+      });
+
+      setTrackSources(this.#roomId, this.#clientId, trackSources);
+    });
+
+    this.#channel.addEventListener('tracks_available', async (event) => {
+      const data = JSON.parse(event.data);
+      console.log('tracks_available', data);
+      const tracksSubscribe: SubscribeTracksRequestType = [];
+      Object.keys(data.tracks).forEach((id) => {
+        const track = data.tracks[id];
+        tracksSubscribe.push({
+          client_id: track.client_id,
+          stream_id: track.stream_id,
+          track_id: track.track_id,
+        });
+
+        this.media.addAvailableStream(
+          track.client_id,
+          track.stream_id,
+          track.source
+        );
+      });
+
+      subscribeTracks(this.#roomId, this.#clientId, tracksSubscribe);
+    });
   }
 
   #removeListener() {
@@ -247,19 +290,21 @@ export class Room {
     leaveRoom(this.#roomId, this.#clientId);
   };
 
-  addStream(stream: MediaStream, type: string) {
+  addStream(stream: MediaStream) {
     this.media.addStream(stream);
     this.#event.emit(Room.PARTICIPANT_ADDED, {
       stream: stream,
-      type: type,
+      type: 'remote',
+      source: this.media.getStreamSource(stream.id),
     });
   }
 
-  addLocalStream(stream: MediaStream) {
-    this.media.addLocalStream(stream);
+  addLocalStream(stream: MediaStream, sourceType: string) {
+    this.media.addLocalStream(stream, sourceType);
     this.#event.emit(Room.PARTICIPANT_ADDED, {
       stream: stream,
       type: 'local',
+      source: sourceType,
     });
   }
 
@@ -282,15 +327,16 @@ export class Room {
     const localStreams = this.media.getLocalStreams();
 
     for (const id in localStreams) {
-      for (const track of localStreams[id].getTracks()) {
+      for (const track of localStreams[id].stream.getTracks()) {
         if (this.#peerConnection) {
-          this.#peerConnection.addTrack(track, localStreams[id]);
+          this.#peerConnection.addTrack(track, localStreams[id].stream);
         }
       }
 
       this.#event.emit(Room.PARTICIPANT_ADDED, {
-        stream: localStreams[id],
+        stream: localStreams[id].stream,
         type: 'local',
+        source: localStreams[id].source,
       });
     }
   }

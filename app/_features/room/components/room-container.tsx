@@ -30,7 +30,7 @@ export default function RoomContainer({
           roomId: roomId,
           clientId: clientId,
           baseUrl: hubBaseURL,
-          media: new MediaManager(mediaStream),
+          media: new MediaManager(mediaStream, 'media'),
           event: new EventManager(),
         });
 
@@ -48,12 +48,14 @@ export default function RoomContainer({
       room.on(Room.PARTICIPANT_ADDED, (data) => {
         const stream: MediaStream = data.stream || {};
         const type: string = data.type;
+        const source: string = data.source;
 
         setStreams((prevState) => {
           const newStreams = Object.assign({}, prevState, {
             [stream.id]: {
               data: stream,
               type: type,
+              source: source,
             },
           });
 

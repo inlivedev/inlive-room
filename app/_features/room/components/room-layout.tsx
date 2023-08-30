@@ -17,6 +17,7 @@ export default function RoomLayout({
     return {
       data: value.data,
       type: value.type,
+      source: value.source,
     };
   });
 
@@ -28,7 +29,7 @@ export default function RoomLayout({
               return (
                 <div
                   key={stream.data.id}
-                  className={`${styles['room-grid-screen']}`}
+                  className={`${stream.source} ${styles['room-grid-screen']}`}
                 >
                   <RoomScreen stream={stream} />
                 </div>
