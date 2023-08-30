@@ -1,8 +1,8 @@
 import { iceServers } from '../config/webrtc';
 
 export const PeerEvent = {
-  PARTICIPANT_ADDED: 'participantAdded',
-  PARTICIPANT_REMOVED: 'participantRemoved',
+  STREAM_ADDED: 'streamAdded',
+  STREAM_REMOVED: 'streamRemoved',
 };
 
 class Peer {
@@ -10,13 +10,13 @@ class Peer {
   _clientId = '';
   _api;
   _event;
-  _participant;
+  _stream;
   _peerConnection: RTCPeerConnection | null = null;
 
-  constructor({ api, event, participant }: RoomPeerTypes.PeerProps) {
+  constructor({ api, event, stream }: RoomPeerTypes.PeerProps) {
     this._api = api;
     this._event = event;
-    this._participant = participant;
+    this._stream = stream;
   }
 
   connect = (roomId: string, clientId: string) => {
@@ -56,40 +56,41 @@ class Peer {
     }
   };
 
-  addParticipant = (key: string, value: RoomParticipantTypes.Participant) => {
+  addStream = (key: string, value: RoomStreamType.Stream) => {
     if (!this._peerConnection) return;
 
     if (
       !key ||
       !value ||
-      typeof value.type !== 'string' ||
+      typeof value.origin !== 'string' ||
+      typeof value.source !== 'string' ||
       !(value.stream instanceof MediaStream)
     ) {
-      throw new Error('Wrong participant input!');
+      throw new Error('Wrong stream format input!');
     }
 
-    const { type, stream } = value;
+    const { origin, source, stream } = value;
 
-    if (type === 'local' || type === 'display') {
+    if (origin === 'local' && source === 'media') {
       for (const track of stream.getTracks()) {
         this._peerConnection.addTrack(track, stream);
       }
     }
 
-    this._participant.addParticipant(key, value);
-    this._event.emit(PeerEvent.PARTICIPANT_ADDED, { participant: value });
+    this._stream.addStream(key, value);
+    this._event.emit(PeerEvent.STREAM_ADDED, { stream: value });
   };
 
-  removeParticipant = (key: string) => {
-    return this._participant.removeParticipant(key);
+  removeStream = (key: string) => {
+    return this._stream.removeStream(key);
   };
 
-  getAllParticipants = () => {
-    return this._participant.getAllParticipants();
+  getAllStreams = () => {
+    return this._stream.getAllStreams();
   };
 
-  getParticipant = (key: string) => {
-    return this._participant.getParticipant(key);
+  getStream = (key: string) => {
+    return this._stream.getStream(key);
   };
 
   _onIceConnectionStateChange = () => {
@@ -143,21 +144,21 @@ class Peer {
 export const peerFactory = ({
   api,
   event,
-  participant,
+  stream,
 }: RoomPeerTypes.PeerFactoryProps) => {
   const peer = new Peer({
     api,
     event,
-    participant,
+    stream,
   });
 
   return {
     connect: peer.connect,
     getPeerConnection: peer.getPeerConnection,
     addTrack: peer.addTrack,
-    addParticipant: peer.addParticipant,
-    removeParticipant: peer.removeParticipant,
-    getAllParticipants: peer.getAllParticipants,
-    getParticipant: peer.getParticipant,
+    addStream: peer.addStream,
+    removeStream: peer.removeStream,
+    getAllStreams: peer.getAllStreams,
+    getStream: peer.getStream,
   };
 };

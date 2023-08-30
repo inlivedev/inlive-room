@@ -1,23 +1,23 @@
 import type { apiFactory } from '../api/api';
 import type { channelFactory } from '../channel/channel';
 import type { eventFactory } from '../event/event';
-import type { participantFactory } from '../participant/participant';
+import type { streamFactory } from '../stream/stream';
 
 type ReturnApi = ReturnType<typeof apiFactory>;
 type ReturnChannel = ReturnType<typeof channelFactory>;
 type ReturnEvent = ReturnType<typeof eventFactory>;
-type ReturnParticipant = ReturnType<typeof participantFactory>;
+type ReturnStream = ReturnType<typeof streamFactory>;
 
 export type PeerProps = {
   api: ReturnApi;
   event: ReturnEvent;
-  participant: ReturnParticipant;
+  stream: ReturnStream;
 };
 
 export type PeerFactoryProps = {
   api: ReturnApi;
   event: ReturnEvent;
-  participant: ReturnParticipant;
+  stream: ReturnStream;
 };
 
 export as namespace RoomPeerTypes;

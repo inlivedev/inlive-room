@@ -2,18 +2,18 @@ import { apiFactory } from './api/api';
 import { channelFactory } from './channel/channel';
 import { eventFactory } from './event/event';
 import { peerFactory, PeerEvent } from './peer/peer';
-import { participantFactory } from './participant/participant';
+import { streamFactory } from './stream/stream';
 
 export const Room = (config: RoomTypes.Config) => {
   const baseUrl = `${config.api.baseUrl}/${config.api.version}`;
   const api = apiFactory(baseUrl);
   const event = eventFactory();
-  const participant = participantFactory();
+  const stream = streamFactory();
 
   const peer = peerFactory({
     api,
     event,
-    participant,
+    stream,
   });
 
   const channel = channelFactory({
