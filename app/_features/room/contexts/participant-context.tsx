@@ -1,11 +1,12 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { Participant } from '@/_shared/sdk/room/participant/participant-types';
+import type { Stream } from '@/_shared/sdk/room/stream/stream-types';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { room } from '@/_shared/utils/sdk';
 
 const defaultValue = {
-  participants: [] as Participant[],
+  streams: [] as Stream[],
 };
 
 const ParticipantContext = createContext(defaultValue);
@@ -16,29 +17,34 @@ export const useParticipantContext = () => {
 
 export function ParticipantProvider({
   children,
-  mediaStream,
+  localMediaStream,
 }: {
   children: React.ReactNode;
-  mediaStream: MediaStream;
+  localMediaStream: MediaStream;
 }) {
   const { peer } = usePeerContext();
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [streams, setStreams] = useState<Stream[]>([]);
 
   useEffect(() => {
     if (peer) {
-      // mediaStream
-      // peer.addParticipant()
-      // const peerParticipants = peer.getAllParticipants();
-      // setParticipants(peerParticipants);
+      room.on(room.event.STREAM_ADDED, () => {
+        setStreams(peer.getAllStreams());
+      });
+
+      room.on(room.event.STREAM_REMOVED, () => {
+        setStreams(peer.getAllStreams());
+      });
+
+      peer.addStream(localMediaStream.id, {
+        origin: 'local',
+        source: 'media',
+        stream: localMediaStream,
+      });
     }
-  }, [peer]);
+  }, [peer, localMediaStream]);
 
   return (
-    <ParticipantContext.Provider
-      value={{
-        participants,
-      }}
-    >
+    <ParticipantContext.Provider value={{ streams }}>
       {children}
     </ParticipantContext.Provider>
   );
