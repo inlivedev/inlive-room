@@ -1,6 +1,6 @@
 import { iceServers } from '../config/webrtc';
 
-const PeerEvent = {
+export const PeerEvent = {
   PARTICIPANT_ADDED: 'participantAdded',
   PARTICIPANT_REMOVED: 'participantRemoved',
 };
@@ -152,7 +152,6 @@ export const peerFactory = ({
   });
 
   return {
-    event: PeerEvent,
     connect: peer.connect,
     getPeerConnection: peer.getPeerConnection,
     addTrack: peer.addTrack,

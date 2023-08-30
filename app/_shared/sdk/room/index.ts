@@ -1,7 +1,7 @@
 import { apiFactory } from './api/api';
 import { channelFactory } from './channel/channel';
 import { eventFactory } from './event/event';
-import { peerFactory } from './peer/peer';
+import { peerFactory, PeerEvent } from './peer/peer';
 import { participantFactory } from './participant/participant';
 
 export const Room = (config: RoomTypes.Config) => {
@@ -38,5 +38,8 @@ export const Room = (config: RoomTypes.Config) => {
     on: event.on,
     leaveRoom: api.leaveRoom,
     terminateRoom: api.terminateRoom,
+    event: {
+      ...PeerEvent,
+    },
   };
 };
