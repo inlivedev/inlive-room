@@ -64,9 +64,9 @@ class Stream {
     this._drafts.set(key, {
       origin: value.origin || draft.origin || undefined,
       source: value.source || draft.source || undefined,
-      stream: value.stream || draft.stream || undefined
+      stream: value.stream || draft.stream || undefined,
     });
-  }
+  };
 
   getDraft = (key: string) => {
     if (key.trim().length === 0) {
