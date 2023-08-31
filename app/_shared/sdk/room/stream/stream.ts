@@ -28,6 +28,10 @@ class Stream {
   getTotalStreams = () => {
     return this._streams.size;
   };
+
+  hasStream = (key: string) => {
+    return this._streams.has(key);
+  };
 }
 
 export const streamFactory = () => {
@@ -39,5 +43,6 @@ export const streamFactory = () => {
     getAllStreams: stream.getAllStreams,
     getStream: stream.getStream,
     getTotalStreams: stream.getTotalStreams,
+    hasStream: stream.hasStream,
   };
 };
