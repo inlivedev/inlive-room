@@ -165,11 +165,15 @@ class Peer {
       }
     });
 
+    const draftStream = this._stream.getDraft(mediaStream.id) || {};
+
     this.addStream(mediaStream.id, {
-      origin: 'remote',
-      source: 'media',
+      origin: draftStream.origin || 'remote',
+      source: draftStream.source || 'media',
       stream: mediaStream,
     });
+
+    this._stream.removeDraft(mediaStream.id);
   };
 }
 
