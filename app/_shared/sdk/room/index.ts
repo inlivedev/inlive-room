@@ -20,6 +20,7 @@ export const Room = (config: RoomTypes.Config) => {
     baseUrl,
     api,
     peer,
+    stream
   });
 
   const { connect: connectToPeer, ...restOfPeer } = peer;
