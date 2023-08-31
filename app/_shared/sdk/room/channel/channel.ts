@@ -7,7 +7,7 @@ class Channel {
   _stream;
   _channel: EventSource | null = null;
 
-  constructor({ baseUrl, api, peer, stream}: RoomChannelType.ChannelProps) {
+  constructor({ baseUrl, api, peer, stream }: RoomChannelType.ChannelProps) {
     this._baseUrl = baseUrl;
     this._api = api;
     this._peer = peer;
@@ -113,13 +113,13 @@ export const channelFactory = ({
   baseUrl,
   api,
   peer,
-  stream
+  stream,
 }: RoomChannelType.ChannelProps) => {
   const channel = new Channel({
     baseUrl,
     api,
     peer,
-    stream
+    stream,
   });
 
   return {
