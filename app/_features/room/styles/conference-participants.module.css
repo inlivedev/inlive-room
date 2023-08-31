@@ -1,0 +1,41 @@
+.participants-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.participants-grid-screen {
+  min-width: 280px;
+  flex: 1 0 0;
+  position: relative;
+}
+
+@media (min-width: 600px) {
+  .participants-grid {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .participants-grid {
+    gap: 1rem;
+  }
+
+  .participants-grid-screen {
+    min-width: 360px;
+
+  }
+
+  .participants-grid-screen:nth-child(1):not(:last-child),
+  .participants-grid-screen:nth-child(1):not(:last-child) ~ .participants-grid-screen {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .participants-grid-screen {
+    min-width: 480px;
+  }
+}
