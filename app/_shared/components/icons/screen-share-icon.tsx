@@ -1,6 +1,6 @@
-import type { SVGElementPropsType } from '@/_shared/types/types.d.ts';
+import type { SVGElementPropsType } from '@/_shared/types/types';
 
-export default function ScreenShare(props: SVGElementPropsType) {
+export default function ScreenShareIcon(props: SVGElementPropsType) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
       <path
