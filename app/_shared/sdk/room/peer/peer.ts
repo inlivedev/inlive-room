@@ -40,6 +40,7 @@ class Peer {
     );
 
     this._peerConnection.addEventListener('icecandidate', this._onIceCandidate);
+    this._peerConnection.addEventListener('track', this._onTrack);
   };
 
   getPeerConnection = () => {
@@ -58,16 +59,6 @@ class Peer {
 
   addStream = (key: string, value: RoomStreamType.Stream) => {
     if (!this._peerConnection) return;
-
-    if (
-      !key ||
-      !value ||
-      typeof value.origin !== 'string' ||
-      typeof value.source !== 'string' ||
-      !(value.stream instanceof MediaStream)
-    ) {
-      throw new Error('Wrong stream format input!');
-    }
 
     const { origin, source, stream } = value;
 
@@ -91,6 +82,14 @@ class Peer {
 
   getStream = (key: string) => {
     return this._stream.getStream(key);
+  };
+
+  getTotalStreams = () => {
+    return this._stream.getTotalStreams();
+  };
+
+  hasStream = (key: string) => {
+    return this._stream.hasStream(key);
   };
 
   _onIceConnectionStateChange = () => {
@@ -125,7 +124,7 @@ class Peer {
 
         const { answer } = negotiateResponse.data;
         const sdpAnswer = new RTCSessionDescription(answer);
-        await this._peerConnection.setRemoteDescription(sdpAnswer);
+        this._peerConnection.setRemoteDescription(sdpAnswer);
       }
     }
   };
@@ -136,8 +135,41 @@ class Peer {
     const { candidate } = event;
 
     if (candidate) {
-      await this._api.sendIceCandidate(this._roomId, this._clientId, candidate);
+      this._api.sendIceCandidate(this._roomId, this._clientId, candidate);
     }
+  };
+
+  _onTrack = async (event: RTCTrackEvent) => {
+    const mediaStream = event.streams.find((stream) => stream.active === true);
+
+    if (!(mediaStream instanceof MediaStream)) return;
+
+    if (this.hasStream(mediaStream.id)) return;
+
+    const track = event.track;
+
+    track.addEventListener('ended', () => {
+      console.log('remote track ended');
+    });
+
+    mediaStream.addEventListener('removetrack', (event) => {
+      const target = event.target;
+
+      if (!(target instanceof MediaStream)) return;
+
+      if (this.hasStream(target.id) && target.getTracks().length === 0) {
+        this.removeStream(target.id);
+        this._event.emit(PeerEvent.STREAM_REMOVED, {
+          stream: target,
+        });
+      }
+    });
+
+    this.addStream(mediaStream.id, {
+      origin: 'remote',
+      source: 'media',
+      stream: mediaStream,
+    });
   };
 }
 
@@ -160,5 +192,7 @@ export const peerFactory = ({
     removeStream: peer.removeStream,
     getAllStreams: peer.getAllStreams,
     getStream: peer.getStream,
+    getTotalStreams: peer.getTotalStreams,
+    hasStream: peer.hasStream,
   };
 };
