@@ -2,7 +2,7 @@ import type { apiFactory } from '../api/api';
 import type { peerFactory } from '../peer/peer';
 
 type ReturnApi = ReturnType<typeof apiFactory>;
-type ReturnPeer = ReturnType<ReturnType<typeof peerFactory>['createPeer']>;
+type ReturnPeer = ReturnType<typeof peerFactory>;
 
 export type ChannelProps = {
   baseUrl: string;
@@ -10,4 +10,15 @@ export type ChannelProps = {
   peer: ReturnPeer;
 };
 
-export as namespace RoomChannelTypes;
+export type TrackSource = {
+  track_id: string;
+  source: string;
+};
+
+export type SubscribingTrack = {
+  client_id: string;
+  stream_id: string;
+  track_id: string;
+};
+
+export as namespace RoomChannelType;
