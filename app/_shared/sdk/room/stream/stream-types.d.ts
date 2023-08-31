@@ -4,4 +4,10 @@ export type Stream = {
   stream: MediaStream;
 };
 
+export type DraftStream = {
+  origin?: Stream['origin'];
+  source?: Stream['source'];
+  stream?: Stream['stream'];
+};
+
 export as namespace RoomStreamType;
