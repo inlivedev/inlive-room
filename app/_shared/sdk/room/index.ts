@@ -23,24 +23,22 @@ export const Room = (config: RoomTypes.Config) => {
     stream,
   });
 
-  const { connect: connectToPeer, ...restOfPeer } = peer;
-  const { connect: connectToChannel } = channel;
-
   return {
     createRoom: api.createRoom,
     createClient: api.registerClient,
     getRoom: api.getRoom,
     createPeer: (roomId: string, clientId: string) => {
-      connectToPeer(roomId, clientId);
-      connectToChannel(roomId, clientId);
+      peer.connect(roomId, clientId);
+      channel.connect(roomId, clientId);
 
-      return restOfPeer;
+      return peer;
     },
     on: event.on,
     leaveRoom: api.leaveRoom,
     terminateRoom: api.terminateRoom,
     event: {
-      ...PeerEvent,
+      STREAM_ADDED: PeerEvent.STREAM_ADDED,
+      STREAM_REMOVED: PeerEvent.STREAM_REMOVED,
     },
   };
 };
