@@ -12,11 +12,10 @@ import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 
 type LayoutProps = {
   roomId: string;
-  clientId: string;
   origin: string;
 };
 
-export default function Layout({ roomId, clientId, origin }: LayoutProps) {
+export default function Layout({ roomId, origin }: LayoutProps) {
   const { active: openConference, setActive: setOpenConference } =
     useToggle(false);
 
