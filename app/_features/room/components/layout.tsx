@@ -1,11 +1,14 @@
 'use client';
+
 import Lobby from '@/_features/room/components/lobby';
 import LobbyHeader from '@/_features/room/components/lobby-header';
 import LobbyInvite from '@/_features/room/components/lobby-invite';
 import LobbyCTA from '@/_features/room/components/lobby-cta';
+import { ParticipantProvider } from '@/_features/room/contexts/participant-context';
 import Conference from '@/_features/room/components/conference';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useLocalDevice } from '@/_features/room/hooks/use-local-device';
+import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 
 type LayoutProps = {
   roomId: string;
@@ -22,16 +25,17 @@ export default function Layout({ roomId, clientId, origin }: LayoutProps) {
   const openConferenceHandler = async () => {
     await getUserMedia({ video: true, audio: true });
     setOpenConference();
+    Mixpanel.track('Join room', {
+      roomId: roomId,
+    });
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
+    <div className="bg-neutral-900 text-neutral-200">
       {openConference && mediaStream ? (
-        <Conference
-          roomId={roomId}
-          clientId={clientId}
-          mediaStream={mediaStream}
-        />
+        <ParticipantProvider localMediaStream={mediaStream}>
+          <Conference />
+        </ParticipantProvider>
       ) : (
         <Lobby>
           <LobbyHeader roomId={roomId} />
