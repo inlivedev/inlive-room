@@ -6,15 +6,28 @@ class Stream {
   }
 
   addStream = (key: string, value: RoomStreamType.Stream) => {
-    if (key.trim().length > 0) {
-      this._streams.set(key, value);
+    if (
+      key.trim().length === 0 ||
+      !value ||
+      typeof value.origin !== 'string' ||
+      typeof value.source !== 'string' ||
+      !(value.stream instanceof MediaStream)
+    ) {
+      throw new Error('Incorrect stream format!');
     }
+
+    this._streams.set(key, value);
+    return this.getStream(key);
   };
 
   removeStream = (key: string) => {
-    if (key.trim().length > 0) {
-      this._streams.delete(key);
+    if (key.trim().length === 0) {
+      throw new Error('Please provide valid string key');
     }
+
+    const stream = this.getStream(key);
+    this._streams.delete(key);
+    return stream;
   };
 
   getAllStreams = () => {
@@ -22,7 +35,11 @@ class Stream {
   };
 
   getStream = (key: string) => {
-    return this._streams.get(key);
+    if (key.trim().length === 0) {
+      throw new Error('Please provide valid string key');
+    }
+
+    return this._streams.get(key) || null;
   };
 
   getTotalStreams = () => {
@@ -30,6 +47,10 @@ class Stream {
   };
 
   hasStream = (key: string) => {
+    if (key.trim().length === 0) {
+      throw new Error('Please provide valid string key');
+    }
+
     return this._streams.has(key);
   };
 }
