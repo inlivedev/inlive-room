@@ -50,25 +50,13 @@ class Peer {
     return this._peerConnection;
   };
 
-  addTrack = (stream: MediaStream) => {
-    if (!this._peerConnection) return;
-
-    if (stream instanceof MediaStream) {
-      for (const track of stream.getTracks()) {
-        this._peerConnection.addTrack(track, stream);
-      }
-    }
-  };
-
   addStream = (key: string, value: RoomStreamType.Stream) => {
     if (!this._peerConnection) return;
 
     const { origin, source, stream } = value;
 
     if (origin === 'local' && source === 'media') {
-      for (const track of stream.getTracks()) {
-        this._peerConnection.addTrack(track, stream);
-      }
+      this.addTrack(stream);
     }
 
     this._stream.addStream(key, value);
@@ -93,6 +81,16 @@ class Peer {
 
   hasStream = (key: string) => {
     return this._stream.hasStream(key);
+  };
+
+  addTrack = (stream: MediaStream) => {
+    if (!this._peerConnection) return;
+
+    if (stream instanceof MediaStream) {
+      for (const track of stream.getTracks()) {
+        this._peerConnection.addTrack(track, stream);
+      }
+    }
   };
 
   _addEventListener = () => {
