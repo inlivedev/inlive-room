@@ -5,8 +5,10 @@ import type { Stream } from '@/_shared/sdk/room/stream/stream-types';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { room } from '@/_shared/utils/sdk';
 
+export type ParticipantStream = Stream;
+
 const defaultValue = {
-  streams: [] as Stream[],
+  streams: [] as ParticipantStream[],
 };
 
 const ParticipantContext = createContext(defaultValue);
@@ -23,7 +25,7 @@ export function ParticipantProvider({
   localMediaStream: MediaStream;
 }) {
   const { peer } = usePeerContext();
-  const [streams, setStreams] = useState<Stream[]>([]);
+  const [streams, setStreams] = useState<ParticipantStream[]>([]);
 
   useEffect(() => {
     if (peer) {
