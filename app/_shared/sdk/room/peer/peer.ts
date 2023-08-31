@@ -29,18 +29,21 @@ class Peer {
       iceServers: iceServers,
     });
 
-    this._peerConnection.addEventListener(
-      'iceconnectionstatechange',
-      this._onIceConnectionStateChange
-    );
+    this._addEventListener();
+  };
 
-    this._peerConnection.addEventListener(
-      'negotiationneeded',
-      this._onNegotiationNeeded
-    );
+  disconnect = () => {
+    if (!this._peerConnection) return;
 
-    this._peerConnection.addEventListener('icecandidate', this._onIceCandidate);
-    this._peerConnection.addEventListener('track', this._onTrack);
+    for (const sender of this._peerConnection.getSenders()) {
+      if (!sender.track) return;
+      sender.track.enabled = false;
+      sender.track.stop();
+    }
+
+    this._removeEventListener();
+    this._peerConnection.close();
+    this._peerConnection = null;
   };
 
   getPeerConnection = () => {
@@ -90,6 +93,45 @@ class Peer {
 
   hasStream = (key: string) => {
     return this._stream.hasStream(key);
+  };
+
+  _addEventListener = () => {
+    if (!this._peerConnection) return;
+
+    this._peerConnection.addEventListener(
+      'iceconnectionstatechange',
+      this._onIceConnectionStateChange
+    );
+
+    this._peerConnection.addEventListener(
+      'negotiationneeded',
+      this._onNegotiationNeeded
+    );
+
+    this._peerConnection.addEventListener('icecandidate', this._onIceCandidate);
+
+    this._peerConnection.addEventListener('track', this._onTrack);
+  };
+
+  _removeEventListener = () => {
+    if (!this._peerConnection) return;
+
+    this._peerConnection.removeEventListener(
+      'iceconnectionstatechange',
+      this._onIceConnectionStateChange
+    );
+
+    this._peerConnection.removeEventListener(
+      'negotiationneeded',
+      this._onNegotiationNeeded
+    );
+
+    this._peerConnection.removeEventListener(
+      'icecandidate',
+      this._onIceCandidate
+    );
+
+    this._peerConnection.removeEventListener('track', this._onTrack);
   };
 
   _onIceConnectionStateChange = () => {
@@ -190,6 +232,7 @@ export const peerFactory = ({
 
   return {
     connect: peer.connect,
+    disconnect: peer.disconnect,
     getPeerConnection: peer.getPeerConnection,
     addTrack: peer.addTrack,
     addStream: peer.addStream,
