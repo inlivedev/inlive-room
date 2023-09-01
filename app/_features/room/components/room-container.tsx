@@ -23,7 +23,11 @@ export default function RoomContainer({
       (async () => {
         const mediaStream = await MediaManager.getUserMedia({
           video: true,
-          audio: true,
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
         });
 
         const room = new Room({

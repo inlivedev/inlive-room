@@ -16,37 +16,88 @@ export default function RoomLayout({
 
   let mediaCount = 0;
 
-  const newStreams = Object.entries(streams).map((data) => {
-    const value = data[1];
-    if (value.source === 'screen') {
-      hasScreen = true;
-    } else {
-      mediaCount++;
-    }
+  let screenCount = 0;
 
-    return {
+  const totalMedias: number = Object.entries(streams).length - 1;
+
+  const screens: Array<StreamStateType> = [];
+  const medias: Array<StreamStateType> = [];
+
+  Object.entries(streams).map((data) => {
+    const value = data[1];
+    const obj = {
       data: value.data,
       type: value.type,
       source: value.source,
     };
+
+    if (value.source === 'screen') {
+      screens.push(obj);
+      hasScreen = true;
+    } else {
+      mediaCount++;
+      medias.push(obj);
+    }
   });
+
+  const isMobile = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768;
+    }
+  };
 
   const layout = (isPresenting: boolean) => {
     if (isPresenting) {
-      return {
-        gridTemplateRows: `repeat(${mediaCount}, 1fr)`,
-      };
+      return isMobile()
+        ? {
+            gridTemplateColumns: `repeat(${totalMedias}, 1fr)`,
+          }
+        : {
+            gridTemplateRows: `repeat(${totalMedias}, 1fr)`,
+          };
     }
   };
 
   const videoLayout = (isPresenting: boolean, source: string) => {
     if (isPresenting) {
       if (source === 'screen') {
+        screenCount++;
+
+        if (screenCount === 1) {
+          return isMobile()
+            ? {
+                gridColumn: `1/span ${totalMedias}`,
+              }
+            : {
+                gridRow: `1/span ${totalMedias}`,
+              };
+        }
         return {
-          gridRow: `1/span ${mediaCount}`,
+          gridRow: `auto/auto`,
+          gridColumn: `2/auto`,
+          minHeight: 0,
+          height: '100%',
         };
       }
     }
+  };
+
+  const renderVideo = (stream: StreamStateType) => {
+    return (
+      <div
+        key={stream.data.id}
+        className={`${
+          hasScreen
+            ? stream.source === 'screen'
+              ? styles['presenting-screen']
+              : styles['presenting-media']
+            : styles['gallery-media']
+        }`}
+        style={videoLayout(hasScreen, stream.source)}
+      >
+        <RoomScreen stream={stream} />
+      </div>
+    );
   };
 
   return (
@@ -57,25 +108,8 @@ export default function RoomLayout({
         } row-start-1 w-full p-4 ${styles['media']}`}
         style={layout(hasScreen)}
       >
-        {newStreams
-          ? newStreams.map((stream) => {
-              return (
-                <div
-                  key={stream.data.id}
-                  className={`${
-                    hasScreen
-                      ? stream.source === 'screen'
-                        ? styles['presenting-screen']
-                        : styles['presenting-media']
-                      : styles['gallery-media']
-                  }`}
-                  style={videoLayout(hasScreen, stream.source)}
-                >
-                  <RoomScreen stream={stream} />
-                </div>
-              );
-            })
-          : null}
+        {screens ? screens.map(renderVideo) : null}
+        {medias ? medias.map(renderVideo) : null}
       </div>
       <RoomActionsBar roomId={roomId} clientId={clientId} room={room} />
     </div>
