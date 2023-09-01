@@ -11,6 +11,7 @@ import MicrophoneOffIcon from '@/_shared/icons/microphone-off';
 import CameraOnIcon from '@/_shared/icons/camera-on';
 import CameraOffIcon from '@/_shared/icons/camera-off';
 import ScreenShareIcon from '@/_shared/icons/screen-share';
+import styles from '@/_features/room/styles/room.module.css';
 
 type RoomActionsBarProps = {
   room: Room | null;
@@ -101,7 +102,7 @@ export default function RoomActionsBar({
   }, [room, activeMic]);
 
   return (
-    <div className="flex justify-center gap-3 p-4">
+    <div className={`${styles['action-bar']} flex justify-center gap-3 p-4`}>
       <div>
         <button
           className={`rounded-full ${

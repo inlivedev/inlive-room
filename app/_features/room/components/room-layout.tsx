@@ -12,8 +12,18 @@ export default function RoomLayout({
 }: RoomLayoutProps) {
   if (!streams) return null;
 
+  let hasScreen = false;
+
+  let mediaCount = 0;
+
   const newStreams = Object.entries(streams).map((data) => {
     const value = data[1];
+    if (value.source === 'screen') {
+      hasScreen = true;
+    } else {
+      mediaCount++;
+    }
+
     return {
       data: value.data,
       type: value.type,
@@ -21,15 +31,45 @@ export default function RoomLayout({
     };
   });
 
+  const layout = (isPresenting: boolean) => {
+    if (isPresenting) {
+      return {
+        gridTemplateRows: `repeat(${mediaCount}, 1fr)`,
+      };
+    }
+  };
+
+  const videoLayout = (isPresenting: boolean, source: string) => {
+    if (isPresenting) {
+      if (source === 'screen') {
+        return {
+          gridRow: `1/span ${mediaCount}`,
+        };
+      }
+    }
+  };
+
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-screen-xl flex-col">
-      <div className={`w-full flex-1 p-4 ${styles['room-grid']}`}>
+    <div className={`${styles['container']} h-screen w-screen`}>
+      <div
+        className={`${
+          styles[hasScreen ? 'presenting' : 'gallery']
+        } row-start-1 w-full p-4 ${styles['media']}`}
+        style={layout(hasScreen)}
+      >
         {newStreams
           ? newStreams.map((stream) => {
               return (
                 <div
                   key={stream.data.id}
-                  className={`${stream.source} ${styles['room-grid-screen']}`}
+                  className={`${
+                    hasScreen
+                      ? stream.source === 'screen'
+                        ? styles['presenting-screen']
+                        : styles['presenting-media']
+                      : styles['gallery-media']
+                  }`}
+                  style={videoLayout(hasScreen, stream.source)}
                 >
                   <RoomScreen stream={stream} />
                 </div>
