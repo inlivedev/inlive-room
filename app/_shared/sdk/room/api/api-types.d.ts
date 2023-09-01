@@ -1,4 +1,11 @@
 import type { Fetcher } from './fetcher';
+import type { Api } from './api';
+
+export type Fetcher = typeof Fetcher;
+export type Api = typeof Api;
+
+export type ReturnFetcher = ReturnType<Fetcher>;
+export type ReturnApi = ReturnType<Api>;
 
 export type TrackSourcesRequestBody = {
   track_id: string;
@@ -40,9 +47,5 @@ export type NegotiateConnectionResponseBody = BaseResponseBody & {
     answer: RTCSessionDescription;
   };
 };
-
-export type Fetcher = typeof Fetcher;
-
-export type ReturnFetcher = ReturnType<typeof Fetcher>;
 
 export as namespace RoomAPIType;

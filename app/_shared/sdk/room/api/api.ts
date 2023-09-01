@@ -1,6 +1,4 @@
-import { Fetcher } from './fetcher';
-
-class Api {
+export class Api {
   _fetcher;
 
   constructor(fetcher: RoomAPIType.ReturnFetcher) {
@@ -244,20 +242,27 @@ class Api {
   };
 }
 
-export const apiFactory = (baseURL = '') => {
-  const fetcher = Fetcher(baseURL);
-  const api = new Api(fetcher);
-
+export const apiFactory = (
+  Api: RoomAPIType.Api,
+  Fetcher: RoomAPIType.Fetcher
+) => {
   return {
-    createRoom: api.createRoom,
-    getRoom: api.getRoom,
-    registerClient: api.registerClient,
-    sendIceCandidate: api.sendIceCandidate,
-    checkNegotiateAllowed: api.checkNegotiateAllowed,
-    negotiateConnection: api.negotiateConnection,
-    setTrackSources: api.setTrackSources,
-    subscribeTracks: api.subscribeTracks,
-    leaveRoom: api.leaveRoom,
-    terminateRoom: api.terminateRoom,
+    create: (baseURL = '') => {
+      const fetcher = Fetcher(baseURL);
+      const api = new Api(fetcher);
+
+      return {
+        createRoom: api.createRoom,
+        getRoom: api.getRoom,
+        registerClient: api.registerClient,
+        sendIceCandidate: api.sendIceCandidate,
+        checkNegotiateAllowed: api.checkNegotiateAllowed,
+        negotiateConnection: api.negotiateConnection,
+        setTrackSources: api.setTrackSources,
+        subscribeTracks: api.subscribeTracks,
+        leaveRoom: api.leaveRoom,
+        terminateRoom: api.terminateRoom,
+      };
+    },
   };
 };
