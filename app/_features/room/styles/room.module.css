@@ -1,60 +1,76 @@
-.room-grid {
-  display: flex;
-  flex-direction: row;
+.container{
+  display: grid;
+  grid-template-rows: repeat(8, 1fr);
+}
+
+.media {
+  min-height: 0;
+  height: 100%;
   gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  grid-row-start:1;
+  grid-row-end: span 7;
+  display: grid;
+  justify-content: center; 
+  align-content: center;    
+  align-items: center;
+  justify-items: center;
 }
 
-.room-grid-screen {
-  min-width: 280px;
-  flex: 1 0 0;
-  position: relative;
+.action-bar {
+  grid-row-start: 8;
+  grid-row-end: span 1;
 }
 
-@media (min-width: 600px) {
-  .room-grid {
-    gap: 1rem;
-  }
+.gallery{
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-@media (min-width: 768px) {
-  .room-grid {
-    gap: 1rem;
-  }
-
-  .room-grid-screen {
-    min-width: 360px;
-
-  }
-
-  .room-grid-screen:nth-child(1):not(:last-child),
-  .room-grid-screen:nth-child(1):not(:last-child) ~ .room-grid-screen {
-    max-width: 576px;
-  }
+.presenting {
+  grid-template-columns: 80% 20%;
 }
 
-@media (min-width: 1024px) {
-  .room-grid-screen {
-    min-width: 480px;
-  }
+.presenting-screen{
+  grid-row: 1/span auto;
+  grid-column: 1/1;
 }
 
-.wrapper-video {
-  width: 100%;
+.presenting-media {
+  min-height: 0;
   height: 100%;
-  position: absolute;
-  display: block;
-  top: 0;
-  left: 0;
+  grid-row:auto/auto;
+  grid-column:auto/auto;
 }
 
-.wrapper-video video {
-  width: 100%;
+.gallery-media video{
   height: 100%;
-  position: absolute;
-  display: block;
-  top: 0;
-  left: 0;
+  aspect-ratio: 4/3;
   object-fit: cover;
+  margin:0 auto;
+}
+
+.presenting-media video {
+  height: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  margin:0 auto;
+}
+
+
+@media only screen and (max-width: 600px) {
+  .gallery{
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-rows: repeat(auto-fit, minmax(90px, 1fr));
+  }
+
+  .gallery-media video{
+    height: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    margin:0 auto;
+  }
+
+  .presenting {
+    grid-template-rows: 80% 20%;
+  }
 }

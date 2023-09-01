@@ -21,7 +21,7 @@ export default function ViewContainer({
     useToggle(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
+    <div className="flex h-screen flex-col bg-neutral-900 text-neutral-200">
       {openConference ? (
         <Conference roomId={roomId} clientId={clientId} />
       ) : (
