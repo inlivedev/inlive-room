@@ -1,5 +1,5 @@
-class Event {
-  _events: RoomEventTypes.Events;
+export class Event {
+  _events: RoomEventTypes.EventItems;
 
   constructor() {
     this._events = {};
@@ -34,11 +34,15 @@ class Event {
   };
 }
 
-export const eventFactory = () => {
-  const { emit, on } = new Event();
-
+export const eventFactory = (Event: RoomEventTypes.Event) => {
   return {
-    emit,
-    on,
+    create: () => {
+      const event = new Event();
+
+      return {
+        emit: event.emit,
+        on: event.on,
+      };
+    },
   };
 };
