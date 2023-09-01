@@ -1,13 +1,13 @@
 export type Stream = {
   origin: 'local' | 'remote';
   source: 'media' | 'screen';
-  stream: MediaStream;
+  mediaStream: MediaStream;
 };
 
 export type DraftStream = {
   origin?: Stream['origin'];
   source?: Stream['source'];
-  stream?: Stream['stream'];
+  mediaStream?: Stream['stream'];
 };
 
 export as namespace RoomStreamType;
