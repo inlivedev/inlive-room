@@ -1,11 +1,14 @@
-import type { Fetcher } from './fetcher';
-import type { Api, apiFactory } from './api';
+import type { Fetcher, factoryFetcher } from './fetcher';
+import type { Api, factoryApi } from './api';
 
 export type Fetcher = typeof Fetcher;
 export type Api = typeof Api;
 
-export type ReturnFetcher = ReturnType<Fetcher>;
-export type ReturnApi = ReturnType<ReturnType<typeof apiFactory>['create']>;
+export type FactoryFetcher = typeof factoryFetcher;
+export type FactoryApi = typeof factoryApi;
+
+export type CreateFetcher = ReturnType<FactoryFetcher>['create'];
+export type CreateApi = ReturnType<FactoryApi>['create'];
 
 export type TrackSourcesRequestBody = {
   track_id: string;

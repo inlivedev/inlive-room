@@ -1,7 +1,7 @@
 export class Api {
   _fetcher;
 
-  constructor(fetcher: RoomAPIType.ReturnFetcher) {
+  constructor(fetcher: ReturnType<RoomAPIType.CreateFetcher>) {
     this._fetcher = fetcher;
   }
 
@@ -242,13 +242,13 @@ export class Api {
   };
 }
 
-export const apiFactory = (
+export const factoryApi = (
   Api: RoomAPIType.Api,
-  Fetcher: RoomAPIType.Fetcher
+  createFetcher: RoomAPIType.CreateFetcher
 ) => {
   return {
-    create: (baseURL = '') => {
-      const fetcher = Fetcher(baseURL);
+    create: (baseUrl: string) => {
+      const fetcher = createFetcher(baseUrl);
       const api = new Api(fetcher);
 
       return {
