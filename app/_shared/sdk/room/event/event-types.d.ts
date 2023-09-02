@@ -1,8 +1,9 @@
-import type { Event, factoryEvent } from './event';
+import type { createEvent } from './event';
 
-export type Event = typeof Event;
-export type FactoryEvent = typeof factoryEvent;
-export type CreateEvent = ReturnType<FactoryEvent>['create'];
+export type CreateEvent = typeof createEvent;
+export type InstanceEvent = ReturnType<
+  ReturnType<CreateEvent>['createInstance']
+>;
 
 export type EventHandlers = Set<(arg0: any) => void>;
 
