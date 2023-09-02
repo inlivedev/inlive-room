@@ -1,12 +1,13 @@
-import type { Event, eventFactory } from './event';
+import type { Event, factoryEvent } from './event';
 
 export type Event = typeof Event;
-export type ReturnEvent = ReturnType<ReturnType<typeof eventFactory>['create']>;
+export type FactoryEvent = typeof factoryEvent;
+export type CreateEvent = ReturnType<FactoryEvent>['create'];
 
-export type EventItem = Set<(arg0: any) => void>;
+export type EventHandlers = Set<(arg0: any) => void>;
 
 export type EventItems = {
-  [key: string]: EventItem;
+  [key: string]: EventHandlers;
 };
 
-export as namespace RoomEventTypes;
+export as namespace RoomEventType;
