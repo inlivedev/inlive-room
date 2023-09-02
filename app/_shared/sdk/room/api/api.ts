@@ -1,8 +1,8 @@
-export const createApi = (fetcher: RoomAPIType.InstanceFetcher) => {
+export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
   const Api = class {
     _fetcher;
 
-    constructor(fetcher: RoomAPIType.InstanceFetcher) {
+    constructor() {
       this._fetcher = fetcher;
     }
 
@@ -247,7 +247,7 @@ export const createApi = (fetcher: RoomAPIType.InstanceFetcher) => {
 
   return {
     createInstance: () => {
-      const api = new Api(fetcher);
+      const api = new Api();
 
       return {
         createRoom: api.createRoom,

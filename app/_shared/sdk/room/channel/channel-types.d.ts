@@ -1,16 +1,15 @@
-import type { apiFactory } from '../api/api';
-import type { peerFactory } from '../peer/peer';
-import type { streamFactory } from '../stream/stream';
+import type { createChannel } from './channel';
 
-type ReturnApi = ReturnType<typeof apiFactory>;
-type ReturnPeer = ReturnType<typeof peerFactory>;
-type ReturnStream = ReturnType<typeof streamFactory>;
+export type CreateChannel = typeof createChannel;
 
-export type ChannelProps = {
-  baseUrl: string;
-  api: ReturnApi;
-  peer: ReturnPeer;
-  stream: ReturnStream;
+export type InstanceChannel = ReturnType<
+  ReturnType<CreateChannel>['createInstance']
+>;
+
+export type ChannelDependencies = {
+  api: RoomAPIType.InstanceApi;
+  peer: RoomPeerType.InstancePeer;
+  streams: RoomStreamType.InstanceStreams;
 };
 
 export type TrackSource = {
