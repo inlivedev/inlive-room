@@ -1,254 +1,252 @@
-export class Api {
-  _fetcher;
+export const createApi = (fetcher: RoomAPIType.InstanceFetcher) => {
+  const Api = class {
+    _fetcher;
 
-  constructor(fetcher: ReturnType<RoomAPIType.CreateFetcher>) {
-    this._fetcher = fetcher;
-  }
-
-  createRoom = async (name = '') => {
-    const response: RoomAPIType.CreateRoomResponseBody =
-      await this._fetcher.post(`/rooms/create`, {
-        body: JSON.stringify({ name: name }),
-      });
-
-    const data = response.data || {};
-
-    const room = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: {
-        roomId: data.id || '',
-      },
-    };
-
-    return room;
-  };
-
-  getRoom = async (roomId = '') => {
-    if (typeof roomId !== 'string' || roomId.trim().length === 0) {
-      throw new Error('Room ID must be a valid string');
+    constructor(fetcher: RoomAPIType.InstanceFetcher) {
+      this._fetcher = fetcher;
     }
 
-    const response: RoomAPIType.GetRoomResponseBody = await this._fetcher.get(
-      `/rooms/${roomId}`
-    );
+    createRoom = async (name = '') => {
+      const response: RoomAPIType.CreateRoomResponseBody =
+        await this._fetcher.post(`/rooms/create`, {
+          body: JSON.stringify({ name: name }),
+        });
 
-    const data = response.data || {};
+      const data = response.data || {};
 
-    const room = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: {
-        roomId: data.id || '',
-        roomName: data.name || '',
-      },
+      const room = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: {
+          roomId: data.id || '',
+        },
+      };
+
+      return room;
     };
 
-    return room;
-  };
-
-  registerClient = async (roomId = '') => {
-    if (typeof roomId !== 'string' || roomId.trim().length === 0) {
-      throw new Error('Room ID must be a valid string');
-    }
-
-    const response: RoomAPIType.RegisterClientResponseBody =
-      await this._fetcher.post(`/rooms/${roomId}/register`);
-
-    const data = response.data || {};
-
-    const client = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: {
-        clientId: data.client_id || '',
-      },
-    };
-
-    return client;
-  };
-
-  sendIceCandidate = async (
-    roomId = '',
-    clientId = '',
-    candidate: RTCIceCandidate | null = null
-  ) => {
-    if (!roomId || !clientId || !candidate) {
-      throw new Error('Room ID, client ID, and RTC ice candidate are required');
-    }
-
-    const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
-      `/rooms/${roomId}/candidate/${clientId}`,
-      {
-        body: JSON.stringify(candidate.toJSON()),
+    getRoom = async (roomId = '') => {
+      if (typeof roomId !== 'string' || roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string');
       }
-    );
 
-    const result = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: null,
-    };
-
-    return result;
-  };
-
-  checkNegotiateAllowed = async (roomId = '', clientId = '') => {
-    if (!roomId || !clientId) {
-      throw new Error('Room ID, and client ID are required');
-    }
-
-    const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
-      `/rooms/${roomId}/isallownegotiate/${clientId}`
-    );
-
-    const result = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: null,
-    };
-
-    return result;
-  };
-
-  negotiateConnection = async (
-    roomId = '',
-    clientId = '',
-    localDescription: RTCSessionDescription | null = null
-  ) => {
-    if (!roomId || !clientId || !localDescription) {
-      throw new Error(
-        'Room ID, client ID, and RTC local description are required'
+      const response: RoomAPIType.GetRoomResponseBody = await this._fetcher.get(
+        `/rooms/${roomId}`
       );
-    }
 
-    const response: RoomAPIType.NegotiateConnectionResponseBody =
-      await this._fetcher.put(`/rooms/${roomId}/negotiate/${clientId}`, {
-        body: JSON.stringify(localDescription.toJSON()),
-      });
+      const data = response.data || {};
 
-    const data = response.data || {};
+      const room = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: {
+          roomId: data.id || '',
+          roomName: data.name || '',
+        },
+      };
 
-    const result = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: {
-        answer: data.answer,
-      },
+      return room;
     };
 
-    return result;
-  };
+    registerClient = async (roomId = '') => {
+      if (typeof roomId !== 'string' || roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string');
+      }
 
-  setTrackSources = async (
-    roomId: string,
-    clientId: string,
-    trackSources: RoomAPIType.TrackSourcesRequestBody[]
-  ) => {
-    if (!roomId || !clientId) {
-      throw new Error('Room ID, and client ID are required');
-    }
+      const response: RoomAPIType.RegisterClientResponseBody =
+        await this._fetcher.post(`/rooms/${roomId}/register`);
 
-    if (!Array.isArray(trackSources)) {
-      throw new Error(
-        'Third parameters must be a valid array of objects with source and track_id properties'
+      const data = response.data || {};
+
+      const client = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: {
+          clientId: data.client_id || '',
+        },
+      };
+
+      return client;
+    };
+
+    sendIceCandidate = async (
+      roomId = '',
+      clientId = '',
+      candidate: RTCIceCandidate | null = null
+    ) => {
+      if (!roomId || !clientId || !candidate) {
+        throw new Error(
+          'Room ID, client ID, and RTC ice candidate are required'
+        );
+      }
+
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
+        `/rooms/${roomId}/candidate/${clientId}`,
+        {
+          body: JSON.stringify(candidate.toJSON()),
+        }
       );
-    }
 
-    const response: RoomAPIType.BaseResponseBody = await this._fetcher.put(
-      `/rooms/${roomId}/settracksources/${clientId}`,
-      {
-        body: JSON.stringify(trackSources),
-      }
-    );
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: null,
+      };
 
-    const result = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: null,
+      return result;
     };
 
-    return result;
-  };
+    checkNegotiateAllowed = async (roomId = '', clientId = '') => {
+      if (!roomId || !clientId) {
+        throw new Error('Room ID, and client ID are required');
+      }
 
-  subscribeTracks = async (
-    roomId: string,
-    clientId: string,
-    subscribeTracks: RoomAPIType.SubscribeTracksRequestBody[]
-  ) => {
-    if (!roomId || !clientId) {
-      throw new Error('Room ID, and client ID are required');
-    }
-
-    if (!Array.isArray(subscribeTracks)) {
-      throw new Error(
-        'Third parameters must be a valid array of objects with client_id, stream_id, and track_id properties'
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
+        `/rooms/${roomId}/isallownegotiate/${clientId}`
       );
-    }
 
-    const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
-      `/rooms/${roomId}/subscribetracks/${clientId}`,
-      {
-        body: JSON.stringify(subscribeTracks),
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: null,
+      };
+
+      return result;
+    };
+
+    negotiateConnection = async (
+      roomId = '',
+      clientId = '',
+      localDescription: RTCSessionDescription | null = null
+    ) => {
+      if (!roomId || !clientId || !localDescription) {
+        throw new Error(
+          'Room ID, client ID, and RTC local description are required'
+        );
       }
-    );
 
-    const result = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: null,
+      const response: RoomAPIType.NegotiateConnectionResponseBody =
+        await this._fetcher.put(`/rooms/${roomId}/negotiate/${clientId}`, {
+          body: JSON.stringify(localDescription.toJSON()),
+        });
+
+      const data = response.data || {};
+
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: {
+          answer: data.answer,
+        },
+      };
+
+      return result;
     };
 
-    return result;
-  };
-
-  leaveRoom = async (roomId = '', clientId = '') => {
-    if (!roomId || !clientId) {
-      throw new Error('Room ID, and client ID are required');
-    }
-
-    const response: RoomAPIType.BaseResponseBody = await this._fetcher.delete(
-      `/rooms/${roomId}/leave/${clientId}`,
-      {
-        keepalive: true,
+    setTrackSources = async (
+      roomId: string,
+      clientId: string,
+      trackSources: RoomAPIType.TrackSourcesRequestBody[]
+    ) => {
+      if (!roomId || !clientId) {
+        throw new Error('Room ID, and client ID are required');
       }
-    );
 
-    const result = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: null,
+      if (!Array.isArray(trackSources)) {
+        throw new Error(
+          'Third parameters must be a valid array of objects with source and track_id properties'
+        );
+      }
+
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.put(
+        `/rooms/${roomId}/settracksources/${clientId}`,
+        {
+          body: JSON.stringify(trackSources),
+        }
+      );
+
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: null,
+      };
+
+      return result;
     };
 
-    return result;
-  };
+    subscribeTracks = async (
+      roomId: string,
+      clientId: string,
+      subscribeTracks: RoomAPIType.SubscribeTracksRequestBody[]
+    ) => {
+      if (!roomId || !clientId) {
+        throw new Error('Room ID, and client ID are required');
+      }
 
-  terminateRoom = async (roomId = '') => {
-    if (typeof roomId !== 'string' || roomId.trim().length === 0) {
-      throw new Error('Room ID must be a valid string');
-    }
+      if (!Array.isArray(subscribeTracks)) {
+        throw new Error(
+          'Third parameters must be a valid array of objects with client_id, stream_id, and track_id properties'
+        );
+      }
 
-    const response: RoomAPIType.BaseResponseBody = await this._fetcher.put(
-      `/rooms/${roomId}/end`
-    );
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
+        `/rooms/${roomId}/subscribetracks/${clientId}`,
+        {
+          body: JSON.stringify(subscribeTracks),
+        }
+      );
 
-    const result = {
-      code: response.code || 500,
-      ok: response.ok || false,
-      data: null,
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: null,
+      };
+
+      return result;
     };
 
-    return result;
-  };
-}
+    leaveRoom = async (roomId = '', clientId = '') => {
+      if (!roomId || !clientId) {
+        throw new Error('Room ID, and client ID are required');
+      }
 
-export const factoryApi = (
-  Api: RoomAPIType.Api,
-  createFetcher: RoomAPIType.CreateFetcher
-) => {
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.delete(
+        `/rooms/${roomId}/leave/${clientId}`,
+        {
+          keepalive: true,
+        }
+      );
+
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: null,
+      };
+
+      return result;
+    };
+
+    terminateRoom = async (roomId = '') => {
+      if (typeof roomId !== 'string' || roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string');
+      }
+
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.put(
+        `/rooms/${roomId}/end`
+      );
+
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: null,
+      };
+
+      return result;
+    };
+  };
+
   return {
-    create: (baseUrl: string) => {
-      const fetcher = createFetcher(baseUrl);
+    createInstance: () => {
       const api = new Api(fetcher);
 
       return {
