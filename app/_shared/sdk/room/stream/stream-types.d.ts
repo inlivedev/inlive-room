@@ -1,13 +1,26 @@
-export type Stream = {
+import { createStream } from './stream';
+import { createStreams } from './streams';
+
+export type CreateStream = typeof createStream;
+export type CreateStreams = typeof createStreams;
+
+export type InstanceStream = ReturnType<
+  ReturnType<CreateStream>['createInstance']
+>;
+export type InstanceStreams = ReturnType<
+  ReturnType<CreateStreams>['createInstance']
+>;
+
+export type StreamParams = {
   origin: 'local' | 'remote';
   source: 'media' | 'screen';
   mediaStream: MediaStream;
 };
 
 export type DraftStream = {
-  origin?: Stream['origin'];
-  source?: Stream['source'];
-  mediaStream?: Stream['stream'];
+  origin?: StreamParams['origin'];
+  source?: StreamParams['source'];
+  mediaStream?: StreamParams['stream'];
 };
 
 export as namespace RoomStreamType;
