@@ -1,5 +1,11 @@
-export const Fetcher = (baseURL: string) => {
-  const resolution = async (response: Response) => {
+export class Fetcher {
+  _baseUrl;
+
+  constructor(baseUrl: string) {
+    this._baseUrl = baseUrl;
+  }
+
+  _resolution = async (response: Response) => {
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return response
@@ -16,56 +22,74 @@ export const Fetcher = (baseURL: string) => {
     }
   };
 
-  const rejection = (error: any) => {
+  _rejection = (error: any) => {
     throw error;
   };
 
-  const fetcher = (endpoint: string, options: RequestInit = {}) => {
+  _fetcher = (endpoint: string, options: RequestInit = {}) => {
     const fetchOptions = typeof options === 'object' ? options : {};
     const headersOptions =
       typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {};
 
-    return fetch(`${baseURL}${endpoint}`, {
+    return fetch(`${this._baseUrl}${endpoint}`, {
       headers: {
         'Content-type': 'application/json; charset=utf-8',
         ...headersOptions,
       },
       ...fetchOptions,
     })
-      .then(resolution)
-      .catch(rejection);
+      .then(this._resolution)
+      .catch(this._rejection);
   };
 
+  get = (endpoint: string, options: RequestInit | undefined = {}) => {
+    return this._fetcher(endpoint, {
+      ...options,
+      method: 'get',
+    });
+  };
+
+  post = (endpoint: string, options: RequestInit | undefined = {}) => {
+    return this._fetcher(endpoint, {
+      ...options,
+      method: 'post',
+    });
+  };
+
+  put = (endpoint: string, options: RequestInit | undefined = {}) => {
+    return this._fetcher(endpoint, {
+      ...options,
+      method: 'put',
+    });
+  };
+
+  patch = (endpoint: string, options: RequestInit | undefined = {}) => {
+    return this._fetcher(endpoint, {
+      ...options,
+      method: 'patch',
+    });
+  };
+
+  delete = (endpoint: string, options: RequestInit | undefined = {}) => {
+    return this._fetcher(endpoint, {
+      ...options,
+      method: 'delete',
+    });
+  };
+}
+
+export const factoryFetcher = (Fetcher: RoomAPIType.Fetcher) => {
   return {
-    get(endpoint: string, options: RequestInit | undefined = {}) {
-      return fetcher(endpoint, {
-        ...options,
-        method: 'get',
-      });
-    },
-    post(endpoint: string, options: RequestInit | undefined = {}) {
-      return fetcher(endpoint, {
-        ...options,
-        method: 'post',
-      });
-    },
-    put(endpoint: string, options: RequestInit | undefined = {}) {
-      return fetcher(endpoint, {
-        ...options,
-        method: 'put',
-      });
-    },
-    patch(endpoint: string, options: RequestInit | undefined = {}) {
-      return fetcher(endpoint, {
-        ...options,
-        method: 'patch',
-      });
-    },
-    delete(endpoint: string, options: RequestInit | undefined = {}) {
-      return fetcher(endpoint, {
-        ...options,
-        method: 'delete',
-      });
+    create: (baseUrl: string) => {
+      const fetcher = new Fetcher(baseUrl);
+
+      return {
+        get: fetcher.get,
+        post: fetcher.post,
+        put: fetcher.put,
+        patch: fetcher.patch,
+        delete: fetcher.delete,
+      };
     },
   };
 };
