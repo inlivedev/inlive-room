@@ -10,7 +10,7 @@ export default function ConferenceParticipants() {
       {streams.map((stream) => {
         return (
           <div
-            key={stream.stream.id}
+            key={stream.mediaStream.id}
             className={`${styles['participants-grid-screen']}`}
           >
             <ConferenceScreen stream={stream} />

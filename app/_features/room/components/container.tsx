@@ -12,7 +12,7 @@ export default function Container({
 }) {
   return (
     <PeerProvider roomId={roomId} clientId={clientId}>
-      <Layout roomId={roomId} clientId={clientId} origin={origin} />
+      <Layout roomId={roomId} origin={origin} />
     </PeerProvider>
   );
 }

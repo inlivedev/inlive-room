@@ -7,15 +7,14 @@ export const useScreenShare = () => {
     try {
       if (!peer) return;
 
-      const stream = await navigator.mediaDevices.getDisplayMedia(
+      const mediaStream = await navigator.mediaDevices.getDisplayMedia(
         mediaConstraints
       );
 
-      peer.addStream(stream.id, {
-        id: stream.id,
+      peer.addStream(mediaStream.id, {
         origin: 'local',
         source: 'screen',
-        stream: stream,
+        mediaStream: mediaStream,
       });
     } catch (error) {
       console.error(error);

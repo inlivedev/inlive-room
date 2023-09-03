@@ -6,7 +6,7 @@ export const useVideoScreen = (stream: ParticipantStream) => {
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.srcObject = stream.stream;
+      videoRef.current.srcObject = stream.mediaStream;
       videoRef.current.playsInline = true;
       videoRef.current.muted = stream.origin === 'local';
       videoRef.current.play();
