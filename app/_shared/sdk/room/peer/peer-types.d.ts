@@ -1,23 +1,30 @@
-import type { apiFactory } from '../api/api';
-import type { channelFactory } from '../channel/channel';
-import type { eventFactory } from '../event/event';
-import type { streamFactory } from '../stream/stream';
+import type { createPeer } from './peer';
 
-type ReturnApi = ReturnType<typeof apiFactory>;
-type ReturnChannel = ReturnType<typeof channelFactory>;
-type ReturnEvent = ReturnType<typeof eventFactory>;
-type ReturnStream = ReturnType<typeof streamFactory>;
-
-export type PeerProps = {
-  api: ReturnApi;
-  event: ReturnEvent;
-  stream: ReturnStream;
+export type CreatePeer = typeof createPeer;
+export type InstancePeer = {
+  connect: (roomId: string, clientId: string) => void;
+  disconnect: () => void;
+  getPeerConnection: () => RTCPeerConnection | null;
+  addTrack: (stream: MediaStream) => void;
+  addStream: (key: string, value: RoomStreamType.StreamParams) => void;
+  removeStream: (key: string) => boolean;
+  getAllStreams: () => RoomStreamType.InstanceStream[];
+  getStream: (key: string) => RoomStreamType.InstanceStream | null;
+  getTotalStreams: () => number;
+  hasStream: (key: string) => boolean;
 };
 
-export type PeerFactoryProps = {
-  api: ReturnApi;
-  event: ReturnEvent;
-  stream: ReturnStream;
+export type PeerDependencies = {
+  api: RoomAPIType.InstanceApi;
+  createStream: RoomStreamType.CreateStream;
+  event: RoomEventType.InstanceEvent;
+  streams: RoomStreamType.InstanceStreams;
+  config: RoomType.Config;
 };
 
-export as namespace RoomPeerTypes;
+export type PeerEvents = {
+  STREAM_ADDED: 'streamAdded';
+  STREAM_REMOVED: 'streamRemoved';
+};
+
+export as namespace RoomPeerType;
