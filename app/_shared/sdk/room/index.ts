@@ -1,11 +1,9 @@
-import { createInstanceFacade } from './facade/facade';
+import { facade } from './facade/facade';
 
-const createRoom = (
-  createInstanceFacade: RoomFacadeType.CreateInstanceFacade
-) => {
+const createRoom = (facade: RoomFacadeType.Facade) => {
   return (config: RoomType.UserConfig) => {
-    return createInstanceFacade(config);
+    return facade.createInstance(config);
   };
 };
 
-export const Room = createRoom(createInstanceFacade);
+export const Room = createRoom(facade);

@@ -1,243 +1,254 @@
-import { iceServers } from '../config/webrtc';
-
-export const PeerEvent = {
+export const PeerEvents: RoomPeerType.PeerEvents = {
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
 };
 
-class Peer {
-  _roomId = '';
-  _clientId = '';
-  _api;
-  _event;
-  _stream;
-  _peerConnection: RTCPeerConnection | null = null;
+export const createPeer = ({
+  api,
+  createStream,
+  event,
+  streams,
+  config,
+}: RoomPeerType.PeerDependencies) => {
+  const Peer = class {
+    _roomId = '';
+    _clientId = '';
+    _api;
+    _event;
+    _streams;
+    _peerConnection: RTCPeerConnection | null = null;
 
-  constructor({ api, event, stream }: RoomPeerTypes.PeerProps) {
-    this._api = api;
-    this._event = event;
-    this._stream = stream;
-  }
-
-  connect = (roomId: string, clientId: string) => {
-    if (this._peerConnection) return;
-
-    this._roomId = roomId;
-    this._clientId = clientId;
-
-    this._peerConnection = new RTCPeerConnection({
-      iceServers: iceServers,
-    });
-
-    this._addEventListener();
-  };
-
-  disconnect = () => {
-    if (!this._peerConnection) return;
-
-    for (const sender of this._peerConnection.getSenders()) {
-      if (!sender.track) return;
-      sender.track.enabled = false;
-      sender.track.stop();
+    constructor() {
+      this._api = api;
+      this._event = event;
+      this._streams = streams;
     }
 
-    this._removeEventListener();
-    this._peerConnection.close();
-    this._peerConnection = null;
-  };
+    connect = (roomId: string, clientId: string) => {
+      if (this._peerConnection) return;
 
-  getPeerConnection = () => {
-    return this._peerConnection;
-  };
+      this._roomId = roomId;
+      this._clientId = clientId;
 
-  addStream = (key: string, value: RoomStreamType.Stream) => {
-    if (!this._peerConnection) return;
+      this._peerConnection = new RTCPeerConnection({
+        iceServers: config.webrtc.iceServers,
+      });
 
-    const { origin, source, stream } = value;
+      this._addEventListener();
+    };
 
-    if (origin === 'local' && source === 'media') {
-      this.addTrack(stream);
-    }
-
-    this._stream.addStream(key, value);
-    this._event.emit(PeerEvent.STREAM_ADDED, { stream: value });
-  };
-
-  removeStream = (key: string) => {
-    return this._stream.removeStream(key);
-  };
-
-  getAllStreams = () => {
-    return this._stream.getAllStreams();
-  };
-
-  getStream = (key: string) => {
-    return this._stream.getStream(key);
-  };
-
-  getTotalStreams = () => {
-    return this._stream.getTotalStreams();
-  };
-
-  hasStream = (key: string) => {
-    return this._stream.hasStream(key);
-  };
-
-  addTrack = (stream: MediaStream) => {
-    if (!this._peerConnection) return;
-
-    if (stream instanceof MediaStream) {
-      for (const track of stream.getTracks()) {
-        this._peerConnection.addTrack(track, stream);
-      }
-    }
-  };
-
-  _addEventListener = () => {
-    if (!this._peerConnection) return;
-
-    this._peerConnection.addEventListener(
-      'iceconnectionstatechange',
-      this._onIceConnectionStateChange
-    );
-
-    this._peerConnection.addEventListener(
-      'negotiationneeded',
-      this._onNegotiationNeeded
-    );
-
-    this._peerConnection.addEventListener('icecandidate', this._onIceCandidate);
-
-    this._peerConnection.addEventListener('track', this._onTrack);
-  };
-
-  _removeEventListener = () => {
-    if (!this._peerConnection) return;
-
-    this._peerConnection.removeEventListener(
-      'iceconnectionstatechange',
-      this._onIceConnectionStateChange
-    );
-
-    this._peerConnection.removeEventListener(
-      'negotiationneeded',
-      this._onNegotiationNeeded
-    );
-
-    this._peerConnection.removeEventListener(
-      'icecandidate',
-      this._onIceCandidate
-    );
-
-    this._peerConnection.removeEventListener('track', this._onTrack);
-  };
-
-  _onIceConnectionStateChange = () => {
-    if (!this._peerConnection) return;
-
-    console.log(
-      'ice connection state changed to',
-      this._peerConnection.iceConnectionState
-    );
-  };
-
-  _onNegotiationNeeded = async () => {
-    if (!this._roomId || !this._clientId) return;
-
-    const allowNegotiateResponse = await this._api.checkNegotiateAllowed(
-      this._roomId,
-      this._clientId
-    );
-
-    if (allowNegotiateResponse.ok) {
+    disconnect = () => {
       if (!this._peerConnection) return;
 
-      const offer = await this._peerConnection.createOffer();
-      await this._peerConnection.setLocalDescription(offer);
-
-      if (this._peerConnection.localDescription) {
-        const negotiateResponse = await this._api.negotiateConnection(
-          this._roomId,
-          this._clientId,
-          this._peerConnection.localDescription
-        );
-
-        const { answer } = negotiateResponse.data;
-        const sdpAnswer = new RTCSessionDescription(answer);
-        this._peerConnection.setRemoteDescription(sdpAnswer);
+      for (const sender of this._peerConnection.getSenders()) {
+        if (!sender.track) return;
+        sender.track.enabled = false;
+        sender.track.stop();
       }
-    }
-  };
 
-  _onIceCandidate = async (event: RTCPeerConnectionIceEvent) => {
-    if (!this._roomId || !this._clientId) return;
+      this._removeEventListener();
+      this._peerConnection.close();
+      this._peerConnection = null;
+    };
 
-    const { candidate } = event;
+    getPeerConnection = () => {
+      return this._peerConnection;
+    };
 
-    if (candidate) {
-      this._api.sendIceCandidate(this._roomId, this._clientId, candidate);
-    }
-  };
+    addStream = (key: string, value: RoomStreamType.StreamParams) => {
+      if (!this._peerConnection) return;
 
-  _onTrack = async (event: RTCTrackEvent) => {
-    const mediaStream = event.streams.find((stream) => stream.active === true);
+      const { origin, source, mediaStream } = value;
 
-    if (!(mediaStream instanceof MediaStream)) return;
+      const stream = createStream(this).createInstance({
+        origin: origin,
+        source: source,
+        mediaStream: mediaStream,
+      });
 
-    if (this.hasStream(mediaStream.id)) return;
-
-    const track = event.track;
-
-    track.addEventListener('ended', () => {
-      console.log('remote track ended');
-    });
-
-    mediaStream.addEventListener('removetrack', (event) => {
-      const target = event.target;
-
-      if (!(target instanceof MediaStream)) return;
-
-      if (this.hasStream(target.id) && target.getTracks().length === 0) {
-        this.removeStream(target.id);
-        this._event.emit(PeerEvent.STREAM_REMOVED, {
-          stream: target,
-        });
+      if (origin === 'local' && source === 'media') {
+        this.addTrack(mediaStream);
       }
-    });
 
-    const draftStream = this._stream.getDraft(mediaStream.id) || {};
+      this._streams.addStream(key, stream);
+      this._event.emit(PeerEvents.STREAM_ADDED, { stream: value });
+    };
 
-    this.addStream(mediaStream.id, {
-      origin: draftStream.origin || 'remote',
-      source: draftStream.source || 'media',
-      stream: mediaStream,
-    });
+    removeStream = (key: string) => {
+      return this._streams.removeStream(key);
+    };
 
-    this._stream.removeDraft(mediaStream.id);
+    getAllStreams = () => {
+      return this._streams.getAllStreams();
+    };
+
+    getStream = (key: string) => {
+      return this._streams.getStream(key);
+    };
+
+    getTotalStreams = () => {
+      return this._streams.getTotalStreams();
+    };
+
+    hasStream = (key: string) => {
+      return this._streams.hasStream(key);
+    };
+
+    addTrack = (stream: MediaStream) => {
+      if (!this._peerConnection) return;
+
+      if (stream instanceof MediaStream) {
+        for (const track of stream.getTracks()) {
+          this._peerConnection.addTrack(track, stream);
+        }
+      }
+    };
+
+    _addEventListener = () => {
+      if (!this._peerConnection) return;
+
+      this._peerConnection.addEventListener(
+        'iceconnectionstatechange',
+        this._onIceConnectionStateChange
+      );
+
+      this._peerConnection.addEventListener(
+        'negotiationneeded',
+        this._onNegotiationNeeded
+      );
+
+      this._peerConnection.addEventListener(
+        'icecandidate',
+        this._onIceCandidate
+      );
+
+      this._peerConnection.addEventListener('track', this._onTrack);
+    };
+
+    _removeEventListener = () => {
+      if (!this._peerConnection) return;
+
+      this._peerConnection.removeEventListener(
+        'iceconnectionstatechange',
+        this._onIceConnectionStateChange
+      );
+
+      this._peerConnection.removeEventListener(
+        'negotiationneeded',
+        this._onNegotiationNeeded
+      );
+
+      this._peerConnection.removeEventListener(
+        'icecandidate',
+        this._onIceCandidate
+      );
+
+      this._peerConnection.removeEventListener('track', this._onTrack);
+    };
+
+    _onIceConnectionStateChange = () => {
+      if (!this._peerConnection) return;
+
+      console.log(
+        'ice connection state changed to',
+        this._peerConnection.iceConnectionState
+      );
+    };
+
+    _onNegotiationNeeded = async () => {
+      if (!this._roomId || !this._clientId) return;
+
+      const allowNegotiateResponse = await this._api.checkNegotiateAllowed(
+        this._roomId,
+        this._clientId
+      );
+
+      if (allowNegotiateResponse.ok) {
+        if (!this._peerConnection) return;
+
+        const offer = await this._peerConnection.createOffer();
+        await this._peerConnection.setLocalDescription(offer);
+
+        if (this._peerConnection.localDescription) {
+          const negotiateResponse = await this._api.negotiateConnection(
+            this._roomId,
+            this._clientId,
+            this._peerConnection.localDescription
+          );
+
+          const { answer } = negotiateResponse.data;
+          const sdpAnswer = new RTCSessionDescription(answer);
+          this._peerConnection.setRemoteDescription(sdpAnswer);
+        }
+      }
+    };
+
+    _onIceCandidate = async (event: RTCPeerConnectionIceEvent) => {
+      if (!this._roomId || !this._clientId) return;
+
+      const { candidate } = event;
+
+      if (candidate) {
+        this._api.sendIceCandidate(this._roomId, this._clientId, candidate);
+      }
+    };
+
+    _onTrack = async (event: RTCTrackEvent) => {
+      const mediaStream = event.streams.find(
+        (stream) => stream.active === true
+      );
+
+      if (!(mediaStream instanceof MediaStream)) return;
+
+      if (this.hasStream(mediaStream.id)) return;
+
+      const track = event.track;
+
+      track.addEventListener('ended', () => {
+        console.log('remote track ended');
+      });
+
+      mediaStream.addEventListener('removetrack', (event) => {
+        const target = event.target;
+
+        if (!(target instanceof MediaStream)) return;
+
+        if (this.hasStream(target.id) && target.getTracks().length === 0) {
+          this.removeStream(target.id);
+          this._event.emit(PeerEvents.STREAM_REMOVED, {
+            stream: target,
+          });
+        }
+      });
+
+      const draftStream = this._streams.getDraft(mediaStream.id) || {};
+
+      this.addStream(mediaStream.id, {
+        origin: draftStream.origin || 'remote',
+        source: draftStream.source || 'media',
+        mediaStream: mediaStream,
+      });
+
+      this._streams.removeDraft(mediaStream.id);
+    };
   };
-}
-
-export const peerFactory = ({
-  api,
-  event,
-  stream,
-}: RoomPeerTypes.PeerFactoryProps) => {
-  const peer = new Peer({
-    api,
-    event,
-    stream,
-  });
 
   return {
-    connect: peer.connect,
-    disconnect: peer.disconnect,
-    getPeerConnection: peer.getPeerConnection,
-    addTrack: peer.addTrack,
-    addStream: peer.addStream,
-    removeStream: peer.removeStream,
-    getAllStreams: peer.getAllStreams,
-    getStream: peer.getStream,
-    getTotalStreams: peer.getTotalStreams,
-    hasStream: peer.hasStream,
+    createInstance: () => {
+      const peer = new Peer();
+
+      return {
+        connect: peer.connect,
+        disconnect: peer.disconnect,
+        getPeerConnection: peer.getPeerConnection,
+        addTrack: peer.addTrack,
+        addStream: peer.addStream,
+        removeStream: peer.removeStream,
+        getAllStreams: peer.getAllStreams,
+        getStream: peer.getStream,
+        getTotalStreams: peer.getTotalStreams,
+        hasStream: peer.hasStream,
+      };
+    },
   };
 };

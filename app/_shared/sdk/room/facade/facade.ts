@@ -22,50 +22,52 @@ export const createFacade = ({
   channel: { createChannel },
   roomEvents,
 }: RoomFacadeType.CreateFacadeDependencies) => {
-  return (userConfig: RoomType.UserConfig) => {
-    merge(config, userConfig);
+  return {
+    createInstance: (userConfig: RoomType.UserConfig) => {
+      merge(config, userConfig);
 
-    const baseUrl = `${config.api.baseUrl}/${config.api.version}`;
-    const fetcher = createFetcher().createInstance(baseUrl);
-    const api = createApi({
-      fetcher,
-    }).createInstance();
-    const event = createEvent().createInstance();
-    const streams = createStreams().createInstance();
-    const peer = createPeer({
-      api,
-      config,
-      createStream,
-      event,
-      streams,
-    }).createInstance();
-    const channel = createChannel({
-      api,
-      peer,
-      streams,
-    }).createInstance(baseUrl);
+      const baseUrl = `${config.api.baseUrl}/${config.api.version}`;
+      const fetcher = createFetcher().createInstance(baseUrl);
+      const api = createApi({
+        fetcher,
+      }).createInstance();
+      const event = createEvent().createInstance();
+      const streams = createStreams().createInstance();
+      const peer = createPeer({
+        api,
+        config,
+        createStream,
+        event,
+        streams,
+      }).createInstance();
+      const channel = createChannel({
+        api,
+        peer,
+        streams,
+      }).createInstance(baseUrl);
 
-    return {
-      createRoom: api.createRoom,
-      createClient: api.registerClient,
-      getRoom: api.getRoom,
-      createPeer: (roomId: string, clientId: string) => {
-        peer.connect(roomId, clientId);
-        channel.connect(roomId, clientId);
+      return {
+        createRoom: api.createRoom,
+        createClient: api.registerClient,
+        getRoom: api.getRoom,
+        createPeer: (roomId: string, clientId: string) => {
+          peer.connect(roomId, clientId);
+          channel.connect(roomId, clientId);
 
-        return peer;
-      },
-      on: event.on,
-      leaveRoom: api.leaveRoom,
-      terminateRoom: api.terminateRoom,
-      event: {
-        ...roomEvents.peer,
-      },
-    };
+          return peer;
+        },
+        on: event.on,
+        leaveRoom: api.leaveRoom,
+        terminateRoom: api.terminateRoom,
+        event: {
+          ...roomEvents.peer,
+        },
+      };
+    },
   };
 };
 
-export const createInstanceFacade = createFacade({
+export const facade = createFacade({
   config,
   api: { createFetcher, createApi },
   event: { createEvent },
