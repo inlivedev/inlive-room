@@ -144,6 +144,11 @@ export const createPeer = ({
       );
 
       this._event.on(
+        PeerEvents._ADD_LOCAL_SCREEN_STREAM,
+        this._onAddLocalScreenStream
+      );
+
+      this._event.on(
         PeerEvents._ADD_REMOTE_MEDIA_STREAM,
         this._onAddRemoteMediaStream
       );
@@ -276,6 +281,38 @@ export const createPeer = ({
       for (const track of stream.mediaStream.getTracks()) {
         this._peerConnection.addTrack(track, stream.mediaStream);
       }
+
+      this._streams.addStream(stream.mediaStream.id, stream);
+      this._event.emit(PeerEvents.STREAM_ADDED, { stream });
+    };
+
+    _onAddLocalScreenStream = (data: RoomStreamType.StreamParams) => {
+      if (!this._peerConnection) return;
+
+      const stream = this._stream.createInstance(data);
+
+      for (const track of stream.mediaStream.getTracks()) {
+        const sender = this._peerConnection.addTrack(track, stream.mediaStream);
+
+        track.addEventListener('ended', () => {
+          if (!this._peerConnection) return;
+
+          this.removeStream(stream.id);
+          if (!sender) return;
+          this._peerConnection.removeTrack(sender);
+        });
+      }
+
+      stream.mediaStream.addEventListener('removetrack', (event) => {
+        const target = event.target;
+
+        if (!(target instanceof MediaStream)) return;
+
+        if (this.hasStream(target.id) && target.getTracks().length === 0) {
+          const stream = this.removeStream(target.id);
+          this._event.emit(PeerEvents.STREAM_REMOVED, { stream });
+        }
+      });
 
       this._streams.addStream(stream.mediaStream.id, stream);
       this._event.emit(PeerEvents.STREAM_ADDED, { stream });
