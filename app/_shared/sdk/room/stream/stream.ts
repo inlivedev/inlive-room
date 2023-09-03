@@ -30,7 +30,8 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         );
       }
 
-      this._replaceTrack(peerConnection, 'video');
+      await this._replaceTrack(peerConnection, 'video');
+      this.videoEnabled = true;
     };
 
     enableAudio = async () => {
@@ -45,7 +46,8 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         );
       }
 
-      this._replaceTrack(peerConnection, 'audio');
+      await this._replaceTrack(peerConnection, 'audio');
+      this.audioEnabled = true;
     };
 
     disableVideo = () => {
@@ -61,6 +63,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       }
 
       this._stopTrack(peerConnection, 'video');
+      this.videoEnabled = false;
     };
 
     disableAudio = () => {
@@ -76,6 +79,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       }
 
       this._stopTrack(peerConnection, 'audio');
+      this.audioEnabled = false;
     };
 
     _replaceTrack = async (
@@ -117,7 +121,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
     createInstance: (data: RoomStreamType.StreamParams) => {
       const stream = new Stream(data);
 
-      return {
+      return Object.freeze({
         id: stream.id,
         origin: stream.origin,
         source: stream.source,
@@ -128,7 +132,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         disableAudio: stream.disableAudio,
         enableVideo: stream.enableVideo,
         enableAudio: stream.enableAudio,
-      };
+      });
     },
   };
 };
