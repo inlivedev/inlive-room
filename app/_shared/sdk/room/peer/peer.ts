@@ -52,7 +52,7 @@ export const createPeer = ({
     };
 
     getPeerConnection = () => {
-      return this._peerConnection;
+      return Object.freeze(this._peerConnection);
     };
 
     addStream = (key: string, value: RoomStreamType.StreamParams) => {
@@ -67,11 +67,13 @@ export const createPeer = ({
       });
 
       if (origin === 'local' && source === 'media') {
-        this.addTrack(mediaStream);
+        for (const track of mediaStream.getTracks()) {
+          this._peerConnection.addTrack(track, mediaStream);
+        }
       }
 
       this._streams.addStream(key, stream);
-      this._event.emit(PeerEvents.STREAM_ADDED, { stream: value });
+      this._event.emit(PeerEvents.STREAM_ADDED, { stream: stream });
     };
 
     removeStream = (key: string) => {
@@ -92,16 +94,6 @@ export const createPeer = ({
 
     hasStream = (key: string) => {
       return this._streams.hasStream(key);
-    };
-
-    addTrack = (stream: MediaStream) => {
-      if (!this._peerConnection) return;
-
-      if (stream instanceof MediaStream) {
-        for (const track of stream.getTracks()) {
-          this._peerConnection.addTrack(track, stream);
-        }
-      }
     };
 
     _addEventListener = () => {
@@ -241,7 +233,6 @@ export const createPeer = ({
         connect: peer.connect,
         disconnect: peer.disconnect,
         getPeerConnection: peer.getPeerConnection,
-        addTrack: peer.addTrack,
         addStream: peer.addStream,
         removeStream: peer.removeStream,
         getAllStreams: peer.getAllStreams,

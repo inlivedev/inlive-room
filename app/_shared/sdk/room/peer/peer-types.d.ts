@@ -5,7 +5,6 @@ export type InstancePeer = {
   connect: (roomId: string, clientId: string) => void;
   disconnect: () => void;
   getPeerConnection: () => RTCPeerConnection | null;
-  addTrack: (stream: MediaStream) => void;
   addStream: (key: string, value: RoomStreamType.StreamParams) => void;
   removeStream: (key: string) => boolean;
   getAllStreams: () => RoomStreamType.InstanceStream[];
