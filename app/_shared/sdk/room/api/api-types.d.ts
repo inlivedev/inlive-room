@@ -9,6 +9,10 @@ export type InstanceFetcher = ReturnType<
 >;
 export type InstanceApi = ReturnType<ReturnType<CreateApi>['createInstance']>;
 
+export type ApiDependencies = {
+  fetcher: RoomAPIType.InstanceFetcher;
+};
+
 export type TrackSourcesRequestBody = {
   track_id: string;
   source: string;
