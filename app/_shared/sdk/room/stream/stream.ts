@@ -26,7 +26,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       }
 
       if (this.origin === 'local' && this.source === 'media') {
-        this._replaceMediaTrack(peerConnection, 'video');
+        await this._replaceMediaTrack(peerConnection, 'video');
       }
 
       if (
@@ -49,7 +49,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       }
 
       if (this.origin === 'local' && this.source === 'media') {
-        this._replaceMediaTrack(peerConnection, 'audio');
+        await this._replaceMediaTrack(peerConnection, 'audio');
       }
 
       if (
@@ -64,7 +64,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       return true;
     };
 
-    disableVideo = () => {
+    disableVideo = async () => {
       const peerConnection = this._peer.getPeerConnection();
 
       if (!peerConnection) {
@@ -81,7 +81,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       return true;
     };
 
-    disableAudio = () => {
+    disableAudio = async () => {
       const peerConnection = this._peer.getPeerConnection();
 
       if (!peerConnection) {
