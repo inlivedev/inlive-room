@@ -22,7 +22,14 @@ export default function Layout({ roomId, origin }: LayoutProps) {
   const { mediaStream, getUserMedia } = useLocalDevice();
 
   const openConferenceHandler = async () => {
-    await getUserMedia({ video: true, audio: true });
+    await getUserMedia({
+      video: true,
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
     setOpenConference();
     Mixpanel.track('Join room', {
       roomId: roomId,
