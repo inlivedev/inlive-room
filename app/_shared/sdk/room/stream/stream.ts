@@ -18,84 +18,24 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       this._peer = peer;
     }
 
-    enableVideo = async () => {
-      const peerConnection = this._peer.getPeerConnection();
-
-      if (!peerConnection) {
-        throw new Error('Cannot proceed. The peer is currently disconnected');
-      }
-
-      if (this.origin === 'local' && this.source === 'media') {
-        await this._replaceMediaTrack(peerConnection, 'video');
-      }
-
-      if (
-        (this.origin === 'local' && this.source === 'screen') ||
-        (this.origin === 'remote' && this.source === 'media') ||
-        (this.origin === 'remote' && this.source === 'screen')
-      ) {
-        this._setTrackEnabled(this.mediaStream, 'video', true);
-      }
-
+    enableVideo = () => {
+      this._setTrackEnabled(this.mediaStream, 'video', true);
       this.videoEnabled = true;
-      return true;
     };
 
-    enableAudio = async () => {
-      const peerConnection = this._peer.getPeerConnection();
-
-      if (!peerConnection) {
-        throw new Error('Cannot proceed. The peer is currently disconnected');
-      }
-
-      if (this.origin === 'local' && this.source === 'media') {
-        await this._replaceMediaTrack(peerConnection, 'audio');
-      }
-
-      if (
-        (this.origin === 'local' && this.source === 'screen') ||
-        (this.origin === 'remote' && this.source === 'media') ||
-        (this.origin === 'remote' && this.source === 'screen')
-      ) {
-        this._setTrackEnabled(this.mediaStream, 'audio', true);
-      }
-
+    enableAudio = () => {
+      this._setTrackEnabled(this.mediaStream, 'audio', true);
       this.audioEnabled = true;
-      return true;
     };
 
-    disableVideo = async () => {
-      const peerConnection = this._peer.getPeerConnection();
-
-      if (!peerConnection) {
-        throw new Error('Cannot proceed. The peer is currently disconnected');
-      }
-
+    disableVideo = () => {
       this._setTrackEnabled(this.mediaStream, 'video', false);
-
-      if (this.origin === 'local' && this.source === 'media') {
-        this._stopTrack(this.mediaStream, 'video');
-      }
-
       this.videoEnabled = false;
-      return true;
     };
 
-    disableAudio = async () => {
-      const peerConnection = this._peer.getPeerConnection();
-
-      if (!peerConnection) {
-        throw new Error('Cannot proceed. The peer is currently disconnected');
-      }
-
+    disableAudio = () => {
       this._setTrackEnabled(this.mediaStream, 'audio', false);
-
-      if (this.origin === 'local' && this.source === 'media') {
-        this._stopTrack(this.mediaStream, 'audio');
-      }
-
       this.audioEnabled = false;
-      return true;
     };
 
     _setTrackEnabled = (
@@ -106,34 +46,6 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       for (const track of mediaStream.getTracks()) {
         if (track.kind === kind) {
           track.enabled = enabled;
-        }
-      }
-    };
-
-    _stopTrack = (mediaStream: MediaStream, kind: 'video' | 'audio') => {
-      for (const track of mediaStream.getTracks()) {
-        if (track.kind === kind) {
-          track.stop();
-        }
-      }
-    };
-
-    _replaceMediaTrack = async (
-      peerConnection: RTCPeerConnection,
-      kind: 'video' | 'audio'
-    ) => {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: kind === 'video',
-        audio: kind === 'audio',
-      });
-
-      for (const track of mediaStream.getTracks()) {
-        for (const sender of peerConnection.getSenders()) {
-          if (!sender.track) return;
-
-          if (sender.track.kind === kind && track.kind === kind) {
-            sender.replaceTrack(track);
-          }
         }
       }
     };
