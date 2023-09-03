@@ -3,6 +3,19 @@ export type Config = {
     baseUrl: string;
     version: string;
   };
+  webrtc: {
+    iceServers: RTCIceServer[];
+  };
 };
 
-export as namespace RoomTypes;
+export type UserConfig = {
+  api?: {
+    baseUrl?: string;
+    version?: string;
+  };
+  webrtc?: {
+    iceServers?: RTCIceServer[];
+  };
+};
+
+export as namespace RoomType;
