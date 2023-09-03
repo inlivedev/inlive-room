@@ -168,7 +168,6 @@ export const createPeer = ({
 
         if (sender.track.kind === kind) {
           sender.track.enabled = enabled;
-          console.log('kind', kind, 'enabled', enabled);
         }
       }
     };
