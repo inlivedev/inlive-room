@@ -96,6 +96,26 @@ export const createPeer = ({
       return this._streams.hasStream(key);
     };
 
+    enableCamera = () => {
+      if (!this._peerConnection) return;
+      this._setTrackEnabled(this._peerConnection, 'video', true);
+    };
+
+    enableMic = () => {
+      if (!this._peerConnection) return;
+      this._setTrackEnabled(this._peerConnection, 'audio', true);
+    };
+
+    disableCamera = () => {
+      if (!this._peerConnection) return;
+      this._setTrackEnabled(this._peerConnection, 'video', false);
+    };
+
+    disableMic = () => {
+      if (!this._peerConnection) return;
+      this._setTrackEnabled(this._peerConnection, 'audio', false);
+    };
+
     _addEventListener = () => {
       if (!this._peerConnection) return;
 
@@ -136,6 +156,21 @@ export const createPeer = ({
       );
 
       this._peerConnection.removeEventListener('track', this._onTrack);
+    };
+
+    _setTrackEnabled = (
+      peerConnection: RTCPeerConnection,
+      kind: 'video' | 'audio',
+      enabled: boolean
+    ) => {
+      for (const sender of peerConnection.getSenders()) {
+        if (!sender.track) return;
+
+        if (sender.track.kind === kind) {
+          sender.track.enabled = enabled;
+          console.log('kind', kind, 'enabled', enabled);
+        }
+      }
     };
 
     _onIceConnectionStateChange = () => {
@@ -239,6 +274,10 @@ export const createPeer = ({
         getStream: peer.getStream,
         getTotalStreams: peer.getTotalStreams,
         hasStream: peer.hasStream,
+        enableCamera: peer.enableCamera,
+        enableMic: peer.enableMic,
+        disableCamera: peer.disableCamera,
+        disableMic: peer.disableMic,
       };
     },
   };
