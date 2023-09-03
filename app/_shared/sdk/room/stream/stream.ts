@@ -34,7 +34,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         (this.origin === 'remote' && this.source === 'media') ||
         (this.origin === 'remote' && this.source === 'screen')
       ) {
-        this._enableTrack(this.mediaStream, 'video');
+        this._setTrackEnabled(this.mediaStream, 'video', true);
       }
 
       this.videoEnabled = true;
@@ -57,7 +57,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         (this.origin === 'remote' && this.source === 'media') ||
         (this.origin === 'remote' && this.source === 'screen')
       ) {
-        this._enableTrack(this.mediaStream, 'audio');
+        this._setTrackEnabled(this.mediaStream, 'audio', true);
       }
 
       this.audioEnabled = true;
@@ -71,7 +71,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
-      this._disableTrack(this.mediaStream, 'video');
+      this._setTrackEnabled(this.mediaStream, 'video', false);
 
       if (this.origin === 'local' && this.source === 'media') {
         this._stopTrack(this.mediaStream, 'video');
@@ -88,7 +88,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
-      this._disableTrack(this.mediaStream, 'audio');
+      this._setTrackEnabled(this.mediaStream, 'audio', false);
 
       if (this.origin === 'local' && this.source === 'media') {
         this._stopTrack(this.mediaStream, 'audio');
@@ -98,18 +98,14 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       return true;
     };
 
-    _disableTrack = (mediaStream: MediaStream, kind: 'video' | 'audio') => {
+    _setTrackEnabled = (
+      mediaStream: MediaStream,
+      kind: 'video' | 'audio',
+      enabled: boolean
+    ) => {
       for (const track of mediaStream.getTracks()) {
         if (track.kind === kind) {
-          track.enabled = false;
-        }
-      }
-    };
-
-    _enableTrack = (mediaStream: MediaStream, kind: 'video' | 'audio') => {
-      for (const track of mediaStream.getTracks()) {
-        if (track.kind === kind) {
-          track.enabled = true;
+          track.enabled = enabled;
         }
       }
     };
