@@ -1,11 +1,11 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { Stream } from '@/_shared/sdk/room/stream/stream-types';
+import type { InstanceStream } from '@/_shared/sdk/room/stream/stream-types';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { room } from '@/_shared/utils/sdk';
 
-export type ParticipantStream = Stream;
+export type ParticipantStream = InstanceStream;
 
 const defaultValue = {
   streams: [] as ParticipantStream[],
@@ -40,7 +40,7 @@ export function ParticipantProvider({
       peer.addStream(localMediaStream.id, {
         origin: 'local',
         source: 'media',
-        stream: localMediaStream,
+        mediaStream: localMediaStream,
       });
     }
   }, [peer, localMediaStream]);
