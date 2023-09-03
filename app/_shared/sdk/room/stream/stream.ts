@@ -29,15 +29,11 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         this._replaceMediaTrack(peerConnection, 'video');
       }
 
-      if (this.origin === 'local' && this.source === 'screen') {
-        this._enableTrack(this.mediaStream, 'video');
-      }
-
-      if (this.origin === 'remote' && this.source === 'media') {
-        this._enableTrack(this.mediaStream, 'video');
-      }
-
-      if (this.origin === 'remote' && this.source === 'screen') {
+      if (
+        (this.origin === 'local' && this.source === 'screen') ||
+        (this.origin === 'remote' && this.source === 'media') ||
+        (this.origin === 'remote' && this.source === 'screen')
+      ) {
         this._enableTrack(this.mediaStream, 'video');
       }
 
@@ -56,15 +52,11 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         this._replaceMediaTrack(peerConnection, 'audio');
       }
 
-      if (this.origin === 'local' && this.source === 'screen') {
-        this._enableTrack(this.mediaStream, 'audio');
-      }
-
-      if (this.origin === 'remote' && this.source === 'media') {
-        this._enableTrack(this.mediaStream, 'audio');
-      }
-
-      if (this.origin === 'remote' && this.source === 'screen') {
+      if (
+        (this.origin === 'local' && this.source === 'screen') ||
+        (this.origin === 'remote' && this.source === 'media') ||
+        (this.origin === 'remote' && this.source === 'screen')
+      ) {
         this._enableTrack(this.mediaStream, 'audio');
       }
 
@@ -79,21 +71,10 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
+      this._disableTrack(this.mediaStream, 'video');
+
       if (this.origin === 'local' && this.source === 'media') {
-        this._disableTrack(this.mediaStream, 'video');
         this._stopTrack(this.mediaStream, 'video');
-      }
-
-      if (this.origin === 'local' && this.source === 'screen') {
-        this._disableTrack(this.mediaStream, 'video');
-      }
-
-      if (this.origin === 'remote' && this.source === 'media') {
-        this._disableTrack(this.mediaStream, 'video');
-      }
-
-      if (this.origin === 'remote' && this.source === 'screen') {
-        this._disableTrack(this.mediaStream, 'video');
       }
 
       this.videoEnabled = false;
@@ -107,21 +88,10 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
+      this._disableTrack(this.mediaStream, 'audio');
+
       if (this.origin === 'local' && this.source === 'media') {
-        this._disableTrack(this.mediaStream, 'audio');
         this._stopTrack(this.mediaStream, 'audio');
-      }
-
-      if (this.origin === 'local' && this.source === 'screen') {
-        this._disableTrack(this.mediaStream, 'audio');
-      }
-
-      if (this.origin === 'remote' && this.source === 'media') {
-        this._disableTrack(this.mediaStream, 'audio');
-      }
-
-      if (this.origin === 'remote' && this.source === 'screen') {
-        this._disableTrack(this.mediaStream, 'audio');
       }
 
       this.audioEnabled = false;
