@@ -18,6 +18,36 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       this._peer = peer;
     }
 
+    enableVideo = async () => {
+      const peerConnection = this._peer.getPeerConnection();
+      if (!peerConnection) {
+        throw new Error('Cannot proceed. The peer is currently disconnected');
+      }
+
+      if (this.origin !== 'local') {
+        throw new Error(
+          'Cannot proceed. This method only works on local origin stream'
+        );
+      }
+
+      this._replaceTrack(peerConnection, 'video');
+    };
+
+    enableAudio = async () => {
+      const peerConnection = this._peer.getPeerConnection();
+      if (!peerConnection) {
+        throw new Error('Cannot proceed. The peer is currently disconnected');
+      }
+
+      if (this.origin !== 'local') {
+        throw new Error(
+          'Cannot proceed. This method only works on local origin stream'
+        );
+      }
+
+      this._replaceTrack(peerConnection, 'audio');
+    };
+
     disableVideo = () => {
       const peerConnection = this._peer.getPeerConnection();
       if (!peerConnection) {
@@ -48,7 +78,30 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
       this._stopTrack(peerConnection, 'audio');
     };
 
-    _stopTrack(peerConnection: RTCPeerConnection, kind: 'video' | 'audio') {
+    _replaceTrack = async (
+      peerConnection: RTCPeerConnection,
+      kind: 'video' | 'audio'
+    ) => {
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        video: kind === 'video',
+        audio: kind === 'audio',
+      });
+
+      for (const track of localStream.getTracks()) {
+        for (const sender of peerConnection.getSenders()) {
+          if (!sender.track) return;
+
+          if (sender.track.kind === kind && track.kind === kind) {
+            sender.replaceTrack(track);
+          }
+        }
+      }
+    };
+
+    _stopTrack = (
+      peerConnection: RTCPeerConnection,
+      kind: 'video' | 'audio'
+    ) => {
       for (const sender of peerConnection.getSenders()) {
         if (!sender.track) return;
 
@@ -57,7 +110,7 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
           sender.track.stop();
         }
       }
-    }
+    };
   };
 
   return {
@@ -73,6 +126,8 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
         videoEnabled: stream.videoEnabled,
         disableVideo: stream.disableVideo,
         disableAudio: stream.disableAudio,
+        enableVideo: stream.enableVideo,
+        enableAudio: stream.enableAudio,
       };
     },
   };
