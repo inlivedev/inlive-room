@@ -22,7 +22,9 @@ export const createStreams = () => {
         throw new Error('Please provide valid string key');
       }
 
-      return this._streams.delete(key);
+      const stream = this._streams.get(key) || null;
+      this._streams.delete(key);
+      return stream;
     };
 
     getAllStreams = () => {
