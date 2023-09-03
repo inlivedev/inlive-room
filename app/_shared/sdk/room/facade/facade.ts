@@ -60,7 +60,8 @@ export const createFacade = ({
         leaveRoom: api.leaveRoom,
         terminateRoom: api.terminateRoom,
         event: {
-          ...roomEvents.peer,
+          STREAM_ADDED: roomEvents.peer.STREAM_ADDED,
+          STREAM_REMOVED: roomEvents.peer.STREAM_REMOVED,
         },
       };
     },
