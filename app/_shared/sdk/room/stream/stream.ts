@@ -20,98 +20,154 @@ export const createStream = (peer: RoomPeerType.InstancePeer) => {
 
     enableVideo = async () => {
       const peerConnection = this._peer.getPeerConnection();
+
       if (!peerConnection) {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
-      if (this.origin !== 'local') {
-        throw new Error(
-          'Cannot proceed. This method only works on local origin stream'
-        );
+      if (this.origin === 'local' && this.source === 'media') {
+        this._replaceMediaTrack(peerConnection, 'video');
       }
 
-      await this._replaceTrack(peerConnection, 'video');
+      if (this.origin === 'local' && this.source === 'screen') {
+        this._enableTrack(this.mediaStream, 'video');
+      }
+
+      if (this.origin === 'remote' && this.source === 'media') {
+        this._enableTrack(this.mediaStream, 'video');
+      }
+
+      if (this.origin === 'remote' && this.source === 'screen') {
+        this._enableTrack(this.mediaStream, 'video');
+      }
+
       this.videoEnabled = true;
+      return true;
     };
 
     enableAudio = async () => {
       const peerConnection = this._peer.getPeerConnection();
+
       if (!peerConnection) {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
-      if (this.origin !== 'local') {
-        throw new Error(
-          'Cannot proceed. This method only works on local origin stream'
-        );
+      if (this.origin === 'local' && this.source === 'media') {
+        this._replaceMediaTrack(peerConnection, 'audio');
       }
 
-      await this._replaceTrack(peerConnection, 'audio');
+      if (this.origin === 'local' && this.source === 'screen') {
+        this._enableTrack(this.mediaStream, 'audio');
+      }
+
+      if (this.origin === 'remote' && this.source === 'media') {
+        this._enableTrack(this.mediaStream, 'audio');
+      }
+
+      if (this.origin === 'remote' && this.source === 'screen') {
+        this._enableTrack(this.mediaStream, 'audio');
+      }
+
       this.audioEnabled = true;
+      return true;
     };
 
     disableVideo = () => {
       const peerConnection = this._peer.getPeerConnection();
+
       if (!peerConnection) {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
-      if (this.origin !== 'local') {
-        throw new Error(
-          'Cannot proceed. This method only works on local origin stream'
-        );
+      if (this.origin === 'local' && this.source === 'media') {
+        this._disableTrack(this.mediaStream, 'video');
+        this._stopTrack(this.mediaStream, 'video');
       }
 
-      this._stopTrack(peerConnection, 'video');
+      if (this.origin === 'local' && this.source === 'screen') {
+        this._disableTrack(this.mediaStream, 'video');
+      }
+
+      if (this.origin === 'remote' && this.source === 'media') {
+        this._disableTrack(this.mediaStream, 'video');
+      }
+
+      if (this.origin === 'remote' && this.source === 'screen') {
+        this._disableTrack(this.mediaStream, 'video');
+      }
+
       this.videoEnabled = false;
+      return true;
     };
 
     disableAudio = () => {
       const peerConnection = this._peer.getPeerConnection();
+
       if (!peerConnection) {
         throw new Error('Cannot proceed. The peer is currently disconnected');
       }
 
-      if (this.origin !== 'local') {
-        throw new Error(
-          'Cannot proceed. This method only works on local origin stream'
-        );
+      if (this.origin === 'local' && this.source === 'media') {
+        this._disableTrack(this.mediaStream, 'audio');
+        this._stopTrack(this.mediaStream, 'audio');
       }
 
-      this._stopTrack(peerConnection, 'audio');
+      if (this.origin === 'local' && this.source === 'screen') {
+        this._disableTrack(this.mediaStream, 'audio');
+      }
+
+      if (this.origin === 'remote' && this.source === 'media') {
+        this._disableTrack(this.mediaStream, 'audio');
+      }
+
+      if (this.origin === 'remote' && this.source === 'screen') {
+        this._disableTrack(this.mediaStream, 'audio');
+      }
+
       this.audioEnabled = false;
+      return true;
     };
 
-    _replaceTrack = async (
+    _disableTrack = (mediaStream: MediaStream, kind: 'video' | 'audio') => {
+      for (const track of mediaStream.getTracks()) {
+        if (track.kind === kind) {
+          track.enabled = false;
+        }
+      }
+    };
+
+    _enableTrack = (mediaStream: MediaStream, kind: 'video' | 'audio') => {
+      for (const track of mediaStream.getTracks()) {
+        if (track.kind === kind) {
+          track.enabled = true;
+        }
+      }
+    };
+
+    _stopTrack = (mediaStream: MediaStream, kind: 'video' | 'audio') => {
+      for (const track of mediaStream.getTracks()) {
+        if (track.kind === kind) {
+          track.stop();
+        }
+      }
+    };
+
+    _replaceMediaTrack = async (
       peerConnection: RTCPeerConnection,
       kind: 'video' | 'audio'
     ) => {
-      const localStream = await navigator.mediaDevices.getUserMedia({
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: kind === 'video',
         audio: kind === 'audio',
       });
 
-      for (const track of localStream.getTracks()) {
+      for (const track of mediaStream.getTracks()) {
         for (const sender of peerConnection.getSenders()) {
           if (!sender.track) return;
 
           if (sender.track.kind === kind && track.kind === kind) {
             sender.replaceTrack(track);
           }
-        }
-      }
-    };
-
-    _stopTrack = (
-      peerConnection: RTCPeerConnection,
-      kind: 'video' | 'audio'
-    ) => {
-      for (const sender of peerConnection.getSenders()) {
-        if (!sender.track) return;
-
-        if (sender.track.kind === kind) {
-          sender.track.enabled = false;
-          sender.track.stop();
         }
       }
     };
