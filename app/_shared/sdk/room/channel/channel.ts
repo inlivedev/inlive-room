@@ -36,6 +36,10 @@ export const createChannel = ({
         'tracks_available',
         this._onTracksAvailable
       );
+      this._channel.addEventListener(
+        'allowed_renegotation',
+        this._onAllowedRenegotiation
+      );
     };
 
     _onCandidate = async (event: MessageEvent<any>) => {
@@ -118,6 +122,10 @@ export const createChannel = ({
         this._clientId,
         subscribingTracks
       );
+    };
+
+    _onAllowedRenegotiation = () => {
+      // TODO: Handle allowed_renegotation event
     };
   };
 
