@@ -12,10 +12,13 @@ export type InstanceStreams = ReturnType<
 >;
 
 export type StreamParams = {
+  id: string;
   origin: 'local' | 'remote';
   source: 'media' | 'screen';
   mediaStream: MediaStream;
 };
+
+export type AddStreamParams = Omit<StreamParams, 'id'>;
 
 export type DraftStream = {
   origin?: StreamParams['origin'];

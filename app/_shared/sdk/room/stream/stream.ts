@@ -5,8 +5,13 @@ export const createStream = () => {
     source;
     mediaStream;
 
-    constructor({ origin, source, mediaStream }: RoomStreamType.StreamParams) {
-      this.id = mediaStream.id;
+    constructor({
+      id,
+      origin,
+      source,
+      mediaStream,
+    }: RoomStreamType.StreamParams) {
+      this.id = id;
       this.origin = origin;
       this.source = source;
       this.mediaStream = mediaStream;
