@@ -62,24 +62,31 @@ export const createPeer = ({
     };
 
     addStream = (key: string, data: RoomStreamType.StreamParams) => {
-      if (data.origin === 'local' && data.source === 'media') {
-        this._event.emit(PeerEvents._ADD_LOCAL_MEDIA_STREAM, data);
-        return;
+      const stream = this._stream.createInstance(data);
+
+      if (stream.origin === 'local' && stream.source === 'media') {
+        this._event.emit(PeerEvents._ADD_LOCAL_MEDIA_STREAM, stream);
       }
 
-      if (data.origin === 'local' && data.source === 'screen') {
-        this._event.emit(PeerEvents._ADD_LOCAL_SCREEN_STREAM, data);
-        return;
+      if (stream.origin === 'local' && stream.source === 'screen') {
+        this._event.emit(PeerEvents._ADD_LOCAL_SCREEN_STREAM, stream);
       }
 
-      if (data.origin === 'remote' && data.source === 'media') {
-        this._event.emit(PeerEvents._ADD_REMOTE_MEDIA_STREAM, data);
-        return;
+      if (stream.origin === 'remote' && stream.source === 'media') {
+        this._event.emit(PeerEvents._ADD_REMOTE_MEDIA_STREAM, stream);
       }
+
+      if (stream.origin === 'remote' && stream.source === 'screen') {
+        this._event.emit(PeerEvents._ADD_REMOTE_SCREEN_STREAM, stream);
+      }
+
+      this._event.emit(PeerEvents.STREAM_ADDED, { stream });
     };
 
     removeStream = (key: string) => {
-      return this._streams.removeStream(key);
+      const removedStream = this._streams.removeStream(key);
+      this._event.emit(PeerEvents.STREAM_REMOVED, { stream: removedStream });
+      return removedStream;
     };
 
     getAllStreams = () => {
@@ -151,6 +158,11 @@ export const createPeer = ({
       this._event.on(
         PeerEvents._ADD_REMOTE_MEDIA_STREAM,
         this._onAddRemoteMediaStream
+      );
+
+      this._event.on(
+        PeerEvents._ADD_REMOTE_SCREEN_STREAM,
+        this._onAddRemoteScreenStream
       );
     };
 
@@ -257,8 +269,7 @@ export const createPeer = ({
         if (!(target instanceof MediaStream)) return;
 
         if (this.hasStream(target.id) && target.getTracks().length === 0) {
-          const stream = this.removeStream(target.id);
-          this._event.emit(PeerEvents.STREAM_REMOVED, { stream });
+          this.removeStream(target.id);
         }
       });
 
@@ -273,23 +284,18 @@ export const createPeer = ({
       this._streams.removeDraft(mediaStream.id);
     };
 
-    _onAddLocalMediaStream = (data: RoomStreamType.StreamParams) => {
+    _onAddLocalMediaStream = (stream: RoomStreamType.InstanceStream) => {
       if (!this._peerConnection) return;
-
-      const stream = this._stream.createInstance(data);
 
       for (const track of stream.mediaStream.getTracks()) {
         this._peerConnection.addTrack(track, stream.mediaStream);
       }
 
       this._streams.addStream(stream.mediaStream.id, stream);
-      this._event.emit(PeerEvents.STREAM_ADDED, { stream });
     };
 
-    _onAddLocalScreenStream = (data: RoomStreamType.StreamParams) => {
+    _onAddLocalScreenStream = (stream: RoomStreamType.InstanceStream) => {
       if (!this._peerConnection) return;
-
-      const stream = this._stream.createInstance(data);
 
       for (const track of stream.mediaStream.getTracks()) {
         const sender = this._peerConnection.addTrack(track, stream.mediaStream);
@@ -309,20 +315,19 @@ export const createPeer = ({
         if (!(target instanceof MediaStream)) return;
 
         if (this.hasStream(target.id) && target.getTracks().length === 0) {
-          const stream = this.removeStream(target.id);
-          this._event.emit(PeerEvents.STREAM_REMOVED, { stream });
+          this.removeStream(target.id);
         }
       });
 
       this._streams.addStream(stream.mediaStream.id, stream);
-      this._event.emit(PeerEvents.STREAM_ADDED, { stream });
     };
 
-    _onAddRemoteMediaStream = (data: RoomStreamType.StreamParams) => {
-      const stream = this._stream.createInstance(data);
-
+    _onAddRemoteMediaStream = (stream: RoomStreamType.InstanceStream) => {
       this._streams.addStream(stream.mediaStream.id, stream);
-      this._event.emit(PeerEvents.STREAM_ADDED, { stream });
+    };
+
+    _onAddRemoteScreenStream = (stream: RoomStreamType.InstanceStream) => {
+      this._streams.addStream(stream.mediaStream.id, stream);
     };
   };
 
