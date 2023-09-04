@@ -9,7 +9,7 @@ export const createStreams = () => {
     }
 
     addStream = (key: string, stream: RoomStreamType.InstanceStream) => {
-      this._streams.set('key', stream);
+      this._streams.set(key, stream);
       return this._streams.get(key);
     };
 
