@@ -9,19 +9,11 @@ export const createStreams = () => {
     }
 
     addStream = (key: string, stream: RoomStreamType.InstanceStream) => {
-      if (key.trim().length === 0) {
-        throw new Error('Please provide valid string key');
-      }
-
-      this._streams.set(key, stream);
+      this._streams.set('key', stream);
       return this._streams.get(key);
     };
 
     removeStream = (key: string) => {
-      if (key.trim().length === 0) {
-        throw new Error('Please provide valid string key');
-      }
-
       const stream = this._streams.get(key) || null;
       this._streams.delete(key);
       return stream;
@@ -32,10 +24,6 @@ export const createStreams = () => {
     };
 
     getStream = (key: string) => {
-      if (key.trim().length === 0) {
-        throw new Error('Please provide valid string key');
-      }
-
       return this._streams.get(key) || null;
     };
 
@@ -44,17 +32,11 @@ export const createStreams = () => {
     };
 
     hasStream = (key: string) => {
-      if (key.trim().length === 0) {
-        throw new Error('Please provide valid string key');
-      }
-
       return this._streams.has(key);
     };
 
     addDraft = (key: string, value: RoomStreamType.DraftStream = {}) => {
-      if (key.trim().length === 0) {
-        throw new Error('Please provide valid string key');
-      }
+      this.validateKey(key);
 
       const draft = this._drafts.get(key) || {};
 
@@ -66,19 +48,36 @@ export const createStreams = () => {
     };
 
     getDraft = (key: string) => {
-      if (key.trim().length === 0) {
-        throw new Error('Please provide valid string key');
-      }
-
+      this.validateKey(key);
       return this._drafts.get(key) || null;
     };
 
     removeDraft = (key: string) => {
+      this.validateKey(key);
+      return this._drafts.delete(key);
+    };
+
+    validateKey = (key: string) => {
       if (key.trim().length === 0) {
         throw new Error('Please provide valid string key');
       }
 
-      return this._drafts.delete(key);
+      return true;
+    };
+
+    validateStream = (data: RoomStreamType.AddStreamParams) => {
+      if (
+        !data ||
+        !(data.mediaStream instanceof MediaStream) ||
+        typeof data.origin !== 'string' ||
+        typeof data.source !== 'string'
+      ) {
+        throw new Error(
+          'Please provide valid stream origin, source, and MediaStream data'
+        );
+      }
+
+      return true;
     };
   };
 
@@ -96,6 +95,8 @@ export const createStreams = () => {
         addDraft: streams.addDraft,
         getDraft: streams.getDraft,
         removeDraft: streams.removeDraft,
+        validateKey: streams.validateKey,
+        validateStream: streams.validateStream,
       };
     },
   };
