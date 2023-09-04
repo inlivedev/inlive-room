@@ -224,23 +224,33 @@ export const createPeer = ({
         this._clientId
       );
 
-      if (allowNegotiateResponse.ok) {
-        if (!this._peerConnection) return;
+      if (!allowNegotiateResponse.ok || !this._peerConnection) return;
 
+      try {
         const offer = await this._peerConnection.createOffer();
         await this._peerConnection.setLocalDescription(offer);
 
-        if (this._peerConnection.localDescription) {
-          const negotiateResponse = await this._api.negotiateConnection(
-            this._roomId,
-            this._clientId,
-            this._peerConnection.localDescription
+        if (!this._peerConnection.localDescription) {
+          throw new Error(
+            'Failed to set the local description on negotiationneeded'
           );
-
-          const { answer } = negotiateResponse.data;
-          const sdpAnswer = new RTCSessionDescription(answer);
-          this._peerConnection.setRemoteDescription(sdpAnswer);
         }
+
+        const negotiateResponse = await this._api.negotiateConnection(
+          this._roomId,
+          this._clientId,
+          this._peerConnection.localDescription
+        );
+
+        if (!negotiateResponse.ok || !negotiateResponse.data) {
+          throw new Error('Failed to get a negotiate response');
+        }
+
+        const { answer } = negotiateResponse.data;
+        const sdpAnswer = new RTCSessionDescription(answer);
+        await this._peerConnection.setRemoteDescription(sdpAnswer);
+      } catch (error) {
+        console.error(error);
       }
     };
 
