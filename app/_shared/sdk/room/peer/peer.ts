@@ -27,7 +27,7 @@ export const createPeer = ({
       this._api = api;
       this._event = event;
       this._streams = streams;
-      this._stream = createStream(this);
+      this._stream = createStream();
     }
 
     connect = (roomId: string, clientId: string) => {
@@ -253,11 +253,11 @@ export const createPeer = ({
         (stream) => stream.active === true
       );
 
+      const track = event.track;
+
       if (!(mediaStream instanceof MediaStream)) return;
 
       if (this.hasStream(mediaStream.id)) return;
-
-      const track = event.track;
 
       track.addEventListener('ended', () => {
         console.log('remote track ended');
