@@ -183,10 +183,25 @@ export const createPeer = ({
       kind: 'video' | 'audio',
       enabled: boolean
     ) => {
+      const stream = this._streams.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media';
+      });
+
+      if (!stream) return;
+
+      const mediaTrack = stream.mediaStream.getTracks().find((track) => {
+        return track.kind === kind;
+      });
+
+      if (!mediaTrack) return;
+
       for (const sender of peerConnection.getSenders()) {
         if (!sender.track) return;
 
-        if (sender.track.kind === kind) {
+        if (
+          sender.track.kind === mediaTrack.kind &&
+          sender.track.id === mediaTrack.id
+        ) {
           sender.track.enabled = enabled;
         }
       }
