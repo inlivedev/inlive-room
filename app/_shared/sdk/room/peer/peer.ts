@@ -2,9 +2,7 @@ export const PeerEvents: RoomPeerType.PeerEvents = {
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
   _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream',
-  _ADD_REMOTE_MEDIA_STREAM: 'addRemoteMediaStream',
   _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream',
-  _ADD_REMOTE_SCREEN_STREAM: 'addRemoteScreenStream',
 };
 
 export const createPeer = ({
@@ -61,8 +59,16 @@ export const createPeer = ({
       return Object.freeze(this._peerConnection);
     };
 
-    addStream = (key: string, data: RoomStreamType.StreamParams) => {
-      const stream = this._stream.createInstance(data);
+    addStream = (key: string, data: RoomStreamType.AddStreamParams) => {
+      this._streams.validateKey(key);
+      this._streams.validateStream(data);
+
+      const stream = this._stream.createInstance({
+        id: key,
+        ...data,
+      });
+
+      this._streams.addStream(key, stream);
 
       if (stream.origin === 'local' && stream.source === 'media') {
         this._event.emit(PeerEvents._ADD_LOCAL_MEDIA_STREAM, stream);
@@ -72,18 +78,11 @@ export const createPeer = ({
         this._event.emit(PeerEvents._ADD_LOCAL_SCREEN_STREAM, stream);
       }
 
-      if (stream.origin === 'remote' && stream.source === 'media') {
-        this._event.emit(PeerEvents._ADD_REMOTE_MEDIA_STREAM, stream);
-      }
-
-      if (stream.origin === 'remote' && stream.source === 'screen') {
-        this._event.emit(PeerEvents._ADD_REMOTE_SCREEN_STREAM, stream);
-      }
-
       this._event.emit(PeerEvents.STREAM_ADDED, { stream });
     };
 
     removeStream = (key: string) => {
+      this._streams.validateKey(key);
       const removedStream = this._streams.removeStream(key);
       this._event.emit(PeerEvents.STREAM_REMOVED, { stream: removedStream });
       return removedStream;
@@ -94,6 +93,7 @@ export const createPeer = ({
     };
 
     getStream = (key: string) => {
+      this._streams.validateKey(key);
       return this._streams.getStream(key);
     };
 
@@ -102,6 +102,7 @@ export const createPeer = ({
     };
 
     hasStream = (key: string) => {
+      this._streams.validateKey(key);
       return this._streams.hasStream(key);
     };
 
@@ -153,16 +154,6 @@ export const createPeer = ({
       this._event.on(
         PeerEvents._ADD_LOCAL_SCREEN_STREAM,
         this._onAddLocalScreenStream
-      );
-
-      this._event.on(
-        PeerEvents._ADD_REMOTE_MEDIA_STREAM,
-        this._onAddRemoteMediaStream
-      );
-
-      this._event.on(
-        PeerEvents._ADD_REMOTE_SCREEN_STREAM,
-        this._onAddRemoteScreenStream
       );
     };
 
@@ -290,8 +281,6 @@ export const createPeer = ({
       for (const track of stream.mediaStream.getTracks()) {
         this._peerConnection.addTrack(track, stream.mediaStream);
       }
-
-      this._streams.addStream(stream.mediaStream.id, stream);
     };
 
     _onAddLocalScreenStream = (stream: RoomStreamType.InstanceStream) => {
@@ -318,16 +307,6 @@ export const createPeer = ({
           this.removeStream(target.id);
         }
       });
-
-      this._streams.addStream(stream.mediaStream.id, stream);
-    };
-
-    _onAddRemoteMediaStream = (stream: RoomStreamType.InstanceStream) => {
-      this._streams.addStream(stream.mediaStream.id, stream);
-    };
-
-    _onAddRemoteScreenStream = (stream: RoomStreamType.InstanceStream) => {
-      this._streams.addStream(stream.mediaStream.id, stream);
     };
   };
 
