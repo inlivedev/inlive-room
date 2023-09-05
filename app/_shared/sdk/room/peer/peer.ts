@@ -155,6 +155,8 @@ export const createPeer = ({
         PeerEvents._ADD_LOCAL_SCREEN_STREAM,
         this._onAddLocalScreenStream
       );
+
+      window.addEventListener('beforeunload', this._onBeforeUnload);
     };
 
     _removeEventListener = () => {
@@ -176,6 +178,8 @@ export const createPeer = ({
       );
 
       this._peerConnection.removeEventListener('track', this._onTrack);
+
+      window.removeEventListener('beforeunload', this._onBeforeUnload);
     };
 
     _setTrackEnabled = (
@@ -298,6 +302,13 @@ export const createPeer = ({
       });
 
       this._streams.removeDraft(mediaStream.id);
+    };
+
+    _onBeforeUnload = async () => {
+      if (!this._roomId || !this._clientId) return;
+
+      this.disconnect();
+      await this._api.leaveRoom(this._roomId, this._clientId);
     };
 
     _onAddLocalMediaStream = (stream: RoomStreamType.InstanceStream) => {
