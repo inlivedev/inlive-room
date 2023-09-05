@@ -1,10 +1,12 @@
 @tailwind base;
 @tailwind components;
 
-body {
+/* To ensure the minimum height of body is 100% screen height */
+html, body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  flex: 1;
 
   @apply antialiased;
 }
