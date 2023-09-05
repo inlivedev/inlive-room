@@ -37,7 +37,7 @@ export default function Layout({ roomId, origin }: LayoutProps) {
   };
 
   return (
-    <div className="bg-neutral-900 text-neutral-200">
+    <div className="flex flex-1 flex-col bg-neutral-900 text-neutral-200">
       {openConference && mediaStream ? (
         <ParticipantProvider localMediaStream={mediaStream}>
           <Conference />
