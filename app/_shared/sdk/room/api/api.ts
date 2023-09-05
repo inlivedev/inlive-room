@@ -25,7 +25,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return room;
     };
 
-    getRoom = async (roomId = '') => {
+    getRoom = async (roomId: string) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string');
       }
@@ -48,13 +48,21 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return room;
     };
 
-    registerClient = async (roomId = '') => {
+    registerClient = async (roomId: string, clientId = '') => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string');
       }
 
+      if (typeof clientId !== 'string') {
+        throw new Error('Client ID must be a valid string');
+      }
+
+      const body = clientId.trim().length > 0 ? { uid: clientId } : {};
+
       const response: RoomAPIType.RegisterClientResponseBody =
-        await this._fetcher.post(`/rooms/${roomId}/register`);
+        await this._fetcher.post(`/rooms/${roomId}/register`, {
+          body: JSON.stringify(body),
+        });
 
       const data = response.data || {};
 
@@ -70,8 +78,8 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
     };
 
     sendIceCandidate = async (
-      roomId = '',
-      clientId = '',
+      roomId: string,
+      clientId: string,
       candidate: RTCIceCandidate | null = null
     ) => {
       if (!roomId || !clientId || !candidate) {
@@ -96,7 +104,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return result;
     };
 
-    checkNegotiateAllowed = async (roomId = '', clientId = '') => {
+    checkNegotiateAllowed = async (roomId: string, clientId: string) => {
       if (!roomId || !clientId) {
         throw new Error('Room ID, and client ID are required');
       }
@@ -115,8 +123,8 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
     };
 
     negotiateConnection = async (
-      roomId = '',
-      clientId = '',
+      roomId: string,
+      clientId: string,
       localDescription: RTCSessionDescription | null = null
     ) => {
       if (!roomId || !clientId || !localDescription) {
@@ -205,7 +213,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return result;
     };
 
-    leaveRoom = async (roomId = '', clientId = '') => {
+    leaveRoom = async (roomId: string, clientId: string) => {
       if (!roomId || !clientId) {
         throw new Error('Room ID, and client ID are required');
       }
@@ -226,7 +234,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return result;
     };
 
-    terminateRoom = async (roomId = '') => {
+    terminateRoom = async (roomId: string) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string');
       }
