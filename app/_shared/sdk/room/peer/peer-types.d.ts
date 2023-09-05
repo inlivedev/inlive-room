@@ -11,10 +11,10 @@ export type InstancePeer = {
   getStream: (key: string) => RoomStreamType.InstanceStream | null;
   getTotalStreams: () => number;
   hasStream: (key: string) => boolean;
-  enableCamera: () => void;
-  enableMic: () => void;
-  disableCamera: () => void;
-  disableMic: () => void;
+  turnOnCamera: () => void;
+  turnOnMic: () => void;
+  turnOffCamera: () => void;
+  turnOffMic: () => void;
 };
 
 export type PeerDependencies = {

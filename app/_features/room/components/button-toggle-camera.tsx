@@ -16,9 +16,9 @@ export default function ButtonToggleCamera() {
 
     if (didMount.current) {
       if (active) {
-        peer.enableCamera();
+        peer.turnOnCamera();
       } else {
-        peer.disableCamera();
+        peer.turnOffCamera();
       }
     } else {
       didMount.current = true;

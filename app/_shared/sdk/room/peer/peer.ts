@@ -106,22 +106,22 @@ export const createPeer = ({
       return this._streams.hasStream(key);
     };
 
-    enableCamera = () => {
+    turnOnCamera = () => {
       if (!this._peerConnection) return;
       this._setTrackEnabled(this._peerConnection, 'video', true);
     };
 
-    enableMic = () => {
+    turnOnMic = () => {
       if (!this._peerConnection) return;
       this._setTrackEnabled(this._peerConnection, 'audio', true);
     };
 
-    disableCamera = () => {
+    turnOffCamera = () => {
       if (!this._peerConnection) return;
       this._setTrackEnabled(this._peerConnection, 'video', false);
     };
 
-    disableMic = () => {
+    turnOffMic = () => {
       if (!this._peerConnection) return;
       this._setTrackEnabled(this._peerConnection, 'audio', false);
     };
@@ -191,7 +191,11 @@ export const createPeer = ({
         return stream.origin === 'local' && stream.source === 'media';
       });
 
-      if (!stream) return;
+      if (!stream) {
+        throw new Error(
+          'You must add a user MediaStream in order to proceed this operation'
+        );
+      }
 
       const mediaTrack = stream.mediaStream.getTracks().find((track) => {
         return track.kind === kind;
@@ -396,10 +400,10 @@ export const createPeer = ({
         getStream: peer.getStream,
         getTotalStreams: peer.getTotalStreams,
         hasStream: peer.hasStream,
-        enableCamera: peer.enableCamera,
-        enableMic: peer.enableMic,
-        disableCamera: peer.disableCamera,
-        disableMic: peer.disableMic,
+        turnOnCamera: peer.turnOnCamera,
+        turnOnMic: peer.turnOnMic,
+        turnOffCamera: peer.turnOffCamera,
+        turnOffMic: peer.turnOffMic,
       };
     },
   };

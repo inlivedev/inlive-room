@@ -16,9 +16,9 @@ export default function ButtonToggleMicrophone() {
 
     if (didMount.current) {
       if (active) {
-        peer.enableMic();
+        peer.turnOnMic();
       } else {
-        peer.disableMic();
+        peer.turnOffMic();
       }
     } else {
       didMount.current = true;
