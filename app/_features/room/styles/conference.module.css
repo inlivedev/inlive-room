@@ -1,27 +1,15 @@
-.container{
-  display: grid;
-  grid-template-rows: repeat(8, 1fr);
-}
-
 .media {
   min-height: 0;
   height: 100%;
   gap: 0.5rem;
-  grid-row-start:1;
-  grid-row-end: span 7;
   display: grid;
-  justify-content: center; 
-  align-content: center;    
+  justify-content: center;
+  align-content: center;
   align-items: center;
   justify-items: center;
 }
 
-.action-bar {
-  grid-row-start: 8;
-  grid-row-end: span 1;
-}
-
-.gallery{
+.gallery {
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   grid-template-rows: repeat(auto-fit, minmax(240px, 1fr));
 }
@@ -30,7 +18,7 @@
   grid-template-columns: 80% 20%;
 }
 
-.presenting-screen{
+.presenting-screen {
   grid-row: 1/span auto;
   grid-column: 1/1;
 }
@@ -42,7 +30,7 @@
   grid-column:auto/auto;
 }
 
-.gallery-media video{
+.gallery-media video {
   height: 100%;
   aspect-ratio: 4/3;
   object-fit: cover;
@@ -58,12 +46,12 @@
 
 
 @media only screen and (max-width: 600px) {
-  .gallery{
+  .gallery {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     grid-template-rows: repeat(auto-fit, minmax(90px, 1fr));
   }
 
-  .gallery-media video{
+  .gallery-media video {
     height: 100%;
     aspect-ratio: 3/4;
     object-fit: cover;
