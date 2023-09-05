@@ -211,13 +211,49 @@ export const createPeer = ({
       }
     };
 
-    _onIceConnectionStateChange = () => {
+    _restartNegotiation = async () => {
       if (!this._peerConnection) return;
 
-      console.log(
-        'ice connection state changed to',
-        this._peerConnection.iceConnectionState
+      const allowNegotiateResponse = await this._api.checkNegotiateAllowed(
+        this._roomId,
+        this._clientId
       );
+
+      if (!allowNegotiateResponse.ok) return;
+
+      try {
+        const offer = await this._peerConnection.createOffer({
+          iceRestart: true,
+        });
+
+        await this._peerConnection.setLocalDescription(offer);
+
+        if (!this._peerConnection.localDescription) {
+          throw new Error(
+            'Failed to set the local description on restart negotiation'
+          );
+        }
+
+        await this._api.negotiateConnection(
+          this._roomId,
+          this._clientId,
+          this._peerConnection.localDescription
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    _onIceConnectionStateChange = async () => {
+      if (!this._peerConnection) return;
+
+      const { iceConnectionState } = this._peerConnection;
+
+      console.log('ice connection state changed to', iceConnectionState);
+
+      if (iceConnectionState === 'failed') {
+        await this._restartNegotiation();
+      }
     };
 
     _onNegotiationNeeded = async () => {
