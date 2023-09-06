@@ -1,4 +1,4 @@
-import Layout from '@/_features/room/components/layout';
+import View from '@/_features/room/components/view';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 
 export default function Container({
@@ -12,7 +12,7 @@ export default function Container({
 }) {
   return (
     <PeerProvider roomId={roomId} clientId={clientId}>
-      <Layout roomId={roomId} origin={origin} />
+      <View roomId={roomId} origin={origin} />
     </PeerProvider>
   );
 }

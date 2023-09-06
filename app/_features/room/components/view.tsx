@@ -10,12 +10,12 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useLocalDevice } from '@/_features/room/hooks/use-local-device';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 
-type LayoutProps = {
+type ViewProps = {
   roomId: string;
   origin: string;
 };
 
-export default function Layout({ roomId, origin }: LayoutProps) {
+export default function View({ roomId, origin }: ViewProps) {
   const { active: openConference, setActive: setOpenConference } =
     useToggle(false);
 
