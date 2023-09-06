@@ -5,7 +5,7 @@ import Footer from '@/_shared/components/footer/footer';
 
 export default function Layout() {
   return (
-    <div className="flex h-screen flex-col bg-neutral-900 text-neutral-200">
+    <div className="flex flex-1 flex-col bg-neutral-900 text-neutral-200">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
         <Header />
         <main className="mx-auto flex flex-1 flex-col justify-center">

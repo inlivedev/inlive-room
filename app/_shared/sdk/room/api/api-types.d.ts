@@ -1,4 +1,28 @@
-import type { Fetcher } from './fetcher';
+import type { createFetcher } from './fetcher';
+import type { createApi } from './api';
+
+export type CreateFetcher = typeof createFetcher;
+export type CreateApi = typeof createApi;
+
+export type InstanceFetcher = ReturnType<
+  ReturnType<CreateFetcher>['createInstance']
+>;
+export type InstanceApi = ReturnType<ReturnType<CreateApi>['createInstance']>;
+
+export type ApiDependencies = {
+  fetcher: RoomAPIType.InstanceFetcher;
+};
+
+export type TrackSourcesRequestBody = {
+  track_id: string;
+  source: string;
+};
+
+export type SubscribeTracksRequestBody = {
+  client_id: string;
+  stream_id: string;
+  track_id: string;
+};
 
 export type BaseResponseBody = {
   code: number;
@@ -30,6 +54,4 @@ export type NegotiateConnectionResponseBody = BaseResponseBody & {
   };
 };
 
-export type Fetcher = ReturnType<typeof Fetcher>;
-
-export as namespace SDKRoomAPITypes;
+export as namespace RoomAPIType;

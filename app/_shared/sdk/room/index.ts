@@ -1,17 +1,9 @@
-import { createRoom, getRoom, registerClient } from './api/api';
+import { facade } from './facade/facade';
 
-const factories = {
-  createRoom,
-  createClient: registerClient,
-  getRoom,
+const createRoom = (facade: RoomFacadeType.Facade) => {
+  return (config: RoomType.UserConfig = {}) => {
+    return facade.createInstance(config);
+  };
 };
 
-export const Room = (({ createRoom, createClient, getRoom }) => {
-  return () => {
-    return {
-      createRoom,
-      createClient,
-      getRoom,
-    };
-  };
-})(factories);
+export const Room = createRoom(facade);

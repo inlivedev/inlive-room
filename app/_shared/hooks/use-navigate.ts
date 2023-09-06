@@ -1,13 +1,24 @@
+import { useCallback } from 'react';
 import type { NavigateOptions } from 'next/dist/shared/lib/app-router-context';
 import { useRouter } from 'next/navigation';
 
 export const useNavigate = () => {
   const router = useRouter();
 
-  const navigateTo = (path: string, options: NavigateOptions = {}) => {
-    router.push(path, options);
-    router.refresh();
-  };
+  const navigateTo = useCallback(
+    (path: string, options: NavigateOptions = {}) => {
+      router.push(path, options);
+      router.refresh();
+    },
+    [router]
+  );
 
-  return { navigateTo };
+  const prefetch = useCallback(
+    (path: string) => {
+      router.prefetch(path);
+    },
+    [router]
+  );
+
+  return { navigateTo, prefetch };
 };
