@@ -8,7 +8,7 @@ import styles from '@/_features/room/styles/conference.module.css';
 
 const isMobile = () => {
   if (typeof window !== 'undefined') {
-    return window.innerWidth <= 768;
+    return window.innerWidth <= 600;
   }
 };
 
@@ -93,7 +93,7 @@ export default function ConferenceParticipants() {
     <div
       className={`${
         styles[hasScreen ? 'presenting' : 'gallery']
-      } row-start-1 w-full p-4 ${styles['media']}`}
+      } row-start-1 w-full ${styles['media']}`}
       style={layout(screens)}
     >
       {screens ? screens.map(renderVideo) : null}

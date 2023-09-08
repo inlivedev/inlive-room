@@ -1,3 +1,39 @@
+.conference{
+  display: grid;
+  height: 100vh;
+  grid-template-rows: 11fr 1fr;
+}
+
+.participants{
+  min-height: 0;
+  padding-bottom:1rem;
+}
+
+.actionbar{
+  align-self: self-end;
+  padding-bottom: 1rem;
+}
+
+.oneonone{
+  position: relative;
+}
+
+.oneonone .remote-video{
+  position: absolute;
+  top:0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.oneonone .local-video{
+  position: absolute;
+  bottom:1rem;
+  right: 1rem;
+  height: 15%;
+  width: 15%;
+}
+
 .media {
   min-height: 0;
   height: 100%;
@@ -5,8 +41,8 @@
   display: grid;
   justify-content: center;
   align-content: center;
-  align-items: center;
-  justify-items: center;
+  align-items: stretch;
+  justify-items: stretch;
 }
 
 .gallery {
@@ -28,6 +64,14 @@
   height: 100%;
   grid-row:auto/auto;
   grid-column:auto/auto;
+}
+
+.gallery-media{
+  /* position: absolute;
+  top:0;
+  left: 0;
+  height: 100%;
+  width: 100%; */
 }
 
 .gallery-media video {
@@ -53,7 +97,7 @@
 
   .gallery-media video {
     height: 100%;
-    aspect-ratio: 3/4;
+    /* aspect-ratio: 3/4; */
     object-fit: cover;
     margin:0 auto;
   }
