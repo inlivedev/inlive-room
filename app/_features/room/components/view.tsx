@@ -37,7 +37,7 @@ export default function View({ roomId, origin }: ViewProps) {
   };
 
   return (
-    <div className="flex flex-1 flex-col bg-neutral-900 text-neutral-200">
+    <div className="h-screen w-screen bg-neutral-900 text-neutral-200">
       {openConference && mediaStream ? (
         <ParticipantProvider localMediaStream={mediaStream}>
           <Conference />

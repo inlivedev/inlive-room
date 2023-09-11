@@ -1,16 +1,34 @@
 import ConferenceParticipants from '@/_features/room/components/conference-participants';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
+import styles from '@/_features/room/styles/conference.module.css';
+
+import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 
 export default function Conference() {
+  const { streams } = useParticipantContext();
+
+  const hasScreen = (): boolean => {
+    return Object.values(streams).some((stream) => stream.source === 'screen');
+  };
+
+  const getClass = (): string => {
+    const streamCount = Object.keys(streams).length;
+    if (streamCount === 2) {
+      return styles['oneonone'];
+    } else if (hasScreen()) {
+      return styles['presentation'];
+    }
+
+    return '';
+  };
+
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col">
-        <div className="grid flex-1 grid-cols-1 p-4">
-          <ConferenceParticipants />
-        </div>
-        <div className="px-6 pb-9 pt-4">
-          <ConferenceActionsBar />
-        </div>
+    <div className={`${styles['conference']}`}>
+      <div className={`${styles['participants']} ${getClass()}`}>
+        <ConferenceParticipants />
+      </div>
+      <div className={`${styles['actionbar']}`}>
+        <ConferenceActionsBar />
       </div>
     </div>
   );
