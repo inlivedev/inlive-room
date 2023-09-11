@@ -50,6 +50,7 @@ export default function ConferenceParticipants() {
   const videoLayout = (hasScreen: boolean, source: string) => {
     if (hasScreen) {
       if (source === 'screen') {
+        console.log('screen count', screenCount.current);
         screenCount.current++;
 
         if (screenCount.current === 1) {
@@ -61,26 +62,31 @@ export default function ConferenceParticipants() {
                 gridRow: `1/span ${streams.length - 1}`,
               };
         }
+
         return {
-          gridRow: `auto/auto`,
-          gridColumn: `2/auto`,
+          gridRow: `1/auto`,
+          gridColumn: `1/auto`,
           minHeight: 0,
           height: '100%',
         };
       }
     }
+
+    return {};
   };
 
   const renderVideo = (stream: InstanceStream) => {
+    const className = hasScreen
+      ? stream.source === 'screen' && screenCount.current === 0
+        ? styles['presenting-screen']
+        : styles['presenting-media']
+      : styles['gallery-media'];
+
     return (
       <div
         key={stream.id}
-        className={`${
-          hasScreen
-            ? stream.source === 'screen'
-              ? styles['presenting-screen']
-              : styles['presenting-media']
-            : styles['gallery-media']
+        className={`${className} ${
+          stream.origin === 'local' ? styles['local'] : styles['remote']
         }`}
         style={videoLayout(hasScreen, stream.source)}
       >
@@ -91,12 +97,17 @@ export default function ConferenceParticipants() {
 
   return (
     <div
-      className={`${
-        styles[hasScreen ? 'presenting' : 'gallery']
-      } row-start-1 w-full ${styles['media']}`}
+      className={`${styles[hasScreen ? 'presenting' : 'gallery']} w-full ${
+        styles['media']
+      }`}
       style={layout(screens)}
     >
-      {screens ? screens.map(renderVideo) : null}
+      {screens
+        ? screens.map((stream) => {
+            screenCount.current = 0;
+            return renderVideo(stream);
+          })
+        : null}
       {medias ? medias.map(renderVideo) : null}
     </div>
   );
