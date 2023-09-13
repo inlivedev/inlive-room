@@ -67,12 +67,13 @@ export const useScreenShare = () => {
               sender.track.stop();
               peerConnection.removeTrack(sender);
               peer.removeStream(screenStream.id);
+              return true;
             }
           }
         }
       }
 
-      return true;
+      return false;
     } catch (error) {
       console.error(error);
       return false;
