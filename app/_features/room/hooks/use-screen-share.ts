@@ -10,7 +10,7 @@ export const useScreenShare = () => {
     try {
       if (!peer) return;
 
-      const constraints = {
+      const constraints: MediaStreamConstraints = {
         video: true,
         audio: {
           echoCancellation: true,
@@ -63,9 +63,7 @@ export const useScreenShare = () => {
       for (const screenStream of screenStreams) {
         for (const screenTrack of screenStream.mediaStream.getTracks()) {
           for (const sender of peerConnection.getSenders()) {
-            if (!sender.track) return;
-
-            if (sender.track.id === screenTrack.id) {
+            if (sender.track === screenTrack) {
               sender.track.stop();
               peerConnection.removeTrack(sender);
               peer.removeStream(screenStream.id);
