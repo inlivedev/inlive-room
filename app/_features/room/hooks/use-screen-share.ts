@@ -49,9 +49,14 @@ export const useScreenShare = () => {
           }
         : false;
 
-      const constraints: MediaStreamConstraints = {
-        video: true,
+      const constraints = {
+        video: {
+          displaySurface: 'monitor',
+        },
         audio: withAudio,
+        systemAudio: 'exclude',
+        surfaceSwitching: 'include',
+        selfBrowserSurface: 'exclude',
       };
 
       const mediaStream = await navigator.mediaDevices.getDisplayMedia(
