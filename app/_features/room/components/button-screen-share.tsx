@@ -1,6 +1,7 @@
 'use client';
 
-import ScreenShareIcon from '@/_shared/components/icons/screen-share-icon';
+import ScreenShareOnIcon from '@/_shared/components/icons/screen-share-on-icon';
+import ScreenShareOffIcon from '@/_shared/components/icons/screen-share-off-icon';
 import { useScreenShare } from '@/_features/room/hooks/use-screen-share';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 
@@ -32,12 +33,16 @@ export default function ButtonScreenShare() {
   return (
     <button
       className={`rounded-full ${
-        active ? 'bg-neutral-500' : 'bg-neutral-700'
+        active ? 'bg-red-500' : 'bg-neutral-700'
       } p-3 text-neutral-50`}
       aria-label="Screen share"
       onClick={screenShareHandler}
     >
-      <ScreenShareIcon width={24} height={24} />
+      {active ? (
+        <ScreenShareOffIcon width={24} height={24} />
+      ) : (
+        <ScreenShareOnIcon width={24} height={24} />
+      )}
     </button>
   );
 }
