@@ -18,10 +18,7 @@ export default function ButtonScreenShare() {
         return;
       }
 
-      await startScreenCapture({
-        audio: true,
-        video: true,
-      });
+      await startScreenCapture({ withAudio: true });
     } catch (error) {
       console.error(error);
     }

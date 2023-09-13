@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import merge from 'lodash-es/merge.js';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { room } from '@/_shared/utils/sdk';
@@ -9,51 +8,51 @@ export const useScreenShare = () => {
   const { active, setActive, setInActive } = useToggle(false);
 
   useEffect(() => {
-    if (peer) {
-      room.on(room.event.STREAM_ADDED, (data) => {
-        if (
-          data?.stream?.origin !== 'local' ||
-          data?.stream?.source !== 'screen'
-        ) {
-          return;
-        }
+    room.on(room.event.STREAM_ADDED, (data) => {
+      if (
+        data?.stream?.origin !== 'local' ||
+        data?.stream?.source !== 'screen'
+      ) {
+        return;
+      }
 
-        setActive();
-      });
+      setActive();
+    });
 
-      room.on(room.event.STREAM_REMOVED, (data) => {
-        if (
-          data?.stream?.origin !== 'local' ||
-          data?.stream?.source !== 'screen'
-        ) {
-          return;
-        }
+    room.on(room.event.STREAM_REMOVED, (data) => {
+      if (
+        data?.stream?.origin !== 'local' ||
+        data?.stream?.source !== 'screen'
+      ) {
+        return;
+      }
 
-        const streams = peer.getAllStreams().filter((stream) => {
+      const streams =
+        peer &&
+        peer.getAllStreams().filter((stream) => {
           return stream.origin === 'local' && stream.source === 'screen';
         });
 
-        if (streams.length === 0) setInActive();
-      });
-    }
+      if (streams && streams.length === 0) setInActive();
+    });
   }, [peer, setActive, setInActive]);
 
-  const startScreenCapture = async (
-    mediaConstraints: MediaStreamConstraints = {}
-  ) => {
+  const startScreenCapture = async (config = { withAudio: true }) => {
     try {
       if (!peer) return false;
 
+      const withAudio = config.withAudio
+        ? {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          }
+        : false;
+
       const constraints: MediaStreamConstraints = {
         video: true,
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+        audio: withAudio,
       };
-
-      merge(constraints, mediaConstraints);
 
       const mediaStream = await navigator.mediaDevices.getDisplayMedia(
         constraints
