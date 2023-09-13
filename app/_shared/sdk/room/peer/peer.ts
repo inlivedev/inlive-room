@@ -313,15 +313,9 @@ export const createPeer = ({
         (stream) => stream.active === true
       );
 
-      const track = event.track;
-
       if (!(mediaStream instanceof MediaStream)) return;
 
       if (this.hasStream(mediaStream.id)) return;
-
-      track.addEventListener('ended', () => {
-        console.log('remote track ended');
-      });
 
       mediaStream.addEventListener('removetrack', (event) => {
         const target = event.target;
@@ -366,23 +360,11 @@ export const createPeer = ({
         const sender = this._peerConnection.addTrack(track, stream.mediaStream);
 
         track.addEventListener('ended', () => {
-          if (!this._peerConnection) return;
-
-          this.removeStream(stream.id);
-          if (!sender) return;
+          if (!this._peerConnection || !sender) return;
           this._peerConnection.removeTrack(sender);
+          this.removeStream(stream.id);
         });
       }
-
-      stream.mediaStream.addEventListener('removetrack', (event) => {
-        const target = event.target;
-
-        if (!(target instanceof MediaStream)) return;
-
-        if (this.hasStream(target.id) && target.getTracks().length === 0) {
-          this.removeStream(target.id);
-        }
-      });
     };
   };
 
