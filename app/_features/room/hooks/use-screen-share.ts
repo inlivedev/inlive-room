@@ -1,14 +1,48 @@
+import { useEffect } from 'react';
 import merge from 'lodash-es/merge.js';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { useToggle } from '@/_shared/hooks/use-toggle';
+import { room } from '@/_shared/utils/sdk';
 
 export const useScreenShare = () => {
   const { peer } = usePeerContext();
+  const { active, setActive, setInActive } = useToggle(false);
+
+  useEffect(() => {
+    if (peer) {
+      room.on(room.event.STREAM_ADDED, (data) => {
+        if (
+          data?.stream?.origin !== 'local' ||
+          data?.stream?.source !== 'screen'
+        ) {
+          return;
+        }
+
+        setActive();
+      });
+
+      room.on(room.event.STREAM_REMOVED, (data) => {
+        if (
+          data?.stream?.origin !== 'local' ||
+          data?.stream?.source !== 'screen'
+        ) {
+          return;
+        }
+
+        const streams = peer.getAllStreams().filter((stream) => {
+          return stream.origin === 'local' && stream.source === 'screen';
+        });
+
+        if (streams.length === 0) setInActive();
+      });
+    }
+  }, [peer, setActive, setInActive]);
 
   const startScreenCapture = async (
     mediaConstraints: MediaStreamConstraints = {}
   ) => {
     try {
-      if (!peer) return;
+      if (!peer) return false;
 
       const constraints: MediaStreamConstraints = {
         video: true,
@@ -40,7 +74,7 @@ export const useScreenShare = () => {
 
   const stopScreenCapture = (specifyStream?: RoomStreamType.InstanceStream) => {
     try {
-      if (!peer) return;
+      if (!peer) return false;
 
       const peerConnection = peer.getPeerConnection();
 
@@ -80,5 +114,5 @@ export const useScreenShare = () => {
     }
   };
 
-  return { startScreenCapture, stopScreenCapture };
+  return { startScreenCapture, stopScreenCapture, screenCaptureActive: active };
 };
