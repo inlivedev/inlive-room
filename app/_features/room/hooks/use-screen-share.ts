@@ -100,18 +100,17 @@ export const useScreenShare = () => {
 
       for (const screenStream of screenStreams) {
         for (const screenTrack of screenStream.mediaStream.getTracks()) {
-          for (const sender of peerConnection.getSenders()) {
-            if (sender.track === screenTrack) {
-              sender.track.stop();
-              peerConnection.removeTrack(sender);
+          for (const transceiver of peerConnection.getTransceivers()) {
+            if (transceiver.sender.track === screenTrack) {
+              transceiver.sender.track.stop();
+              peerConnection.removeTrack(transceiver.sender);
               peer.removeStream(screenStream.id);
-              return true;
             }
           }
         }
       }
 
-      return false;
+      return true;
     } catch (error) {
       console.error(error);
       return false;
