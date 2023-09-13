@@ -50,7 +50,6 @@ export default function ConferenceParticipants() {
   const videoLayout = (hasScreen: boolean, source: string) => {
     if (hasScreen) {
       if (source === 'screen') {
-        console.log('screen count', screenCount.current);
         screenCount.current++;
 
         if (screenCount.current === 1) {
