@@ -25,18 +25,18 @@ export default function ButtonScreenShare() {
   };
 
   return (
-    <button
-      className={`rounded-full ${
-        screenCaptureActive ? 'bg-red-500' : 'bg-neutral-700'
-      } p-3 text-neutral-50`}
-      aria-label="Screen share"
-      onClick={screenShareHandler}
-    >
-      {screenCaptureActive ? (
-        <ScreenShareOffIcon width={24} height={24} />
-      ) : (
-        <ScreenShareOnIcon width={24} height={24} />
-      )}
-    </button>
+    <div className="flex items-center text-neutral-200">
+      <button
+        className={`flex h-full items-center gap-2 rounded bg-neutral-900 px-2.5 py-2 ring-1 ring-neutral-700 hover:bg-neutral-700 active:bg-neutral-600`}
+        aria-label="Screen share"
+        onClick={screenShareHandler}
+      >
+        {screenCaptureActive ? (
+          <ScreenShareOffIcon width={20} height={20} />
+        ) : (
+          <ScreenShareOnIcon width={20} height={20} />
+        )}
+      </button>
+    </div>
   );
 }

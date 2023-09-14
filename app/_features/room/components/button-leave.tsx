@@ -5,12 +5,14 @@ export default function ButtonLeave() {
   const { leaveRoom } = useLeaveRoom();
 
   return (
-    <button
-      className="rounded-full bg-red-500 p-3"
-      aria-label="Leave room"
-      onClick={leaveRoom}
-    >
-      <HangUpIcon width={24} height={24} />
-    </button>
+    <div className="flex items-center text-neutral-200">
+      <button
+        className={`flex h-full items-center gap-2 rounded bg-red-600 px-2.5 py-2 hover:bg-red-500 active:bg-red-400`}
+        aria-label="Leave room"
+        onClick={leaveRoom}
+      >
+        <HangUpIcon width={20} height={20} />
+      </button>
+    </div>
   );
 }
