@@ -1,7 +1,7 @@
+import { ServerDataStore } from "@/(server)/_features/datastore";
 import { service } from "@/(server)/_features/room/create";
 import { getUserFromToken } from "@/(server)/_shared/utils/auth";
 import { room } from "@/_shared/utils/sdk";
-import { create } from "domain";
 
 const createRoomRoutesHandler = () => {
   const roomHandler = class {
@@ -38,4 +38,4 @@ const createRoomRoutesHandler = () => {
   };
 };
 
-export const roomRoutesHandler = createRoomRoutesHandler().createInstance(new service())
+export const roomRoutesHandler = createRoomRoutesHandler().createInstance(new service(new ServerDataStore()))
