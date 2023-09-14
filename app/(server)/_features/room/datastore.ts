@@ -1,6 +1,6 @@
 import { room } from "@/_shared/utils/sdk";
-import { Room } from "../api/room/interface";
-import { RoomRepoInterface } from "./room/create";
+import { Room } from "../../api/room/interface";
+import { RoomRepoInterface } from "./create";
 
 export class ServerDataStore implements RoomRepoInterface {
   private rooms: Map<string, Room>;

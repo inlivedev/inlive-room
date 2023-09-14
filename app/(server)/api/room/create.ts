@@ -21,7 +21,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
-
   try{
     roomRoutesHandler.createRoomHandler(requestToken)
   }
