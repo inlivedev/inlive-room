@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+import { useEnumerateDevices } from '@/_features/room/hooks/use-enumerate-devices';
 
 const defaultValue = {
   audioInputs: [] as MediaDeviceInfo[],
@@ -15,16 +16,7 @@ export const useDeviceContext = () => {
 };
 
 export function DeviceProvider({ children }: { children: React.ReactNode }) {
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-
-  useEffect(() => {
-    const getDevices = async () => {
-      const enumerateDevices = await navigator.mediaDevices.enumerateDevices();
-      setDevices(enumerateDevices);
-    };
-
-    getDevices();
-  }, []);
+  const devices = useEnumerateDevices();
 
   const { audioInputs, audioOutputs, videoInputs } = useMemo(() => {
     const audioInputs = [];
