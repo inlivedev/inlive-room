@@ -1,5 +1,9 @@
+'use client';
+
 import View from '@/_features/room/components/view';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
+import { DeviceProvider } from '@/_features/room/contexts/device-context';
+import { NextUIProvider } from '@nextui-org/react';
 
 export default function Container({
   roomId,
@@ -12,7 +16,11 @@ export default function Container({
 }) {
   return (
     <PeerProvider roomId={roomId} clientId={clientId}>
-      <View roomId={roomId} origin={origin} />
+      <DeviceProvider>
+        <NextUIProvider>
+          <View roomId={roomId} origin={origin} />
+        </NextUIProvider>
+      </DeviceProvider>
     </PeerProvider>
   );
 }
