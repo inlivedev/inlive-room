@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { apiResponse } from "./_shared/types";
+import { apiResponse } from "../_shared/types";
 import { roomRoutesHandler } from ".";
 
 

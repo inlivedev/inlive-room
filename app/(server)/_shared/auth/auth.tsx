@@ -1,4 +1,4 @@
-import { createFetcher, FetcherResponse } from "./fetcher/fetcher";
+import { createFetcher, FetcherResponse } from "../fetcher/fetcher";
 
 
 const INLIVE_AUTH_ORIGIN = process.env.INLIVE_AUTH_ORIGIN
