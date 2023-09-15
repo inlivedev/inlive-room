@@ -3,11 +3,9 @@ import { useState } from 'react';
 export const useLocalDevice = () => {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
-  const getUserMedia = async (mediaConstraints: MediaStreamConstraints) => {
+  const getUserMedia = async (constraints: MediaStreamConstraints) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia(
-        mediaConstraints
-      );
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       setMediaStream(stream);
     } catch (error) {
@@ -23,6 +21,8 @@ export const useLocalDevice = () => {
           );
         }
       }
+
+      throw error;
     }
   };
 
