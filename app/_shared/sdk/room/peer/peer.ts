@@ -37,7 +37,7 @@ export const createPeer = ({
     _event;
     _streams;
     _stream;
-    _maxBw = 2500 * 1000;
+    _maxBw = 4000 * 1000;
     _bwController: BwController;
     _prevBytesReceived;
     _prevHighBytesSent;
@@ -420,12 +420,12 @@ export const createPeer = ({
               rid: 'mid',
               scaleResolutionDownBy: 2.0,
               maxFramerate: 30,
-              maxBitrate: 300 * 1000,
+              maxBitrate: 190 * 1000,
             },
             {
               rid: 'low',
               scaleResolutionDownBy: 4.0,
-              maxBitrate: 100 * 1000,
+              maxBitrate: 130 * 1000,
               maxFramerate: 15,
             },
           ],
@@ -494,17 +494,16 @@ export const createPeer = ({
           this._bwController.midBitrate == 0 ||
           this._bwController.highBitrate == 0
         ) {
-          await this._sleep(5000);
+          await this._sleep(3000);
           continue;
         }
 
         let maxBw = this._maxBw;
 
-        if (this._bwController.totalSendBitrate < maxBw) {
+        if (this._bwController.available < maxBw) {
           // only use 90% of the available bandwidth
           maxBw =
-            this._bwController.totalSendBitrate -
-            this._bwController.totalSendBitrate * 0.1;
+            this._bwController.available - this._bwController.available * 0.1;
         }
 
         const ratio = maxBw / this._bwController.totalSendBitrate;
@@ -547,7 +546,7 @@ export const createPeer = ({
           }
         });
 
-        await this._sleep(5000);
+        await this._sleep(3000);
       }
     };
 
