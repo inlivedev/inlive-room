@@ -404,7 +404,7 @@ export const createPeer = ({
         }
       );
 
-      const transceiver = this._peerConnection.addTransceiver(
+      this._peerConnection.addTransceiver(
         stream.mediaStream.getVideoTracks()[0],
         {
           direction: 'sendonly',
@@ -432,39 +432,42 @@ export const createPeer = ({
         }
       );
 
-      const sendCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
+      //TODO: fix this, when set codec preferences, the simulcast is not working, only high layer is sending
+      // const sendCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
 
-      const preferCodec = (
-        codecs: RTCRtpCodecCapability[],
-        preferedCodecs: RTCRtpCodecCapability[],
-        mimeType: string
-      ): RTCRtpCodecCapability[] => {
-        codecs.forEach((codec) => {
-          if (codec.mimeType === mimeType) {
-            preferedCodecs.push(codec);
-          }
-        });
+      // const preferCodec = (
+      //   codecs: RTCRtpCodecCapability[],
+      //   preferedCodecs: RTCRtpCodecCapability[],
+      //   mimeType: string
+      // ): RTCRtpCodecCapability[] => {
+      //   codecs.forEach((codec) => {
+      //     if (codec.mimeType === mimeType) {
+      //       preferedCodecs.push(codec);
+      //     }
+      //   });
 
-        return preferedCodecs;
-      };
+      //   return preferedCodecs;
+      // };
 
-      let preferedCodecs = preferCodec(
-        sendCodecs ? sendCodecs : [],
-        [],
-        'video/VP9'
-      );
-      preferedCodecs = preferCodec(
-        sendCodecs ? sendCodecs : [],
-        preferedCodecs,
-        'video/H264'
-      );
-      preferedCodecs = preferCodec(
-        sendCodecs ? sendCodecs : [],
-        preferedCodecs,
-        'video/VP8'
-      );
+      // let preferedCodecs = [];
 
-      transceiver.setCodecPreferences(preferedCodecs);
+      // preferedCodecs = preferCodec(
+      //   sendCodecs ? sendCodecs : [],
+      //   [],
+      //   'video/VP9'
+      // );
+      // preferedCodecs = preferCodec(
+      //   sendCodecs ? sendCodecs : [],
+      //   preferedCodecs,
+      //   'video/H264'
+      // );
+      // preferedCodecs = preferCodec(
+      //   sendCodecs ? sendCodecs : [],
+      //   preferedCodecs,
+      //   'video/VP8'
+      // );
+
+      //transceiver.setCodecPreferences(preferedCodecs);
     };
 
     _sleep = (delay: number) =>
