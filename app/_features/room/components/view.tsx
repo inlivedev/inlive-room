@@ -21,9 +21,43 @@ export default function View({ roomId, origin }: ViewProps) {
 
   const { mediaStream, getUserMedia } = useLocalDevice();
 
+  const video = (): MediaTrackConstraints => {
+    const constrain = {
+      width: {
+        ideal: 1280,
+      },
+      height: {
+        ideal: 720,
+      },
+    };
+
+    if (
+      screen.orientation.type === 'portrait-primary' ||
+      screen.orientation.type === 'portrait-secondary'
+    ) {
+      return {
+        width: {
+          ideal: 720,
+        },
+        height: {
+          ideal: 1280,
+        },
+      };
+    }
+
+    return {
+      width: {
+        ideal: 1280,
+      },
+      height: {
+        ideal: 720,
+      },
+    };
+  };
+
   const openConferenceHandler = async () => {
     await getUserMedia({
-      video: true,
+      video: video(),
       audio: {
         echoCancellation: true,
         noiseSuppression: true,
