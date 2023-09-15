@@ -79,7 +79,7 @@ export const createPeer = ({
 
       this._addEventListener();
 
-      this._enableBwMonitor();
+      // this._enableBwMonitor();
     };
 
     _enableBwMonitor = async () => {
@@ -404,70 +404,70 @@ export const createPeer = ({
         }
       );
 
-      this._peerConnection.addTransceiver(
+      const transceiver = this._peerConnection.addTransceiver(
         stream.mediaStream.getVideoTracks()[0],
         {
           direction: 'sendonly',
           streams: [stream.mediaStream],
-          sendEncodings: [
-            // for firefox order matters... first high resolution, then scaled resolutions...
-            {
-              rid: 'high',
-              maxBitrate: 700 * 1000,
-              maxFramerate: 30,
-            },
-            {
-              rid: 'mid',
-              scaleResolutionDownBy: 2.0,
-              maxFramerate: 30,
-              maxBitrate: 190 * 1000,
-            },
-            {
-              rid: 'low',
-              scaleResolutionDownBy: 4.0,
-              maxBitrate: 130 * 1000,
-              maxFramerate: 15,
-            },
-          ],
+          // sendEncodings: [
+          //   // for firefox order matters... first high resolution, then scaled resolutions...
+          //   {
+          //     rid: 'high',
+          //     maxBitrate: 700 * 1000,
+          //     maxFramerate: 30,
+          //   },
+          //   {
+          //     rid: 'mid',
+          //     scaleResolutionDownBy: 2.0,
+          //     maxFramerate: 30,
+          //     maxBitrate: 190 * 1000,
+          //   },
+          //   {
+          //     rid: 'low',
+          //     scaleResolutionDownBy: 4.0,
+          //     maxBitrate: 130 * 1000,
+          //     maxFramerate: 15,
+          //   },
+          // ],
         }
       );
 
       //TODO: fix this, when set codec preferences, the simulcast is not working, only high layer is sending
-      // const sendCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
+      const sendCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
 
-      // const preferCodec = (
-      //   codecs: RTCRtpCodecCapability[],
-      //   preferedCodecs: RTCRtpCodecCapability[],
-      //   mimeType: string
-      // ): RTCRtpCodecCapability[] => {
-      //   codecs.forEach((codec) => {
-      //     if (codec.mimeType === mimeType) {
-      //       preferedCodecs.push(codec);
-      //     }
-      //   });
+      const preferCodec = (
+        codecs: RTCRtpCodecCapability[],
+        preferedCodecs: RTCRtpCodecCapability[],
+        mimeType: string
+      ): RTCRtpCodecCapability[] => {
+        codecs.forEach((codec) => {
+          if (codec.mimeType === mimeType) {
+            preferedCodecs.push(codec);
+          }
+        });
 
-      //   return preferedCodecs;
-      // };
+        return preferedCodecs;
+      };
 
-      // let preferedCodecs = [];
+      let preferedCodecs = [];
 
-      // preferedCodecs = preferCodec(
-      //   sendCodecs ? sendCodecs : [],
-      //   [],
-      //   'video/VP9'
-      // );
-      // preferedCodecs = preferCodec(
-      //   sendCodecs ? sendCodecs : [],
-      //   preferedCodecs,
-      //   'video/H264'
-      // );
-      // preferedCodecs = preferCodec(
-      //   sendCodecs ? sendCodecs : [],
-      //   preferedCodecs,
-      //   'video/VP8'
-      // );
+      preferedCodecs = preferCodec(
+        sendCodecs ? sendCodecs : [],
+        [],
+        'video/VP9'
+      );
+      preferedCodecs = preferCodec(
+        sendCodecs ? sendCodecs : [],
+        preferedCodecs,
+        'video/H264'
+      );
+      preferedCodecs = preferCodec(
+        sendCodecs ? sendCodecs : [],
+        preferedCodecs,
+        'video/VP8'
+      );
 
-      //transceiver.setCodecPreferences(preferedCodecs);
+      transceiver.setCodecPreferences(preferedCodecs);
     };
 
     _sleep = (delay: number) =>
