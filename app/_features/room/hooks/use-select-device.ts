@@ -56,6 +56,10 @@ export const useSelectDevice = (
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
             setSelectedDeviceKey(currentKey);
+            window.localStorage.setItem(
+              'device:selected-audio-input-id',
+              currentDevice.key
+            );
           }
         } else if (currentDevice.kind === 'audiooutput') {
           //TODO: audio output selection
@@ -69,6 +73,10 @@ export const useSelectDevice = (
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
             setSelectedDeviceKey(currentKey);
+            window.localStorage.setItem(
+              'device:selected-video-input-id',
+              currentDevice.key
+            );
           }
         }
       } catch (error) {

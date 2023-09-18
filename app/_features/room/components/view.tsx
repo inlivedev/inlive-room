@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Lobby from '@/_features/room/components/lobby';
 import LobbyHeader from '@/_features/room/components/lobby-header';
 import LobbyInvite from '@/_features/room/components/lobby-invite';
@@ -26,6 +26,14 @@ export default function View({ roomId, origin }: ViewProps) {
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return;
 
+    const selectedVideoInputId = window.localStorage.getItem(
+      'device:selected-video-input-id'
+    );
+
+    if (selectedVideoInputId) {
+      return { deviceId: { exact: selectedVideoInputId } };
+    }
+
     if (
       window.screen.orientation.type === 'portrait-primary' ||
       window.screen.orientation.type === 'portrait-secondary'
@@ -50,14 +58,28 @@ export default function View({ roomId, origin }: ViewProps) {
     };
   }, []);
 
-  const openConferenceHandler = async () => {
+  const audioConstraints = useMemo(() => {
+    if (typeof window === 'undefined') return;
+
+    const selectedAudioInputId = window.localStorage.getItem(
+      'device:selected-audio-input-id'
+    );
+
+    if (selectedAudioInputId) {
+      return { deviceId: { exact: selectedAudioInputId } };
+    }
+
+    return {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    };
+  }, []);
+
+  const openConferenceHandler = useCallback(async () => {
     const mediaStream = await getUserMedia({
       video: videoConstraints,
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-      },
+      audio: audioConstraints,
     });
 
     setLocalStream(mediaStream);
@@ -66,7 +88,7 @@ export default function View({ roomId, origin }: ViewProps) {
     Mixpanel.track('Join room', {
       roomId: roomId,
     });
-  };
+  }, [roomId, setOpenConference, videoConstraints, audioConstraints]);
 
   return (
     <div className="flex flex-1 flex-col bg-neutral-900 text-neutral-200">
