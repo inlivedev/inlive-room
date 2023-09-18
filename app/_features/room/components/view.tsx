@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import Lobby from '@/_features/room/components/lobby';
 import LobbyHeader from '@/_features/room/components/lobby-header';
 import LobbyInvite from '@/_features/room/components/lobby-invite';
@@ -23,7 +23,7 @@ export default function View({ roomId, origin }: ViewProps) {
 
   const [localStream, setLocalStream] = useState<MediaStream | undefined>();
 
-  const videoConstraints = useCallback((): MediaTrackConstraints => {
+  const videoConstraints = useMemo(() => {
     if (
       screen.orientation.type === 'portrait-primary' ||
       screen.orientation.type === 'portrait-secondary'
@@ -50,7 +50,7 @@ export default function View({ roomId, origin }: ViewProps) {
 
   const openConferenceHandler = async () => {
     const mediaStream = await getUserMedia({
-      video: videoConstraints(),
+      video: videoConstraints,
       audio: {
         echoCancellation: true,
         noiseSuppression: true,
