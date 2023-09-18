@@ -45,7 +45,7 @@ export default function ButtonMicrophone() {
         color="default"
         variant="bordered"
         className="flex h-full min-w-0 items-center gap-2 rounded rounded-r-none border-1 bg-zinc-900 px-2.5 py-2 hover:bg-zinc-700 active:bg-zinc-600"
-        aria-label="Toggle Mic"
+        aria-label="Toggle Microphone"
         onClick={toggle}
       >
         {active ? (
@@ -71,7 +71,7 @@ export default function ButtonMicrophone() {
           selectedKeys={selectedDeviceKey}
           onSelectionChange={onDeviceSelectionChange}
         >
-          <DropdownSection title="Select a mic" className="mb-0">
+          <DropdownSection title="Select a microphone" className="mb-0">
             {selectDevices.map((item) => {
               return <DropdownItem key={item.key}>{item.label}</DropdownItem>;
             })}
