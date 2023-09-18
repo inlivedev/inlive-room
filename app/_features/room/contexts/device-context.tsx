@@ -20,10 +20,10 @@ export const useDeviceContext = () => {
 
 export function DeviceProvider({
   children,
-  mediaStream,
+  localStream,
 }: {
   children: React.ReactNode;
-  mediaStream?: MediaStream;
+  localStream?: MediaStream;
 }) {
   const { peer } = usePeerContext();
   const [devicesState, setDevicesState] = useState(defaultValue);
@@ -31,7 +31,7 @@ export function DeviceProvider({
   useEffect(() => {
     if (peer) {
       const getDevices = async () => {
-        const devices = await peer.getDevices(mediaStream);
+        const devices = await peer.getDevices(localStream);
 
         if (
           devicesState.currentAudioInput?.deviceId ===
@@ -49,7 +49,7 @@ export function DeviceProvider({
 
       getDevices();
     }
-  }, [peer, mediaStream, devicesState]);
+  }, [peer, localStream, devicesState]);
 
   return (
     <DeviceContext.Provider value={devicesState}>
