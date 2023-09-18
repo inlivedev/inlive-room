@@ -76,9 +76,6 @@ export default function View({ roomId, origin }: ViewProps) {
     };
   }, []);
 
-  console.log('videoConstraints', videoConstraints);
-  console.log('audioConstraints', audioConstraints);
-
   const openConferenceHandler = useCallback(async () => {
     const mediaStream = await getUserMedia({
       video: videoConstraints,
