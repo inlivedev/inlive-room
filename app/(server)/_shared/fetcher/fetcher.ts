@@ -17,11 +17,14 @@ export const createFetcher = () => {
       if (contentType && contentType.includes("application/json")) {
         return response
           .json()
-          .then((json) => ({
-            code: response.status || 500,
-            ok: response.ok,
-            body: json,
-          } as FetcherResponse))
+          .then(function(json) {
+            const fetcherResponse = {
+              code: response.status || 500,
+              ok: response.ok,
+              body: json
+            };
+            return fetcherResponse;
+          })
           .catch((error) => {
             throw error;
           });

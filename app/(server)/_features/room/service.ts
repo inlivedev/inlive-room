@@ -5,8 +5,8 @@ import { Room, roomService } from "@/(server)/api/room/interface";
 // AddRoom({roomID,roomName,createdBy})
 
 export interface RoomRepoInterface {
-  addRoom(roomData : Room): Room;
-  getRoomById(id:string):Room
+  addRoom(roomData : Room): Promise<Room>;
+  getRoomById(id:string):Promise<Room | undefined>
 }
 
 export class service implements roomService {
@@ -16,11 +16,11 @@ export class service implements roomService {
     this._repo=repo
   }
 
-  createRoom(roomData: Room): Room {
-    return this._repo.addRoom(roomData)
+  async createRoom(roomData: Room): Promise<Room> {
+    return await this._repo.addRoom(roomData)
   }
 
-  getRoom(roomId: string): Room {
-    return this._repo.getRoomById(roomId)
+  async getRoom(roomId: string): Promise<Room|undefined> {
+    return await this._repo.getRoomById(roomId)
   }
 }

@@ -1,5 +1,5 @@
-import { ServerDataStore } from "@/(server)/_features/room/datastore";
-import { service } from "@/(server)/_features/room/create";
+import { RoomServerDataStore } from "@/(server)/_features/room/datastore";
+import { service } from "@/(server)/_features/room/service";
 import { getUserFromToken } from "@/(server)/_shared/utils/auth";
 import { room } from "@/_shared/utils/sdk";
 
@@ -38,4 +38,4 @@ const createRoomRoutesHandler = () => {
   };
 };
 
-export const roomRoutesHandler = createRoomRoutesHandler().createInstance(new service(new ServerDataStore()))
+export const roomRoutesHandler = createRoomRoutesHandler().createInstance(new service(new RoomServerDataStore()))

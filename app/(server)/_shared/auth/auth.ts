@@ -28,10 +28,10 @@ export const createAuth = (APIUrl?: string, Version?: string) => {
         _Fetcher = createFetcher().createInstance((this._APIUrl + "/" + this._Version))
 
         constructor() {
-            if (APIUrl != undefined) {
+            if (!APIUrl) {
                 this._APIUrl = APIUrl
             }
-            if (Version != undefined) {
+            if (!Version) {
                 this._Version = Version
             }
             this._Fetcher = createFetcher().createInstance((this._APIUrl + "/" + this._Version))
