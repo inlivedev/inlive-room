@@ -7,15 +7,16 @@ import {
   DropdownMenu,
   DropdownSection,
   DropdownItem,
+  ButtonGroup,
   Button,
 } from '@nextui-org/react';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
-import ExpandIcon from '@/_shared/components/icons/expand-icon';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
+import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
 export default function ButtonCamera() {
   const { active, toggle } = useToggle(true);
@@ -40,12 +41,12 @@ export default function ButtonCamera() {
   }, [active, peer]);
 
   return (
-    <div className="flex items-center text-zinc-200">
+    <ButtonGroup variant="flat">
       <Button
-        color="default"
-        variant="bordered"
-        className="flex h-full min-w-0 items-center gap-2 rounded rounded-r-none border-1 bg-zinc-900 px-2.5 py-2 hover:bg-zinc-700 active:bg-zinc-600"
+        isIconOnly
+        variant="flat"
         aria-label="Toggle Video Camera"
+        className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
         onClick={toggle}
       >
         {active ? (
@@ -54,30 +55,41 @@ export default function ButtonCamera() {
           <CameraOffIcon width={20} height={20} />
         )}
       </Button>
-      <Dropdown className="rounded-lg ring-1 ring-zinc-800">
+      <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
         <DropdownTrigger>
           <Button
-            color="default"
-            variant="bordered"
-            className="flex h-full min-w-0 items-center rounded rounded-l-none border-1 border-zinc-700 bg-zinc-800 p-1 text-xs hover:bg-zinc-700 focus:outline-none active:bg-zinc-600"
+            isIconOnly
+            className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
           >
-            <ExpandIcon width={12} height={12} strokeWidth={2} />
+            <ArrowDownFillIcon className="h-3.5 w-3.5" />
           </Button>
         </DropdownTrigger>
         <DropdownMenu
-          variant="faded"
           disallowEmptySelection
+          aria-label="Camera options"
           selectionMode="single"
           selectedKeys={selectedDeviceKey}
           onSelectionChange={onDeviceSelectionChange}
+          className="max-w-[280px]"
         >
           <DropdownSection title="Select a camera" className="mb-0">
-            {selectDevices.map((item) => {
-              return <DropdownItem key={item.key}>{item.label}</DropdownItem>;
+            {selectDevices.map((item, index) => {
+              return (
+                <DropdownItem
+                  key={item.key}
+                  description={
+                    item.key === currentVideoInput?.deviceId
+                      ? 'Currently in use'
+                      : 'Switch to this device'
+                  }
+                >
+                  {item.label || `Camera ${index}`}
+                </DropdownItem>
+              );
             })}
           </DropdownSection>
         </DropdownMenu>
       </Dropdown>
-    </div>
+    </ButtonGroup>
   );
 }
