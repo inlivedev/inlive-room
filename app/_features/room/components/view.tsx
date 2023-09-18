@@ -24,9 +24,11 @@ export default function View({ roomId, origin }: ViewProps) {
   const [localStream, setLocalStream] = useState<MediaStream | undefined>();
 
   const videoConstraints = useMemo(() => {
+    if (typeof window === 'undefined') return;
+
     if (
-      screen.orientation.type === 'portrait-primary' ||
-      screen.orientation.type === 'portrait-secondary'
+      window.screen.orientation.type === 'portrait-primary' ||
+      window.screen.orientation.type === 'portrait-secondary'
     ) {
       return {
         width: {
