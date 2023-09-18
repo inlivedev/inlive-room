@@ -1,11 +1,19 @@
 import { Selection } from '@nextui-org/react';
-import { useState, useMemo, Key, useCallback, useEffect } from 'react';
-import { useLocalDevice } from '@/_features/room/hooks/use-local-device';
+import { useState, useMemo, Key, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { useParticipantContext } from '@/_features/room/contexts/participant-context';
+import { getUserMedia } from '@/_shared/utils/get-user-media';
 
-export const useSelectDevice = (devices: MediaDeviceInfo[]) => {
-  const { mediaStream, getUserMedia } = useLocalDevice();
+export const useSelectDevice = (
+  devices: MediaDeviceInfo[],
+  currentDevice?: MediaDeviceInfo | undefined
+) => {
   const { peer } = usePeerContext();
+  const { streams } = useParticipantContext();
+
+  const [selectedDeviceKey, setSelectedDeviceKey] = useState<Set<Key>>(
+    new Set([])
+  );
 
   const selectDevices = useMemo(() => {
     return devices.map((value) => ({
@@ -15,14 +23,11 @@ export const useSelectDevice = (devices: MediaDeviceInfo[]) => {
     }));
   }, [devices]);
 
-  const [selectedDeviceKey, setSelectedDeviceKey] = useState<Set<Key>>(
-    new Set([])
-  );
-
-  const selectedDeviceKeyValue =
-    selectedDeviceKey.size === 0 && selectDevices.length > 0
-      ? new Set([selectDevices[0].key])
+  const selectedDeviceKeyValue = useMemo(() => {
+    return selectedDeviceKey.size === 0 && currentDevice
+      ? new Set([currentDevice.deviceId])
       : selectedDeviceKey;
+  }, [currentDevice, selectedDeviceKey]);
 
   const onDeviceSelectionChange = useCallback(
     async (currentKey: Selection) => {
@@ -32,65 +37,46 @@ export const useSelectDevice = (devices: MediaDeviceInfo[]) => {
         currentKey.has(device.key)
       );
 
-      if (!currentDevice) {
+      const localStream = streams.find((stream) => {
+        return stream.source === 'media' && stream.origin === 'local';
+      });
+
+      if (!currentDevice || !localStream) {
         throw new Error('Failed to change to the selected device');
       }
 
       try {
-        if (currentDevice.kind === 'videoinput') {
-          await getUserMedia({
-            audio: {
-              deviceId: { exact: currentDevice.key },
-            },
+        if (currentDevice.kind === 'audioinput') {
+          const mediaStream = await getUserMedia({
+            audio: { deviceId: { exact: currentDevice.key } },
           });
 
-          setSelectedDeviceKey(currentKey);
-        } else if (currentDevice.kind === 'audioinput') {
-          await getUserMedia({
-            audio: {
-              deviceId: { exact: currentDevice.key },
-            },
-          });
-
-          setSelectedDeviceKey(currentKey);
+          if (peer && mediaStream) {
+            const track = mediaStream.getAudioTracks()[0];
+            await peer.replaceTrack(track);
+            localStream.replaceTrack(track);
+            setSelectedDeviceKey(currentKey);
+          }
         } else if (currentDevice.kind === 'audiooutput') {
+          //
+        } else {
+          const mediaStream = await getUserMedia({
+            video: { deviceId: { exact: currentDevice.key } },
+          });
+
+          if (peer && mediaStream) {
+            const track = mediaStream.getVideoTracks()[0];
+            await peer.replaceTrack(track);
+            localStream.replaceTrack(track);
+            setSelectedDeviceKey(currentKey);
+          }
         }
       } catch (error) {
         console.error(error);
       }
     },
-    [getUserMedia, selectDevices]
+    [peer, selectDevices, streams]
   );
-
-  const replaceTrack = useCallback(
-    async (track: MediaStreamTrack) => {
-      if (!peer) return;
-
-      const peerConnection = peer.getPeerConnection();
-
-      if (!peerConnection) return;
-
-      for (const transceiver of peerConnection.getTransceivers()) {
-        if (
-          transceiver.sender.track &&
-          transceiver.sender.track.kind === track.kind
-        ) {
-          await transceiver.sender.replaceTrack(track);
-        }
-      }
-    },
-    [peer]
-  );
-
-  useEffect(() => {
-    if (mediaStream instanceof MediaStream) {
-      (async () => {
-        for (const track of mediaStream.getTracks()) {
-          await replaceTrack(track);
-        }
-      })();
-    }
-  }, [mediaStream, replaceTrack]);
 
   return {
     onDeviceSelectionChange,
