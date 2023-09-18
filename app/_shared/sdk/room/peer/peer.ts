@@ -126,6 +126,70 @@ export const createPeer = ({
       this._setTrackEnabled(this._peerConnection, 'audio', false);
     };
 
+    getDevices = async (mediaStream?: MediaStream | undefined) => {
+      const enumerateDevices = await navigator.mediaDevices.enumerateDevices();
+
+      const audioInputs = [];
+      const audioOutputs = [];
+      const videoInputs = [];
+
+      for (const device of enumerateDevices) {
+        if (device.kind === 'audioinput') {
+          audioInputs.push(device);
+        } else if (device.kind === 'audiooutput') {
+          audioOutputs.push(device);
+        } else {
+          videoInputs.push(device);
+        }
+      }
+
+      let currentAudioInput: MediaDeviceInfo | undefined = audioInputs[0];
+      const currentAudioOutput: MediaDeviceInfo | undefined = audioOutputs[0];
+      let currentVideoInput: MediaDeviceInfo | undefined = videoInputs[0];
+
+      if (mediaStream) {
+        const currentAudioInputId = mediaStream
+          .getAudioTracks()[0]
+          ?.getSettings().deviceId;
+
+        const currentVideoInputId = mediaStream
+          .getVideoTracks()[0]
+          ?.getSettings().deviceId;
+
+        currentAudioInput =
+          audioInputs.find((audioInput) => {
+            return audioInput.deviceId === currentAudioInputId;
+          }) || currentAudioInput;
+
+        currentVideoInput =
+          videoInputs.find((videoInput) => {
+            return videoInput.deviceId === currentVideoInputId;
+          }) || currentVideoInput;
+      }
+
+      return {
+        currentAudioInput,
+        currentAudioOutput,
+        currentVideoInput,
+        audioInputs,
+        audioOutputs,
+        videoInputs,
+      };
+    };
+
+    replaceTrack = async (track: MediaStreamTrack) => {
+      if (!this._peerConnection) return;
+
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        if (
+          transceiver.sender.track &&
+          transceiver.sender.track.kind === track.kind
+        ) {
+          await transceiver.sender.replaceTrack(track);
+        }
+      }
+    };
+
     _addEventListener = () => {
       if (!this._peerConnection) return;
 
@@ -386,6 +450,8 @@ export const createPeer = ({
         turnOnMic: peer.turnOnMic,
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
+        getDevices: peer.getDevices,
+        replaceTrack: peer.replaceTrack,
       };
     },
   };
