@@ -50,7 +50,7 @@ export const useSelectDevice = (
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
             setSelectedDeviceKey(currentKey);
-            window.localStorage.setItem(
+            window.sessionStorage.setItem(
               'device:selected-audio-input-id',
               currentActiveDevice.deviceId
             );
@@ -69,7 +69,7 @@ export const useSelectDevice = (
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
             setSelectedDeviceKey(currentKey);
-            window.localStorage.setItem(
+            window.sessionStorage.setItem(
               'device:selected-video-input-id',
               currentActiveDevice.deviceId
             );

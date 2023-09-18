@@ -26,7 +26,7 @@ export default function View({ roomId, origin }: ViewProps) {
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return;
 
-    const selectedVideoInputId = window.localStorage.getItem(
+    const selectedVideoInputId = window.sessionStorage.getItem(
       'device:selected-video-input-id'
     );
 
@@ -61,7 +61,7 @@ export default function View({ roomId, origin }: ViewProps) {
   const audioConstraints = useMemo(() => {
     if (typeof window === 'undefined') return;
 
-    const selectedAudioInputId = window.localStorage.getItem(
+    const selectedAudioInputId = window.sessionStorage.getItem(
       'device:selected-audio-input-id'
     );
 
@@ -75,6 +75,9 @@ export default function View({ roomId, origin }: ViewProps) {
       autoGainControl: true,
     };
   }, []);
+
+  console.log('videoConstraints', videoConstraints);
+  console.log('audioConstraints', audioConstraints);
 
   const openConferenceHandler = useCallback(async () => {
     const mediaStream = await getUserMedia({
