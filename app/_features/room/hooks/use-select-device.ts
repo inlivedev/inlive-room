@@ -58,7 +58,7 @@ export const useSelectDevice = (
             setSelectedDeviceKey(currentKey);
           }
         } else if (currentDevice.kind === 'audiooutput') {
-          //
+          //TODO: audio output selection
         } else {
           const mediaStream = await getUserMedia({
             video: { deviceId: { exact: currentDevice.key } },

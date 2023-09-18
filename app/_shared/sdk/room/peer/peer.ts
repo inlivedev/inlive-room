@@ -189,8 +189,9 @@ export const createPeer = ({
       }
 
       let currentAudioInput: MediaDeviceInfo | undefined = audioInputs[0];
-      const currentAudioOutput: MediaDeviceInfo | undefined = audioOutputs[0];
       let currentVideoInput: MediaDeviceInfo | undefined = videoInputs[0];
+      //TODO: audio output selection
+      const currentAudioOutput: MediaDeviceInfo | undefined = audioOutputs[0];
 
       if (mediaStream) {
         const currentAudioInputId = mediaStream
