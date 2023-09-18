@@ -1,7 +1,7 @@
 import { Room } from "@/(server)/api/room/interface";
 import { RoomRepoInterface } from "./service";
 import { db } from "@/(server)/_shared/database/database";
-import { rooms } from "@/(server)/_schema/rooms";
+import { rooms } from "@/(server)/_features/room/model";
 import { eq } from "drizzle-orm";
 
 export class RoomRepo implements RoomRepoInterface {
