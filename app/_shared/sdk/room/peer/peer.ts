@@ -1,5 +1,3 @@
-import { send } from 'process';
-
 export const PeerEvents: RoomPeerType.PeerEvents = {
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
