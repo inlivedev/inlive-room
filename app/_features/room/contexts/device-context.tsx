@@ -1,9 +1,12 @@
 'use client';
 
-import { createContext, useContext, useMemo } from 'react';
-import { useEnumerateDevices } from '@/_features/room/hooks/use-enumerate-devices';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 const defaultValue = {
+  currentAudioInput: undefined as MediaDeviceInfo | undefined,
+  currentAudioOutput: undefined as MediaDeviceInfo | undefined,
+  currentVideoInput: undefined as MediaDeviceInfo | undefined,
   audioInputs: [] as MediaDeviceInfo[],
   audioOutputs: [] as MediaDeviceInfo[],
   videoInputs: [] as MediaDeviceInfo[],
@@ -15,29 +18,41 @@ export const useDeviceContext = () => {
   return useContext(DeviceContext);
 };
 
-export function DeviceProvider({ children }: { children: React.ReactNode }) {
-  const devices = useEnumerateDevices();
+export function DeviceProvider({
+  children,
+  mediaStream,
+}: {
+  children: React.ReactNode;
+  mediaStream?: MediaStream;
+}) {
+  const { peer } = usePeerContext();
+  const [devicesState, setDevicesState] = useState(defaultValue);
 
-  const { audioInputs, audioOutputs, videoInputs } = useMemo(() => {
-    const audioInputs = [];
-    const audioOutputs = [];
-    const videoInputs = [];
+  useEffect(() => {
+    if (peer) {
+      const getDevices = async () => {
+        const devices = await peer.getDevices(mediaStream);
 
-    for (const device of devices) {
-      if (device.kind === 'audioinput') {
-        audioInputs.push(device);
-      } else if (device.kind === 'audiooutput') {
-        audioOutputs.push(device);
-      } else {
-        videoInputs.push(device);
-      }
+        if (
+          devicesState.currentAudioInput?.deviceId ===
+            devices.currentAudioInput?.deviceId &&
+          devicesState.currentAudioOutput?.deviceId ===
+            devices.currentAudioOutput?.deviceId &&
+          devicesState.currentVideoInput?.deviceId ===
+            devices.currentVideoInput?.deviceId
+        ) {
+          return;
+        }
+
+        setDevicesState(devices);
+      };
+
+      getDevices();
     }
-
-    return { audioInputs, audioOutputs, videoInputs };
-  }, [devices]);
+  }, [peer, mediaStream, devicesState]);
 
   return (
-    <DeviceContext.Provider value={{ audioInputs, audioOutputs, videoInputs }}>
+    <DeviceContext.Provider value={devicesState}>
       {children}
     </DeviceContext.Provider>
   );
