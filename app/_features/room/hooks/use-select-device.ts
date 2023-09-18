@@ -2,53 +2,47 @@ import { Selection } from '@nextui-org/react';
 import { useState, useMemo, Key, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
+import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 
 export const useSelectDevice = (
   devices: MediaDeviceInfo[],
-  currentDevice?: MediaDeviceInfo | undefined
+  currentActiveDevice: MediaDeviceInfo | undefined
 ) => {
   const { peer } = usePeerContext();
   const { streams } = useParticipantContext();
+  const { setCurrentActiveDevice } = useDeviceContext();
 
   const [selectedDeviceKey, setSelectedDeviceKey] = useState<Set<Key>>(
     new Set([])
   );
 
-  const selectDevices = useMemo(() => {
-    return devices.map((value) => ({
-      key: value.deviceId,
-      label: value.label,
-      kind: value.kind,
-    }));
-  }, [devices]);
-
   const selectedDeviceKeyValue = useMemo(() => {
-    return selectedDeviceKey.size === 0 && currentDevice
-      ? new Set([currentDevice.deviceId])
+    return selectedDeviceKey.size === 0 && currentActiveDevice
+      ? new Set([currentActiveDevice.deviceId])
       : selectedDeviceKey;
-  }, [currentDevice, selectedDeviceKey]);
+  }, [currentActiveDevice, selectedDeviceKey]);
 
   const onDeviceSelectionChange = useCallback(
     async (currentKey: Selection) => {
       if (!(currentKey instanceof Set) || currentKey.size === 0) return;
 
-      const currentDevice = selectDevices.find((device) =>
-        currentKey.has(device.key)
+      const currentActiveDevice = devices.find((device) =>
+        currentKey.has(device.deviceId)
       );
 
       const localStream = streams.find((stream) => {
         return stream.source === 'media' && stream.origin === 'local';
       });
 
-      if (!currentDevice || !localStream) {
+      if (!currentActiveDevice || !localStream) {
         throw new Error('Failed to change to the selected device');
       }
 
       try {
-        if (currentDevice.kind === 'audioinput') {
+        if (currentActiveDevice.kind === 'audioinput') {
           const mediaStream = await getUserMedia({
-            audio: { deviceId: { exact: currentDevice.key } },
+            audio: { deviceId: { exact: currentActiveDevice.deviceId } },
           });
 
           if (peer && mediaStream) {
@@ -58,14 +52,16 @@ export const useSelectDevice = (
             setSelectedDeviceKey(currentKey);
             window.localStorage.setItem(
               'device:selected-audio-input-id',
-              currentDevice.key
+              currentActiveDevice.deviceId
             );
+            setCurrentActiveDevice &&
+              setCurrentActiveDevice(currentActiveDevice);
           }
-        } else if (currentDevice.kind === 'audiooutput') {
+        } else if (currentActiveDevice.kind === 'audiooutput') {
           //TODO: audio output selection
         } else {
           const mediaStream = await getUserMedia({
-            video: { deviceId: { exact: currentDevice.key } },
+            video: { deviceId: { exact: currentActiveDevice.deviceId } },
           });
 
           if (peer && mediaStream) {
@@ -75,16 +71,26 @@ export const useSelectDevice = (
             setSelectedDeviceKey(currentKey);
             window.localStorage.setItem(
               'device:selected-video-input-id',
-              currentDevice.key
+              currentActiveDevice.deviceId
             );
+            setCurrentActiveDevice &&
+              setCurrentActiveDevice(currentActiveDevice);
           }
         }
       } catch (error) {
         console.error(error);
       }
     },
-    [peer, selectDevices, streams]
+    [peer, devices, streams, setCurrentActiveDevice]
   );
+
+  const selectDevices = useMemo(() => {
+    return devices.map((value) => ({
+      key: value.deviceId,
+      label: value.label,
+      kind: value.kind,
+    }));
+  }, [devices]);
 
   return {
     onDeviceSelectionChange,
