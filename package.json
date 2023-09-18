@@ -19,7 +19,8 @@
     "next": "^13.4.9",
     "postgres": "^3.3.5",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "sqids": "^0.3.0"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.9",

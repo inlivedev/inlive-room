@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { apiResponse } from "../_shared/types";
 import { roomRoutesHandler } from ".";
 
-
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method != "POST") {
     res.status(405);
@@ -21,12 +20,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
-  try{
-    roomRoutesHandler.createRoomHandler(requestToken)
-  }
-  catch(e){
+  try {
+    roomRoutesHandler.createRoomHandler(requestToken);
+  } catch (e) {
     res.status(500).json(
-      {code: 500,message:"An error has occured on our side, please try again later"}as apiResponse
-    )
+      {
+        code: 500,
+        message: "An error has occured on our side, please try again later",
+      } as apiResponse,
+    );
   }
 };

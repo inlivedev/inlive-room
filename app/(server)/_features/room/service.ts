@@ -1,4 +1,5 @@
 import { Room, roomService } from "@/(server)/api/room/interface";
+import Sqids from "sqids"
 
 // TODO
 // Create Server Datastore
@@ -17,6 +18,7 @@ export class service implements roomService {
   }
 
   async createRoom(roomData: Room): Promise<Room> {
+    roomData.id=generateID()
     return await this._repo.addRoom(roomData)
   }
 
@@ -24,3 +26,9 @@ export class service implements roomService {
     return await this._repo.getRoomById(roomId)
   }
 }
+
+
+  const generateID = (): string => {
+      const sqids = new Sqids()
+      return sqids.encode([Math.random(),Math.random(),Math.random()])
+    }
