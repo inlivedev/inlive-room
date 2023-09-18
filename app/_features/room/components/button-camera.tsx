@@ -70,7 +70,6 @@ export default function ButtonCamera() {
           selectionMode="single"
           selectedKeys={selectedDeviceKey}
           onSelectionChange={onDeviceSelectionChange}
-          className="max-w-[280px]"
         >
           <DropdownSection title="Select a camera" className="mb-0">
             {selectDevices.map((item, index) => {
