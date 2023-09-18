@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 const defaultValue = {
@@ -10,9 +16,15 @@ const defaultValue = {
   audioInputs: [] as MediaDeviceInfo[],
   audioOutputs: [] as MediaDeviceInfo[],
   videoInputs: [] as MediaDeviceInfo[],
+  devices: [] as MediaDeviceInfo[],
 };
 
-const DeviceContext = createContext(defaultValue);
+type SetCurrentActiveDeviceType = (deviceInfo: MediaDeviceInfo) => void;
+
+const DeviceContext = createContext({
+  ...defaultValue,
+  setCurrentActiveDevice: undefined as SetCurrentActiveDeviceType | undefined,
+});
 
 export const useDeviceContext = () => {
   return useContext(DeviceContext);
@@ -28,23 +40,86 @@ export function DeviceProvider({
   const { peer } = usePeerContext();
   const [devicesState, setDevicesState] = useState(defaultValue);
 
+  const setCurrentActiveDevice = useCallback((deviceInfo: MediaDeviceInfo) => {
+    setDevicesState((prevData) => {
+      const newData = { ...prevData };
+
+      if (deviceInfo.kind === 'audioinput') {
+        newData.currentAudioInput = deviceInfo;
+      } else if (deviceInfo.kind === 'audiooutput') {
+        newData.currentAudioOutput = deviceInfo;
+      } else if (deviceInfo.kind === 'videoinput') {
+        newData.currentVideoInput = deviceInfo;
+      }
+
+      return { ...newData };
+    });
+  }, []);
+
   useEffect(() => {
     if (peer) {
       const getDevices = async () => {
-        const devices = await peer.getDevices(localStream);
+        const devices = await navigator.mediaDevices.enumerateDevices();
+
+        const audioInputs = [];
+        const audioOutputs = [];
+        const videoInputs = [];
+
+        for (const device of devices) {
+          if (device.kind === 'audioinput') {
+            audioInputs.push(device);
+          } else if (device.kind === 'audiooutput') {
+            audioOutputs.push(device);
+          } else {
+            videoInputs.push(device);
+          }
+        }
+
+        let currentAudioInput: MediaDeviceInfo | undefined = audioInputs[0];
+        let currentVideoInput: MediaDeviceInfo | undefined = videoInputs[0];
+        //TODO: audio output selection
+        const currentAudioOutput: MediaDeviceInfo | undefined = audioOutputs[0];
+
+        if (localStream) {
+          const currentAudioInputId = localStream
+            .getAudioTracks()[0]
+            ?.getSettings().deviceId;
+
+          const currentVideoInputId = localStream
+            .getVideoTracks()[0]
+            ?.getSettings().deviceId;
+
+          currentAudioInput =
+            audioInputs.find((audioInput) => {
+              return audioInput.deviceId === currentAudioInputId;
+            }) || currentAudioInput;
+
+          currentVideoInput =
+            videoInputs.find((videoInput) => {
+              return videoInput.deviceId === currentVideoInputId;
+            }) || currentVideoInput;
+        }
 
         if (
           devicesState.currentAudioInput?.deviceId ===
-            devices.currentAudioInput?.deviceId &&
+            currentAudioInput?.deviceId &&
           devicesState.currentAudioOutput?.deviceId ===
-            devices.currentAudioOutput?.deviceId &&
+            currentAudioOutput?.deviceId &&
           devicesState.currentVideoInput?.deviceId ===
-            devices.currentVideoInput?.deviceId
+            currentVideoInput?.deviceId
         ) {
           return;
         }
 
-        setDevicesState(devices);
+        setDevicesState({
+          currentAudioInput: currentAudioInput,
+          currentAudioOutput: currentAudioOutput,
+          currentVideoInput: currentVideoInput,
+          audioInputs: audioInputs,
+          audioOutputs: audioOutputs,
+          videoInputs: videoInputs,
+          devices: devices,
+        });
       };
 
       getDevices();
@@ -52,7 +127,7 @@ export function DeviceProvider({
   }, [peer, localStream, devicesState]);
 
   return (
-    <DeviceContext.Provider value={devicesState}>
+    <DeviceContext.Provider value={{ ...devicesState, setCurrentActiveDevice }}>
       {children}
     </DeviceContext.Provider>
   );
