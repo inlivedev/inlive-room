@@ -21,7 +21,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    roomRoutesHandler.createRoomHandler(requestToken);
+    const createdRoom = await roomRoutesHandler.createRoomHandler(requestToken);
+
+    res.status(201).json({
+      code: 201,
+      message: "Room Created",
+      data: createdRoom,
+    } as apiResponse);
   } catch (e) {
     res.status(500).json(
       {

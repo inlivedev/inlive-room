@@ -1,7 +1,6 @@
 import { RoomRepo } from "@/(server)/_features/room/repository";
 import { service } from "@/(server)/_features/room/service";
 import { getUserFromToken } from "@/(server)/_shared/utils/auth";
-import { room } from "@/_shared/utils/sdk";
 
 const createRoomRoutesHandler = () => {
   const roomHandler = class {
@@ -18,11 +17,8 @@ const createRoomRoutesHandler = () => {
         throw new Error("failed to get user data");
       }
 
-      const roomData = await room.createRoom();
-      //   const clientData = await room.createClient(roomData.data.roomId);
-
-      this.roomService.createRoom(
-        { id: roomData.data.roomId, createdBy: userData.id },
+      return this.roomService.createRoom(
+         userData.id 
       );
     };
   };

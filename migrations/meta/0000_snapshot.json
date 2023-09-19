@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "2f828ad7-d246-49cb-b773-d17972d62c48",
+  "id": "83b26d43-e22a-48d3-a354-8e8a2e820253",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "rooms": {
@@ -10,6 +10,12 @@
       "columns": {
         "id": {
           "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
