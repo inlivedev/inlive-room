@@ -13,80 +13,97 @@ export const useSelectDevice = (
   const { streams } = useParticipantContext();
   const { setCurrentActiveDevice } = useDeviceContext();
 
-  const [selectedDeviceKey, setSelectedDeviceKey] = useState<Set<Key>>(
-    new Set([])
-  );
+  const [selectedDeviceKeyState, setSelectedDeviceKeyState] = useState<
+    Set<Key>
+  >(new Set([]));
 
   const selectedDeviceKeyValue = useMemo(() => {
-    return selectedDeviceKey.size === 0 && currentActiveDevice
-      ? new Set([currentActiveDevice.deviceId])
-      : selectedDeviceKey;
-  }, [currentActiveDevice, selectedDeviceKey]);
+    return selectedDeviceKeyState.size === 0 && currentActiveDevice
+      ? new Set([`${currentActiveDevice.kind}-${currentActiveDevice.deviceId}`])
+      : selectedDeviceKeyState;
+  }, [currentActiveDevice, selectedDeviceKeyState]);
 
   const onDeviceSelectionChange = useCallback(
-    async (currentKey: Selection) => {
-      if (!(currentKey instanceof Set) || currentKey.size === 0) return;
-
-      const currentActiveDevice = devices.find((device) =>
-        currentKey.has(device.deviceId)
-      );
-
+    async (selectedKeys: Selection, currentSelectedDevice: MediaDeviceInfo) => {
       const localStream = streams.find((stream) => {
         return stream.source === 'media' && stream.origin === 'local';
       });
 
-      if (!currentActiveDevice || !localStream) {
+      if (
+        !(selectedKeys instanceof Set) ||
+        selectedKeys.size === 0 ||
+        !(currentSelectedDevice instanceof MediaDeviceInfo) ||
+        !localStream
+      ) {
         throw new Error('Failed to change to the selected device');
       }
 
+      const selectedDeviceKeys = new Set([...selectedKeys]);
+
+      for (const selectedDeviceKey of selectedDeviceKeys) {
+        if (
+          `${currentSelectedDevice.kind}-${currentSelectedDevice.deviceId}` !==
+          selectedDeviceKey
+        ) {
+          selectedDeviceKeys.delete(selectedDeviceKey);
+        }
+      }
+
       try {
-        if (currentActiveDevice.kind === 'audioinput') {
+        if (currentSelectedDevice.kind === 'audioinput') {
           const mediaStream = await getUserMedia({
-            audio: { deviceId: { exact: currentActiveDevice.deviceId } },
+            audio: { deviceId: { exact: currentSelectedDevice.deviceId } },
           });
 
           if (peer && mediaStream) {
             const track = mediaStream.getAudioTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
-            setSelectedDeviceKey(currentKey);
             window.sessionStorage.setItem(
               'device:selected-audio-input-id',
-              currentActiveDevice.deviceId
+              currentSelectedDevice.deviceId
             );
+
+            setSelectedDeviceKeyState(selectedDeviceKeys);
             setCurrentActiveDevice &&
-              setCurrentActiveDevice(currentActiveDevice);
+              setCurrentActiveDevice(currentSelectedDevice);
           }
-        } else if (currentActiveDevice.kind === 'audiooutput') {
-          //TODO: audio output selection
+        } else if (currentSelectedDevice.kind === 'audiooutput') {
+          window.sessionStorage.setItem(
+            'device:selected-audio-output-id',
+            currentSelectedDevice.deviceId
+          );
+          setSelectedDeviceKeyState(selectedDeviceKeys);
+          setCurrentActiveDevice &&
+            setCurrentActiveDevice(currentSelectedDevice);
         } else {
           const mediaStream = await getUserMedia({
-            video: { deviceId: { exact: currentActiveDevice.deviceId } },
+            video: { deviceId: { exact: currentSelectedDevice.deviceId } },
           });
 
           if (peer && mediaStream) {
             const track = mediaStream.getVideoTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
-            setSelectedDeviceKey(currentKey);
             window.sessionStorage.setItem(
               'device:selected-video-input-id',
-              currentActiveDevice.deviceId
+              currentSelectedDevice.deviceId
             );
+            setSelectedDeviceKeyState(selectedDeviceKeys);
             setCurrentActiveDevice &&
-              setCurrentActiveDevice(currentActiveDevice);
+              setCurrentActiveDevice(currentSelectedDevice);
           }
         }
       } catch (error) {
         console.error(error);
       }
     },
-    [peer, devices, streams, setCurrentActiveDevice]
+    [peer, streams, setCurrentActiveDevice]
   );
 
-  const selectDevices = useMemo(() => {
+  const selectDeviceOptions = useMemo(() => {
     return devices.map((value) => ({
-      key: value.deviceId,
+      key: `${value.kind}-${value.deviceId}`,
       label: value.label,
       kind: value.kind,
     }));
@@ -95,6 +112,6 @@ export const useSelectDevice = (
   return {
     onDeviceSelectionChange,
     selectedDeviceKey: selectedDeviceKeyValue,
-    selectDevices,
+    selectDeviceOptions,
   };
 };

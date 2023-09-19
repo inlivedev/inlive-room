@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -10,21 +10,61 @@ import {
   ButtonGroup,
   Button,
 } from '@nextui-org/react';
+import type { Selection } from '@nextui-org/react';
 import { useToggle } from '@/_shared/hooks/use-toggle';
+import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
 export default function ButtonMicrophone() {
   const { active, toggle } = useToggle(true);
   const { peer } = usePeerContext();
-  const { audioInputs, currentAudioInput } = useDeviceContext();
   const didMount = useRef(false);
-  const { selectedDeviceKey, selectDevices, onDeviceSelectionChange } =
-    useSelectDevice(audioInputs, currentAudioInput);
+  const {
+    currentAudioInput,
+    currentAudioOutput,
+    audioInputs,
+    audioOutputs,
+    devices,
+  } = useDeviceContext();
+
+  const {
+    selectedDeviceKey: selectedAudioInputKey,
+    selectDeviceOptions: selectAudioInputOptions,
+    onDeviceSelectionChange: onAudioInputSelectionChange,
+  } = useSelectDevice(audioInputs, currentAudioInput);
+
+  const {
+    selectedDeviceKey: selectedAudioOutputKey,
+    selectDeviceOptions: selectAudioOutputOptions,
+    onDeviceSelectionChange: onAudioOutputSelectionChange,
+  } = useSelectDevice(audioOutputs, currentAudioOutput);
+
+  const selectedDeviceKeys = useMemo(() => {
+    return new Set([...selectedAudioInputKey, ...selectedAudioOutputKey]);
+  }, [selectedAudioInputKey, selectedAudioOutputKey]);
+
+  const onDeviceSelectionChange = useCallback(
+    (selectedKeys: Selection) => {
+      if (!(selectedKeys instanceof Set) || selectedKeys.size === 0) return;
+
+      const currentSelected = devices.find((device) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        return `${device.kind}-${device.deviceId}` === selectedKeys.currentKey;
+      });
+
+      if (currentSelected?.kind === 'audioinput') {
+        onAudioInputSelectionChange(selectedKeys, currentSelected);
+      } else if (currentSelected?.kind === 'audiooutput') {
+        onAudioOutputSelectionChange(selectedKeys, currentSelected);
+      }
+    },
+    [devices, onAudioInputSelectionChange, onAudioOutputSelectionChange]
+  );
 
   useEffect(() => {
     if (!peer) return;
@@ -39,6 +79,82 @@ export default function ButtonMicrophone() {
       didMount.current = true;
     }
   }, [active, peer]);
+
+  const isSinkSupportedRef = useRef(
+    typeof window !== 'undefined' &&
+      HTMLMediaElement.prototype.hasOwnProperty('setSinkId')
+  );
+
+  const renderSpeakerOptions = () => {
+    return (
+      <DropdownSection title="Select a speaker" className="mb-0">
+        {selectAudioOutputOptions.map((item, index) => {
+          return (
+            <DropdownItem
+              key={item.key}
+              description={
+                item.key === currentAudioOutput?.deviceId
+                  ? 'Currently in use'
+                  : 'Switch to this device'
+              }
+            >
+              {item.label || `Microphone ${index}`}
+            </DropdownItem>
+          );
+        })}
+      </DropdownSection>
+    );
+  };
+
+  const renderMicOptions = () => {
+    return (
+      <DropdownSection title="Select a microphone" showDivider>
+        {selectAudioInputOptions.map((item, index) => {
+          return (
+            <DropdownItem
+              key={item.key}
+              description={
+                item.key === currentAudioInput?.deviceId
+                  ? 'Currently in use'
+                  : 'Switch to this device'
+              }
+            >
+              {item.label || `Microphone ${index}`}
+            </DropdownItem>
+          );
+        })}
+      </DropdownSection>
+    );
+  };
+
+  const renderDropdownMenuWithoutSpeaker = () => {
+    return (
+      <DropdownMenu
+        disallowEmptySelection
+        aria-label="Audio options"
+        selectionMode="multiple"
+        selectedKeys={selectedDeviceKeys}
+        onSelectionChange={onDeviceSelectionChange}
+      >
+        {renderMicOptions()}
+      </DropdownMenu>
+    );
+  };
+
+  const renderDropdownMenuWithSpeaker = () => {
+    return (
+      <DropdownMenu
+        disallowEmptySelection
+        aria-label="Audio options"
+        selectionMode="multiple"
+        selectedKeys={selectedDeviceKeys}
+        onSelectionChange={onDeviceSelectionChange}
+      >
+        {renderMicOptions()}
+        {renderSpeakerOptions()}
+      </DropdownMenu>
+    );
+  };
 
   return (
     <ButtonGroup variant="flat">
@@ -64,30 +180,9 @@ export default function ButtonMicrophone() {
             <ArrowDownFillIcon className="h-3.5 w-3.5" />
           </Button>
         </DropdownTrigger>
-        <DropdownMenu
-          disallowEmptySelection
-          aria-label="Microphone options"
-          selectionMode="single"
-          selectedKeys={selectedDeviceKey}
-          onSelectionChange={onDeviceSelectionChange}
-        >
-          <DropdownSection title="Select a microphone" className="mb-0">
-            {selectDevices.map((item, index) => {
-              return (
-                <DropdownItem
-                  key={item.key}
-                  description={
-                    item.key === currentAudioInput?.deviceId
-                      ? 'Currently in use'
-                      : 'Switch to this device'
-                  }
-                >
-                  {item.label || `Microphone ${index}`}
-                </DropdownItem>
-              );
-            })}
-          </DropdownSection>
-        </DropdownMenu>
+        {isSinkSupportedRef.current
+          ? renderDropdownMenuWithSpeaker()
+          : renderDropdownMenuWithoutSpeaker()}
       </Dropdown>
     </ButtonGroup>
   );

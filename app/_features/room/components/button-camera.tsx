@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -10,21 +10,43 @@ import {
   ButtonGroup,
   Button,
 } from '@nextui-org/react';
+import type { Selection } from '@nextui-org/react';
 import { useToggle } from '@/_shared/hooks/use-toggle';
+import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
 export default function ButtonCamera() {
   const { active, toggle } = useToggle(true);
   const { peer } = usePeerContext();
-  const { videoInputs, currentVideoInput } = useDeviceContext();
   const didMount = useRef(false);
-  const { selectedDeviceKey, selectDevices, onDeviceSelectionChange } =
-    useSelectDevice(videoInputs, currentVideoInput);
+  const { currentVideoInput, videoInputs, devices } = useDeviceContext();
+
+  const {
+    selectedDeviceKey: selectedVideoInputKey,
+    selectDeviceOptions: selectVideoInputOptions,
+    onDeviceSelectionChange: onVideoInputSelectionChange,
+  } = useSelectDevice(videoInputs, currentVideoInput);
+
+  const onDeviceSelectionChange = useCallback(
+    (selectedKey: Selection) => {
+      if (!(selectedKey instanceof Set) || selectedKey.size === 0) return;
+
+      const currentSelected = devices.find((device) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        return `${device.kind}-${device.deviceId}` === selectedKey.currentKey;
+      });
+
+      if (currentSelected?.kind === 'videoinput') {
+        onVideoInputSelectionChange(selectedKey, currentSelected);
+      }
+    },
+    [devices, onVideoInputSelectionChange]
+  );
 
   useEffect(() => {
     if (!peer) return;
@@ -68,11 +90,11 @@ export default function ButtonCamera() {
           disallowEmptySelection
           aria-label="Camera options"
           selectionMode="single"
-          selectedKeys={selectedDeviceKey}
+          selectedKeys={selectedVideoInputKey}
           onSelectionChange={onDeviceSelectionChange}
         >
           <DropdownSection title="Select a camera" className="mb-0">
-            {selectDevices.map((item, index) => {
+            {selectVideoInputOptions.map((item, index) => {
               return (
                 <DropdownItem
                   key={item.key}
