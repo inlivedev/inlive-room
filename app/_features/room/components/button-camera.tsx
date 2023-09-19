@@ -99,7 +99,8 @@ export default function ButtonCamera() {
                 <DropdownItem
                   key={item.key}
                   description={
-                    item.key === currentVideoInput?.deviceId
+                    item.key ===
+                    `${currentVideoInput?.kind}-${currentVideoInput?.deviceId}`
                       ? 'Currently in use'
                       : 'Switch to this device'
                   }

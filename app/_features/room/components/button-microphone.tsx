@@ -85,7 +85,7 @@ export default function ButtonMicrophone() {
       HTMLMediaElement.prototype.hasOwnProperty('setSinkId')
   );
 
-  const renderSpeakerOptions = () => {
+  const renderSpeakerOptions = useCallback(() => {
     return (
       <DropdownSection title="Select a speaker" className="mb-0">
         {selectAudioOutputOptions.map((item, index) => {
@@ -93,7 +93,8 @@ export default function ButtonMicrophone() {
             <DropdownItem
               key={item.key}
               description={
-                item.key === currentAudioOutput?.deviceId
+                item.key ===
+                `${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`
                   ? 'Currently in use'
                   : 'Switch to this device'
               }
@@ -104,9 +105,9 @@ export default function ButtonMicrophone() {
         })}
       </DropdownSection>
     );
-  };
+  }, [currentAudioOutput, selectAudioOutputOptions]);
 
-  const renderMicOptions = () => {
+  const renderMicOptions = useCallback(() => {
     return (
       <DropdownSection title="Select a microphone" showDivider>
         {selectAudioInputOptions.map((item, index) => {
@@ -114,7 +115,8 @@ export default function ButtonMicrophone() {
             <DropdownItem
               key={item.key}
               description={
-                item.key === currentAudioInput?.deviceId
+                item.key ===
+                `${currentAudioInput?.kind}-${currentAudioInput?.deviceId}`
                   ? 'Currently in use'
                   : 'Switch to this device'
               }
@@ -125,9 +127,9 @@ export default function ButtonMicrophone() {
         })}
       </DropdownSection>
     );
-  };
+  }, [currentAudioInput, selectAudioInputOptions]);
 
-  const renderDropdownMenuWithoutSpeaker = () => {
+  const renderDropdownMenuWithoutSpeaker = useCallback(() => {
     return (
       <DropdownMenu
         disallowEmptySelection
@@ -139,9 +141,9 @@ export default function ButtonMicrophone() {
         {renderMicOptions()}
       </DropdownMenu>
     );
-  };
+  }, [onDeviceSelectionChange, renderMicOptions, selectedDeviceKeys]);
 
-  const renderDropdownMenuWithSpeaker = () => {
+  const renderDropdownMenuWithSpeaker = useCallback(() => {
     return (
       <DropdownMenu
         disallowEmptySelection
@@ -154,7 +156,12 @@ export default function ButtonMicrophone() {
         {renderSpeakerOptions()}
       </DropdownMenu>
     );
-  };
+  }, [
+    onDeviceSelectionChange,
+    renderMicOptions,
+    renderSpeakerOptions,
+    selectedDeviceKeys,
+  ]);
 
   return (
     <ButtonGroup variant="flat">
