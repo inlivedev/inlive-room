@@ -75,10 +75,19 @@ export function DeviceProvider({
           }
         }
 
-        let currentAudioInput: MediaDeviceInfo | undefined = audioInputs[0];
-        let currentVideoInput: MediaDeviceInfo | undefined = videoInputs[0];
-        //TODO: audio output selection
-        const currentAudioOutput: MediaDeviceInfo | undefined = audioOutputs[0];
+        let currentAudioInput: MediaDeviceInfo | undefined =
+          devicesState.currentAudioInput
+            ? devicesState.currentAudioInput
+            : audioInputs[0];
+        let currentVideoInput: MediaDeviceInfo | undefined =
+          devicesState.currentVideoInput
+            ? devicesState.currentVideoInput
+            : videoInputs[0];
+
+        const currentAudioOutput: MediaDeviceInfo | undefined =
+          devicesState.currentAudioOutput
+            ? devicesState.currentAudioOutput
+            : audioOutputs[0];
 
         if (localStream) {
           const currentAudioInputId = localStream
