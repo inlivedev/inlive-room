@@ -23,7 +23,7 @@ export default function Conference() {
   };
 
   return (
-    <div className={`${styles['conference']}`}>
+    <div className="h-screen w-screen">
       <div className={`${styles['participants']} ${getClass()}`}>
         <ConferenceParticipants />
       </div>

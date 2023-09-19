@@ -1,5 +1,3 @@
-import { send } from 'process';
-
 export const PeerEvents: RoomPeerType.PeerEvents = {
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
@@ -171,6 +169,19 @@ export const createPeer = ({
     turnOffMic = () => {
       if (!this._peerConnection) return;
       this._setTrackEnabled(this._peerConnection, 'audio', false);
+    };
+
+    replaceTrack = async (track: MediaStreamTrack) => {
+      if (!this._peerConnection) return;
+
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        if (
+          transceiver.sender.track &&
+          transceiver.sender.track.kind === track.kind
+        ) {
+          await transceiver.sender.replaceTrack(track);
+        }
+      }
     };
 
     _addEventListener = () => {
@@ -692,6 +703,7 @@ export const createPeer = ({
         turnOnMic: peer.turnOnMic,
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
+        replaceTrack: peer.replaceTrack,
       };
     },
   };
