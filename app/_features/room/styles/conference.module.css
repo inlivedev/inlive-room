@@ -1,9 +1,5 @@
-.conference{
-  height: 100%;
-}
-
 .participants{
-  height: calc(91.667% - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+  height: calc(90% - env(safe-area-inset-bottom) - env(safe-area-inset-top));
 }
 
 .presentation{
@@ -12,7 +8,7 @@
 }
 
 .actionbar{
-  height: 8.333%;
+  height: 10%;
   display: flex;
   align-items: center;
   justify-content: center ;
@@ -98,7 +94,7 @@
 
   .gallery-media video {
     height: 100%;
-    aspect-ratio: 3/4; 
+    aspect-ratio: 3/4;
     object-fit: cover;
     margin:0 auto;
   }

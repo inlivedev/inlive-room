@@ -19,10 +19,10 @@ export const useParticipantContext = () => {
 
 export function ParticipantProvider({
   children,
-  localMediaStream,
+  localStream,
 }: {
   children: React.ReactNode;
-  localMediaStream: MediaStream;
+  localStream: MediaStream;
 }) {
   const { peer } = usePeerContext();
   const [streams, setStreams] = useState<ParticipantStream[]>([]);
@@ -37,13 +37,13 @@ export function ParticipantProvider({
         setStreams(peer.getAllStreams());
       });
 
-      peer.addStream(localMediaStream.id, {
+      peer.addStream(localStream.id, {
         origin: 'local',
         source: 'media',
-        mediaStream: localMediaStream,
+        mediaStream: localStream,
       });
     }
-  }, [peer, localMediaStream]);
+  }, [peer, localStream]);
 
   return (
     <ParticipantContext.Provider value={{ streams }}>
