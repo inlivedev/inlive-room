@@ -1,12 +1,13 @@
-import { RoomRepo } from "@/(server)/_features/room/repository";
-import { service } from "@/(server)/_features/room/service";
-import { getUserFromToken } from "@/(server)/_shared/utils/auth";
+import { RoomRepo } from '@/(server)/_features/room/repository';
+import { service } from '@/(server)/_features/room/service';
+import { getUserFromToken } from '@/(server)/_shared/utils/auth';
+import { roomService as iRoomService } from './interface';
 
 const createRoomRoutesHandler = () => {
   const roomHandler = class {
-    roomService: service;
+    roomService: iRoomService;
 
-    constructor(roomService: service) {
+    constructor(roomService: iRoomService) {
       this.roomService = roomService;
     }
 
@@ -14,24 +15,24 @@ const createRoomRoutesHandler = () => {
       const userData = await getUserFromToken(token);
 
       if (!userData) {
-        throw new Error("failed to get user data");
+        throw new Error('failed to get user data');
       }
 
-      return this.roomService.createRoom(
-         userData.id 
-      );
+      return this.roomService.createRoom(userData.id);
     };
   };
 
   return {
-    createInstance: (roomService: service) => {
-        const roomRoutesHandler = new roomHandler(roomService)
+    createInstance: (roomService: iRoomService) => {
+      const roomRoutesHandler = new roomHandler(roomService);
 
-        return{
-            createRoomHandler : roomRoutesHandler.createRoomHandler
-        }
+      return {
+        createRoomHandler: roomRoutesHandler.createRoomHandler,
+      };
     },
   };
 };
 
-export const roomRoutesHandler = createRoomRoutesHandler().createInstance(new service(new RoomRepo()))
+export const roomRoutesHandler = createRoomRoutesHandler().createInstance(
+  new service(new RoomRepo())
+);
