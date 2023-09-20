@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "83b26d43-e22a-48d3-a354-8e8a2e820253",
+  "id": "e9dfcf36-c8ea-4c5c-b0ab-79ed884cad5e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "rooms": {
@@ -12,7 +12,7 @@
           "name": "id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -24,13 +24,13 @@
           "name": "room_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "user_id": {
           "name": "user_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
