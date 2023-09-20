@@ -40,6 +40,8 @@ export const createChannel = ({
         'allowed_renegotation',
         this._onAllowedRenegotiation
       );
+
+      this._channel.addEventListener('bitrate_changed', this._bitrateChanged);
     };
 
     _onCandidate = async (event: MessageEvent<any>) => {
@@ -72,6 +74,11 @@ export const createChannel = ({
           peerConnection.localDescription
         );
       }
+    };
+
+    _bitrateChanged = async (event: MessageEvent<any>) => {
+      const data = JSON.parse(event.data);
+      this._peer.adjustBitrate(data.min, data.max);
     };
 
     _onTracksAdded = async (event: MessageEvent<any>) => {

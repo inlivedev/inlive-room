@@ -81,7 +81,6 @@ export const createPeer = ({
     };
 
     _enableBwMonitor = async () => {
-      this._monitorBw();
       this._monitorStats();
       console.log('bandwidth monitor enabled');
     };
@@ -182,6 +181,69 @@ export const createPeer = ({
           await transceiver.sender.replaceTrack(track);
         }
       }
+    };
+
+    adjustBitrate = (min: number, max: number) => {
+      if (max > this._bwController.available) {
+        max = this._bwController.available;
+      }
+
+      const idealMin = Math.floor(max / 9);
+
+      if (min > idealMin) {
+        min = idealMin;
+      }
+
+      let updatedParams = false;
+      const delta = max - min;
+      const mid = min + Math.floor((delta * 1) / 3);
+
+      this._peerConnection?.getSenders().forEach((sender) => {
+        if (sender.track != null && sender.track.kind == 'video') {
+          const stream = this._streams.getStream(sender.track.id);
+          if (!stream) return;
+          else if (stream.source != 'media') return;
+
+          const params = sender.getParameters();
+
+          if (params.encodings.length == 1) {
+            return;
+          }
+
+          params.encodings.forEach((encoding, i) => {
+            switch (encoding.rid) {
+              case 'high':
+                params.encodings[i].maxBitrate = max;
+                updatedParams = true;
+                break;
+
+              case 'mid':
+                params.encodings[i].maxBitrate = mid;
+                updatedParams = true;
+                break;
+              case 'low':
+                params.encodings[i].maxBitrate = min;
+                updatedParams = true;
+                break;
+            }
+          });
+
+          const nextTotalBw = params.encodings.reduce((acc, encoding) => {
+            if (typeof encoding.maxBitrate == 'undefined') {
+              return acc;
+            }
+
+            return acc + encoding.maxBitrate;
+          }, 0);
+
+          if (updatedParams) {
+            console.log(
+              `min: ${min}, mid: ${mid}, max: ${max}, nextTotalBw: ${nextTotalBw}`
+            );
+            sender.setParameters(params);
+          }
+        }
+      });
     };
 
     _addEventListener = () => {
@@ -420,26 +482,26 @@ export const createPeer = ({
         {
           direction: 'sendonly',
           streams: [stream.mediaStream],
-          // sendEncodings: [
-          //   // for firefox order matters... first high resolution, then scaled resolutions...
-          //   {
-          //     rid: 'high',
-          //     maxBitrate: 700 * 1000,
-          //     maxFramerate: 30,
-          //   },
-          //   {
-          //     rid: 'mid',
-          //     scaleResolutionDownBy: 2.0,
-          //     maxFramerate: 30,
-          //     maxBitrate: 190 * 1000,
-          //   },
-          //   {
-          //     rid: 'low',
-          //     scaleResolutionDownBy: 4.0,
-          //     maxBitrate: 130 * 1000,
-          //     maxFramerate: 15,
-          //   },
-          // ],
+          sendEncodings: [
+            // for firefox order matters... first high resolution, then scaled resolutions...
+            {
+              rid: 'high',
+              maxBitrate: 700 * 1000,
+              maxFramerate: 30,
+            },
+            {
+              rid: 'mid',
+              scaleResolutionDownBy: 2.0,
+              maxFramerate: 20,
+              maxBitrate: 190 * 1000,
+            },
+            {
+              rid: 'low',
+              scaleResolutionDownBy: 4.0,
+              maxBitrate: 130 * 1000,
+              maxFramerate: 15,
+            },
+          ],
         }
       );
 
@@ -478,88 +540,11 @@ export const createPeer = ({
         'video/VP8'
       );
 
-      transceiver.setCodecPreferences(preferedCodecs);
+      // transceiver.setCodecPreferences(preferedCodecs);
     };
 
     _sleep = (delay: number) =>
       new Promise((resolve) => setTimeout(resolve, delay));
-
-    _monitorBw = async () => {
-      while (true) {
-        if (
-          !this._peerConnection ||
-          this._peerConnection?.connectionState != 'connected'
-        ) {
-          await this._sleep(1000);
-          continue;
-        }
-
-        this._bwController.totalSendBitrate =
-          this._bwController.lowBitrate +
-          this._bwController.midBitrate +
-          this._bwController.highBitrate;
-
-        if (
-          this._bwController.available == 0 ||
-          this._bwController.lowBitrate == 0 ||
-          this._bwController.midBitrate == 0 ||
-          this._bwController.highBitrate == 0
-        ) {
-          await this._sleep(3000);
-          continue;
-        }
-
-        let maxBw = this._maxBw;
-
-        if (this._bwController.available < maxBw) {
-          // only use 90% of the available bandwidth
-          maxBw =
-            this._bwController.available - this._bwController.available * 0.1;
-        }
-
-        const ratio = maxBw / this._bwController.totalSendBitrate;
-
-        this._peerConnection.getSenders().forEach((sender) => {
-          if (sender.track != null && sender.track.kind == 'video') {
-            const params = sender.getParameters();
-
-            if (params.encodings.length == 1) {
-              return;
-            }
-
-            params.encodings.forEach((encoding, i) => {
-              if (typeof encoding.maxBitrate == 'undefined') {
-                return;
-              }
-
-              const maxBitrate = encoding.maxBitrate * ratio;
-              params.encodings[i].maxBitrate = Math.floor(maxBitrate);
-              // updatedParams = true
-            });
-
-            const nextTotalBw = params.encodings.reduce((acc, encoding) => {
-              if (typeof encoding.maxBitrate == 'undefined') {
-                return acc;
-              }
-
-              return acc + encoding.maxBitrate;
-            }, 0);
-
-            if (nextTotalBw < maxBw) {
-              console.log(
-                'adjusting bandwith with ratio, nextTotalBw : totalBw = ',
-                ratio,
-                nextTotalBw,
-                this._bwController.totalSendBitrate
-              );
-              sender.setParameters(params);
-            }
-          }
-        });
-
-        await this._sleep(3000);
-      }
-    };
 
     _monitorStats = async () => {
       while (true) {
@@ -694,6 +679,7 @@ export const createPeer = ({
         disconnect: peer.disconnect,
         getPeerConnection: peer.getPeerConnection,
         addStream: peer.addStream,
+        adjustBitrate: peer.adjustBitrate,
         removeStream: peer.removeStream,
         getAllStreams: peer.getAllStreams,
         getStream: peer.getStream,
