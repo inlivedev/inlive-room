@@ -34,7 +34,8 @@ export const createPeer = ({
     _event;
     _streams;
     _stream;
-    _maxBw = 4000 * 1000;
+    _maxHighBitrate = 1250 * 1000;
+    _minLowBitrate = 140 * 1000;
     _bwController: BwController;
     _prevBytesReceived;
     _prevHighBytesSent;
@@ -186,10 +187,18 @@ export const createPeer = ({
         max = this._bwController.available;
       }
 
+      if (max > this._maxHighBitrate) {
+        max = this._maxHighBitrate;
+      }
+
       const idealMin = Math.floor(max / 9);
 
       if (min > idealMin) {
         min = idealMin;
+      }
+
+      if (min < this._minLowBitrate) {
+        min = this._minLowBitrate;
       }
 
       let updatedParams = false;
