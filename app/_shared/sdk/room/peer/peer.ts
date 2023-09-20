@@ -5,7 +5,6 @@ export const PeerEvents: RoomPeerType.PeerEvents = {
   _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream',
 };
 interface BwController {
-  totalSendBitrate: number;
   lowBitrate: number;
   midBitrate: number;
   highBitrate: number;
@@ -56,7 +55,6 @@ export const createPeer = ({
       this._prevLowBytesSent = 0;
 
       this._bwController = {
-        totalSendBitrate: 0,
         lowBitrate: 0,
         midBitrate: 0,
         highBitrate: 0,
@@ -77,7 +75,7 @@ export const createPeer = ({
 
       this._addEventListener();
 
-      // this._enableBwMonitor();
+      this._enableBwMonitor();
     };
 
     _enableBwMonitor = async () => {
@@ -200,7 +198,7 @@ export const createPeer = ({
 
       this._peerConnection?.getSenders().forEach((sender) => {
         if (sender.track != null && sender.track.kind == 'video') {
-          const stream = this._streams.getStream(sender.track.id);
+          const stream = this._streams.getStreamByTrackId(sender.track.id);
           if (!stream) return;
           else if (stream.source != 'media') return;
 
@@ -477,7 +475,7 @@ export const createPeer = ({
         }
       );
 
-      const transceiver = this._peerConnection.addTransceiver(
+      this._peerConnection.addTransceiver(
         stream.mediaStream.getVideoTracks()[0],
         {
           direction: 'sendonly',
@@ -504,55 +502,20 @@ export const createPeer = ({
           ],
         }
       );
-
-      //TODO: fix this, when set codec preferences, the simulcast is not working, only high layer is sending
-      const sendCodecs = RTCRtpSender.getCapabilities('video')?.codecs;
-
-      const preferCodec = (
-        codecs: RTCRtpCodecCapability[],
-        preferedCodecs: RTCRtpCodecCapability[],
-        mimeType: string
-      ): RTCRtpCodecCapability[] => {
-        codecs.forEach((codec) => {
-          if (codec.mimeType === mimeType) {
-            preferedCodecs.push(codec);
-          }
-        });
-
-        return preferedCodecs;
-      };
-
-      let preferedCodecs = [];
-
-      preferedCodecs = preferCodec(
-        sendCodecs ? sendCodecs : [],
-        [],
-        'video/VP9'
-      );
-      preferedCodecs = preferCodec(
-        sendCodecs ? sendCodecs : [],
-        preferedCodecs,
-        'video/H264'
-      );
-      preferedCodecs = preferCodec(
-        sendCodecs ? sendCodecs : [],
-        preferedCodecs,
-        'video/VP8'
-      );
-
-      // transceiver.setCodecPreferences(preferedCodecs);
     };
 
     _sleep = (delay: number) =>
       new Promise((resolve) => setTimeout(resolve, delay));
 
     _monitorStats = async () => {
+      const intervalSec = 3;
+
       while (true) {
         if (
           !this._peerConnection ||
           this._peerConnection?.connectionState != 'connected'
         ) {
-          await this._sleep(1000);
+          await this._sleep(1000 * intervalSec);
           continue;
         }
 
@@ -617,7 +580,7 @@ export const createPeer = ({
               const deltaBytes = report.bytesSent - this._prevHighBytesSent;
               this._prevHighBytesSent = report.bytesSent;
               const bitrate = deltaBytes * 8;
-              this._bwController.highBitrate = bitrate;
+              this._bwController.highBitrate = Math.ceil(bitrate / intervalSec);
             }
 
             if (report.rid === 'mid') {
@@ -629,7 +592,7 @@ export const createPeer = ({
               const deltaBytes = report.bytesSent - this._prevMidBytesSent;
               this._prevMidBytesSent = report.bytesSent;
               const bitrate = deltaBytes * 8;
-              this._bwController.midBitrate = bitrate;
+              this._bwController.midBitrate = Math.ceil(bitrate / intervalSec);
             }
 
             if (report.rid === 'low') {
@@ -641,17 +604,23 @@ export const createPeer = ({
               const deltaBytes = report.bytesSent - this._prevLowBytesSent;
               this._prevLowBytesSent = report.bytesSent;
               const bitrate = deltaBytes * 8;
-              this._bwController.lowBitrate = bitrate;
+              this._bwController.lowBitrate = Math.ceil(bitrate / intervalSec);
             }
           }
         });
 
         console.log(`available bitrate: ${this._bwController.available}`);
         console.log(
-          `total bitrate: ${this._bwController.totalSendBitrate}, high bitrate: ${this._bwController.highBitrate}, mid bitrate: ${this._bwController.midBitrate}, low bitrate: ${this._bwController.lowBitrate}`
+          `total bitrate: ${
+            this._bwController.lowBitrate +
+            this._bwController.midBitrate +
+            this._bwController.highBitrate
+          }, high bitrate: ${this._bwController.highBitrate}, mid bitrate: ${
+            this._bwController.midBitrate
+          }, low bitrate: ${this._bwController.lowBitrate}`
         );
 
-        await this._sleep(1000);
+        await this._sleep(3000);
       }
     };
 
@@ -659,11 +628,15 @@ export const createPeer = ({
       if (!this._peerConnection) return;
 
       for (const track of stream.mediaStream.getTracks()) {
-        const sender = this._peerConnection.addTrack(track, stream.mediaStream);
+        const transceiver = this._peerConnection.addTransceiver(track, {
+          direction: 'sendonly',
+          streams: [stream.mediaStream],
+          sendEncodings: [{ priority: 'high' }],
+        });
 
         track.addEventListener('ended', () => {
-          if (!this._peerConnection || !sender) return;
-          this._peerConnection.removeTrack(sender);
+          if (!this._peerConnection || !transceiver.sender) return;
+          this._peerConnection.removeTrack(transceiver.sender);
           this.removeStream(stream.id);
         });
       }

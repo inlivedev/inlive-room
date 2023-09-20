@@ -27,6 +27,14 @@ export const createStreams = () => {
       return this._streams.get(key) || null;
     };
 
+    getStreamByTrackId = (trackId: string) => {
+      return [...this._streams.values()].find((stream) => {
+        return stream.mediaStream.getTracks().some((track) => {
+          return track.id === trackId;
+        });
+      });
+    };
+
     getTotalStreams = () => {
       return this._streams.size;
     };
@@ -90,6 +98,7 @@ export const createStreams = () => {
         removeStream: streams.removeStream,
         getAllStreams: streams.getAllStreams,
         getStream: streams.getStream,
+        getStreamByTrackId: streams.getStreamByTrackId,
         getTotalStreams: streams.getTotalStreams,
         hasStream: streams.hasStream,
         addDraft: streams.addDraft,
