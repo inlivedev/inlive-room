@@ -8,7 +8,9 @@ const DB_PORT = parseInt(process.env.DB_PORT || '0', 10);
 const DB_PASS = process.env.DB_PASS;
 const DB_NAME = process.env.DB_NAME;
 
-const queryClient = postgres('', {
+const connectionString = `postgres://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}`;
+
+const queryClient = postgres(connectionString, {
   host: DB_HOST,
   user: DB_USER,
   pass: DB_PASS,

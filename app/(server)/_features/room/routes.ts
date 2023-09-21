@@ -1,7 +1,18 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
 import { service } from '@/(server)/_features/room/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
-import { roomService as iRoomService } from './interface';
+
+export interface iRoomService {
+  createRoom(userID: number): Promise<Room>;
+  joinRoom(roomId: string): Promise<Room | undefined>;
+}
+
+export interface Room {
+  id: string; //InLive Room ID
+  name?: string | null;
+  roomId: string; //InLive Hub Room ID (External)
+  createdBy: number;
+}
 
 const createRoomRoutesHandler = () => {
   const roomHandler = class {
@@ -17,6 +28,7 @@ const createRoomRoutesHandler = () => {
     };
 
     joinRoomHandler = async (roomID: string) => {
+      console.log(roomID);
       return await this.roomService.joinRoom(roomID);
     };
   };
