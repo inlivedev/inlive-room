@@ -1,7 +1,6 @@
 export type FetcherResponse = {
   code: number;
   ok: boolean;
-  body?: { [key: string]: any };
 };
 
 const createFetcher = () => {
@@ -14,42 +13,33 @@ const createFetcher = () => {
 
     _resolution = async (response: Response) => {
       if (!response) {
-        return {
-          code: 500,
-          ok: false,
-          data: {},
-        };
+        throw new Error(`Cannot process response from the server`);
       }
 
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         return response
           .json()
-          .then((json: { [key: string]: any }) => ({
-            code: json.code || response.status,
-            ok: response.ok,
-            data: json.data || {},
+          .then((json) => ({
             ...json,
+            code: response.status,
+            ok: response.ok,
           }))
           .catch((error: Error) => {
             throw error;
           });
+      } else {
+        throw new Error(
+          `Error ${response.status}: Cannot process response from the server.`
+        );
       }
-
-      return {
-        code: response.status || 500,
-        ok: response.ok,
-        data: {
-          message: response.text(),
-        },
-      };
     };
 
     _rejection = (error: Error) => {
       throw error;
     };
 
-    _fetcher = (endpoint: string, options: RequestInit = {}) => {
+    _fetcher = async (endpoint: string, options: RequestInit = {}) => {
       const fetchOptions = typeof options === 'object' ? options : {};
       const headersOptions =
         typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {};
