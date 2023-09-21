@@ -1,5 +1,5 @@
 export type apiResponse = {
-    code: number,
-    data?: any,
-    message: string
-}
+  code: number;
+  data?: any;
+  message: string;
+};

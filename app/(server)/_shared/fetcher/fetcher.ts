@@ -13,15 +13,15 @@ export const createFetcher = () => {
     }
 
     _resolution = async (response: Response) => {
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
         return response
           .json()
-          .then(function(json) {
+          .then(function (json) {
             const fetcherResponse = {
               code: response.status || 500,
               ok: response.ok,
-              body: json
+              body: json,
             };
             return fetcherResponse;
           })
@@ -38,14 +38,13 @@ export const createFetcher = () => {
     };
 
     _fetcher = (endpoint: string, options: RequestInit = {}) => {
-      const fetchOptions = typeof options === "object" ? options : {};
-      const headersOptions = typeof fetchOptions.headers === "object"
-        ? fetchOptions.headers
-        : {};
+      const fetchOptions = typeof options === 'object' ? options : {};
+      const headersOptions =
+        typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {};
 
       return fetch(`${this._baseUrl}${endpoint}`, {
         headers: {
-          "Content-type": "application/json; charset=utf-8",
+          'Content-type': 'application/json; charset=utf-8',
           ...headersOptions,
         },
         ...fetchOptions,
@@ -57,35 +56,35 @@ export const createFetcher = () => {
     get = (endpoint: string, options: RequestInit | undefined = {}) => {
       return this._fetcher(endpoint, {
         ...options,
-        method: "get",
+        method: 'get',
       });
     };
 
     post = (endpoint: string, options: RequestInit | undefined = {}) => {
       return this._fetcher(endpoint, {
         ...options,
-        method: "post",
+        method: 'post',
       });
     };
 
     put = (endpoint: string, options: RequestInit | undefined = {}) => {
       return this._fetcher(endpoint, {
         ...options,
-        method: "put",
+        method: 'put',
       });
     };
 
     patch = (endpoint: string, options: RequestInit | undefined = {}) => {
       return this._fetcher(endpoint, {
         ...options,
-        method: "patch",
+        method: 'patch',
       });
     };
 
     delete = (endpoint: string, options: RequestInit | undefined = {}) => {
       return this._fetcher(endpoint, {
         ...options,
-        method: "delete",
+        method: 'delete',
       });
     };
   };
