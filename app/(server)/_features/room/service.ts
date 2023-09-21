@@ -5,8 +5,9 @@ import { Room } from '@/(server)/api/room/interface';
 import Sqids from 'sqids';
 
 export interface iRoomRepo {
-  addRoom(roomData: Room): Promise<Room>;
+  addRoom(room: Room): Promise<Room>;
   getRoomById(id: string): Promise<Room | undefined>;
+  updateRoomById(room: Room): Promise<Room | undefined>;
 }
 
 export class service implements roomService {
@@ -35,8 +36,35 @@ export class service implements roomService {
     return this._repo.addRoom(newRoom);
   }
 
-  async getRoom(roomId: string): Promise<Room | undefined> {
-    return await this._repo.getRoomById(roomId);
+  async joinRoom(roomId: string): Promise<Room | undefined> {
+    let room = await this._repo.getRoomById(roomId);
+
+    if (room === undefined) {
+      throw new Error('Room not exists');
+    }
+
+    const remoteRoom = await this._sdk.getRoom(room.roomId);
+
+    if (remoteRoom.data.roomId == '') {
+      const newRemoteRoom = await this._sdk.createRoom();
+
+      if (newRemoteRoom.data.roomId == '') {
+        throw new Error(
+          'Error occured during accessing room data, please try again later'
+        );
+      }
+      room.roomId = newRemoteRoom.data.roomId;
+
+      room = await this._repo.updateRoomById(room);
+
+      if (room == undefined) {
+        throw new Error(
+          'Error occured during accessing room data, please try again later'
+        );
+      }
+
+      return room;
+    }
   }
 }
 

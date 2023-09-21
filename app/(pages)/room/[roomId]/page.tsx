@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { room } from '@/_shared/utils/sdk';
 import RoomContainer from '@/_features/room/components/container';
 import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
+import { InternalAPIFetcher } from '@/_shared/utils/api';
+import { Room } from '@/(server)/api/room/interface';
 
 type PageProps = {
   params: {
@@ -17,19 +19,35 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
 };
 
 export default async function Page({ params }: PageProps) {
-  const {
-    data: { roomId },
-  } = await room.getRoom(params.roomId);
+  const response = await InternalAPIFetcher.get(
+    `/api/rooms/join?roomID=${params.roomId}`
+  );
 
-  if (!roomId) {
+  if (typeof response == 'string') {
+    alert('Failed when joining a room. Please try again later! ');
+    console.log(
+      `Failed when decoding request response, got response : ${response}`
+    );
+    return;
+  }
+
+  const roomData = response.body?.data as Room;
+
+  if (!roomData.roomId) {
     notFound();
   }
 
   const {
     data: { clientId },
-  } = await room.createClient(roomId);
+  } = await room.createClient(roomData.roomId);
 
   const origin = getOriginServerSide();
 
-  return <RoomContainer roomId={roomId} clientId={clientId} origin={origin} />;
+  return (
+    <RoomContainer
+      roomId={roomData.roomId}
+      clientId={clientId}
+      origin={origin}
+    />
+  );
 }

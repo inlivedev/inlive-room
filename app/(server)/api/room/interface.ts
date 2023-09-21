@@ -1,6 +1,6 @@
 export interface roomService {
   createRoom(userID: number): Promise<Room>;
-  getRoom(roomId: string): Promise<Room | undefined>;
+  joinRoom(roomId: string): Promise<Room | undefined>;
 }
 
 export interface Room {

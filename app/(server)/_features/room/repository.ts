@@ -14,4 +14,13 @@ export class RoomRepo implements iRoomRepo {
   async getRoomById(roomId: string): Promise<Room | undefined> {
     return await db.query.rooms.findFirst({ where: eq(rooms.id, roomId) });
   }
+
+  async updateRoomById(room: Room): Promise<Room | undefined> {
+    const data = await db
+      .update(rooms)
+      .set(room)
+      .where(eq(rooms.id, room.id))
+      .returning();
+    return data[0];
+  }
 }

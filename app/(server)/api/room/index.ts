@@ -15,6 +15,10 @@ const createRoomRoutesHandler = () => {
       const response = await getCurrentAuthenticated(token);
       return this.roomService.createRoom(response.data.id);
     };
+
+    joinRoomHandler = async (roomID: string) => {
+      return await this.roomService.joinRoom(roomID);
+    };
   };
 
   return {
@@ -23,6 +27,7 @@ const createRoomRoutesHandler = () => {
 
       return {
         createRoomHandler: roomRoutesHandler.createRoomHandler,
+        joinRoomHandler: roomRoutesHandler.joinRoomHandler,
       };
     },
   };
