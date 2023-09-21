@@ -4,7 +4,6 @@ import { room } from '@/_shared/utils/sdk';
 import RoomContainer from '@/_features/room/components/container';
 import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { Room } from '@/(server)/_features/room/routes';
 import { CreateJoinRoomResponse } from '@/_shared/response/internal/room';
 
 type PageProps = {
@@ -45,8 +44,6 @@ export default async function Page({ params }: PageProps) {
       />
     );
   } catch (e) {
-    alert('Failed when joining a room. Please try again later! ');
-    console.log(`Failed when decoding request response`);
-    return;
+    notFound();
   }
 }
