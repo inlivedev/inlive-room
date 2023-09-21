@@ -1,6 +1,6 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
 import { service } from '@/(server)/_features/room/service';
-import { getUserFromToken } from '@/(server)/_shared/utils/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 import { roomService as iRoomService } from './interface';
 
 const createRoomRoutesHandler = () => {
@@ -12,13 +12,8 @@ const createRoomRoutesHandler = () => {
     }
 
     createRoomHandler = async (token: string) => {
-      const userData = await getUserFromToken(token);
-
-      if (!userData) {
-        throw new Error('failed to get user data');
-      }
-
-      return this.roomService.createRoom(userData.id);
+      const response = await getCurrentAuthenticated(token);
+      return this.roomService.createRoom(response.data.id);
     };
   };
 
