@@ -16,7 +16,9 @@ export default function CreateRoom() {
       </p>
       <button
         className="mt-8 w-full rounded-md border border-red-700 bg-red-700 px-6 py-2 text-sm font-medium lg:w-auto"
-        onClick={() => {createRoom(undefined)}}
+        onClick={() => {
+          createRoom(undefined);
+        }}
       >
         Create a new room
       </button>

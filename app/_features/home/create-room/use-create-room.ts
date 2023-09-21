@@ -12,21 +12,22 @@ export const useCreateRoom = () => {
       }),
     });
 
-    if (typeof response !== 'string') {
-      const roomData = response.body?.data as Room;
-
-      if (typeof roomData.id != 'string') {
-        alert('Failed to create a room. Please try again later! ');
-        console.log('Failed when decoding request response');
-      }
-
-      navigateTo(`/room/${roomData.id}`);
-    } else {
+    if (typeof response == 'string') {
       alert('Failed to create a room. Please try again later! ');
       console.log(
-        `Failed when decoding request response, got response ${response}`
+        `Failed when decoding request response, got response : ${response}`
       );
+      return;
     }
+
+    const roomData = response.body?.data as Room;
+
+    if (typeof roomData.id != 'string') {
+      alert('Failed to create a room. Please try again later! ');
+      console.log('Failed when decoding request response');
+    }
+
+    navigateTo(`/room/${roomData.id}`);
   };
 
   return { createRoom: createRoomHandler };
