@@ -1,13 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { apiResponse } from '../_shared/types';
-import { roomRoutesHandler } from '.';
+import { apiResponse } from '../../../_shared/types';
+import { roomRoutesHandler } from '../../../_features/room/routes';
 
-const createHandler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method != 'POST') {
-    res.status(405);
-    return;
-  }
-
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   const requestToken = req.cookies['token'];
 
   if (!requestToken) {
@@ -32,6 +27,4 @@ const createHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       message: 'An error has occured on our side, please try again later',
     } as apiResponse);
   }
-};
-
-export default createHandler;
+}

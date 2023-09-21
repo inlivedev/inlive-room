@@ -1,7 +1,7 @@
-import { roomService } from '@/(server)/api/room/interface';
+import { iRoomService } from './routes';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { room } from '@/_shared/utils/sdk';
-import { Room } from '@/(server)/api/room/interface';
+import { Room } from './routes';
 import Sqids from 'sqids';
 
 export interface iRoomRepo {
@@ -10,7 +10,7 @@ export interface iRoomRepo {
   updateRoomById(room: Room): Promise<Room | undefined>;
 }
 
-export class service implements roomService {
+export class service implements iRoomService {
   _repo: iRoomRepo;
   _sdk = room;
 
