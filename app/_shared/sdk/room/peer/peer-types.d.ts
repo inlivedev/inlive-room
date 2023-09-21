@@ -6,6 +6,7 @@ export type InstancePeer = {
   disconnect: () => void;
   getPeerConnection: () => RTCPeerConnection | null;
   addStream: (key: string, value: RoomStreamType.StreamParams) => void;
+  adjustBitrate: (min, max: number) => void;
   removeStream: (key: string) => RoomStreamType.InstanceStream | null;
   getAllStreams: () => RoomStreamType.InstanceStream[];
   getStream: (key: string) => RoomStreamType.InstanceStream | null;
