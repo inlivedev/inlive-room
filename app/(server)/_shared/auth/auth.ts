@@ -1,81 +1,148 @@
-import { createFetcher, FetcherResponse } from "../fetcher/fetcher";
-
-
-const INLIVE_AUTH_ORIGIN = process.env.INLIVE_AUTH_ORIGIN
-const INLIVE_AUTH_VERSION = process.env.INLIVE_AUTH_VERSION
-
-export interface AuthResp {
-    code: number;
-    data: UserData;
-    message: string;
-    meta: string;
-}
+import type {
+  InliveApiFetcher,
+  FetcherResponse,
+} from '@/_shared/utils/fetcher';
 
 export interface UserData {
-    email: string;
-    id: number;
-    login_type: number;
-    name: string;
-    picture_url: string;
-    role_id: number;
-    username: string;
+  email: string;
+  id: number;
+  login_type: number;
+  name: string;
+  picture_url: string;
+  role_id: number;
+  username: string;
 }
 
-export const createAuth = (APIUrl?: string, Version?: string) => {
-    const Auth = class {
-        _APIUrl = INLIVE_AUTH_ORIGIN
-        _Version = INLIVE_AUTH_VERSION
-        _Fetcher = createFetcher().createInstance((this._APIUrl + "/" + this._Version))
+type CurrentAuthResponse = FetcherResponse & {
+  data: UserData;
+  message: string;
+  meta: string;
+};
 
-        constructor() {
-            if (!APIUrl) {
-                this._APIUrl = APIUrl
-            }
-            if (!Version) {
-                this._Version = Version
-            }
-            this._Fetcher = createFetcher().createInstance((this._APIUrl + "/" + this._Version))
-        }
+type AuthorizeResponse = FetcherResponse & {
+  message: string;
+  data: string;
+};
 
-        getUserFromToken = async (token: string) => {
-            const response = await this._Fetcher.get("auth/current", {
-                headers: {
-                    "authorization": `bearer${token}`
-                }
-            })
+type AuthenticateResponse = FetcherResponse & {
+  message: string;
+  data: {
+    token: string;
+  };
+};
 
-            if (!isFetcherResponse(response)) {
-                throw new Error("Failed to decode json data from request")
-            }
+export const createAuth = (fetcher: typeof InliveApiFetcher) => {
+  const Auth = class {
+    _fetcher;
 
-            if (response.code > 299) {
-                throw new Error(`Error got response code : ${response.code}, message : ${response.body?.message}`)
-            }
-
-            if (isAuthResp(response.body)) {
-                return response.body.data as UserData
-            }
-        }
+    constructor() {
+      this._fetcher = fetcher;
     }
 
-    return {
-        createInstance: () => {
-            const authService = new Auth()
-
-            return {
-                getUserFromToken: authService.getUserFromToken
-            }
+    getCurrentAuthenticated = async (token: string) => {
+      const response: CurrentAuthResponse = await this._fetcher.get(
+        '/auth/current',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-    }
-}
+      );
 
-function isFetcherResponse(response: any): response is FetcherResponse {
-    if (typeof response.code == 'number' && typeof response.ok == "boolean") { return true }
-    return false
-}
+      if (response.code > 299) {
+        throw new Error(`${response.code} error! ${response.message}`);
+      }
 
-function isAuthResp(body: any): body is AuthResp {
-    if (typeof body.code == 'number' && typeof body.data == "object" && typeof body.message == "string" && typeof body.meta == "string") { return true }
-    return false
-}
+      const data = response.data || {};
 
+      const result = {
+        code: response.code,
+        message: response.message || '',
+        ok: response.ok,
+        data: {
+          email: data.email || '',
+          id: data.id || 0,
+          loginType: data.login_type || 0,
+          name: data.name || '',
+          pictureUrl: data.picture_url || '',
+          roleId: data.role_id || 0,
+          username: data.username || '',
+        },
+      };
+
+      return result;
+    };
+
+    authorize = async (
+      provider: string,
+      redirectUri: string,
+      oauthState: string
+    ) => {
+      const body = {
+        provider,
+        oauthState,
+        redirectUri,
+      };
+
+      const response: AuthorizeResponse = await this._fetcher.post(
+        `/auth/${provider}/authorize`,
+        {
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (response.code > 299) {
+        throw new Error(`${response.code} error! ${response.message}`);
+      }
+
+      return response;
+    };
+
+    authenticate = async (
+      provider: string,
+      redirectUri: string,
+      authCode: string
+    ) => {
+      const body = {
+        code: authCode,
+        redirectURI: redirectUri,
+      };
+
+      const response: AuthenticateResponse = await this._fetcher.post(
+        `/auth/${provider}/authenticate`,
+        {
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (response.code > 299) {
+        throw new Error(`${response.code} error! ${response.message}`);
+      }
+
+      const data = response.data || {};
+
+      const result = {
+        code: response.code,
+        ok: response.ok,
+        message: response.message || '',
+        data: {
+          token: data.token || '',
+        },
+      };
+
+      return result;
+    };
+  };
+
+  return {
+    createInstance: () => {
+      const authService = new Auth();
+
+      return {
+        getCurrentAuthenticated: authService.getCurrentAuthenticated,
+        authorize: authService.authorize,
+        authenticate: authService.authenticate,
+      };
+    },
+  };
+};
