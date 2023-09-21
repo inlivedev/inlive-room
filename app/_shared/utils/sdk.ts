@@ -1,11 +1,11 @@
 import { Room } from '@/_shared/sdk/room';
 
-const hubOrigin = process.env.NEXT_PUBLIC_HUB_ORIGIN;
-const apiVersion = process.env.NEXT_PUBLIC_API_VERSION;
+const inliveHubOrigin = process.env.NEXT_PUBLIC_INLIVE_HUB_ORIGIN;
+const inliveHubVersion = process.env.NEXT_PUBLIC_INLIVE_HUB_VERSION;
 
 export const room = Room({
   api: {
-    baseUrl: hubOrigin,
-    version: apiVersion,
+    baseUrl: inliveHubOrigin,
+    version: inliveHubVersion,
   },
 });
