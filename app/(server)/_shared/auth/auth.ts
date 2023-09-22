@@ -1,35 +1,5 @@
-import type {
-  InliveApiFetcher,
-  FetcherResponse,
-} from '@/_shared/utils/fetcher';
-
-export interface UserData {
-  email: string;
-  id: number;
-  login_type: number;
-  name: string;
-  picture_url: string;
-  role_id: number;
-  username: string;
-}
-
-type CurrentAuthResponse = FetcherResponse & {
-  data: UserData;
-  message: string;
-  meta: string;
-};
-
-type AuthorizeResponse = FetcherResponse & {
-  message: string;
-  data: string;
-};
-
-type AuthenticateResponse = FetcherResponse & {
-  message: string;
-  data: {
-    token: string;
-  };
-};
+import type { InliveApiFetcher } from '@/_shared/utils/fetcher';
+import type { AuthType } from '@/_shared/types/auth';
 
 export const createAuth = (fetcher: typeof InliveApiFetcher) => {
   const Auth = class {
@@ -40,14 +10,12 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
     }
 
     getCurrentAuthenticated = async (token: string) => {
-      const response: CurrentAuthResponse = await this._fetcher.get(
-        '/auth/current',
-        {
+      const response: AuthType.CurrentAuthExternalResponse =
+        await this._fetcher.get('/auth/current', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        });
 
       const data = response.data || {};
 
@@ -58,10 +26,10 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
         data: {
           email: data.email || '',
           id: data.id || 0,
-          loginType: data.login_type || 0,
+          login_type: data.login_type || 0,
           name: data.name || '',
-          pictureUrl: data.picture_url || '',
-          roleId: data.role_id || 0,
+          picture_url: data.picture_url || '',
+          role_id: data.role_id || 0,
           username: data.username || '',
         },
       };
@@ -80,7 +48,7 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
         redirectUri,
       };
 
-      const response: AuthorizeResponse = await this._fetcher.post(
+      const response: AuthType.AuthorizeResponse = await this._fetcher.post(
         `/auth/${provider}/authorize`,
         {
           body: JSON.stringify(body),
@@ -104,12 +72,10 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
         redirectURI: redirectUri,
       };
 
-      const response: AuthenticateResponse = await this._fetcher.post(
-        `/auth/${provider}/authenticate`,
-        {
+      const response: AuthType.AuthenticateExternalResponse =
+        await this._fetcher.post(`/auth/${provider}/authenticate`, {
           body: JSON.stringify(body),
-        }
-      );
+        });
 
       if (response.code > 299) {
         throw new Error(`${response.code} error! ${response.message}`);
