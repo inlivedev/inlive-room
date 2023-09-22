@@ -4,12 +4,6 @@ import { authorize } from '@/(server)/_shared/utils/auth';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
-export type PostAuthorizeResponse = Awaited<
-  ReturnType<typeof POST>
-> extends NextResponse<infer T>
-  ? T
-  : never;
-
 export async function POST(
   _: Request,
   { params }: { params: { provider: string } }
