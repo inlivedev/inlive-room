@@ -1,6 +1,7 @@
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { CreateJoinRoomResponse } from '@/_shared/response/internal/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { isError } from 'lodash-es';
 
 export const useCreateRoom = () => {
   const { navigateTo } = useNavigate();
@@ -24,7 +25,10 @@ export const useCreateRoom = () => {
       navigateTo(`/room/${roomData.id}`);
     } catch (error) {
       alert('Failed to create a room. Please try again later! ');
-      console.log('Failed when decoding request response');
+      if (!isError(error)) {
+        console.log(`Failed when decoding request response`);
+      }
+      console.log(`Failed when decoding request response : ${error}`);
     }
   };
 

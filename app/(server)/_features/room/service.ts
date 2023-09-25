@@ -27,13 +27,28 @@ export class service implements iRoomService {
       createdBy: userID,
     };
 
-    Mixpanel.track('Create room', {
-      roomId: newRoom.id,
-      externalRoomId: newRoom.roomId,
-      createdBy: newRoom.createdBy,
-    });
+    if (process.env.ENV == 'PROD') {
+      try {
+        Mixpanel.track('Create room', {
+          roomId: newRoom.id,
+          externalRoomId: newRoom.roomId,
+          createdBy: newRoom.createdBy,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
-    return this._repo.addRoom(newRoom);
+    while (true) {
+      try {
+        const room = await this._repo.addRoom(newRoom);
+        return room;
+      } catch (error) {
+        const err = error as Error;
+        if (err.message.includes('duplicate key')) newRoom.id = generateID();
+        else throw err;
+      }
+    }
   }
 
   async joinRoom(roomId: string): Promise<Room | undefined> {
@@ -68,7 +83,18 @@ export class service implements iRoomService {
   }
 }
 
+const generateRandomNumber = (): number => {
+  return Math.floor(Math.random() * 10);
+};
+
 const generateID = (): string => {
   const sqids = new Sqids();
-  return sqids.encode([Math.random(), Math.random(), Math.random()]);
+  const numArray = [
+    generateRandomNumber(),
+    generateRandomNumber(),
+    generateRandomNumber(),
+    generateRandomNumber(),
+    generateRandomNumber(),
+  ];
+  return sqids.encode(numArray);
 };
