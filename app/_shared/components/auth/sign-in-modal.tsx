@@ -1,20 +1,17 @@
 'use client';
 
+import { useEffect, useCallback } from 'react';
 import {
   Button,
   Modal,
   ModalContent,
   ModalHeader,
   ModalBody,
+  useDisclosure,
 } from '@nextui-org/react';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import GoogleIcon from '@/_shared/components/icons/google-icon';
-
-type SignInModalProps = {
-  isOpen: boolean;
-  onOpenChange(): void;
-};
 
 const providers = [
   {
@@ -24,10 +21,21 @@ const providers = [
   },
 ];
 
-export default function SignInModal({
-  isOpen,
-  onOpenChange,
-}: SignInModalProps) {
+export default function SignInModal() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  const openModal = useCallback(() => {
+    onOpen();
+  }, [onOpen]);
+
+  useEffect(() => {
+    document.addEventListener('open:sign-in-modal', openModal);
+
+    return () => {
+      document.removeEventListener('open:sign-in-modal', openModal);
+    };
+  }, [openModal]);
+
   const handleSignIn = async (provider: string) => {
     try {
       const response: AuthType.AuthorizeResponse =
