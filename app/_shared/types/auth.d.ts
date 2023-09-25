@@ -39,4 +39,9 @@ export declare namespace AuthType {
     message: string;
     data: UserData | null;
   };
+
+  type SignOutResponse = FetcherResponse & {
+    message: string;
+    data: null;
+  };
 }
