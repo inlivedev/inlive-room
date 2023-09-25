@@ -1,12 +1,10 @@
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 
-export async function GET() {
-  const cookieStore = cookies();
-  const token = cookieStore.get('accessToken')?.value || '';
+export async function GET(request: NextRequest) {
+  const accessToken = request.cookies.get('accessToken')?.value || '';
 
-  if (!token) {
+  if (!accessToken) {
     return NextResponse.json(
       {
         code: 401,
@@ -21,7 +19,7 @@ export async function GET() {
     );
   }
 
-  const response = await getCurrentAuthenticated(token);
+  const response = await getCurrentAuthenticated(accessToken);
 
   if (response.code === 403) {
     return NextResponse.json(

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import Home from '@/_features/home/view';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
@@ -10,10 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
+  const cookieStore = cookies();
+
   const currentAuth: AuthType.CurrentAuthInternalResponse =
     await InternalApiFetcher.get('/api/auth/current', {
-      headers: headers(),
-      cache: 'no-store',
+      headers: {
+        cookie: cookieStore.toString(),
+      },
     });
 
   const currentUser = currentAuth.data ? currentAuth.data : undefined;

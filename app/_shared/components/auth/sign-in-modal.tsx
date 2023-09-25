@@ -39,9 +39,7 @@ export default function SignInModal() {
   const handleSignIn = async (provider: string) => {
     try {
       const response: AuthType.AuthorizeResponse =
-        await InternalApiFetcher.post(`/api/auth/${provider}/authorize`, {
-          cache: 'no-store',
-        });
+        await InternalApiFetcher.post(`/api/auth/${provider}/authorize`);
 
       window.location.href = response.data;
     } catch (error) {
