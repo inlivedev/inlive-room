@@ -1,20 +1,19 @@
 'use client';
 
 import { useCreateRoom } from '@/_features/home/create-room/use-create-room';
-import { Button, useDisclosure } from '@nextui-org/react';
+import { Button } from '@nextui-org/react';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import SignInModal from '@/_shared/components/auth/sign-in-modal';
 
 export default function CreateRoom() {
   const { currentUser } = useAuthContext();
   const { createRoom } = useCreateRoom();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const handleCreateRoom = async () => {
     if (currentUser) {
       createRoom();
     } else {
-      onOpen();
+      document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
     }
   };
 
@@ -38,7 +37,7 @@ export default function CreateRoom() {
           </Button>
         </div>
       </section>
-      <SignInModal isOpen={isOpen} onOpenChange={onOpenChange} />
+      <SignInModal />
     </>
   );
 }
