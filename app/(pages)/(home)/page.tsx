@@ -9,9 +9,8 @@ export const metadata: Metadata = {
   description: 'Conference room for real-time video and audio calls',
 };
 
-export default async function Page() {
+const getCurrentAuth = async () => {
   const cookieStore = cookies();
-
   const currentAuth: AuthType.CurrentAuthInternalResponse =
     await InternalApiFetcher.get('/api/auth/current', {
       headers: {
@@ -19,6 +18,11 @@ export default async function Page() {
       },
     });
 
+  return currentAuth;
+};
+
+export default async function Page() {
+  const currentAuth = await getCurrentAuth();
   const currentUser = currentAuth.data ? currentAuth.data : undefined;
 
   return <Home currentUser={currentUser} />;
