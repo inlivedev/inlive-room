@@ -77,10 +77,6 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
           body: JSON.stringify(body),
         });
 
-      if (response.code > 299) {
-        throw new Error(`${response.code} error! ${response.message}`);
-      }
-
       const data = response.data || {};
 
       const result = {
