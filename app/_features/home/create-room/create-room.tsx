@@ -31,7 +31,7 @@ export default function CreateRoom() {
         <div className="mt-8 ">
           <Button
             variant="flat"
-            className="rounded-md bg-red-700 px-6 py-2 text-sm text-zinc-200 hover:bg-red-600 active:bg-red-500 lg:w-auto"
+            className="w-full rounded-md bg-red-700 px-6 py-2 text-sm text-zinc-200 hover:bg-red-600 active:bg-red-500 lg:w-auto"
             onClick={handleCreateRoom}
           >
             Create a new room
