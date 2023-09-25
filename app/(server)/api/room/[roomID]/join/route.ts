@@ -10,14 +10,22 @@ export async function GET(
   const roomID = params.roomID;
   try {
     const existingRoom = await roomRoutesHandler.joinRoomHandler(roomID);
-    console.log(existingRoom);
-    const response: apiResponse = {
-      code: 200,
-      message: 'Room found',
-      data: existingRoom,
-    };
 
-    return NextResponse.json(response, { status: 200 });
+    if (!existingRoom) {
+      return NextResponse.json({
+        code: 404,
+        message: 'Room not found',
+      } as apiResponse);
+    }
+
+    return NextResponse.json(
+      {
+        code: 200,
+        message: 'Room found',
+        data: existingRoom,
+      } as apiResponse,
+      { status: 200 }
+    );
   } catch (error) {
     if (!isError(error)) {
       const response: apiResponse = {

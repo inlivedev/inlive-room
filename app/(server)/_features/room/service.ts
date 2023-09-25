@@ -27,7 +27,7 @@ export class service implements iRoomService {
       createdBy: userID,
     };
 
-    if (process.env.ENV == 'PROD') {
+    if (process.env.NEXT_PUBLIC_APP_ENV != 'development') {
       try {
         Mixpanel.track('Create room', {
           roomId: newRoom.id,
@@ -80,6 +80,8 @@ export class service implements iRoomService {
 
       return room;
     }
+
+    return room;
   }
 }
 

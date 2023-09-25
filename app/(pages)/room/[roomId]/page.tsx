@@ -21,7 +21,7 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
 export default async function Page({ params }: PageProps) {
   try {
     const response: CreateJoinRoomResponse = await InternalApiFetcher.get(
-      `/api/rooms/join?roomID=${params.roomId}`
+      `/api/room/${params.roomId}/join`
     );
 
     const roomData = response.data;

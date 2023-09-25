@@ -9,7 +9,7 @@ export const useCreateRoom = () => {
   const createRoomHandler = async (name?: string) => {
     try {
       const response: CreateJoinRoomResponse = await InternalApiFetcher.post(
-        'api/room/create',
+        '/api/room/create',
         {
           body: JSON.stringify({
             name: name,
@@ -22,6 +22,8 @@ export const useCreateRoom = () => {
       }
 
       const roomData = response.data;
+      console.log(roomData);
+
       navigateTo(`/room/${roomData.id}`);
     } catch (error) {
       alert('Failed to create a room. Please try again later! ');
