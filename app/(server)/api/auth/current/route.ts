@@ -2,15 +2,9 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 
-export type PostAuthorizeResponse = Awaited<
-  ReturnType<typeof GET>
-> extends NextResponse<infer T>
-  ? T
-  : never;
-
 export async function GET() {
   const cookieStore = cookies();
-  const token = cookieStore.get('token')?.value || '';
+  const token = cookieStore.get('accessToken')?.value || '';
 
   if (!token) {
     return NextResponse.json(

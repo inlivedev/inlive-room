@@ -1,34 +1,32 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { authenticate } from '@/(server)/_shared/utils/auth';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { provider: string } }
 ) {
-  const cookieStore = cookies();
-
   const url = new URL(request.url);
   const currentPath = url.origin + url.pathname;
   const codeParam = url.searchParams.get('code') || '';
   const stateParam = url.searchParams.get('state') || '';
-  const stateCookie = cookieStore.get('state')?.value || '';
+  const stateCookie = request.cookies.get('state')?.value || '';
   const provider = params.provider;
 
   if (stateParam === stateCookie) {
-    const response = await authenticate(provider, currentPath, codeParam);
+    const authResponse = await authenticate(provider, currentPath, codeParam);
 
-    if (response.data.token) {
-      cookieStore.set({
+    if (authResponse.data.token) {
+      const response = NextResponse.redirect(url.origin);
+
+      response.cookies.set({
         name: 'token',
-        value: response.data.token,
+        value: authResponse.data.token,
         path: '/',
         sameSite: 'strict',
         httpOnly: true,
       });
 
-      redirect('/');
+      return response;
     }
   }
 
@@ -36,7 +34,7 @@ export async function GET(
   return NextResponse.json(
     {
       code: 403,
-      message: 'Authentication is not successful',
+      message: 'Forbidden',
       ok: false,
       data: null,
     },
