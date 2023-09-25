@@ -2,13 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@nextui-org/react';
+import Profile from '@/_shared/components/header/profile';
 
 export default function Header() {
-  const openSignInModal = () => {
-    document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
-  };
-
   return (
     <header className="w-full py-6 lg:py-8">
       <div className="flex items-center justify-between">
@@ -29,15 +25,8 @@ export default function Header() {
             </h1>
           </Link>
         </div>
-        <div>
-          <Button
-            variant="flat"
-            size="sm"
-            className="bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 sm:h-unit-9 sm:w-unit-20 sm:px-4 sm:text-sm"
-            onClick={openSignInModal}
-          >
-            Sign In
-          </Button>
+        <div className="flex items-center">
+          <Profile />
         </div>
       </div>
     </header>
