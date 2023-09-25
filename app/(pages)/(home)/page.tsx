@@ -17,7 +17,6 @@ export default async function Page() {
       headers: {
         cookie: cookieStore.toString(),
       },
-      cache: 'no-store',
     });
 
   const currentUser = currentAuth.data ? currentAuth.data : undefined;
