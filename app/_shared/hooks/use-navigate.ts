@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { NavigateOptions } from 'next/dist/shared/lib/app-router-context';
+import { type NavigateOptions } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { useRouter } from 'next/navigation';
 
 export const useNavigate = () => {
