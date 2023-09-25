@@ -10,7 +10,6 @@ import {
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import GoogleIcon from '@/_shared/components/icons/google-icon';
-import GithubIcon from '@/_shared/components/icons/github-icon';
 
 type SignInModalProps = {
   isOpen: boolean;
@@ -22,11 +21,6 @@ const providers = [
     name: 'google',
     text: 'Continue with Google',
     icon: <GoogleIcon width={20} height={20} />,
-  },
-  {
-    name: 'github',
-    text: 'Continue with GitHub',
-    icon: <GithubIcon width={20} height={20} />,
   },
 ];
 
