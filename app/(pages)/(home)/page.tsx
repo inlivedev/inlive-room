@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import Home from '@/_features/home/layout';
+import Home from '@/_features/home/view';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 
@@ -15,7 +15,7 @@ export default async function Page() {
       headers: headers(),
     });
 
-  const currentUser = currentAuth.data ? currentAuth.data : null;
+  const currentUser = currentAuth.data ? currentAuth.data : undefined;
 
   return <Home currentUser={currentUser} />;
 }
