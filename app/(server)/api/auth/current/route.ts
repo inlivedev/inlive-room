@@ -4,7 +4,7 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 
 export async function GET() {
   const cookieStore = cookies();
-  const token = cookieStore.get('token')?.value || '';
+  const token = cookieStore.get('accessToken')?.value || '';
 
   if (!token) {
     return NextResponse.json(
