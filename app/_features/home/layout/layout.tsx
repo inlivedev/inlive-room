@@ -10,7 +10,7 @@ import type { AuthType } from '@/_shared/types/auth';
 export default function View({
   currentUser,
 }: {
-  currentUser: AuthType.UserData | null;
+  currentUser: AuthType.UserData | undefined;
 }) {
   return (
     <AuthProvider value={{ currentUser: currentUser }}>
