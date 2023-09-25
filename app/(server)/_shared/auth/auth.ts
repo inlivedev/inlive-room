@@ -15,6 +15,7 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          cache: 'no-store',
         });
 
       const data = response.data || {};
@@ -52,6 +53,7 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
         `/auth/${provider}/authorize`,
         {
           body: JSON.stringify(body),
+          cache: 'no-store',
         }
       );
 
@@ -75,6 +77,7 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
       const response: AuthType.AuthenticateExternalResponse =
         await this._fetcher.post(`/auth/${provider}/authenticate`, {
           body: JSON.stringify(body),
+          cache: 'no-store',
         });
 
       const data = response.data || {};
