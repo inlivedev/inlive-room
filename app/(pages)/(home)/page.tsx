@@ -13,6 +13,7 @@ export default async function Page() {
   const currentAuth: AuthType.CurrentAuthInternalResponse =
     await InternalApiFetcher.get('/api/auth/current', {
       headers: headers(),
+      cache: 'no-store',
     });
 
   const currentUser = currentAuth.data ? currentAuth.data : undefined;
