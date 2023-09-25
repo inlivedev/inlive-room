@@ -1,6 +1,7 @@
 'use client';
 
-import { AuthContext } from '@/_shared/contexts/auth';
+import { useState } from 'react';
+import { AuthContext, defaultValue } from '@/_shared/contexts/auth';
 import type { AuthType } from '@/_shared/types/auth';
 
 export default function AuthProvider({
@@ -9,8 +10,22 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
   value: {
-    currentUser: AuthType.UserData | null;
+    currentUser: AuthType.UserData | undefined;
   };
 }) {
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const [authState, setAuthState] = useState<typeof defaultValue>({
+    ...defaultValue,
+    ...value,
+  });
+
+  return (
+    <AuthContext.Provider
+      value={{
+        ...authState,
+        setAuthState,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
