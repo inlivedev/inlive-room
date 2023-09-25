@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@nextui-org/react": "^2.1.12",
-    "@sentry/nextjs": "^7.63.0",
+    "@sentry/nextjs": "^7.70.0",
     "framer-motion": "^10.16.4",
     "lodash-es": "^4.17.21",
     "mixpanel-browser": "^2.47.0",
