@@ -2,7 +2,7 @@ export default function Footer() {
   return (
     <footer className="flex flex-col gap-5 py-6 lg:py-8">
       <LearnMore />
-      <hr className="border-t border-neutral-700" />
+      <hr className="border-t border-zinc-700" />
       <Copyright />
     </footer>
   );
@@ -10,7 +10,7 @@ export default function Footer() {
 
 function LearnMore() {
   return (
-    <p className="text-center text-xs text-neutral-400">
+    <p className="text-center text-xs text-zinc-400">
       This is a project that demonstrates the capabilities of{' '}
       <a
         href="https://inlive.app/docs/getting-started/using-hub-api/"
@@ -26,7 +26,7 @@ function LearnMore() {
 
 function Copyright() {
   return (
-    <p className="text-center text-xs text-neutral-400">
+    <p className="text-center text-xs text-zinc-400">
       &copy; {new Date().getFullYear()}{' '}
       <a href="https://inlive.app" target="_blank">
         inLive

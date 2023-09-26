@@ -1,24 +1,16 @@
+import { CreateBandwidthController } from './bandwidth-controller';
+import { BandwidthController } from './peer-types';
+
 export const PeerEvents: RoomPeerType.PeerEvents = {
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
   _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream',
   _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream',
 };
-interface BwController {
-  lowBitrate: number;
-  midBitrate: number;
-  highBitrate: number;
-  available: number;
-  tracks: {
-    [key: string]: TrackStats;
-  };
-}
 
-interface TrackStats {
-  prevBytesReceived: number;
-  currentBytesReceived: number;
-  currentBitrates: number;
-}
+const maxBitrate = 3600 * 1000;
+const midBitrate = 500 * 1000;
+const minBitrate = 140 * 1000;
 
 export const createPeer = ({
   api,
@@ -34,9 +26,7 @@ export const createPeer = ({
     _event;
     _streams;
     _stream;
-    _maxHighBitrate = 1250 * 1000;
-    _minLowBitrate = 140 * 1000;
-    _bwController: BwController;
+    _bwController: BandwidthController;
     _prevBytesReceived;
     _prevHighBytesSent;
     _prevMidBytesSent;
@@ -55,13 +45,7 @@ export const createPeer = ({
       this._prevMidBytesSent = 0;
       this._prevLowBytesSent = 0;
 
-      this._bwController = {
-        lowBitrate: 0,
-        midBitrate: 0,
-        highBitrate: 0,
-        available: 0,
-        tracks: {},
-      };
+      this._bwController = CreateBandwidthController(this);
     }
 
     connect = async (roomId: string, clientId: string) => {
@@ -75,13 +59,6 @@ export const createPeer = ({
       });
 
       this._addEventListener();
-
-      this._enableBwMonitor();
-    };
-
-    _enableBwMonitor = async () => {
-      this._monitorStats();
-      console.log('bandwidth monitor enabled');
     };
 
     disconnect = () => {
@@ -140,6 +117,10 @@ export const createPeer = ({
       return this._streams.getStream(key);
     };
 
+    getStreamByTrackId = (trackId: string) => {
+      return this._streams.getStreamByTrackId(trackId);
+    };
+
     getTotalStreams = () => {
       return this._streams.getTotalStreams();
     };
@@ -182,32 +163,18 @@ export const createPeer = ({
       }
     };
 
-    adjustBitrate = (min: number, max: number) => {
-      if (max > this._bwController.available) {
-        max = this._bwController.available;
-      }
+    adjustBitrate = async (min: number, max: number) => {
+      const ratio = await this._bwController.getAdjustmentRatio(min, max);
+      const updatedParams = false;
 
-      if (max > this._maxHighBitrate) {
-        max = this._maxHighBitrate;
-      }
+      // don't adjust bitrates if available bandwidth is not available
+      if (ratio === 0 || isNaN(ratio)) return;
 
-      const idealMin = Math.floor(max / 9);
-
-      if (min > idealMin) {
-        min = idealMin;
-      }
-
-      if (min < this._minLowBitrate) {
-        min = this._minLowBitrate;
-      }
-
-      let updatedParams = false;
-      const delta = max - min;
-      const mid = min + Math.floor((delta * 1) / 3);
-
-      this._peerConnection?.getSenders().forEach((sender) => {
+      this._peerConnection?.getSenders().forEach(async (sender) => {
         if (sender.track != null && sender.track.kind == 'video') {
           const stream = this._streams.getStreamByTrackId(sender.track.id);
+          let totalBitrates = 0;
+
           if (!stream) return;
           else if (stream.source != 'media') return;
 
@@ -217,35 +184,45 @@ export const createPeer = ({
             return;
           }
 
-          params.encodings.forEach((encoding, i) => {
-            switch (encoding.rid) {
-              case 'high':
-                params.encodings[i].maxBitrate = max;
-                updatedParams = true;
-                break;
+          let updatedParams = false;
 
-              case 'mid':
-                params.encodings[i].maxBitrate = mid;
-                updatedParams = true;
-                break;
-              case 'low':
-                params.encodings[i].maxBitrate = min;
-                updatedParams = true;
-                break;
+          params.encodings.forEach((encoding, i) => {
+            if (encoding.rid !== '' || typeof encoding.rid !== 'undefined') {
+              const bitrate = params.encodings[i].maxBitrate || 0;
+              let nextBitrate = Math.floor(bitrate * ratio);
+
+              if (encoding.rid === 'high') {
+                if (nextBitrate > maxBitrate) nextBitrate = maxBitrate;
+                else if (nextBitrate < midBitrate) nextBitrate = midBitrate;
+              } else if (encoding.rid === 'low' && nextBitrate > minBitrate) {
+                nextBitrate = minBitrate;
+              } else if (encoding.rid === 'mid') {
+                if (nextBitrate > midBitrate) nextBitrate = midBitrate;
+                else if (nextBitrate < minBitrate) nextBitrate = minBitrate;
+              }
+
+              params.encodings[i].maxBitrate = nextBitrate;
+
+              totalBitrates += params.encodings[i].maxBitrate || 0;
+
+              updatedParams = true;
+
+              console.log(
+                `Updated ${encoding.rid} bitrate: ${params.encodings[
+                  i
+                ].maxBitrate?.toLocaleString('en-US')}`
+              );
             }
           });
 
-          const nextTotalBw = params.encodings.reduce((acc, encoding) => {
-            if (typeof encoding.maxBitrate == 'undefined') {
-              return acc;
-            }
-
-            return acc + encoding.maxBitrate;
-          }, 0);
-
           if (updatedParams) {
+            const bandwidth = await this._bwController.getAvailable();
             console.log(
-              `min: ${min}, mid: ${mid}, max: ${max}, nextTotalBw: ${nextTotalBw}`
+              `Updated track ${
+                sender.track.id
+              } with total bitrate: ${totalBitrates.toLocaleString(
+                'en-US'
+              )}, bandwidth ${bandwidth.toLocaleString('en-US')}`
             );
             sender.setParameters(params);
           }
@@ -516,123 +493,6 @@ export const createPeer = ({
     _sleep = (delay: number) =>
       new Promise((resolve) => setTimeout(resolve, delay));
 
-    _monitorStats = async () => {
-      const intervalSec = 3;
-
-      while (true) {
-        if (
-          !this._peerConnection ||
-          this._peerConnection?.connectionState != 'connected'
-        ) {
-          await this._sleep(1000 * intervalSec);
-          continue;
-        }
-
-        const stats = await this._peerConnection?.getStats();
-        stats.forEach((report) => {
-          if (report.type === 'inbound-rtp' && report.kind === 'video') {
-            if (
-              typeof this._bwController.tracks[report.trackIdentifier] ==
-              'undefined'
-            ) {
-              this._bwController.tracks[report.trackIdentifier] = {
-                prevBytesReceived: 0,
-                currentBytesReceived: 0,
-                currentBitrates: 0,
-              };
-            }
-
-            if (
-              this._bwController.tracks[report.trackIdentifier]
-                .prevBytesReceived == 0 ||
-              report.bytesReceived == 0
-            ) {
-              this._bwController.tracks[
-                report.trackIdentifier
-              ].prevBytesReceived = report.bytesReceived;
-              return;
-            }
-
-            const deltaBytes =
-              report.bytesReceived -
-              this._bwController.tracks[report.trackIdentifier]
-                .prevBytesReceived;
-            this._bwController.tracks[
-              report.trackIdentifier
-            ].prevBytesReceived = report.bytesReceived;
-            const bitrate = deltaBytes * 8;
-            this._bwController.tracks[
-              report.trackIdentifier
-            ].currentBytesReceived = report.bytesReceived;
-            this._bwController.tracks[report.trackIdentifier].currentBitrates =
-              bitrate;
-
-            console.log(
-              `stats for ${report.trackIdentifier}: \n ${bitrate}, fps: ${report.framesPerSecond}, resolution: ${report.frameWidth}x${report.frameHeight}`
-            );
-          }
-
-          if (
-            report.type === 'candidate-pair' &&
-            typeof report.availableOutgoingBitrate !== 'undefined'
-          ) {
-            this._bwController.available = report.availableOutgoingBitrate;
-          }
-
-          if (report.type === 'outbound-rtp' && report.kind === 'video') {
-            if (report.rid === 'high' || typeof report.rid === 'undefined') {
-              if (this._prevHighBytesSent === 0 || report.bytesSent == 0) {
-                this._prevHighBytesSent = report.bytesSent;
-                return;
-              }
-
-              const deltaBytes = report.bytesSent - this._prevHighBytesSent;
-              this._prevHighBytesSent = report.bytesSent;
-              const bitrate = deltaBytes * 8;
-              this._bwController.highBitrate = Math.ceil(bitrate / intervalSec);
-            }
-
-            if (report.rid === 'mid') {
-              if (this._prevMidBytesSent === 0 || report.bytesSent == 0) {
-                this._prevMidBytesSent = report.bytesSent;
-                return;
-              }
-
-              const deltaBytes = report.bytesSent - this._prevMidBytesSent;
-              this._prevMidBytesSent = report.bytesSent;
-              const bitrate = deltaBytes * 8;
-              this._bwController.midBitrate = Math.ceil(bitrate / intervalSec);
-            }
-
-            if (report.rid === 'low') {
-              if (this._prevLowBytesSent === 0 || report.bytesSent == 0) {
-                this._prevLowBytesSent = report.bytesSent;
-                return;
-              }
-
-              const deltaBytes = report.bytesSent - this._prevLowBytesSent;
-              this._prevLowBytesSent = report.bytesSent;
-              const bitrate = deltaBytes * 8;
-              this._bwController.lowBitrate = Math.ceil(bitrate / intervalSec);
-            }
-          }
-        });
-
-        console.log(`available bitrate: ${this._bwController.available}`);
-        console.log(
-          `total bitrate: ${
-            this._bwController.lowBitrate +
-            this._bwController.midBitrate +
-            this._bwController.highBitrate
-          }, high bitrate: ${this._bwController.highBitrate}, mid bitrate: ${
-            this._bwController.midBitrate
-          }, low bitrate: ${this._bwController.lowBitrate}`
-        );
-
-        await this._sleep(3000);
-      }
-    };
-
     _onAddLocalScreenStream = (stream: RoomStreamType.InstanceStream) => {
       if (!this._peerConnection) return;
 
@@ -640,8 +500,10 @@ export const createPeer = ({
         const transceiver = this._peerConnection.addTransceiver(track, {
           direction: 'sendonly',
           streams: [stream.mediaStream],
-          sendEncodings: [{ priority: 'high' }],
+          sendEncodings: [{ priority: 'medium' }],
         });
+
+        console.log(transceiver);
 
         track.addEventListener('ended', () => {
           if (!this._peerConnection || !transceiver.sender) return;
@@ -665,6 +527,7 @@ export const createPeer = ({
         removeStream: peer.removeStream,
         getAllStreams: peer.getAllStreams,
         getStream: peer.getStream,
+        getStreamByTrackId: peer.getStreamByTrackId,
         getTotalStreams: peer.getTotalStreams,
         hasStream: peer.hasStream,
         turnOnCamera: peer.turnOnCamera,
