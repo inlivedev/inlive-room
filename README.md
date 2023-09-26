@@ -43,7 +43,33 @@ yarn install
 
 **Database Setup**
 
-create a `.env` file containing the required variables for the database, make sure then run `npm run migrate` to perform migration to your database server.
+We're using Postgres as our Database Server, make sure to have the server running on your machine, you can also use our docker compose to start the server quickly
+
+create a `.env` containg these variables : 
+
+```
+DB_USER = inlive_room_user
+DB_PASS = inlive_room_pass
+DB_HOST = localhost
+DB_PORT = 5432
+DB_NAME = inliveroom
+```
+then start the postgres server by running 
+```
+docker compose up -d
+```
+
+Run the Migrations
+
+```
+npm run migrate
+```
+
+After finished developing make sure to shutdown the server by running 
+```
+docker compose down
+```
+or you can turn shut it down from the docker dashboard
 
 **Adding Models to The Database**
 

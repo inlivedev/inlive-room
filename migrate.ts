@@ -21,7 +21,7 @@ const Option = {
 };
 
 export const connectionString =
-  `postgres://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}`;
+`postgres://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}`;
 const sql = postgres(connectionString, Option);
 
 const db = drizzle(sql);

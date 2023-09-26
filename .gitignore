@@ -40,3 +40,5 @@ sentry.properties
 
 .env
 app/(server)/api/test
+
+/.docker
