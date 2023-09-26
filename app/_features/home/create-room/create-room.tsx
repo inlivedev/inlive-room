@@ -3,7 +3,6 @@
 import { useCreateRoom } from '@/_features/home/create-room/use-create-room';
 import { Button } from '@nextui-org/react';
 import { useAuthContext } from '@/_shared/contexts/auth';
-import SignInModal from '@/_shared/components/auth/sign-in-modal';
 
 export default function CreateRoom() {
   const { currentUser } = useAuthContext();
@@ -37,7 +36,6 @@ export default function CreateRoom() {
           </Button>
         </div>
       </section>
-      <SignInModal />
     </>
   );
 }

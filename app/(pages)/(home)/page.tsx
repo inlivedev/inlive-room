@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import Home from '@/_features/home/view';
+import View from '@/_features/home/view';
 import { getClientAuth } from '@/_shared/utils/get-client-auth';
+import AppContainer from '@/_shared/components/containers/app-container';
 
 export const metadata: Metadata = {
   title: 'inLive Room',
@@ -11,5 +12,9 @@ export default async function Page() {
   const currentAuth = await getClientAuth();
   const currentUser = currentAuth.data ? currentAuth.data : undefined;
 
-  return <Home currentUser={currentUser} />;
+  return (
+    <AppContainer currentUser={currentUser}>
+      <View />
+    </AppContainer>
+  );
 }
