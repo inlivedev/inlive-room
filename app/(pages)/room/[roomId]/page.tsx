@@ -6,7 +6,7 @@ import RoomContainer from '@/_features/room/components/container';
 import View from '@/_features/room/components/view';
 import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { CreateJoinRoomResponse } from '@/_shared/response/internal/room';
+import { RoomType } from '@/_shared/types/room';
 import { getClientAuth } from '@/_shared/utils/get-client-auth';
 
 type PageProps = {
@@ -22,9 +22,8 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
 };
 
 export default async function Page({ params }: PageProps) {
-  const response: CreateJoinRoomResponse = await InternalApiFetcher.get(
-    `/api/room/${params.roomId}/join`
-  );
+  const response: RoomType.CreateJoinRoomResponse =
+    await InternalApiFetcher.get(`/api/room/${params.roomId}/join`);
 
   const roomData = response.data;
 
