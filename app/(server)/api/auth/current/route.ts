@@ -2,9 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 
 export async function GET(request: NextRequest) {
-  const accessToken = request.cookies.get('accessToken')?.value || '';
+  const token = request.cookies.get('token')?.value || '';
 
-  if (!accessToken) {
+  if (!token) {
     return NextResponse.json(
       {
         code: 401,
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const response = await getCurrentAuthenticated(accessToken);
+  const response = await getCurrentAuthenticated(token);
 
   if (response.code === 403) {
     return NextResponse.json(

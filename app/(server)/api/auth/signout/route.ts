@@ -7,7 +7,7 @@ export async function GET() {
       { status: 200 }
     );
 
-    response.cookies.delete('accessToken');
+    response.cookies.delete('token');
 
     return response;
   } catch (error) {
