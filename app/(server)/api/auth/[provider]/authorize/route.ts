@@ -8,6 +8,7 @@ export async function POST(
   { params }: { params: { provider: string } }
 ) {
   const provider = params.provider;
+  const { pathname = '' } = await request.json();
   const state = crypto.randomUUID();
   const relativeRedirectUri = `/api/auth/${provider}/authenticate`;
   const absoluteRedirectUri = `${APP_ORIGIN}${relativeRedirectUri}`;
@@ -28,6 +29,15 @@ export async function POST(
     response.cookies.set({
       name: 'state',
       value: state,
+      path: relativeRedirectUri,
+      sameSite: 'lax',
+      maxAge: oneHour,
+      httpOnly: true,
+    });
+
+    response.cookies.set({
+      name: 'pathname',
+      value: pathname,
       path: relativeRedirectUri,
       sameSite: 'lax',
       maxAge: oneHour,
