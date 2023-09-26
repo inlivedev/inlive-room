@@ -1,5 +1,5 @@
-import { apiResponse } from '../../../_shared/types';
-import { roomRoutesHandler } from '../../../_features/room/routes';
+import { apiResponse } from '@/(server)/_shared/types';
+import { roomRoutesHandler } from '@/(server)/_features/room/routes';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
