@@ -12,13 +12,16 @@ export async function GET(
   const codeParam = url.searchParams.get('code') || '';
   const stateParam = url.searchParams.get('state') || '';
   const stateCookie = request.cookies.get('state')?.value || '';
+  const pathnameCookie = request.cookies.get('pathname')?.value || '';
   const provider = params.provider;
 
   if (stateParam === stateCookie) {
     const authResponse = await authenticate(provider, currentPath, codeParam);
 
     if (authResponse.data.token) {
-      const response = NextResponse.redirect(APP_ORIGIN, { status: 307 });
+      const response = NextResponse.redirect(`${APP_ORIGIN}${pathnameCookie}`, {
+        status: 307,
+      });
 
       response.cookies.set({
         name: 'token',
