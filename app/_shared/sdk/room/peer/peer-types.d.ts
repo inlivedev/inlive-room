@@ -10,12 +10,20 @@ export type InstancePeer = {
   removeStream: (key: string) => RoomStreamType.InstanceStream | null;
   getAllStreams: () => RoomStreamType.InstanceStream[];
   getStream: (key: string) => RoomStreamType.InstanceStream | null;
+  getStreamByTrackId: (trackId: string) => RoomStreamType.InstanceStream | null;
   getTotalStreams: () => number;
   hasStream: (key: string) => boolean;
   turnOnCamera: () => void;
   turnOnMic: () => void;
   turnOffCamera: () => void;
   turnOffMic: () => void;
+};
+
+export type BandwidthController = {
+  getAvailable: () => Promise<number>;
+  getVideoOutboundTracksLength: () => number;
+  getAudioOutboundTracksLength: () => number;
+  getAdjustmentRatio: (min: number, max: number) => Promise<number>;
 };
 
 export type PeerDependencies = {
@@ -32,5 +40,12 @@ export type PeerEvents = {
   _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream';
   _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream';
 };
+
+export interface Bitrates {
+  low: number;
+  mid: number;
+  high: number;
+  total: number;
+}
 
 export as namespace RoomPeerType;
