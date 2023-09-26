@@ -163,8 +163,8 @@ export const createPeer = ({
       }
     };
 
-    adjustBitrate = async (min: number, max: number) => {
-      const ratio = await this._bwController.getAdjustmentRatio(min, max);
+    adjustBitrate = async (min: number, max: number, totalClients: number) => {
+      const ratio = await this._bwController.getAdjustmentRatio();
       const updatedParams = false;
 
       // don't adjust bitrates if available bandwidth is not available

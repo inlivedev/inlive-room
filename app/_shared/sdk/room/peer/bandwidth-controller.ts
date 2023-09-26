@@ -194,7 +194,7 @@ class BandwidthController {
   // min max numbers here still not affecting the calculation
   // for now it will only use the min max cap as references
   // TODO: will find the most optimal way to calculate the bitrates
-  getAdjustmentRatio = async (min, max) => {
+  getAdjustmentRatio = async () => {
     await this._updateStats();
 
     if (this._available == 0) {
