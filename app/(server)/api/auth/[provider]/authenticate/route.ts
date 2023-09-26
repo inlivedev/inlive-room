@@ -1,12 +1,14 @@
 import { authenticate } from '@/(server)/_shared/utils/auth';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { provider: string } }
 ) {
   const url = new URL(request.url);
-  const currentPath = url.origin + url.pathname;
+  const currentPath = APP_ORIGIN + url.pathname;
   const codeParam = url.searchParams.get('code') || '';
   const stateParam = url.searchParams.get('state') || '';
   const stateCookie = request.cookies.get('state')?.value || '';
@@ -16,13 +18,13 @@ export async function GET(
     const authResponse = await authenticate(provider, currentPath, codeParam);
 
     if (authResponse.data.token) {
-      const response = NextResponse.redirect(url.origin);
+      const response = NextResponse.redirect(APP_ORIGIN, { status: 307 });
 
       response.cookies.set({
         name: 'token',
         value: authResponse.data.token,
         path: '/',
-        sameSite: 'strict',
+        sameSite: 'lax',
         httpOnly: true,
       });
 
