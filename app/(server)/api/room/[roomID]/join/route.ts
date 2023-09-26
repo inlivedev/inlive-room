@@ -1,5 +1,4 @@
 import { roomRoutesHandler } from '@/(server)/_features/room/routes';
-import { apiResponse } from '@/(server)/_shared/types';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 
@@ -15,7 +14,7 @@ export async function GET(
       return NextResponse.json({
         code: 404,
         message: 'Room not found',
-      } as apiResponse);
+      });
     }
 
     return NextResponse.json(
@@ -23,12 +22,12 @@ export async function GET(
         code: 200,
         message: 'Room found',
         data: existingRoom,
-      } as apiResponse,
+      },
       { status: 200 }
     );
   } catch (error) {
     if (!isError(error)) {
-      const response: apiResponse = {
+      const response = {
         code: 500,
         message: 'an error has occured on our side please try again later',
       };
@@ -36,7 +35,7 @@ export async function GET(
       return NextResponse.json(response, { status: 500 });
     }
 
-    const response: apiResponse = {
+    const response = {
       code: 500,
       message: error.message,
     };

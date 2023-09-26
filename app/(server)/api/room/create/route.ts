@@ -1,4 +1,3 @@
-import { apiResponse } from '@/(server)/_shared/types';
 import { roomRoutesHandler } from '@/(server)/_features/room/routes';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
@@ -12,7 +11,7 @@ export async function POST() {
       {
         code: 401,
         message: 'Please check if token is provided in the cookie',
-      } as apiResponse,
+      },
       { status: 401 }
     );
     return;
@@ -28,7 +27,7 @@ export async function POST() {
         code: 201,
         message: 'Room Created',
         data: createdRoom,
-      } as apiResponse,
+      },
       { status: 201 }
     );
   } catch (e) {
@@ -37,7 +36,7 @@ export async function POST() {
       {
         code: 500,
         message: `An error has occured on our side, please try again later : ${error.message}`,
-      } as apiResponse,
+      },
       { status: 500 }
     );
   }
