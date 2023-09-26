@@ -27,18 +27,6 @@ export class service implements iRoomService {
       createdBy: userID,
     };
 
-    if (process.env.NEXT_PUBLIC_APP_ENV != 'development') {
-      try {
-        Mixpanel.track('Create room', {
-          roomId: newRoom.id,
-          externalRoomId: newRoom.roomId,
-          createdBy: newRoom.createdBy,
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
     while (true) {
       try {
         const room = await this._repo.addRoom(newRoom);

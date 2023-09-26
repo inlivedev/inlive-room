@@ -1,3 +1,4 @@
+import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { CreateJoinRoomResponse } from '@/_shared/response/internal/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -22,7 +23,12 @@ export const useCreateRoom = () => {
       }
 
       const roomData = response.data;
-      console.log(roomData);
+
+      Mixpanel.track('Create room', {
+        roomId: roomData.id,
+        externalRoomId: roomData.roomId,
+        createdBy: roomData.createdBy,
+      });
 
       navigateTo(`/room/${roomData.id}`);
     } catch (error) {
