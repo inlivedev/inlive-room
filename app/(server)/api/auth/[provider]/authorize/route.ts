@@ -29,6 +29,7 @@ export async function POST(
       name: 'state',
       value: state,
       path: relativeRedirectUri,
+      sameSite: 'lax',
       maxAge: oneHour,
       httpOnly: true,
     });
