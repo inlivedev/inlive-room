@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 };
 
 const getCurrentAuth = async () => {
-  const cookieStore = cookies();
+  const cookie = cookies().toString();
   const currentAuth: AuthType.CurrentAuthInternalResponse =
     await InternalApiFetcher.get('/api/auth/current', {
       headers: {
-        cookie: cookieStore.toString(),
+        cookie: cookie,
       },
     });
 
