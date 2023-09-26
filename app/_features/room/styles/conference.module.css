@@ -49,7 +49,7 @@
 
 .gallery {
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  grid-template-rows: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(180px, 1fr));
   padding:0.5rem;
 }
 
@@ -61,6 +61,7 @@
 .presenting-screen {
   grid-row: 1/span auto;
   grid-column: 1/1;
+  justify-self: center;
 }
 
 .presenting-media {
@@ -73,16 +74,16 @@
 
 .gallery-media video {
   height: 100%;
-  aspect-ratio: 4/3;
+  aspect-ratio: 16/9;
   object-fit: cover;
   margin:0 auto;
 }
 
 .presenting-media video {
-  aspect-ratio: 4/3;
+  aspect-ratio: 16/9;
   object-fit: cover;
   margin:0 auto;
-  height: 100%;
+  height: 100%;    
 }
 
 
@@ -94,7 +95,7 @@
 
   .gallery-media video {
     height: 100%;
-    aspect-ratio: 3/4;
+    aspect-ratio: 9/16;
     object-fit: cover;
     margin:0 auto;
   }
@@ -106,5 +107,11 @@
 
   .presenting-media video {
     aspect-ratio:1;
+  }
+}
+
+@media (orientation: portrait) {
+  .gallery-media video,.presenting-media video {
+    aspect-ratio: 9/16;
   }
 }

@@ -28,11 +28,13 @@ export const createStreams = () => {
     };
 
     getStreamByTrackId = (trackId: string) => {
-      return [...this._streams.values()].find((stream) => {
+      const track = [...this._streams.values()].find((stream) => {
         return stream.mediaStream.getTracks().some((track) => {
           return track.id === trackId;
         });
       });
+
+      return track || null;
     };
 
     getTotalStreams = () => {
