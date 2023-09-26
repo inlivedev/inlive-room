@@ -1,29 +1,20 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
-import Home from '@/_features/home/view';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import type { AuthType } from '@/_shared/types/auth';
+import View from '@/_features/home/view';
+import { getClientAuth } from '@/_shared/utils/get-client-auth';
+import AppContainer from '@/_shared/components/containers/app-container';
 
 export const metadata: Metadata = {
   title: 'inLive Room',
   description: 'Conference room for real-time video and audio calls',
 };
 
-const getCurrentAuth = async () => {
-  const cookieStore = cookies();
-  const currentAuth: AuthType.CurrentAuthInternalResponse =
-    await InternalApiFetcher.get('/api/auth/current', {
-      headers: {
-        cookie: cookieStore.toString(),
-      },
-    });
-
-  return currentAuth;
-};
-
 export default async function Page() {
-  const currentAuth = await getCurrentAuth();
+  const currentAuth = await getClientAuth();
   const currentUser = currentAuth.data ? currentAuth.data : undefined;
 
-  return <Home currentUser={currentUser} />;
+  return (
+    <AppContainer currentUser={currentUser}>
+      <View />
+    </AppContainer>
+  );
 }

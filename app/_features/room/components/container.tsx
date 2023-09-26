@@ -1,20 +1,19 @@
 'use client';
 
-import View from '@/_features/room/components/view';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 
 export default function Container({
   roomId,
   clientId,
-  origin,
+  children,
 }: {
   roomId: string;
   clientId: string;
-  origin: string;
+  children: React.ReactNode;
 }) {
   return (
     <PeerProvider roomId={roomId} clientId={clientId}>
-      <View roomId={roomId} origin={origin} />
+      {children}
     </PeerProvider>
   );
 }

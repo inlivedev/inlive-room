@@ -2,7 +2,6 @@ import '@/_shared/styles/tailwind.css';
 import { Inter } from 'next/font/google';
 import { MixpanelContainer } from '@/_shared/components/analytics/mixpanel';
 import { Suspense } from 'react';
-import NextUIProvider from '@/_shared/providers/nextui';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,9 +30,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <MixpanelContainer />
         </Suspense>
-        <NextUIProvider className="flex flex-1 flex-col">
-          {children}
-        </NextUIProvider>
+        {children}
       </body>
     </html>
   );

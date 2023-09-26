@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { authorize } from '@/(server)/_shared/utils/auth';
 
-const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
 export async function POST(
   request: NextRequest,
@@ -29,6 +29,7 @@ export async function POST(
       name: 'state',
       value: state,
       path: relativeRedirectUri,
+      sameSite: 'lax',
       maxAge: oneHour,
       httpOnly: true,
     });
