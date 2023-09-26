@@ -78,7 +78,7 @@ export const createChannel = ({
 
     _bitrateChanged = async (event: MessageEvent<any>) => {
       const data = JSON.parse(event.data);
-      this._peer.adjustBitrate(data.min, data.max);
+      this._peer.adjustBitrate(data.min, data.max, data.total_clients);
     };
 
     _onTracksAdded = async (event: MessageEvent<any>) => {
