@@ -5,6 +5,8 @@ import AppContainer from '@/_shared/components/containers/app-container';
 import RoomContainer from '@/_features/room/components/container';
 import View from '@/_features/room/components/view';
 import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { RoomType } from '@/_shared/types/room';
 import { getClientAuth } from '@/_shared/utils/get-client-auth';
 
 type PageProps = {
@@ -20,11 +22,12 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
 };
 
 export default async function Page({ params }: PageProps) {
-  const {
-    data: { roomId },
-  } = await room.getRoom(params.roomId);
+  const response: RoomType.CreateJoinRoomResponse =
+    await InternalApiFetcher.get(`/api/room/${params.roomId}/join`);
 
-  if (!roomId) {
+  const roomData = response.data;
+
+  if (!roomData || !roomData.roomId) {
     notFound();
   }
 
@@ -33,14 +36,14 @@ export default async function Page({ params }: PageProps) {
 
   const {
     data: { clientId },
-  } = await room.createClient(roomId);
+  } = await room.createClient(roomData.roomId);
 
   const origin = getOriginServerSide();
 
   return (
     <AppContainer currentUser={currentUser}>
-      <RoomContainer roomId={roomId} clientId={clientId}>
-        <View roomId={roomId} origin={origin} />
+      <RoomContainer roomId={roomData.roomId} clientId={clientId}>
+        <View roomId={roomData.roomId} origin={origin} />
       </RoomContainer>
     </AppContainer>
   );
