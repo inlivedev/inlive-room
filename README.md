@@ -41,45 +41,6 @@ npm install
 yarn install
 ```
 
-**Database Setup**
-
-We're using Postgres as our Database Server, make sure to have the server running on your machine, you can also use our docker compose to start the server quickly
-
-create a `.env` containg these variables : 
-
-```
-DB_USER = inlive_room_user
-DB_PASS = inlive_room_pass
-DB_HOST = localhost
-DB_PORT = 5432
-DB_NAME = inliveroom
-```
-then start the postgres server by running 
-```
-docker compose up -d
-```
-
-Run the Migrations
-
-```
-npm run migrate
-```
-
-After finished developing make sure to shutdown the server by running 
-```
-docker compose down
-```
-or you can turn shut it down from the docker dashboard
-
-**Adding Models to The Database**
-
-- First create your schema definition in `(server)/_features/<feature_name>/schema.ts`, make sure to export it
-- Add the schema into export list in `(server)/_schema/index.ts` this is important, so that drizzle can discover the schema to be used for the [Query Feature](https://orm.drizzle.team/docs/rqb)
-- Now you can also generate the database migration script by running the `npm run generate` command
-- Due to the inability to customize generated migration script file name, please make sure to rename the script file and update the name in `_journal.json` inside the `./migration/meta` folder
-
->Currently a database versioning is not yet implemented, but you can generate database migration script from the schema that was created from Drizzle ORM
-
 **Start the local development server**
 
 Run `dev` script to start the local development server in http://localhost:3000

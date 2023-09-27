@@ -11,4 +11,4 @@
 !package.json
 !next.config.js
 !.eslintrc.js
-!*.ts
+!middleware.ts

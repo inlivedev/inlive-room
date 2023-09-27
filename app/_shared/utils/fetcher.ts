@@ -56,10 +56,6 @@ const createFetcher = () => {
         .catch(this._rejection);
     };
 
-    getBaseURL = () => {
-      return this._baseUrl;
-    };
-
     get = (endpoint: string, options: RequestInit | undefined = {}) => {
       return this._fetcher(endpoint, {
         ...options,
@@ -101,7 +97,6 @@ const createFetcher = () => {
       const fetcher = new Fetcher(baseUrl);
 
       return {
-        getBaseURL: fetcher.getBaseURL,
         get: fetcher.get,
         post: fetcher.post,
         put: fetcher.put,

@@ -1,42 +1,28 @@
-import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
-import type { RoomType } from '@/_shared/types/room';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
+import { room } from '@/_shared/utils/sdk';
 
 export const useCreateRoom = () => {
   const { navigateTo } = useNavigate();
 
-  const createRoomHandler = async (name?: string) => {
-    try {
-      const response: RoomType.CreateJoinRoomResponse =
-        await InternalApiFetcher.post('/api/room/create', {
-          body: JSON.stringify({
-            name: name,
-          }),
+  const createRoomHandler = async () => {
+    room
+      .createRoom()
+      .then(async (response) => {
+        if (!response || !response.ok) {
+          throw response;
+        }
+
+        Mixpanel.track('Create room', {
+          roomId: response.data.roomId,
         });
 
-      if (response.code > 299 || !response.data) {
-        throw new Error(response.message);
-      }
-
-      const roomData = response.data;
-
-      Mixpanel.track('Create room', {
-        roomId: roomData.id,
-        externalRoomId: roomData.roomId,
-        createdBy: roomData.createdBy,
+        navigateTo(`/room/${response.data.roomId}`);
+      })
+      .catch((error) => {
+        alert('Failed to create a room. Please try again later! ');
+        console.error(error);
       });
-
-      navigateTo(`/room/${roomData.id}`);
-    } catch (error) {
-      alert('Failed to create a room. Please try again later! ');
-
-      if (error instanceof Error) {
-        console.log(`Failed when decoding request response : ${error}`);
-      } else {
-        console.log(`Failed when decoding request response`);
-      }
-    }
   };
 
   return { createRoom: createRoomHandler };

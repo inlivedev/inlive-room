@@ -39,6 +39,3 @@ next-env.d.ts
 sentry.properties
 
 .env
-app/(server)/api/test
-
-/.docker
