@@ -11,19 +11,21 @@ import { getClientAuth } from '@/_shared/utils/get-client-auth';
 
 type PageProps = {
   params: {
-    roomId: string;
+    pageID: string;
   };
 };
 
 export const generateMetadata = ({ params }: PageProps): Metadata => {
   return {
-    title: `Room - ${params.roomId}`,
+    title: `Room - ${params.pageID}`,
   };
 };
 
 export default async function Page({ params }: PageProps) {
   const response: RoomType.CreateJoinRoomResponse =
-    await InternalApiFetcher.get(`/api/room/${params.roomId}/join`);
+    await InternalApiFetcher.get(`/api/room/${params.pageID}/join`, {
+      cache: 'no-cache',
+    });
 
   const roomData = response.data;
 
@@ -42,8 +44,12 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <AppContainer currentUser={currentUser}>
-      <RoomContainer roomId={roomData.id} clientId={clientId}>
-        <View roomId={roomData.id} origin={origin} />
+      <RoomContainer
+        pageId={roomData.id}
+        roomId={roomData.roomId}
+        clientId={clientId}
+      >
+        <View pageId={roomData.id} roomId={roomData.roomId} origin={origin} />
       </RoomContainer>
     </AppContainer>
   );

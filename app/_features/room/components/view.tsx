@@ -13,11 +13,12 @@ import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 
 type ViewProps = {
+  pageId: string;
   roomId: string;
   origin: string;
 };
 
-export default function View({ roomId, origin }: ViewProps) {
+export default function View({ pageId, roomId, origin }: ViewProps) {
   const { active: openConference, setActive: setOpenConference } =
     useToggle(false);
 
@@ -86,9 +87,10 @@ export default function View({ roomId, origin }: ViewProps) {
     setOpenConference();
 
     Mixpanel.track('Join room', {
+      pageId: pageId,
       roomId: roomId,
     });
-  }, [roomId, setOpenConference, videoConstraints, audioConstraints]);
+  }, [pageId, roomId, setOpenConference, videoConstraints, audioConstraints]);
 
   return (
     <div className="flex flex-1 flex-col bg-neutral-900 text-neutral-200">
@@ -100,8 +102,8 @@ export default function View({ roomId, origin }: ViewProps) {
         </DeviceProvider>
       ) : (
         <Lobby>
-          <LobbyHeader roomId={roomId} />
-          <LobbyInvite roomId={roomId} origin={origin} />
+          <LobbyHeader pageId={pageId} />
+          <LobbyInvite pageId={pageId} origin={origin} />
           <LobbyCTA openConferenceRoom={openConferenceHandler} />
         </Lobby>
       )}
