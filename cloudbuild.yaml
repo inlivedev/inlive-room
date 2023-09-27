@@ -25,7 +25,7 @@ steps:
       - DB_PORT=${_DB_PORT}
     secretEnv: ['_DB_HOST','_DB_NAME','_DB_PASS','_DB_USER']
 
-  - name: Log Database Connection
+  - name: gcr.io/cloud-builders/docker
     args: 
     - echo $_DB_HOST
     - echo $_DB_PORT
