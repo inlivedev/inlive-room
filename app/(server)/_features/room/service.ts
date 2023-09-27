@@ -1,5 +1,4 @@
 import { iRoomService } from './routes';
-import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { room } from '@/_shared/utils/sdk';
 import { Room } from './routes';
 import Sqids from 'sqids';
