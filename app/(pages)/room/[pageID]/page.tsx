@@ -11,19 +11,19 @@ import { getClientAuth } from '@/_shared/utils/get-client-auth';
 
 type PageProps = {
   params: {
-    roomId: string;
+    pageID: string;
   };
 };
 
 export const generateMetadata = ({ params }: PageProps): Metadata => {
   return {
-    title: `Room - ${params.roomId}`,
+    title: `Room - ${params.pageID}`,
   };
 };
 
 export default async function Page({ params }: PageProps) {
   const response: RoomType.CreateJoinRoomResponse =
-    await InternalApiFetcher.get(`/api/room/${params.roomId}/join`, {
+    await InternalApiFetcher.get(`/api/room/${params.pageID}/join`, {
       cache: 'no-cache',
     });
 
