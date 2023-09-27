@@ -28,7 +28,6 @@ const createRoomRoutesHandler = () => {
     };
 
     joinRoomHandler = async (roomID: string) => {
-      console.log(roomID);
       return await this.roomService.joinRoom(roomID);
     };
   };
