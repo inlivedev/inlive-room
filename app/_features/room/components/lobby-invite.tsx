@@ -1,10 +1,10 @@
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 
 export default function LobbyInvite({
-  roomId,
+  pageId,
   origin,
 }: {
-  roomId: string;
+  pageId: string;
   origin: string;
 }) {
   const handleCopyLink = async (text = '') => {
@@ -30,13 +30,13 @@ export default function LobbyInvite({
             className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm text-neutral-200 outline-none ring-1 ring-neutral-700  focus-visible:ring-1 focus-visible:ring-neutral-200"
             type="text"
             readOnly
-            value={`${origin}/room/${roomId}`}
+            value={`${origin}/room/${pageId}`}
           />
         </div>
         <div>
           <button
             className="rounded-md bg-neutral-800 px-4 py-2 text-sm font-medium hover:bg-neutral-800/60"
-            onClick={() => handleCopyLink(`${origin}/room/${roomId}`)}
+            onClick={() => handleCopyLink(`${origin}/room/${pageId}`)}
           >
             Copy Link
           </button>
