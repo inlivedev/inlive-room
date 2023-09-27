@@ -9,6 +9,7 @@ export const getClientAuth = async () => {
       headers: {
         cookie: cookie,
       },
+      cache: 'no-cache',
     });
 
   return currentAuth;
