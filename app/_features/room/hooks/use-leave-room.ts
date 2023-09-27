@@ -15,11 +15,11 @@ export const useLeaveRoom = () => {
     if (!peer) return;
 
     peer.disconnect();
-    const leave = await room.leaveRoom(roomId, clientId);
-
-    if (leave.code >= 300) {
-      throw new Error('Failed to end the call');
-    }
+    room.leaveRoom(roomId, clientId).then((response) => {
+      if (response.code >= 300) {
+        throw new Error('Failed to end the call');
+      }
+    });
 
     navigateTo('/');
   };
