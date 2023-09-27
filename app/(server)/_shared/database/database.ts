@@ -8,12 +8,17 @@ const DB_PORT = parseInt(process.env.DB_PORT || '0', 10);
 const DB_PASS = process.env.DB_PASS;
 const DB_NAME = process.env.DB_NAME;
 
-const queryClient = postgres({
+const Option: postgres.Options<Record<string, postgres.PostgresType>> = {
   host: DB_HOST,
   user: DB_USER,
   pass: DB_PASS,
   database: DB_NAME,
-  port: DB_PORT,
-});
+};
+
+if (process.env.NEXT_PUBLIC_APP_ENV == 'development') {
+  Option.port = DB_PORT;
+}
+
+const queryClient = postgres(Option);
 
 export const db = drizzle(queryClient, { schema });
