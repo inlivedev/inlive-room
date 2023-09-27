@@ -18,19 +18,7 @@ steps:
       - NEXT_PUBLIC_INLIVE_API_VERSION=${_NEXT_PUBLIC_INLIVE_API_VERSION}
       - NEXT_PUBLIC_MIXPANEL_TOKEN=${_NEXT_PUBLIC_MIXPANEL_TOKEN}
       - NEXT_PUBLIC_SENTRY_DSN=${_NEXT_PUBLIC_SENTRY_DSN}
-      - DB_HOST=${_DB_HOST}
-      - DB_NAME=${_DB_NAME}
-      - DB_PASS=${_DB_PASS}
-      - DB_USER=${_DB_USER}
-      - DB_PORT=${_DB_PORT}
-    secretEnv: ['_DB_HOST','_DB_NAME','_DB_PASS','_DB_USER']
-
-  - name: gcr.io/cloud-builders/docker
-    args: 
-    - echo $_DB_HOST
-    - echo $_DB_PORT
-    - echo $_DB_NAME
-    secretEnv: ['_DB_HOST','_DB_NAME','_DB_PASS','_DB_USER']
+    secretEnv: ['DB_HOST','DB_NAME','DB_PASS','DB_USER']
 
 
   # Build the container image
@@ -73,10 +61,10 @@ images:
 availableSecrets:
   secretManager:
   - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_HOST/versions/latest
-    env: '_DB_HOST'
+    env: 'DB_HOST'
   - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_NAME/versions/latest
-    env: '_DB_NAME'
+    env: 'DB_NAME'
   - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_PASS/versions/latest
-    env: '_DB_PASS'
+    env: 'DB_PASS'
   - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_USER/versions/latest
-    env: '_DB_USER'
+    env: 'DB_USER'
