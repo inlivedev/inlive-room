@@ -16,6 +16,8 @@ class BandwidthController {
     this._lastUpdated = 0;
     this._inboundTracks = {};
     this._outboundTracks = {};
+
+    setInterval(this._updateStats, 3000);
   }
 
   getVideoOutboundTracksLength = (): number => {
@@ -190,48 +192,6 @@ class BandwidthController {
 
     return stats;
   }
-
-  // min max numbers here still not affecting the calculation
-  // for now it will only use the min max cap as references
-  // TODO: will find the most optimal way to calculate the bitrates
-  getAdjustmentRatio = async () => {
-    await this._updateStats();
-
-    if (this._available == 0) {
-      return 0;
-    }
-
-    const stats = this._getOutbountStats();
-
-    if (
-      stats == null ||
-      stats.video.totalBitrates == 0 ||
-      stats.audio.totalBitrates == 0
-    )
-      return 0;
-
-    const videoBandwidth = this._available - stats.audio.totalBitrates;
-
-    const delta = videoBandwidth - stats.video.totalBitrates;
-
-    if (delta == 0) return 0;
-
-    // give room 10% from max video bandwidth
-    const ratio =
-      (videoBandwidth - videoBandwidth * 0.2) / stats.video.totalBitrates;
-
-    console.log(
-      `video birates: ${stats.video.totalBitrates.toLocaleString(
-        'en-US'
-      )}, audio bitrates: ${stats.audio.totalBitrates.toLocaleString(
-        'en-US'
-      )}, available left bitrates: ${delta.toLocaleString(
-        'en-US'
-      )}, ratio ${ratio.toLocaleString('en-US')}`
-    );
-
-    return ratio;
-  };
 }
 
 interface TrackInboundStats {

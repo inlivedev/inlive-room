@@ -8,9 +8,9 @@ export const PeerEvents: RoomPeerType.PeerEvents = {
   _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream',
 };
 
-const maxBitrate = 3600 * 1000;
+const maxBitrate = 1500 * 1000;
 const midBitrate = 500 * 1000;
-const minBitrate = 140 * 1000;
+const minBitrate = 150 * 1000;
 
 export const createPeer = ({
   api,
@@ -161,73 +161,6 @@ export const createPeer = ({
           await transceiver.sender.replaceTrack(track);
         }
       }
-    };
-
-    adjustBitrate = async (min: number, max: number, totalClients: number) => {
-      const ratio = await this._bwController.getAdjustmentRatio();
-      const updatedParams = false;
-
-      // don't adjust bitrates if available bandwidth is not available
-      if (ratio === 0 || isNaN(ratio)) return;
-
-      this._peerConnection?.getSenders().forEach(async (sender) => {
-        if (sender.track != null && sender.track.kind == 'video') {
-          const stream = this._streams.getStreamByTrackId(sender.track.id);
-          let totalBitrates = 0;
-
-          if (!stream) return;
-          else if (stream.source != 'media') return;
-
-          const params = sender.getParameters();
-
-          if (params.encodings.length == 1) {
-            return;
-          }
-
-          let updatedParams = false;
-
-          params.encodings.forEach((encoding, i) => {
-            if (encoding.rid !== '' || typeof encoding.rid !== 'undefined') {
-              const bitrate = params.encodings[i].maxBitrate || 0;
-              let nextBitrate = Math.floor(bitrate * ratio);
-
-              if (encoding.rid === 'high') {
-                if (nextBitrate > maxBitrate) nextBitrate = maxBitrate;
-                else if (nextBitrate < midBitrate) nextBitrate = midBitrate;
-              } else if (encoding.rid === 'low' && nextBitrate > minBitrate) {
-                nextBitrate = minBitrate;
-              } else if (encoding.rid === 'mid') {
-                if (nextBitrate > midBitrate) nextBitrate = midBitrate;
-                else if (nextBitrate < minBitrate) nextBitrate = minBitrate;
-              }
-
-              params.encodings[i].maxBitrate = nextBitrate;
-
-              totalBitrates += params.encodings[i].maxBitrate || 0;
-
-              updatedParams = true;
-
-              console.log(
-                `Updated ${encoding.rid} bitrate: ${params.encodings[
-                  i
-                ].maxBitrate?.toLocaleString('en-US')}`
-              );
-            }
-          });
-
-          if (updatedParams) {
-            const bandwidth = await this._bwController.getAvailable();
-            console.log(
-              `Updated track ${
-                sender.track.id
-              } with total bitrate: ${totalBitrates.toLocaleString(
-                'en-US'
-              )}, bandwidth ${bandwidth.toLocaleString('en-US')}`
-            );
-            sender.setParameters(params);
-          }
-        }
-      });
     };
 
     _addEventListener = () => {
@@ -470,19 +403,19 @@ export const createPeer = ({
             // for firefox order matters... first high resolution, then scaled resolutions...
             {
               rid: 'high',
-              maxBitrate: 700 * 1000,
+              maxBitrate: maxBitrate,
               maxFramerate: 30,
             },
             {
               rid: 'mid',
               scaleResolutionDownBy: 2.0,
               maxFramerate: 20,
-              maxBitrate: 190 * 1000,
+              maxBitrate: midBitrate,
             },
             {
               rid: 'low',
               scaleResolutionDownBy: 4.0,
-              maxBitrate: 130 * 1000,
+              maxBitrate: minBitrate,
               maxFramerate: 15,
             },
           ],
@@ -523,7 +456,6 @@ export const createPeer = ({
         disconnect: peer.disconnect,
         getPeerConnection: peer.getPeerConnection,
         addStream: peer.addStream,
-        adjustBitrate: peer.adjustBitrate,
         removeStream: peer.removeStream,
         getAllStreams: peer.getAllStreams,
         getStream: peer.getStream,
