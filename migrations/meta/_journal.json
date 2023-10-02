@@ -8,6 +8,13 @@
       "when": 1695622653690,
       "tag": "0000_create_room",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1696242382917,
+      "tag": "0001_add_participant_name",
+      "breakpoints": true
     }
   ]
 }

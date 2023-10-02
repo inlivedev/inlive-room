@@ -1,10 +1,12 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
 import { service } from '@/(server)/_features/room/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { ParticiantRepo } from '../participants/repository';
 
 export interface iRoomService {
   createRoom(userID: number): Promise<Room>;
   joinRoom(roomId: string): Promise<Room | undefined>;
+  createClient(roomId: string, name: string): Promise<string>;
 }
 
 export interface Room {
@@ -30,6 +32,10 @@ const createRoomRoutesHandler = () => {
     joinRoomHandler = async (roomID: string) => {
       return await this.roomService.joinRoom(roomID);
     };
+
+    registerClientHandler = async (roomID: string, name: string) => {
+      return await this.roomService.createClient(roomID, name);
+    };
   };
 
   return {
@@ -39,11 +45,12 @@ const createRoomRoutesHandler = () => {
       return {
         createRoomHandler: roomRoutesHandler.createRoomHandler,
         joinRoomHandler: roomRoutesHandler.joinRoomHandler,
+        registerClientHandler: roomRoutesHandler.registerClientHandler,
       };
     },
   };
 };
 
 export const roomRoutesHandler = createRoomRoutesHandler().createInstance(
-  new service(new RoomRepo())
+  new service(new RoomRepo(), new ParticiantRepo())
 );

@@ -9,12 +9,36 @@ export interface iRoomRepo {
   updateRoomById(room: Room): Promise<Room | undefined>;
 }
 
+export interface Participant {
+  clientID: string;
+  name: string;
+  roomID: string | null;
+}
+
+export interface iParticipantRepo {
+  addParticipant(participant: Participant): Promise<Participant>;
+}
+
 export class service implements iRoomService {
-  _repo: iRoomRepo;
+  _roomRepo: iRoomRepo;
+  _participantRepo: iParticipantRepo;
   _sdk = room;
 
-  constructor(repo: iRoomRepo) {
-    this._repo = repo;
+  constructor(roomRepo: iRoomRepo, participantRepo: iParticipantRepo) {
+    this._roomRepo = roomRepo;
+    this._participantRepo = participantRepo;
+  }
+
+  async createClient(roomId: string, name: string): Promise<string> {
+    const clientResp = await this._sdk.createClient(roomId);
+    const data: Participant = {
+      clientID: clientResp.data.clientId,
+      name: name,
+      roomID: roomId,
+    };
+
+    const participant = await this._participantRepo.addParticipant(data);
+    return participant.clientID;
   }
 
   async createRoom(userID: number): Promise<Room> {
@@ -28,7 +52,7 @@ export class service implements iRoomService {
 
     while (true) {
       try {
-        const room = await this._repo.addRoom(newRoom);
+        const room = await this._roomRepo.addRoom(newRoom);
         return room;
       } catch (error) {
         const err = error as Error;
@@ -39,7 +63,7 @@ export class service implements iRoomService {
   }
 
   async joinRoom(roomId: string): Promise<Room | undefined> {
-    let room = await this._repo.getRoomById(roomId);
+    let room = await this._roomRepo.getRoomById(roomId);
 
     if (room === undefined) {
       throw new Error('Room not exists');
@@ -57,7 +81,7 @@ export class service implements iRoomService {
       }
       room.roomId = newRemoteRoom.data.roomId;
 
-      room = await this._repo.updateRoomById(room);
+      room = await this._roomRepo.updateRoomById(room);
 
       if (room == undefined) {
         throw new Error(
