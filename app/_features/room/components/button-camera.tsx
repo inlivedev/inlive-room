@@ -77,41 +77,43 @@ export default function ButtonCamera() {
           <CameraOffIcon width={20} height={20} />
         )}
       </Button>
-      <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
-        <DropdownTrigger>
-          <Button
-            isIconOnly
-            className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
+      {videoInputs.length > 0 ? (
+        <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
+          <DropdownTrigger>
+            <Button
+              isIconOnly
+              className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
+            >
+              <ArrowDownFillIcon className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            disallowEmptySelection
+            aria-label="Camera options"
+            selectionMode="single"
+            selectedKeys={selectedVideoInputKey}
+            onSelectionChange={onDeviceSelectionChange}
           >
-            <ArrowDownFillIcon className="h-3.5 w-3.5" />
-          </Button>
-        </DropdownTrigger>
-        <DropdownMenu
-          disallowEmptySelection
-          aria-label="Camera options"
-          selectionMode="single"
-          selectedKeys={selectedVideoInputKey}
-          onSelectionChange={onDeviceSelectionChange}
-        >
-          <DropdownSection title="Select a camera" className="mb-0">
-            {selectVideoInputOptions.map((item, index) => {
-              return (
-                <DropdownItem
-                  key={item.key}
-                  description={
-                    item.key ===
-                    `${currentVideoInput?.kind}-${currentVideoInput?.deviceId}`
-                      ? 'Currently in use'
-                      : 'Switch to this device'
-                  }
-                >
-                  {item.label || `Camera ${index}`}
-                </DropdownItem>
-              );
-            })}
-          </DropdownSection>
-        </DropdownMenu>
-      </Dropdown>
+            <DropdownSection title="Select a camera" className="mb-0">
+              {selectVideoInputOptions.map((item, index) => {
+                return (
+                  <DropdownItem
+                    key={item.key}
+                    description={
+                      item.key ===
+                      `${currentVideoInput?.kind}-${currentVideoInput?.deviceId}`
+                        ? 'Currently in use'
+                        : 'Switch to this device'
+                    }
+                  >
+                    {item.label || `Camera ${index}`}
+                  </DropdownItem>
+                );
+              })}
+            </DropdownSection>
+          </DropdownMenu>
+        </Dropdown>
+      ) : null}
     </ButtonGroup>
   );
 }
