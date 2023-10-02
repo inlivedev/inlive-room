@@ -51,6 +51,10 @@ export const useSelectDevice = (
 
       try {
         if (currentSelectedDevice.kind === 'audioinput') {
+          for (const audioTrack of localStream.mediaStream.getAudioTracks()) {
+            audioTrack.stop();
+          }
+
           const mediaStream = await getUserMedia({
             audio: { deviceId: { exact: currentSelectedDevice.deviceId } },
           });
@@ -77,6 +81,10 @@ export const useSelectDevice = (
           setCurrentActiveDevice &&
             setCurrentActiveDevice(currentSelectedDevice);
         } else {
+          for (const videoTrack of localStream.mediaStream.getVideoTracks()) {
+            videoTrack.stop();
+          }
+
           const mediaStream = await getUserMedia({
             video: { deviceId: { exact: currentSelectedDevice.deviceId } },
           });
