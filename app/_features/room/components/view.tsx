@@ -96,9 +96,15 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
             (device) => device.kind === 'audioinput'
           );
 
+          if (!audioInput) {
+            alert(
+              `Your device needs to have an active microphone in order to continue`
+            );
+          }
+
           const mediaStream = await getUserMedia({
             video: videoInput ? videoConstraints : false,
-            audio: audioInput ? audioConstraints : false,
+            audio: audioConstraints,
           });
 
           return mediaStream;
