@@ -1,4 +1,4 @@
-const getAudioStream = (constraints: MediaStreamConstraints, retries = 3) => {
+const getAudioStream = (constraints: MediaStreamConstraints, retries = 2) => {
   return navigator.mediaDevices
     .getUserMedia(constraints)
     .catch(async (error): Promise<MediaStream> => {
@@ -14,7 +14,7 @@ const getAudioStream = (constraints: MediaStreamConstraints, retries = 3) => {
     });
 };
 
-const getVideoStream = (constraints: MediaStreamConstraints, retries = 3) => {
+const getVideoStream = (constraints: MediaStreamConstraints, retries = 2) => {
   return navigator.mediaDevices
     .getUserMedia(constraints)
     .catch(async (error): Promise<MediaStream> => {
@@ -85,9 +85,12 @@ export const getUserMedia = async (constraints: MediaStreamConstraints) => {
         error.name === 'NotAllowedError' ||
         error.name === 'PermissionDeniedError'
       ) {
-        alert(
+        const permissionError = new Error(
           'Please allow this website to use your camera and microphone before continue'
         );
+        permissionError.name = error.name;
+
+        throw permissionError;
       }
     }
 
