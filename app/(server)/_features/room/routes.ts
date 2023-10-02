@@ -6,7 +6,7 @@ import { ParticiantRepo } from '../participants/repository';
 export interface iRoomService {
   createRoom(userID: number): Promise<Room>;
   joinRoom(roomId: string): Promise<Room | undefined>;
-  createClient(roomId: string, name: string): Promise<string>;
+  createClient(roomId: string, name: string): Promise<Participant>;
 }
 
 export interface Room {
@@ -14,6 +14,12 @@ export interface Room {
   name?: string | null;
   roomId: string; //InLive Hub Room ID (External)
   createdBy: number;
+}
+
+export interface Participant {
+  clientID: string;
+  name: string;
+  roomID: string | null;
 }
 
 const createRoomRoutesHandler = () => {

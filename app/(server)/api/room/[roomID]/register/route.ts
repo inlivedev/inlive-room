@@ -1,4 +1,5 @@
 import { roomRoutesHandler } from '@/(server)/_features/room/routes';
+import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 
 interface CreateReq {
@@ -18,5 +19,32 @@ export async function POST(
     });
   }
 
-  await roomRoutesHandler.registerClientHandler(params.roomID, body.name);
+  try {
+    const clientData = await roomRoutesHandler.registerClientHandler(
+      params.roomID,
+      body.name
+    );
+
+    return NextResponse.json({
+      code: 200,
+      message: 'client registered',
+      data: clientData,
+    });
+  } catch (error) {
+    if (!isError(error)) {
+      const response = {
+        code: 500,
+        message: 'an error has occured on our side please try again later',
+      };
+
+      return NextResponse.json(response, { status: 500 });
+    }
+
+    const response = {
+      code: 500,
+      message: error.message,
+    };
+
+    return NextResponse.json(response, { status: 500 });
+  }
 }

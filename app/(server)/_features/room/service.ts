@@ -1,18 +1,13 @@
-import { iRoomService } from './routes';
+import { Participant, iRoomService } from './routes';
 import { room } from '@/_shared/utils/sdk';
 import { Room } from './routes';
 import Sqids from 'sqids';
+import { error } from 'console';
 
 export interface iRoomRepo {
   addRoom(room: Room): Promise<Room>;
   getRoomById(id: string): Promise<Room | undefined>;
   updateRoomById(room: Room): Promise<Room | undefined>;
-}
-
-export interface Participant {
-  clientID: string;
-  name: string;
-  roomID: string | null;
 }
 
 export interface iParticipantRepo {
@@ -29,8 +24,15 @@ export class service implements iRoomService {
     this._participantRepo = participantRepo;
   }
 
-  async createClient(roomId: string, name: string): Promise<string> {
+  async createClient(roomId: string, name: string): Promise<Participant> {
     const clientResp = await this._sdk.createClient(roomId);
+
+    if (!clientResp.data.clientId) {
+      throw new Error(
+        'failed to add client to the meeting room, please try again later'
+      );
+    }
+
     const data: Participant = {
       clientID: clientResp.data.clientId,
       name: name,
@@ -38,7 +40,7 @@ export class service implements iRoomService {
     };
 
     const participant = await this._participantRepo.addParticipant(data);
-    return participant.clientID;
+    return participant;
   }
 
   async createRoom(userID: number): Promise<Room> {
