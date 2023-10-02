@@ -28,7 +28,7 @@ export function ParticipantProvider({
   const [streams, setStreams] = useState<ParticipantStream[]>([]);
 
   useEffect(() => {
-    if (peer) {
+    if (peer && localStream) {
       room.on(room.event.STREAM_ADDED, () => {
         setStreams(peer.getAllStreams());
       });
