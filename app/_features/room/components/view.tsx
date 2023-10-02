@@ -25,7 +25,7 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
   const [localStream, setLocalStream] = useState<MediaStream | undefined>();
 
   const videoConstraints = useMemo(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return false;
 
     const selectedVideoInputId = window.sessionStorage.getItem(
       'device:selected-video-input-id'
@@ -60,37 +60,58 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
   }, []);
 
   const audioConstraints = useMemo(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return false;
 
     const selectedAudioInputId = window.sessionStorage.getItem(
       'device:selected-audio-input-id'
     );
 
-    if (selectedAudioInputId) {
-      return { deviceId: { exact: selectedAudioInputId } };
-    }
-
-    return {
+    const defaultConstraints = {
       echoCancellation: true,
       noiseSuppression: true,
       autoGainControl: true,
     };
+
+    if (selectedAudioInputId) {
+      return {
+        deviceId: { exact: selectedAudioInputId },
+        ...defaultConstraints,
+      };
+    }
+
+    return defaultConstraints;
   }, []);
 
   const openConferenceHandler = useCallback(async () => {
-    const mediaStream = await getUserMedia({
-      video: videoConstraints,
-      audio: audioConstraints,
-    });
+    if (openConference) return;
 
-    setLocalStream(mediaStream);
-    setOpenConference();
+    try {
+      const mediaStream = await getUserMedia({
+        video: videoConstraints,
+        audio: audioConstraints,
+      });
 
-    Mixpanel.track('Join room', {
-      pageId: pageId,
-      roomId: roomId,
-    });
-  }, [pageId, roomId, setOpenConference, videoConstraints, audioConstraints]);
+      setLocalStream(mediaStream);
+      setOpenConference();
+
+      Mixpanel.track('Join room', {
+        pageId: pageId,
+        roomId: roomId,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        alert(error.message);
+      }
+    }
+  }, [
+    pageId,
+    roomId,
+    openConference,
+    setOpenConference,
+    videoConstraints,
+    audioConstraints,
+  ]);
 
   return (
     <div className="flex flex-1 flex-col bg-neutral-900 text-neutral-200">
