@@ -178,19 +178,21 @@ export default function ButtonMicrophone() {
           <MicrophoneOffIcon width={20} height={20} />
         )}
       </Button>
-      <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
-        <DropdownTrigger>
-          <Button
-            isIconOnly
-            className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-          >
-            <ArrowDownFillIcon className="h-3.5 w-3.5" />
-          </Button>
-        </DropdownTrigger>
-        {isSinkSupportedRef.current
-          ? renderDropdownMenuWithSpeaker()
-          : renderDropdownMenuWithoutSpeaker()}
-      </Dropdown>
+      {audioInputs.length > 0 || audioOutputs.length > 0 ? (
+        <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
+          <DropdownTrigger>
+            <Button
+              isIconOnly
+              className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
+            >
+              <ArrowDownFillIcon className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownTrigger>
+          {isSinkSupportedRef.current
+            ? renderDropdownMenuWithSpeaker()
+            : renderDropdownMenuWithoutSpeaker()}
+        </Dropdown>
+      ) : null}
     </ButtonGroup>
   );
 }
