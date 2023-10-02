@@ -86,10 +86,23 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
     if (openConference) return;
 
     try {
-      const mediaStream = await getUserMedia({
-        video: videoConstraints,
-        audio: audioConstraints,
-      });
+      const mediaStream = await navigator.mediaDevices
+        .enumerateDevices()
+        .then(async (devices) => {
+          const videoInput = devices.find(
+            (device) => device.kind === 'videoinput'
+          );
+          const audioInput = devices.find(
+            (device) => device.kind === 'audioinput'
+          );
+
+          const mediaStream = await getUserMedia({
+            video: videoInput ? videoConstraints : false,
+            audio: audioInput ? audioConstraints : false,
+          });
+
+          return mediaStream;
+        });
 
       setLocalStream(mediaStream);
       setOpenConference();
