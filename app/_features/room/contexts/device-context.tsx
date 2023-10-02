@@ -79,15 +79,31 @@ export function DeviceProvider({
           devicesState.currentAudioInput
             ? devicesState.currentAudioInput
             : audioInputs[0];
+
+        window.sessionStorage.setItem(
+          'device:selected-audio-input-id',
+          currentAudioInput.deviceId
+        );
+
         let currentVideoInput: MediaDeviceInfo | undefined =
           devicesState.currentVideoInput
             ? devicesState.currentVideoInput
             : videoInputs[0];
 
+        window.sessionStorage.setItem(
+          'device:selected-video-input-id',
+          currentVideoInput.deviceId
+        );
+
         const currentAudioOutput: MediaDeviceInfo | undefined =
           devicesState.currentAudioOutput
             ? devicesState.currentAudioOutput
             : audioOutputs[0];
+
+        window.sessionStorage.setItem(
+          'device:selected-audio-output-id',
+          currentAudioOutput.deviceId
+        );
 
         if (localStream) {
           const currentAudioInputId = localStream

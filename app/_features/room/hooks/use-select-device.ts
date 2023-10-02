@@ -63,20 +63,12 @@ export const useSelectDevice = (
             const track = mediaStream.getAudioTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
-            window.sessionStorage.setItem(
-              'device:selected-audio-input-id',
-              currentSelectedDevice.deviceId
-            );
 
             setSelectedDeviceKeyState(selectedDeviceKeys);
             setCurrentActiveDevice &&
               setCurrentActiveDevice(currentSelectedDevice);
           }
         } else if (currentSelectedDevice.kind === 'audiooutput') {
-          window.sessionStorage.setItem(
-            'device:selected-audio-output-id',
-            currentSelectedDevice.deviceId
-          );
           setSelectedDeviceKeyState(selectedDeviceKeys);
           setCurrentActiveDevice &&
             setCurrentActiveDevice(currentSelectedDevice);
@@ -93,10 +85,7 @@ export const useSelectDevice = (
             const track = mediaStream.getVideoTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
-            window.sessionStorage.setItem(
-              'device:selected-video-input-id',
-              currentSelectedDevice.deviceId
-            );
+
             setSelectedDeviceKeyState(selectedDeviceKeys);
             setCurrentActiveDevice &&
               setCurrentActiveDevice(currentSelectedDevice);
