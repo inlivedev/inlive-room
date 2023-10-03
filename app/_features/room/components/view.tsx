@@ -11,6 +11,7 @@ import Conference from '@/_features/room/components/conference';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
+import { AudioOutputContext } from '@/_features/room/contexts/device-context';
 
 type ViewProps = {
   pageId: string;
@@ -72,7 +73,15 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
     if (openConference) return;
 
     try {
-      const mediaStream = await navigator.mediaDevices
+      const resumeAudioContextPromise = new Promise(async (resolve) => {
+        if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
+          await AudioOutputContext.resume();
+        }
+
+        return resolve(null);
+      });
+
+      const mediaStreamPromise = navigator.mediaDevices
         .enumerateDevices()
         .then(async (devices) => {
           const videoInput = devices.find(
@@ -95,6 +104,11 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
 
           return mediaStream;
         });
+
+      const [mediaStream] = await Promise.all([
+        mediaStreamPromise,
+        resumeAudioContextPromise,
+      ]);
 
       setLocalStream(mediaStream);
       setOpenConference();
