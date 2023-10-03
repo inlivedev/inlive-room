@@ -1,8 +1,7 @@
-import { Participant, iRoomService } from './routes';
+import { iRoomService, Participant } from './routes';
 import { room } from '@/_shared/utils/sdk';
 import { Room } from './routes';
 import Sqids from 'sqids';
-import { error } from 'console';
 
 export interface iRoomRepo {
   addRoom(room: Room): Promise<Room>;
@@ -12,6 +11,15 @@ export interface iRoomRepo {
 
 export interface iParticipantRepo {
   addParticipant(participant: Participant): Promise<Participant>;
+  getAllParticipant(roomID: string): Promise<Participant[]>;
+  getByClientID(
+    roomID: string,
+    clientID: string
+  ): Promise<Participant | undefined>;
+  getByMultipleClientID(
+    roomID: string,
+    clientID: string[]
+  ): Promise<Participant[]>;
 }
 
 export class service implements iRoomService {
@@ -41,6 +49,22 @@ export class service implements iRoomService {
 
     const participant = await this._participantRepo.addParticipant(data);
     return participant;
+  }
+
+  async getClients(
+    roomID: string,
+    clientIDs: string[]
+  ): Promise<Participant[]> {
+    const clients = await this._participantRepo.getByMultipleClientID(
+      roomID,
+      clientIDs
+    );
+
+    return clients;
+  }
+
+  async getAllClients(roomID: string) {
+    return await this._participantRepo.getAllParticipant(roomID);
   }
 
   async createRoom(userID: number): Promise<Room> {

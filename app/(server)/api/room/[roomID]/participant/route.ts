@@ -1,34 +1,36 @@
 import { roomRoutesHandler } from '@/(server)/_features/room/routes';
 import { isError } from 'lodash-es';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-interface RegisterClientReq {
-  name: string;
+interface GetParticipantReq {
+  clientIDs: string[];
 }
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { roomID: string } }
 ) {
-  const body = (await req.json()) as RegisterClientReq;
+  const body = (await req.json()) as GetParticipantReq;
+  const searchParams = req.nextUrl.searchParams;
+  const query = searchParams.get('all');
 
-  if (!body.name) {
+  if (!body.clientIDs) {
     return NextResponse.json({
       code: 400,
-      message: 'Name is missing from request',
+      message: 'clientIDs is missing from request',
     });
   }
-
   try {
-    const clientData = await roomRoutesHandler.registerClientHandler(
+    const participantData = await roomRoutesHandler.getClientHandler(
       params.roomID,
-      body.name
+      body.clientIDs,
+      query == 'true'
     );
 
     return NextResponse.json({
       code: 200,
-      message: 'client registered',
-      data: clientData,
+      message: 'ok',
+      data: participantData,
     });
   } catch (error) {
     if (!isError(error)) {
