@@ -106,7 +106,9 @@ export default function ButtonCamera() {
                         : 'Switch to this device'
                     }
                   >
-                    {item.label || `Camera ${index}`}
+                    {item.label === 'Default'
+                      ? 'Default Camera'
+                      : item.label || `Camera ${index}`}
                   </DropdownItem>
                 );
               })}
