@@ -43,6 +43,19 @@ export default function ButtonMicrophone() {
     onDeviceSelectionChange: onAudioOutputSelectionChange,
   } = useSelectDevice(audioOutputs, currentAudioOutput);
 
+  const speakerSelectionSupport = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+
+    if (
+      AudioContext.prototype.hasOwnProperty('setSinkId') ||
+      HTMLMediaElement.prototype.hasOwnProperty('setSinkId')
+    ) {
+      return true;
+    }
+
+    return false;
+  }, []);
+
   const selectedDeviceKeys = useMemo(() => {
     return new Set([...selectedAudioInputKey, ...selectedAudioOutputKey]);
   }, [selectedAudioInputKey, selectedAudioOutputKey]);
@@ -79,19 +92,6 @@ export default function ButtonMicrophone() {
       didMount.current = true;
     }
   }, [active, peer]);
-
-  const speakerSelectionSupport = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-
-    if (
-      AudioContext.prototype.hasOwnProperty('setSinkId') ||
-      HTMLMediaElement.prototype.hasOwnProperty('setSinkId')
-    ) {
-      return true;
-    }
-
-    return false;
-  }, []);
 
   return (
     <ButtonGroup variant="flat">
@@ -139,7 +139,9 @@ export default function ButtonMicrophone() {
                           : 'Switch to this device'
                       }
                     >
-                      {item.label || `Microphone ${index}`}
+                      {item.label === 'Default'
+                        ? 'Default Microphone'
+                        : item.label || `Microphone ${index + 1}`}
                     </DropdownItem>
                   );
                 })
@@ -162,7 +164,9 @@ export default function ButtonMicrophone() {
                           : 'Switch to this device'
                       }
                     >
-                      {item.label || `Speaker ${index}`}
+                      {item.label === 'Default'
+                        ? 'Default Speaker'
+                        : item.label || `Speaker ${index + 1}`}
                     </DropdownItem>
                   ))
                 ) : (
@@ -170,7 +174,10 @@ export default function ButtonMicrophone() {
                     key={`${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`}
                     description="Currently in use"
                   >
-                    {currentAudioOutput?.label || 'Default Speaker'}
+                    {!currentAudioOutput?.label ||
+                    currentAudioOutput?.label === 'Default'
+                      ? 'Default Speaker'
+                      : currentAudioOutput?.label}
                   </DropdownItem>
                 )
               ) : (
