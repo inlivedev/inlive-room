@@ -2,7 +2,10 @@ import { Selection } from '@nextui-org/react';
 import { useState, useMemo, Key, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
+import {
+  useDeviceContext,
+  AudioOutputContext,
+} from '@/_features/room/contexts/device-context';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 
 export const useSelectDevice = (
@@ -69,6 +72,20 @@ export const useSelectDevice = (
               setCurrentActiveDevice(currentSelectedDevice);
           }
         } else if (currentSelectedDevice.kind === 'audiooutput') {
+          if (
+            AudioContext.prototype.hasOwnProperty('setSinkId') &&
+            AudioOutputContext
+          ) {
+            const sinkId =
+              currentSelectedDevice.deviceId !== 'default'
+                ? currentSelectedDevice.deviceId
+                : '';
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //@ts-ignore
+            await AudioOutputContext.setSinkId(sinkId);
+          }
+
           setSelectedDeviceKeyState(selectedDeviceKeys);
           setCurrentActiveDevice &&
             setCurrentActiveDevice(currentSelectedDevice);
