@@ -94,7 +94,7 @@ export default function ButtonCamera() {
             selectedKeys={selectedVideoInputKey}
             onSelectionChange={onDeviceSelectionChange}
           >
-            <DropdownSection title="Select a camera" className="mb-0">
+            <DropdownSection title="Camera" className="mb-0">
               {selectVideoInputOptions.map((item, index) => {
                 return (
                   <DropdownItem
