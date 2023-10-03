@@ -35,20 +35,6 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
       return { deviceId: { exact: selectedVideoInputId } };
     }
 
-    if (
-      window.screen.orientation.type === 'portrait-primary' ||
-      window.screen.orientation.type === 'portrait-secondary'
-    ) {
-      return {
-        width: {
-          ideal: 720,
-        },
-        height: {
-          ideal: 1280,
-        },
-      };
-    }
-
     return {
       width: {
         ideal: 1280,
