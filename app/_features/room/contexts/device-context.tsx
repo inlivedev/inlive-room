@@ -26,6 +26,9 @@ const DeviceContext = createContext({
   setCurrentActiveDevice: undefined as SetCurrentActiveDeviceType | undefined,
 });
 
+export const AudioOutputContext =
+  typeof window !== 'undefined' ? new AudioContext() : null;
+
 export const useDeviceContext = () => {
   return useContext(DeviceContext);
 };
