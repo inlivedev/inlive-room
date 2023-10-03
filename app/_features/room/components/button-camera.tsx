@@ -108,7 +108,7 @@ export default function ButtonCamera() {
                   >
                     {item.label === 'Default'
                       ? 'Default Camera'
-                      : item.label || `Camera ${index}`}
+                      : item.label || `Camera ${index + 1}`}
                   </DropdownItem>
                 );
               })}
