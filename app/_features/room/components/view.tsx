@@ -73,7 +73,7 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
     if (openConference) return;
 
     try {
-      const resumeAudioContextPromise = new Promise(async (resolve) => {
+      const resumeAudioContextPromise = new Promise<null>(async (resolve) => {
         if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
           await AudioOutputContext.resume();
         }
