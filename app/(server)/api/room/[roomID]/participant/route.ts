@@ -12,7 +12,7 @@ export async function POST(
 ) {
   const body = (await req.json()) as GetParticipantReq;
   const searchParams = req.nextUrl.searchParams;
-  const query = searchParams.get('all');
+  const getAll = searchParams.get('all');
 
   if (!body.clientIDs) {
     return NextResponse.json({
@@ -24,7 +24,7 @@ export async function POST(
     const participantData = await roomRoutesHandler.getClientHandler(
       params.roomID,
       body.clientIDs,
-      query == 'true'
+      getAll == 'true'
     );
 
     return NextResponse.json({

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { room } from '@/_shared/utils/sdk';
 import AppContainer from '@/_shared/components/containers/app-container';
 import RoomContainer from '@/_features/room/components/container';
 import View from '@/_features/room/components/view';
@@ -22,12 +21,12 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
 };
 
 export default async function Page({ params }: PageProps) {
-  const response: RoomType.CreateJoinRoomResponse =
+  const roomResp: RoomType.CreateJoinRoomResponse =
     await InternalApiFetcher.get(`/api/room/${params.pageID}/join`, {
       cache: 'no-cache',
     });
 
-  const roomData = response.data;
+  const roomData = roomResp.data;
 
   if (!roomData || !roomData.roomId || !roomData.id) {
     notFound();
@@ -36,9 +35,12 @@ export default async function Page({ params }: PageProps) {
   const currentAuth = await getClientAuth();
   const currentUser = currentAuth.data ? currentAuth.data : undefined;
 
-  const {
-    data: { clientId },
-  } = await room.createClient(roomData.roomId);
+  const clientResp: RoomType.CreateClientResponse =
+    await InternalApiFetcher.post(`api/room/${params.pageID}/register`, {
+      body: JSON.stringify({
+        name: 'todo-name',
+      }),
+    });
 
   const origin = getOriginServerSide();
 
@@ -47,7 +49,7 @@ export default async function Page({ params }: PageProps) {
       <RoomContainer
         pageId={roomData.id}
         roomId={roomData.roomId}
-        clientId={clientId}
+        clientId={clientResp.data.clientID}
       >
         <View pageId={roomData.id} roomId={roomData.roomId} origin={origin} />
       </RoomContainer>
