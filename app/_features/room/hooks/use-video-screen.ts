@@ -35,10 +35,25 @@ export const useVideoScreen = (stream: ParticipantStream) => {
     }
 
     const play = async () => {
-      if (currentAudioOutput && 'setSinkId' in HTMLMediaElement.prototype) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        await video.setSinkId(currentAudioOutput.deviceId);
+      if (
+        currentAudioOutput &&
+        !AudioContext.prototype.hasOwnProperty('setSinkId')
+      ) {
+        const sinkId =
+          currentAudioOutput.deviceId !== 'default'
+            ? currentAudioOutput.deviceId
+            : '';
+
+        if (
+          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          sinkId !== video.sinkId
+        ) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          await video.setSinkId(sinkId);
+        }
       }
 
       video.srcObject = stream.mediaStream;

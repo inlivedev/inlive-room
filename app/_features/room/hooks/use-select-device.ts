@@ -2,7 +2,10 @@ import { Selection } from '@nextui-org/react';
 import { useState, useMemo, Key, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
+import {
+  useDeviceContext,
+  AudioOutputContext,
+} from '@/_features/room/contexts/device-context';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 
 export const useSelectDevice = (
@@ -51,6 +54,10 @@ export const useSelectDevice = (
 
       try {
         if (currentSelectedDevice.kind === 'audioinput') {
+          for (const audioTrack of localStream.mediaStream.getAudioTracks()) {
+            audioTrack.stop();
+          }
+
           const mediaStream = await getUserMedia({
             audio: { deviceId: { exact: currentSelectedDevice.deviceId } },
           });
@@ -59,24 +66,34 @@ export const useSelectDevice = (
             const track = mediaStream.getAudioTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
-            window.sessionStorage.setItem(
-              'device:selected-audio-input-id',
-              currentSelectedDevice.deviceId
-            );
 
             setSelectedDeviceKeyState(selectedDeviceKeys);
             setCurrentActiveDevice &&
               setCurrentActiveDevice(currentSelectedDevice);
           }
         } else if (currentSelectedDevice.kind === 'audiooutput') {
-          window.sessionStorage.setItem(
-            'device:selected-audio-output-id',
-            currentSelectedDevice.deviceId
-          );
+          if (
+            AudioContext.prototype.hasOwnProperty('setSinkId') &&
+            AudioOutputContext
+          ) {
+            const sinkId =
+              currentSelectedDevice.deviceId !== 'default'
+                ? currentSelectedDevice.deviceId
+                : '';
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //@ts-ignore
+            await AudioOutputContext.setSinkId(sinkId);
+          }
+
           setSelectedDeviceKeyState(selectedDeviceKeys);
           setCurrentActiveDevice &&
             setCurrentActiveDevice(currentSelectedDevice);
         } else {
+          for (const videoTrack of localStream.mediaStream.getVideoTracks()) {
+            videoTrack.stop();
+          }
+
           const mediaStream = await getUserMedia({
             video: { deviceId: { exact: currentSelectedDevice.deviceId } },
           });
@@ -85,10 +102,7 @@ export const useSelectDevice = (
             const track = mediaStream.getVideoTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
-            window.sessionStorage.setItem(
-              'device:selected-video-input-id',
-              currentSelectedDevice.deviceId
-            );
+
             setSelectedDeviceKeyState(selectedDeviceKeys);
             setCurrentActiveDevice &&
               setCurrentActiveDevice(currentSelectedDevice);
