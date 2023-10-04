@@ -8,6 +8,20 @@
       "when": 1695622653690,
       "tag": "0000_create_room",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1696242382917,
+      "tag": "0001_add_participant_name",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1696391287329,
+      "tag": "0002_rename_room_property",
+      "breakpoints": true
     }
   ]
 }

@@ -94,7 +94,7 @@ export default function ButtonCamera() {
             selectedKeys={selectedVideoInputKey}
             onSelectionChange={onDeviceSelectionChange}
           >
-            <DropdownSection title="Select a camera" className="mb-0">
+            <DropdownSection title="Camera" className="mb-0">
               {selectVideoInputOptions.map((item, index) => {
                 return (
                   <DropdownItem
@@ -106,7 +106,9 @@ export default function ButtonCamera() {
                         : 'Switch to this device'
                     }
                   >
-                    {item.label || `Camera ${index}`}
+                    {item.label === 'Default'
+                      ? 'Default Camera'
+                      : item.label || `Camera ${index + 1}`}
                   </DropdownItem>
                 );
               })}
