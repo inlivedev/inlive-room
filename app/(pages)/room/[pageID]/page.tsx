@@ -7,6 +7,7 @@ import { getOriginServerSide } from '@/_shared/utils/get-origin-server-side';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { RoomType } from '@/_shared/types/room';
 import { getClientAuth } from '@/_shared/utils/get-client-auth';
+import { room } from '@/_shared/utils/sdk';
 
 type PageProps = {
   params: {
@@ -35,12 +36,9 @@ export default async function Page({ params }: PageProps) {
   const currentAuth = await getClientAuth();
   const currentUser = currentAuth.data ? currentAuth.data : undefined;
 
-  const clientResp: RoomType.CreateClientResponse =
-    await InternalApiFetcher.post(`api/room/${params.pageID}/register`, {
-      body: JSON.stringify({
-        name: 'todo-name',
-      }),
-    });
+  const {
+    data: { clientId },
+  } = await room.createClient(roomData.externalID);
 
   const origin = getOriginServerSide();
 
@@ -49,7 +47,7 @@ export default async function Page({ params }: PageProps) {
       <RoomContainer
         pageId={roomData.id}
         roomId={roomData.externalID}
-        clientId={clientResp.data.clientID}
+        clientId={clientId}
       >
         <View
           pageId={roomData.id}
