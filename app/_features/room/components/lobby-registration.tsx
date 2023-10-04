@@ -4,8 +4,10 @@ import { useEffect } from 'react';
 import { Button } from '@nextui-org/react';
 import { useInput } from '@/_shared/hooks/use-input';
 import { useToggle } from '@/_shared/hooks/use-toggle';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import type { RoomType } from '@/_shared/types/room';
 
-export default function LobbyRegistration() {
+export default function LobbyRegistration({ pageId }: { pageId: string }) {
   const { value: displayName, bindValue: bindDisplayNameField } = useInput('');
   const { active: isComponentActive, setInActive: setInActiveComponent } =
     useToggle(true);
@@ -15,8 +17,21 @@ export default function LobbyRegistration() {
   ) => {
     event.preventDefault();
 
-    if (displayName.trim().length === 0) {
-      alert('You must fill out the display name field');
+    try {
+      if (displayName.trim().length === 0) {
+        throw new Error('You must fill out the display name field');
+      }
+
+      const response: RoomType.CreateClientResponse =
+        await InternalApiFetcher.post(`/api/room/${pageId}/register`, {
+          body: JSON.stringify({
+            name: displayName,
+          }),
+        });
+
+      document.dispatchEvent(new CustomEvent('open:lobby-entrance-component'));
+    } catch (error) {
+      alert(error);
     }
   };
 
