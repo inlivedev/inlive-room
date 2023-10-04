@@ -49,7 +49,7 @@ export default function Chat() {
   });
 
   const sendMessage = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const num = 1;
+    let num = 1;
 
     event.preventDefault();
 
@@ -64,7 +64,17 @@ export default function Chat() {
         message: num.toString(),
       })
     );
+
+    num++;
   };
 
-  return <Button isDisabled={state} onClick={sendMessage}></Button>;
+  return (
+    <Button
+      isIconOnly
+      variant="flat"
+      isDisabled={state}
+      onClick={sendMessage}
+      className="bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500"
+    ></Button>
+  );
 }
