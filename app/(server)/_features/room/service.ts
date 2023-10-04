@@ -7,6 +7,7 @@ export interface iRoomRepo {
   addRoom(room: Room): Promise<Room>;
   getRoomById(id: string): Promise<Room | undefined>;
   updateRoomById(room: Room): Promise<Room | undefined>;
+  isPersistent(): boolean;
 }
 
 export interface iParticipantRepo {
@@ -82,49 +83,72 @@ export class service implements iRoomService {
       createdBy: userID,
     };
 
-    while (true) {
-      try {
-        const room = await this._roomRepo.addRoom(newRoom);
-        return room;
-      } catch (error) {
-        const err = error as Error;
-        if (err.message.includes('duplicate key')) newRoom.id = generateID();
-        else throw err;
+    if (this._roomRepo.isPersistent()) {
+      while (true) {
+        try {
+          const room = await this._roomRepo.addRoom(newRoom);
+          return room;
+        } catch (error) {
+          const err = error as Error;
+          if (err.message.includes('duplicate key')) newRoom.id = generateID();
+          else throw err;
+        }
       }
+    } else {
+      return {
+        id: RoomResp.data.roomId,
+        hubID: RoomResp.data.roomId,
+        createdBy: userID,
+      };
     }
   }
 
   async joinRoom(roomId: string): Promise<Room | undefined> {
-    let room = await this._roomRepo.getRoomById(roomId);
+    if (this._roomRepo.isPersistent()) {
+      let room = await this._roomRepo.getRoomById(roomId);
 
-    if (room === undefined) {
-      throw new Error('Room not exists');
-    }
-
-    const remoteRoom = await this._sdk.getRoom(room.hubID);
-
-    if (remoteRoom.data.roomId == '') {
-      const newRemoteRoom = await this._sdk.createRoom();
-
-      if (newRemoteRoom.data.roomId == '') {
-        throw new Error(
-          'Error occured during accessing room data, please try again later'
-        );
+      if (room === undefined) {
+        throw new Error('Room not exists');
       }
-      room.hubID = newRemoteRoom.data.roomId;
 
-      room = await this._roomRepo.updateRoomById(room);
+      const remoteRoom = await this._sdk.getRoom(room.hubID);
 
-      if (room == undefined) {
-        throw new Error(
-          'Error occured during accessing room data, please try again later'
-        );
+      if (remoteRoom.data.roomId == '') {
+        const newRemoteRoom = await this._sdk.createRoom();
+
+        if (newRemoteRoom.data.roomId == '') {
+          throw new Error(
+            'Error occured during accessing room data, please try again later'
+          );
+        }
+        room.hubID = newRemoteRoom.data.roomId;
+
+        room = await this._roomRepo.updateRoomById(room);
+
+        if (room == undefined) {
+          throw new Error(
+            'Error occured during accessing room data, please try again later'
+          );
+        }
+
+        return room;
       }
 
       return room;
-    }
+    } else {
+      const remoteRoom = await this._sdk.getRoom(roomId);
+      if (remoteRoom.ok) {
+        const newRoom: Room = {
+          id: remoteRoom.data.roomId,
+          name: remoteRoom.data.roomName,
+          hubID: remoteRoom.data.roomId,
+          createdBy: 0,
+        };
+        return newRoom;
+      }
 
-    return room;
+      throw new Error('Room not exists');
+    }
   }
 }
 

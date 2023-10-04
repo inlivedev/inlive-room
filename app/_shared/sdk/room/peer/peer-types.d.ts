@@ -16,6 +16,7 @@ export type InstancePeer = {
   turnOnMic: () => void;
   turnOffCamera: () => void;
   turnOffMic: () => void;
+  sendStats: (stats: PublisherStats) => void;
 };
 
 export type BandwidthController = {
@@ -39,11 +40,21 @@ export type PeerEvents = {
   _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream';
 };
 
-export interface Bitrates {
+export interface RTCOutboundRtpStreamStatsExtra
+  extends RTCOutboundRtpStreamStats {
+  qualityLimitationReason?: string;
+}
+
+export type PublisherStats = {
+  available_outgoing_bitrate: number;
+  quality_limitation_reason: string;
+};
+
+export type Bitrates = {
   low: number;
   mid: number;
   high: number;
   total: number;
-}
+};
 
 export as namespace RoomPeerType;
