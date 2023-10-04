@@ -28,10 +28,10 @@ export default function LobbyInvite({
       <div className="flex gap-4">
         <div className="flex-1">
           <input
-            className="w-full rounded-md bg-zinc-800 px-4 py-2.5 text-sm text-zinc-200 outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
+            className="w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-200 outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
             type="text"
             readOnly
-            value={`${origin}/room/${pageId}`}
+            defaultValue={`${origin}/room/${pageId}`}
           />
         </div>
         <div>
