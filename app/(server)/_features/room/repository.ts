@@ -4,6 +4,8 @@ import { db } from '@/(server)/_shared/database/database';
 import { rooms } from '@/(server)/_features/room/schema';
 import { eq } from 'drizzle-orm';
 
+const persistentData = process.env.PERSISTANT_DATA || false;
+
 export class RoomRepo implements iRoomRepo {
   // Function to create a new room
   async addRoom(roomData: Room) {
@@ -22,5 +24,11 @@ export class RoomRepo implements iRoomRepo {
       .where(eq(rooms.id, room.id))
       .returning();
     return data[0];
+  }
+
+  isPersistent(): boolean {
+    if (persistentData === 'true') return true;
+
+    return false;
   }
 }

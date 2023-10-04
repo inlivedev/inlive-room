@@ -1,5 +1,5 @@
 import { CreateBandwidthController } from './bandwidth-controller';
-import { BandwidthController } from './peer-types';
+import { BandwidthController, PublisherStats } from './peer-types';
 
 export const PeerEvents: RoomPeerType.PeerEvents = {
   STREAM_ADDED: 'streamAdded',
@@ -26,6 +26,7 @@ export const createPeer = ({
     _event;
     _streams;
     _stream;
+    _statsChannel: RTCDataChannel | null = null;
     _bwController: BandwidthController;
     _prevBytesReceived;
     _prevHighBytesSent;
@@ -38,7 +39,7 @@ export const createPeer = ({
       this._event = event;
       this._streams = streams;
       this._stream = createStream();
-
+      this._statsChannel = null;
       this._prevBytesReceived = 0;
 
       this._prevHighBytesSent = 0;
@@ -163,6 +164,16 @@ export const createPeer = ({
       }
     };
 
+    sendStats = async (stats: PublisherStats) => {
+      if (!this._statsChannel) return;
+
+      try {
+        await this._statsChannel.send(JSON.stringify(stats));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     _addEventListener = () => {
       if (!this._peerConnection) return;
 
@@ -182,6 +193,12 @@ export const createPeer = ({
       );
 
       this._peerConnection.addEventListener('track', this._onTrack);
+
+      this._peerConnection.addEventListener('datachannel', (e) => {
+        if (e.channel.label === 'stats') {
+          this._statsChannel = e.channel;
+        }
+      });
 
       this._event.on(
         PeerEvents._ADD_LOCAL_MEDIA_STREAM,
@@ -467,6 +484,7 @@ export const createPeer = ({
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
         replaceTrack: peer.replaceTrack,
+        sendStats: peer.sendStats,
       };
     },
   };
