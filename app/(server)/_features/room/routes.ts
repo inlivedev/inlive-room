@@ -14,7 +14,7 @@ export interface iRoomService {
 export interface Room {
   id: string; //InLive Room ID
   name?: string | null;
-  externalID: string; //InLive Hub Room ID (External)
+  hubID: string; //InLive Hub Room ID (External)
   createdBy: number;
 }
 

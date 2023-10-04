@@ -29,7 +29,7 @@ export default async function Page({ params }: PageProps) {
 
   const roomData = roomResp.data;
 
-  if (!roomData || !roomData.externalID || !roomData.id) {
+  if (!roomData || !roomData.hubID || !roomData.id) {
     notFound();
   }
 
@@ -38,7 +38,7 @@ export default async function Page({ params }: PageProps) {
 
   const {
     data: { clientId },
-  } = await room.createClient(roomData.externalID);
+  } = await room.createClient(roomData.hubID);
 
   const origin = getOriginServerSide();
 
@@ -46,14 +46,10 @@ export default async function Page({ params }: PageProps) {
     <AppContainer currentUser={currentUser}>
       <RoomContainer
         pageId={roomData.id}
-        roomId={roomData.externalID}
+        roomId={roomData.hubID}
         clientId={clientId}
       >
-        <View
-          pageId={roomData.id}
-          roomId={roomData.externalID}
-          origin={origin}
-        />
+        <View pageId={roomData.id} roomId={roomData.hubID} origin={origin} />
       </RoomContainer>
     </AppContainer>
   );
