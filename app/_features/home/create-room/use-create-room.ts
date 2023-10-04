@@ -23,7 +23,7 @@ export const useCreateRoom = () => {
 
       Mixpanel.track('Create room', {
         roomId: roomData.id,
-        externalRoomId: roomData.roomId,
+        externalRoomId: roomData.externalID,
         createdBy: roomData.createdBy,
       });
 

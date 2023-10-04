@@ -14,7 +14,7 @@ export interface iRoomService {
 export interface Room {
   id: string; //InLive Room ID
   name?: string | null;
-  roomId: string; //InLive Hub Room ID (External)
+  externalID: string; //InLive Hub Room ID (External)
   createdBy: number;
 }
 
@@ -45,15 +45,12 @@ const createRoomRoutesHandler = () => {
       return await this.roomService.createClient(roomID, name);
     };
 
-    getClientHandler = async (
-      roomID: string,
-      clientIDs: string[],
-      getAll: boolean
-    ) => {
-      if (getAll) {
-        return await this.roomService.getAllClients(roomID);
-      }
+    getClientHandler = async (roomID: string, clientIDs: string[]) => {
       return await this.roomService.getClients(roomID, clientIDs);
+    };
+
+    getAllClientHandler = async (roomID: string) => {
+      return await this.roomService.getAllClients(roomID);
     };
   };
 
@@ -66,6 +63,7 @@ const createRoomRoutesHandler = () => {
         joinRoomHandler: roomRoutesHandler.joinRoomHandler,
         registerClientHandler: roomRoutesHandler.registerClientHandler,
         getClientHandler: roomRoutesHandler.getClientHandler,
+        getAllClientHandler: roomRoutesHandler.getAllClientHandler,
       };
     },
   };

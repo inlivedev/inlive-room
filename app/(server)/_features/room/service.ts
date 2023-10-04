@@ -39,7 +39,7 @@ export class service implements iRoomService {
       throw new Error('room not found');
     }
 
-    const clientResp = await this._sdk.createClient(roomData?.roomId);
+    const clientResp = await this._sdk.createClient(roomData?.externalID);
 
     if (!clientResp.data.clientId) {
       throw new Error(
@@ -78,7 +78,7 @@ export class service implements iRoomService {
 
     const newRoom: Room = {
       id: generateID(),
-      roomId: RoomResp.data.roomId,
+      externalID: RoomResp.data.roomId,
       createdBy: userID,
     };
 
@@ -101,7 +101,7 @@ export class service implements iRoomService {
       throw new Error('Room not exists');
     }
 
-    const remoteRoom = await this._sdk.getRoom(room.roomId);
+    const remoteRoom = await this._sdk.getRoom(room.externalID);
 
     if (remoteRoom.data.roomId == '') {
       const newRemoteRoom = await this._sdk.createRoom();
@@ -111,7 +111,7 @@ export class service implements iRoomService {
           'Error occured during accessing room data, please try again later'
         );
       }
-      room.roomId = newRemoteRoom.data.roomId;
+      room.externalID = newRemoteRoom.data.roomId;
 
       room = await this._roomRepo.updateRoomById(room);
 

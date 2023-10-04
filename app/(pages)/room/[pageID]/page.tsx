@@ -28,7 +28,7 @@ export default async function Page({ params }: PageProps) {
 
   const roomData = roomResp.data;
 
-  if (!roomData || !roomData.roomId || !roomData.id) {
+  if (!roomData || !roomData.externalID || !roomData.id) {
     notFound();
   }
 
@@ -48,10 +48,14 @@ export default async function Page({ params }: PageProps) {
     <AppContainer currentUser={currentUser}>
       <RoomContainer
         pageId={roomData.id}
-        roomId={roomData.roomId}
+        roomId={roomData.externalID}
         clientId={clientResp.data.clientID}
       >
-        <View pageId={roomData.id} roomId={roomData.roomId} origin={origin} />
+        <View
+          pageId={roomData.id}
+          roomId={roomData.externalID}
+          origin={origin}
+        />
       </RoomContainer>
     </AppContainer>
   );
