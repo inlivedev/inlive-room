@@ -2,6 +2,8 @@ import { iRoomService, Participant } from './routes';
 import { room } from '@/_shared/utils/sdk';
 import { Room } from './routes';
 import Sqids from 'sqids';
+import { FetcherResponse, InliveHubFetcher } from '@/_shared/utils/fetcher';
+import * as Sentry from '@sentry/nextjs';
 
 export interface iRoomRepo {
   addRoom(room: Room): Promise<Room>;
@@ -82,6 +84,20 @@ export class service implements iRoomService {
       createdBy: userID,
     };
 
+    const channelResp: FetcherResponse = await InliveHubFetcher.post(
+      `/room/${newRoom.hubID}/channel/create`,
+      {
+        body: JSON.stringify({ name: 'chat', ordered: 'true' }),
+      }
+    );
+
+    if (channelResp.code > 299) {
+      console.log(`Room ${newRoom.id}: failed to create chat data channel`);
+      Sentry.captureException(
+        new Error('Failed to create data channel for chat')
+      );
+    }
+
     while (true) {
       try {
         const room = await this._roomRepo.addRoom(newRoom);
@@ -111,6 +127,21 @@ export class service implements iRoomService {
           'Error occured during accessing room data, please try again later'
         );
       }
+
+      const channelResp: FetcherResponse = await InliveHubFetcher.post(
+        `/room/${newRemoteRoom.data.roomId}/channel/create`,
+        {
+          body: JSON.stringify({ name: 'chat', ordered: 'true' }),
+        }
+      );
+
+      if (channelResp.code > 299) {
+        console.log(`Room ${room.id}: failed to create chat data channel`);
+        Sentry.captureException(
+          new Error('Failed to create data channel for chat')
+        );
+      }
+
       room.hubID = newRemoteRoom.data.roomId;
 
       room = await this._roomRepo.updateRoomById(room);
