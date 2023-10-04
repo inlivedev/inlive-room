@@ -15,6 +15,13 @@
       "when": 1696242382917,
       "tag": "0001_add_participant_name",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1696391287329,
+      "tag": "0002_rename_room_property",
+      "breakpoints": true
     }
   ]
 }
