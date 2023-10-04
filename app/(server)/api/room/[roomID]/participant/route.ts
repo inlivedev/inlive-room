@@ -1,4 +1,7 @@
-import { roomRoutesHandler } from '@/(server)/_features/room/routes';
+import {
+  Participant,
+  roomRoutesHandler,
+} from '@/(server)/_features/room/routes';
 import { isError } from 'lodash-es';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -10,22 +13,25 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { roomID: string } }
 ) {
-  const body = (await req.json()) as GetParticipantReq;
   const searchParams = req.nextUrl.searchParams;
   const getAll = searchParams.get('all');
 
-  if (!body.clientIDs && getAll != 'true') {
-    return NextResponse.json({
-      code: 400,
-      message: 'clientIDs is missing from request',
-    });
-  }
   try {
-    const participantData = await roomRoutesHandler.getClientHandler(
-      params.roomID,
-      body.clientIDs,
-      getAll == 'true'
-    );
+    let participantData: Participant[];
+    if (getAll != 'true') {
+      const body = (await req.json()) as GetParticipantReq;
+      if (body.clientIDs.length == 0) {
+        throw new Error('at least one clientID is required');
+      }
+      participantData = await roomRoutesHandler.getClientHandler(
+        params.roomID,
+        body.clientIDs
+      );
+    } else {
+      participantData = await roomRoutesHandler.getAllClientHandler(
+        params.roomID
+      );
+    }
 
     return NextResponse.json({
       code: 200,
