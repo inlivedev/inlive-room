@@ -33,7 +33,13 @@ export class service implements iRoomService {
   }
 
   async createClient(roomId: string, name: string): Promise<Participant> {
-    const clientResp = await this._sdk.createClient(roomId);
+    const roomData = await this._roomRepo.getRoomById(roomId);
+
+    if (!roomData) {
+      throw new Error('room not found');
+    }
+
+    const clientResp = await this._sdk.createClient(roomData?.roomId);
 
     if (!clientResp.data.clientId) {
       throw new Error(

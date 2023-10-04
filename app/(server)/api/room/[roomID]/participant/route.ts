@@ -14,7 +14,7 @@ export async function POST(
   const searchParams = req.nextUrl.searchParams;
   const getAll = searchParams.get('all');
 
-  if (!body.clientIDs) {
+  if (!body.clientIDs && getAll != 'true') {
     return NextResponse.json({
       code: 400,
       message: 'clientIDs is missing from request',
