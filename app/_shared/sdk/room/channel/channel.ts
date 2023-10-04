@@ -1,3 +1,5 @@
+import { time } from 'console';
+
 export const createChannel = ({
   api,
   peer,
@@ -24,10 +26,33 @@ export const createChannel = ({
 
       this._roomId = roomId;
       this._clientId = clientId;
-
-      this._channel = new EventSource(
+      const channel = new EventSource(
         `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
       );
+
+      let startTime = Date.now();
+
+      const reconnect = () => {
+        const reconnect = new EventSource(
+          `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
+        );
+        startTime = Date.now();
+        this._channel = reconnect;
+      };
+
+      channel.onerror = () => {
+        const errorTime = Date.now();
+
+        if (errorTime - startTime < 1000) {
+          setTimeout(() => {
+            reconnect();
+          }, 1000);
+        } else {
+          reconnect();
+        }
+      };
+
+      this._channel = channel;
 
       this._channel.addEventListener('candidate', this._onCandidate);
       this._channel.addEventListener('offer', this._onOffer);
