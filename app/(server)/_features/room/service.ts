@@ -40,7 +40,7 @@ export class service implements iRoomService {
       throw new Error('room not found');
     }
 
-    const clientResp = await this._sdk.createClient(roomData?.hubID);
+    const clientResp = await this._sdk.createClient(roomData?.id);
 
     if (!clientResp.data.clientId) {
       throw new Error(
@@ -75,80 +75,63 @@ export class service implements iRoomService {
   }
 
   async createRoom(userID: number): Promise<Room> {
-    const RoomResp = await this._sdk.createRoom();
+    while (true) {
+      const roomID = generateID();
+      const RoomResp = await this._sdk.createRoom('', roomID);
+      if (RoomResp.code > 299) continue;
+      if (!this._roomRepo.isPersistent())
+        return {
+          id: RoomResp.data.roomId,
+          createdBy: userID,
+        };
 
-    const newRoom: Room = {
-      id: generateID(),
-      hubID: RoomResp.data.roomId,
-      createdBy: userID,
-    };
-
-    if (this._roomRepo.isPersistent()) {
-      while (true) {
-        try {
-          const room = await this._roomRepo.addRoom(newRoom);
-          return room;
-        } catch (error) {
-          const err = error as Error;
-          if (err.message.includes('duplicate key')) newRoom.id = generateID();
-          else throw err;
-        }
+      try {
+        const room = await this._roomRepo.addRoom({
+          id: roomID,
+          createdBy: userID,
+        });
+        return room;
+      } catch (error) {
+        const err = error as Error;
+        if (err.message.includes('duplicate key')) continue;
+        else throw err;
       }
-    } else {
-      return {
-        id: RoomResp.data.roomId,
-        hubID: RoomResp.data.roomId,
-        createdBy: userID,
-      };
     }
   }
 
   async joinRoom(roomId: string): Promise<Room | undefined> {
-    if (this._roomRepo.isPersistent()) {
-      let room = await this._roomRepo.getRoomById(roomId);
-
-      if (room === undefined) {
-        throw new Error('Room not exists');
-      }
-
-      const remoteRoom = await this._sdk.getRoom(room.hubID);
-
-      if (remoteRoom.data.roomId == '') {
-        const newRemoteRoom = await this._sdk.createRoom();
-
-        if (newRemoteRoom.data.roomId == '') {
-          throw new Error(
-            'Error occured during accessing room data, please try again later'
-          );
-        }
-        room.hubID = newRemoteRoom.data.roomId;
-
-        room = await this._roomRepo.updateRoomById(room);
-
-        if (room == undefined) {
-          throw new Error(
-            'Error occured during accessing room data, please try again later'
-          );
-        }
-
-        return room;
-      }
-
-      return room;
-    } else {
+    if (!this._roomRepo.isPersistent()) {
       const remoteRoom = await this._sdk.getRoom(roomId);
       if (remoteRoom.ok) {
-        const newRoom: Room = {
+        return {
           id: remoteRoom.data.roomId,
           name: remoteRoom.data.roomName,
-          hubID: remoteRoom.data.roomId,
           createdBy: 0,
         };
-        return newRoom;
       }
 
       throw new Error('Room not exists');
     }
+
+    const room = await this._roomRepo.getRoomById(roomId);
+
+    if (!room) {
+      throw new Error('Room not exists');
+    }
+
+    const remoteRoom = await this._sdk.getRoom(room.id);
+
+    if (remoteRoom.code > 299) {
+      const newRemoteRoom = await this._sdk.createRoom('', room.id);
+      if (newRemoteRoom.code > 299) {
+        if (newRemoteRoom.code == 400) throw new Error(newRemoteRoom.message);
+        throw new Error(
+          'Error occured during accessing room data, please try again later'
+        );
+      }
+    }
+
+    return room;
   }
 }
 
