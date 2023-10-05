@@ -19,7 +19,7 @@ export default function Chat() {
 
     peerConnection.addEventListener('datachannel', (chEevent) => {
       const receiveChannel = chEevent.channel;
-      receiveChannel.label;
+      receiveChannel.binaryType = 'arraybuffer';
 
       if (receiveChannel.label == 'chat') {
         setChatChannel(receiveChannel);
@@ -27,9 +27,10 @@ export default function Chat() {
 
       receiveChannel.addEventListener('message', (event) => {
         if (receiveChannel.label == 'chat') {
-          receiveChannel.binaryType = 'arraybuffer';
+          console.log(event.data);
           const decoder = new TextDecoder();
-          const data = decoder.decode(event.data as ArrayBuffer);
+          const bufferData = event.data as ArrayBuffer;
+          const data = decoder.decode(bufferData);
           const message: messageData = JSON.parse(data);
           console.log(message);
         }
