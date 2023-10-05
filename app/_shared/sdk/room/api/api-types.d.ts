@@ -32,11 +32,14 @@ export type RegisterClientRequestBody = {
 export type BaseResponseBody = {
   code: number;
   ok: boolean;
+  message: string;
 };
 
 export type CreateRoomResponseBody = BaseResponseBody & {
   data: {
-    id: string;
+    room_id: string;
+    name: string;
+    bitrates_config: BitratesConfig;
   };
 };
 
@@ -47,9 +50,20 @@ export type GetRoomResponseBody = BaseResponseBody & {
   };
 };
 
+export type BitratesConfig = {
+  audio: number;
+  video: number;
+  video_high: number;
+  video_mid: number;
+  video_low: number;
+  initial_bandwidth: number;
+};
+
 export type RegisterClientResponseBody = BaseResponseBody & {
   data: {
     client_id: string;
+    name: string;
+    bitrates_config: BitratesConfig;
   };
 };
 
