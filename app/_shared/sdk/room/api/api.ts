@@ -6,19 +6,22 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       this._fetcher = fetcher;
     }
 
-    createRoom = async (name = '') => {
+    createRoom = async (name = '', id?: string) => {
       const response: RoomAPIType.CreateRoomResponseBody =
         await this._fetcher.post(`/rooms/create`, {
-          body: JSON.stringify({ name: name }),
+          body: JSON.stringify({ name: name, id: id }),
         });
 
       const data = response.data || {};
 
       const room = {
+        message: response.message || '',
         code: response.code || 500,
         ok: response.ok || false,
         data: {
-          roomId: data.id || '',
+          roomId: data.room_id || '',
+          roomName: data.name || '',
+          bitratesConfig: data.bitrates_config || {},
         },
       };
 
@@ -72,6 +75,8 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         ok: response.ok || false,
         data: {
           clientId: data.client_id || '',
+          name: data.name || '',
+          bitratesConfig: data.bitrates_config || {},
         },
       };
 
@@ -252,6 +257,26 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
 
       return result;
     };
+
+    createDataChannel = async (
+      roomId: string,
+      name: string,
+      ordered: boolean
+    ) => {
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
+        `/room/${roomId}/channel/create`,
+        {
+          body: JSON.stringify({ name: name, ordered: ordered }),
+        }
+      );
+
+      return {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: null,
+      };
+    };
   };
 
   return {
@@ -269,6 +294,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         subscribeTracks: api.subscribeTracks,
         leaveRoom: api.leaveRoom,
         terminateRoom: api.terminateRoom,
+        createDataChannel: api.createDataChannel,
       };
     },
   };

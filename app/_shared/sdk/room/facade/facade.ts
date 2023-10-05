@@ -56,6 +56,7 @@ export const createFacade = ({
 
           return peer;
         },
+        createDataChannel: api.createDataChannel,
         on: event.on,
         leaveRoom: api.leaveRoom,
         terminateRoom: api.terminateRoom,
