@@ -14,12 +14,11 @@ import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
 
 type ViewProps = {
-  pageId: string;
   roomId: string;
   origin: string;
 };
 
-export default function View({ pageId, roomId, origin }: ViewProps) {
+export default function View({ roomId, origin }: ViewProps) {
   const { active: openConference, setActive: setOpenConference } =
     useToggle(false);
 
@@ -114,8 +113,7 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
       setOpenConference();
 
       Mixpanel.track('Join room', {
-        pageId: pageId,
-        roomId: roomId,
+        roomID: roomId,
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -124,7 +122,6 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
       }
     }
   }, [
-    pageId,
     roomId,
     openConference,
     setOpenConference,
@@ -142,8 +139,8 @@ export default function View({ pageId, roomId, origin }: ViewProps) {
         </DeviceProvider>
       ) : (
         <Lobby>
-          <LobbyHeader pageId={pageId} />
-          <LobbyInvite pageId={pageId} origin={origin} />
+          <LobbyHeader pageId={roomId} />
+          <LobbyInvite pageId={roomId} origin={origin} />
           <LobbyCTA openConferenceRoom={openConferenceHandler} />
         </Lobby>
       )}
