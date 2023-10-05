@@ -64,6 +64,8 @@ export const useScreenShare = () => {
       );
 
       peer.addStream(mediaStream.id, {
+        clientId: peer.getClientId(),
+        name: '',
         origin: 'local',
         source: 'screen',
         mediaStream: mediaStream,

@@ -80,10 +80,12 @@ export const createStreams = () => {
         !data ||
         !(data.mediaStream instanceof MediaStream) ||
         typeof data.origin !== 'string' ||
-        typeof data.source !== 'string'
+        typeof data.source !== 'string' ||
+        typeof data.clientId !== 'string' ||
+        typeof data.name !== 'string'
       ) {
         throw new Error(
-          'Please provide valid stream origin, source, and MediaStream data'
+          'Please provide valid stream data (clientId, name, origin, source, MediaStream)'
         );
       }
 

@@ -1,5 +1,3 @@
-import { time } from 'console';
-
 export const createChannel = ({
   api,
   peer,
@@ -127,6 +125,7 @@ export const createChannel = ({
         const track = data.tracks[id];
         const streamId = track.stream_id;
         const clientId = track.client_id;
+        const clientName = track.client_name;
         const trackId = track.track_id;
         const source = track.source;
 
@@ -137,6 +136,8 @@ export const createChannel = ({
         });
 
         this._streams.addDraft(streamId, {
+          clientId: clientId,
+          name: clientName,
           origin: 'remote',
           source: source,
         });

@@ -13,6 +13,8 @@ export type InstanceStreams = ReturnType<
 
 export type StreamParams = {
   id: string;
+  clientId: string;
+  name: string;
   origin: 'local' | 'remote';
   source: 'media' | 'screen';
   mediaStream: MediaStream;
@@ -21,9 +23,11 @@ export type StreamParams = {
 export type AddStreamParams = Omit<StreamParams, 'id'>;
 
 export type DraftStream = {
-  origin?: StreamParams['origin'];
-  source?: StreamParams['source'];
-  mediaStream?: StreamParams['stream'];
+  clientId?: string;
+  name?: string;
+  origin?: 'local' | 'remote';
+  source?: 'media' | 'screen';
+  mediaStream?: MediaStream;
 };
 
 export as namespace RoomStreamType;
