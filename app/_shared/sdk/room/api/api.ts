@@ -6,15 +6,16 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       this._fetcher = fetcher;
     }
 
-    createRoom = async (name = '') => {
+    createRoom = async (name = '', id?: string) => {
       const response: RoomAPIType.CreateRoomResponseBody =
         await this._fetcher.post(`/rooms/create`, {
-          body: JSON.stringify({ name: name }),
+          body: JSON.stringify({ name: name, id: id }),
         });
 
       const data = response.data || {};
 
       const room = {
+        message: response.message || '',
         code: response.code || 500,
         ok: response.ok || false,
         data: {

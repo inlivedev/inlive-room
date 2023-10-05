@@ -27,6 +27,7 @@ export type SubscribeTracksRequestBody = {
 export type BaseResponseBody = {
   code: number;
   ok: boolean;
+  message: string;
 };
 
 export type CreateRoomResponseBody = BaseResponseBody & {
