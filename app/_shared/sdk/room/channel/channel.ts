@@ -33,11 +33,13 @@ export const createChannel = ({
       let startTime = Date.now();
 
       const reconnect = () => {
-        const reconnect = new EventSource(
-          `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
-        );
-        startTime = Date.now();
-        this._channel = reconnect;
+        if (this._channel?.readyState === EventSource.CLOSED) {
+          const reconnect = new EventSource(
+            `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
+          );
+          startTime = Date.now();
+          this._channel = reconnect;
+        }
       };
 
       channel.onerror = () => {
