@@ -78,7 +78,9 @@ export class service implements iRoomService {
     while (true) {
       const roomID = generateID();
       const RoomResp = await this._sdk.createRoom('', roomID);
-      if (RoomResp.code > 299) continue;
+      if (RoomResp.code == 409) continue;
+      if (RoomResp.code > 299)
+        throw new Error('Error during creating room, please try again later');
       if (!this._roomRepo.isPersistent())
         return {
           id: RoomResp.data.roomId,
@@ -124,7 +126,7 @@ export class service implements iRoomService {
     if (remoteRoom.code > 299) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
       if (newRemoteRoom.code > 299) {
-        if (newRemoteRoom.code == 400) throw new Error(newRemoteRoom.message);
+        if (newRemoteRoom.code == 409) throw new Error(newRemoteRoom.message);
         throw new Error(
           'Error occured during accessing room data, please try again later'
         );
