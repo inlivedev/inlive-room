@@ -19,8 +19,9 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         code: response.code || 500,
         ok: response.ok || false,
         data: {
-          roomId: data.id || '',
-          name: data.name || '',
+          roomId: data.room_id || '',
+          roomName: data.name || '',
+          bitratesConfig: data.bitrates_config || {},
         },
       };
 
@@ -74,6 +75,8 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         ok: response.ok || false,
         data: {
           clientId: data.client_id || '',
+          name: data.name || '',
+          bitratesConfig: data.bitrates_config || {},
         },
       };
 
