@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { usePeerContext } from '../contexts/peer-context';
 import { Button } from '@nextui-org/react';
 
@@ -9,49 +9,50 @@ interface messageData {
 
 export default function Chat() {
   const { peer } = usePeerContext();
-  const [state, setState] = useState(false);
+  const [isDisabled, setDisabled] = useState(true);
   const [chatChannel, setChatChannel] = useState<RTCDataChannel | undefined>();
 
-  let peerConnection: RTCPeerConnection | undefined | null = undefined;
+  useEffect(() => {
+    const peerConnection = peer?.getPeerConnection();
 
-  while (!peerConnection) {
-    peerConnection = peer?.getPeerConnection();
-  }
+    if (!peerConnection) return;
 
-  peerConnection.addEventListener('datachannel', (chEevent) => {
-    const receiveChannel = chEevent.channel;
-    receiveChannel.label;
+    peerConnection.addEventListener('datachannel', (chEevent) => {
+      const receiveChannel = chEevent.channel;
+      receiveChannel.label;
 
-    if (receiveChannel.label == 'chat') {
-      setChatChannel(receiveChannel);
-    }
-
-    receiveChannel.addEventListener('message', (event) => {
       if (receiveChannel.label == 'chat') {
-        console.log(event.data);
-
-        const messageData: messageData = JSON.parse(event.data);
-        console.log(messageData);
+        setChatChannel(receiveChannel);
       }
-    });
 
-    receiveChannel.addEventListener('open', () => {
-      if (receiveChannel.label == 'chat') {
-        setState(true);
-      }
-    });
+      receiveChannel.addEventListener('message', (event) => {
+        if (receiveChannel.label == 'chat') {
+          receiveChannel.binaryType = 'arraybuffer';
+          const decoder = new TextDecoder();
+          const data = decoder.decode(event.data as ArrayBuffer);
+          const message: messageData = JSON.parse(data);
+          console.log(message);
+        }
+      });
 
-    receiveChannel.addEventListener('close', () => {
-      if (receiveChannel.label == 'chat') {
-        setState(false);
-      }
-    });
-  });
+      receiveChannel.addEventListener('open', () => {
+        if (receiveChannel.label == 'chat') {
+          setDisabled(false);
+          console.log('chat channel open, ready to send message');
+        }
+      });
 
-  const sendMessage = (event: React.MouseEvent<HTMLButtonElement>) => {
+      receiveChannel.addEventListener('close', () => {
+        if (receiveChannel.label == 'chat') {
+          setDisabled(true);
+          console.log('chat channel closed');
+        }
+      });
+    });
+  }, [peer]);
+
+  const sendMessage = useCallback(() => {
     let num = 1;
-
-    event.preventDefault();
 
     if (!chatChannel) {
       console.log('chat channel is not ready to send message');
@@ -66,15 +67,15 @@ export default function Chat() {
     );
 
     num++;
-  };
+  }, [chatChannel]);
 
   return (
     <Button
       isIconOnly
       variant="flat"
-      isDisabled={state}
+      isDisabled={isDisabled}
       onClick={sendMessage}
-      className="bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500"
+      className="bg-green-500 hover:bg-green-600 focus:outline-zinc-100 active:bg-green-500 disabled:bg-red-600/70"
     ></Button>
   );
 }
