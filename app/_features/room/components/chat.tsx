@@ -27,7 +27,6 @@ export default function Chat() {
 
       receiveChannel.addEventListener('message', (event) => {
         if (receiveChannel.label == 'chat') {
-          console.log(event.data);
           const decoder = new TextDecoder();
           const bufferData = event.data as ArrayBuffer;
           const data = decoder.decode(bufferData);
