@@ -4,10 +4,10 @@ import { getClientAuth } from '@/_shared/utils/get-client-auth';
 
 export default async function NotFound() {
   const currentAuth = await getClientAuth();
-  const currentUser = currentAuth.data ? currentAuth.data : undefined;
+  const user = currentAuth.data ? currentAuth.data : undefined;
 
   return (
-    <AppContainer currentUser={currentUser}>
+    <AppContainer user={user}>
       <HTTPError
         code={404}
         title="Room Not Found"

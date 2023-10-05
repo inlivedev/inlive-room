@@ -6,10 +6,10 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import type { AuthType } from '@/_shared/types/auth';
+import type { UserType } from '@/_shared/types/user';
 
 export const defaultValue = {
-  currentUser: undefined as AuthType.UserData | undefined,
+  user: undefined as UserType.AuthUserData | undefined,
 };
 
 type SetAuthState = Dispatch<SetStateAction<typeof defaultValue>>;

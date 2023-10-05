@@ -10,10 +10,10 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const currentAuth = await getClientAuth();
-  const currentUser = currentAuth.data ? currentAuth.data : undefined;
+  const user = currentAuth.data ? currentAuth.data : undefined;
 
   return (
-    <AppContainer currentUser={currentUser}>
+    <AppContainer user={user}>
       <View />
     </AppContainer>
   );
