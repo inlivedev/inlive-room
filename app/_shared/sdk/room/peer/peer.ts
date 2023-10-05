@@ -167,6 +167,8 @@ export const createPeer = ({
     sendStats = async (stats: PublisherStats) => {
       if (!this._statsChannel) return;
 
+      if (this._statsChannel?.readyState !== 'open') return;
+
       try {
         await this._statsChannel.send(JSON.stringify(stats));
       } catch (error) {
