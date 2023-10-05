@@ -1,4 +1,7 @@
-import type { InstancePeer } from './peer-types.d.ts';
+import type {
+  InstancePeer,
+  RTCOutboundRtpStreamStatsExtra,
+} from './peer-types.d.ts';
 class BandwidthController {
   _peer: InstancePeer;
   _available: number;
@@ -55,6 +58,8 @@ class BandwidthController {
 
     const stats = await this._peer.getPeerConnection()?.getStats();
     this._lastUpdated = Date.now();
+    let cpu = false;
+    let bandwidth = false;
 
     stats?.forEach((report) => {
       switch (report.type) {
@@ -64,6 +69,11 @@ class BandwidthController {
 
         case 'outbound-rtp':
           this._processOutboundStats(report);
+          if (report.qualityLimitationReason === 'cpu') {
+            cpu = true;
+          } else if (report.qualityLimitationReason === 'bandwidth') {
+            bandwidth = true;
+          }
           break;
         case 'candidate-pair':
           if (typeof report.availableOutgoingBitrate !== 'undefined') {
@@ -72,6 +82,17 @@ class BandwidthController {
         default:
           break;
       }
+    });
+
+    let reason = 'none';
+
+    if (cpu && bandwidth) reason = 'both';
+    else if (cpu) reason = 'cpu';
+    else if (bandwidth) reason = 'bandwidth';
+
+    this._peer.sendStats({
+      available_outgoing_bitrate: this._available,
+      quality_limitation_reason: reason,
     });
   };
 
@@ -116,8 +137,12 @@ class BandwidthController {
     }
   };
 
-  _processOutboundStats = (report: any) => {
+  _processOutboundStats = (report: RTCOutboundRtpStreamStatsExtra) => {
     const trackId = report.id;
+    const reason = {
+      cpu: false,
+      bandwidth: false,
+    };
 
     if (typeof this._outboundTracks[trackId] == 'undefined') {
       this._outboundTracks[trackId] = {
@@ -130,22 +155,30 @@ class BandwidthController {
     }
 
     if (this._outboundTracks[trackId].bytesSent == 0) {
-      this._outboundTracks[trackId].bytesSent = report.bytesSent;
+      this._outboundTracks[trackId].bytesSent = report.bytesSent
+        ? report.bytesSent
+        : 0;
       this._outboundTracks[trackId].lastUpdated = this._lastUpdated;
-      return;
+
+      if (report.qualityLimitationReason === 'cpu' && report) {
+        return 'cpu';
+      }
     }
 
     const deltaMs =
       this._lastUpdated - this._outboundTracks[trackId].lastUpdated;
 
-    const deltaBytes =
-      report.bytesSent - this._outboundTracks[trackId].bytesSent;
+    const deltaBytes = report.bytesSent
+      ? report.bytesSent
+      : 0 - this._outboundTracks[trackId].bytesSent;
 
     const bitrate = Math.floor(((deltaBytes * 8) / deltaMs) * 1000);
 
     if (bitrate == 0) return;
 
-    this._outboundTracks[trackId].bytesSent = report.bytesSent;
+    this._outboundTracks[trackId].bytesSent = report.bytesSent
+      ? report.bytesSent
+      : 0;
 
     this._outboundTracks[trackId].bitrates = bitrate;
 
