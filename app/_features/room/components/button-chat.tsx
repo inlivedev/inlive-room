@@ -1,11 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { usePeerContext } from '../contexts/peer-context';
 import { Button } from '@nextui-org/react';
-
-interface messageData {
-  sender: string;
-  message: string;
-}
+import { messageData } from '../contexts/channel-context';
 
 export default function ButtonChat({ onOpen }: { onOpen: () => void }) {
   const { peer } = usePeerContext();
