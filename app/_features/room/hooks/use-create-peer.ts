@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import { room } from '@/_shared/utils/sdk';
 
-export const useCreatePeer = (roomId: string, clientId: string) => {
+export const useCreatePeer = (roomID: string, clientID: string) => {
   const peer = useMemo(() => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined' || !roomID || !clientID) return null;
 
-    return room.createPeer(roomId, clientId);
-  }, [roomId, clientId]);
+    return room.createPeer(roomID, clientID);
+  }, [roomID, clientID]);
 
   return peer;
 };
