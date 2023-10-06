@@ -452,10 +452,27 @@ export const createPeer = ({
         const transceiver = this._peerConnection.addTransceiver(track, {
           direction: 'sendonly',
           streams: [stream.mediaStream],
-          sendEncodings: [{ priority: 'medium' }],
+          sendEncodings: [
+            // for firefox order matters... first high resolution, then scaled resolutions...
+            {
+              rid: 'high',
+              maxBitrate: maxBitrate,
+              maxFramerate: 30,
+            },
+            {
+              rid: 'mid',
+              scaleResolutionDownBy: 2.0,
+              maxFramerate: 20,
+              maxBitrate: midBitrate,
+            },
+            {
+              rid: 'low',
+              scaleResolutionDownBy: 4.0,
+              maxBitrate: minBitrate,
+              maxFramerate: 15,
+            },
+          ],
         });
-
-        console.log(transceiver);
 
         track.addEventListener('ended', () => {
           if (!this._peerConnection || !transceiver.sender) return;
