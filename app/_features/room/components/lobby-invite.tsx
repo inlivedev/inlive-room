@@ -1,13 +1,9 @@
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { Button } from '@nextui-org/react';
 
-export default function LobbyInvite({
-  pageId,
-  origin,
-}: {
-  pageId: string;
-  origin: string;
-}) {
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+
+export default function LobbyInvite({ roomID }: { roomID: string }) {
   const handleCopyLink = async (text = '') => {
     const success = await copyToClipboard(text);
     if (success) {
@@ -31,13 +27,13 @@ export default function LobbyInvite({
             className="w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-200 outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
             type="text"
             readOnly
-            defaultValue={`${origin}/room/${pageId}`}
+            defaultValue={`${APP_ORIGIN}/room/${roomID}`}
           />
         </div>
         <div>
           <Button
             className="rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
-            onClick={() => handleCopyLink(`${origin}/room/${pageId}`)}
+            onClick={() => handleCopyLink(`${APP_ORIGIN}/room/${roomID}`)}
           >
             Copy Link
           </Button>
