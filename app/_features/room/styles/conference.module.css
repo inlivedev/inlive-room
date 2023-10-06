@@ -115,3 +115,12 @@
     aspect-ratio: 9/16;
   }
 }
+
+.modalContainerRight {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 20%;
+  height: 100vh;
+}

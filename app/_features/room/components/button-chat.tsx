@@ -7,7 +7,7 @@ interface messageData {
   message: string;
 }
 
-export default function Chat() {
+export default function ButtonChat({ onOpen }: { onOpen: () => void }) {
   const { peer } = usePeerContext();
   const [isDisabled, setDisabled] = useState(true);
   const [chatChannel, setChatChannel] = useState<RTCDataChannel | undefined>();
@@ -74,7 +74,7 @@ export default function Chat() {
       isIconOnly
       variant="flat"
       isDisabled={isDisabled}
-      onClick={sendMessage}
+      onClick={onOpen}
       className="bg-green-500 hover:bg-green-600 focus:outline-zinc-100 active:bg-green-500 disabled:bg-red-600/70"
     ></Button>
   );
