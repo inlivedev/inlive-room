@@ -1,15 +1,15 @@
 import { roomRoutesHandler } from '@/(server)/_features/room/routes';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
-interface RegisterClientReq {
+interface RegisterClientRequest {
   name: string;
 }
 
 export async function POST(
-  req: Request,
+  request: NextRequest,
   { params }: { params: { roomID: string } }
 ) {
-  const body = (await req.json()) as RegisterClientReq;
+  const body = (await request.json()) as RegisterClientRequest;
 
   if (!body.name) {
     return NextResponse.json({
@@ -24,11 +24,14 @@ export async function POST(
       body.name
     );
 
-    return NextResponse.json({
-      code: 200,
-      message: 'Client has been successfully registered',
-      data: clientData,
-    });
+    return NextResponse.json(
+      {
+        code: 200,
+        message: 'Client has been successfully registered',
+        data: clientData,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     if (error instanceof Error) {
       const response = {
