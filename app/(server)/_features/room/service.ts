@@ -120,11 +120,13 @@ export class service implements iRoomService {
     if (!this._roomRepo.isPersistent()) {
       const remoteRoom = await this._sdk.getRoom(roomId);
       if (remoteRoom.ok) {
-        return {
+        const room: Room = {
           id: remoteRoom.data.roomId,
           name: remoteRoom.data.roomName,
           createdBy: 0,
         };
+
+        return room;
       }
 
       throw new Error('Room not exists');

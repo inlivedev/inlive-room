@@ -43,7 +43,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         code: response.code || 500,
         ok: response.ok || false,
         data: {
-          roomId: data.id || '',
+          roomId: data.room_id || '',
           roomName: data.name || '',
         },
       };

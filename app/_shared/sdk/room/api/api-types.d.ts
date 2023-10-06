@@ -40,7 +40,7 @@ export type CreateRoomResponseBody = BaseResponseBody & {
 
 export type GetRoomResponseBody = BaseResponseBody & {
   data: {
-    id: string;
+    room_id: string;
     name: string;
   };
 };
