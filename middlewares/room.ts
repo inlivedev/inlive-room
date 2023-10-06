@@ -62,6 +62,11 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
               }),
             });
 
+          clientData = {
+            id: createClientResponse.data.clientID,
+            name: createClientResponse.data.name,
+          };
+
           response.headers.set(
             'Set-Cookie',
             `client_id=${createClientResponse.data.clientID};path=${request.nextUrl.pathname};SameSite=lax;`
