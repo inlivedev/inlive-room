@@ -1,10 +1,12 @@
 import AppContainer from '@/_shared/components/containers/app-container';
 import HTTPError from '@/_shared/components/errors/http-error';
-import { getClientAuth } from '@/_shared/utils/get-client-auth';
+import { headers } from 'next/headers';
+import type { UserType } from '@/_shared/types/user';
 
 export default async function NotFound() {
-  const currentAuth = await getClientAuth();
-  const user = currentAuth.data ? currentAuth.data : undefined;
+  const headersList = headers();
+  const userAuthHeader = headersList.get('user-auth');
+  const user: UserType.AuthUserData | null = JSON.parse(userAuthHeader || '');
 
   return (
     <AppContainer user={user}>

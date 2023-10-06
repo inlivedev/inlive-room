@@ -10,7 +10,7 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
   value: {
-    user: UserType.AuthUserData | undefined;
+    user: UserType.AuthUserData | null;
   };
 }) {
   const [authState, setAuthState] = useState<typeof defaultValue>({

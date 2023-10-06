@@ -9,14 +9,14 @@ import {
 import type { UserType } from '@/_shared/types/user';
 
 export const defaultValue = {
-  user: undefined as UserType.AuthUserData | undefined,
+  user: null as UserType.AuthUserData | null,
 };
 
 type SetAuthState = Dispatch<SetStateAction<typeof defaultValue>>;
 
 export const AuthContext = createContext({
   ...defaultValue,
-  setAuthState: undefined as undefined | SetAuthState,
+  setAuthState: null as null | SetAuthState,
 });
 
 export const useAuthContext = () => {
