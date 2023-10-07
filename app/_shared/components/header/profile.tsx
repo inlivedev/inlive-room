@@ -32,7 +32,7 @@ export default function Profile() {
           setAuthState &&
             setAuthState((prevState) => ({
               ...prevState,
-              user: undefined,
+              user: null,
             }));
         }
       }
