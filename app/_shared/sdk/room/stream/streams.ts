@@ -51,6 +51,8 @@ export const createStreams = () => {
       const draft = this._drafts.get(key) || {};
 
       this._drafts.set(key, {
+        clientId: value.clientId || draft.clientId || undefined,
+        name: value.name || draft.name || undefined,
         origin: value.origin || draft.origin || undefined,
         source: value.source || draft.source || undefined,
         mediaStream: value.mediaStream || draft.mediaStream || undefined,
