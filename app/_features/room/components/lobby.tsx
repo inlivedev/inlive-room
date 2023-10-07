@@ -106,8 +106,6 @@ export default function Lobby({ roomID, client }: LobbyProps) {
         })
       );
 
-      document.dispatchEvent(new CustomEvent('open:conference-component'));
-
       Mixpanel.track('Join room', {
         roomID: roomID,
       });

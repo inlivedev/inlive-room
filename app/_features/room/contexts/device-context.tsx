@@ -1,5 +1,3 @@
-'use client';
-
 import {
   createContext,
   useContext,
@@ -7,7 +5,6 @@ import {
   useState,
   useCallback,
 } from 'react';
-import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 const defaultValue = {
   currentAudioInput: undefined as MediaDeviceInfo | undefined,
@@ -33,15 +30,9 @@ export const useDeviceContext = () => {
   return useContext(DeviceContext);
 };
 
-export function DeviceProvider({
-  children,
-  localStream,
-}: {
-  children: React.ReactNode;
-  localStream?: MediaStream;
-}) {
-  const { peer } = usePeerContext();
+export function DeviceProvider({ children }: { children: React.ReactNode }) {
   const [devicesState, setDevicesState] = useState(defaultValue);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   const setCurrentActiveDevice = useCallback((deviceInfo: MediaDeviceInfo) => {
     setDevicesState((prevData) => {
@@ -59,100 +50,119 @@ export function DeviceProvider({
     });
   }, []);
 
+  const getDevices = useCallback(
+    async (localStream: MediaStream) => {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+
+      const audioInputs = [];
+      const audioOutputs = [];
+      const videoInputs = [];
+
+      for (const device of devices) {
+        if (device.kind === 'audioinput') {
+          audioInputs.push(device);
+        } else if (device.kind === 'audiooutput') {
+          audioOutputs.push(device);
+        } else {
+          videoInputs.push(device);
+        }
+      }
+
+      let currentAudioInput: MediaDeviceInfo | undefined =
+        devicesState.currentAudioInput
+          ? devicesState.currentAudioInput
+          : audioInputs[0];
+
+      window.sessionStorage.setItem(
+        'device:selected-audio-input-id',
+        currentAudioInput.deviceId
+      );
+
+      let currentVideoInput: MediaDeviceInfo | undefined =
+        devicesState.currentVideoInput
+          ? devicesState.currentVideoInput
+          : videoInputs[0];
+
+      window.sessionStorage.setItem(
+        'device:selected-video-input-id',
+        currentVideoInput.deviceId
+      );
+
+      const currentAudioOutput: MediaDeviceInfo | undefined =
+        devicesState.currentAudioOutput
+          ? devicesState.currentAudioOutput
+          : audioOutputs[0];
+
+      window.sessionStorage.setItem(
+        'device:selected-audio-output-id',
+        currentAudioOutput.deviceId
+      );
+
+      if (localStream) {
+        const currentAudioInputId = localStream
+          .getAudioTracks()[0]
+          ?.getSettings().deviceId;
+
+        const currentVideoInputId = localStream
+          .getVideoTracks()[0]
+          ?.getSettings().deviceId;
+
+        currentAudioInput =
+          audioInputs.find((audioInput) => {
+            return audioInput.deviceId === currentAudioInputId;
+          }) || currentAudioInput;
+
+        currentVideoInput =
+          videoInputs.find((videoInput) => {
+            return videoInput.deviceId === currentVideoInputId;
+          }) || currentVideoInput;
+      }
+
+      if (
+        devicesState.currentAudioInput?.deviceId ===
+          currentAudioInput?.deviceId &&
+        devicesState.currentAudioOutput?.deviceId ===
+          currentAudioOutput?.deviceId &&
+        devicesState.currentVideoInput?.deviceId === currentVideoInput?.deviceId
+      ) {
+        return;
+      }
+
+      setDevicesState({
+        currentAudioInput: currentAudioInput,
+        currentAudioOutput: currentAudioOutput,
+        currentVideoInput: currentVideoInput,
+        audioInputs: audioInputs,
+        audioOutputs: audioOutputs,
+        videoInputs: videoInputs,
+        devices: devices,
+      });
+    },
+    [devicesState]
+  );
+
   useEffect(() => {
-    if (peer) {
-      const getDevices = async () => {
-        const devices = await navigator.mediaDevices.enumerateDevices();
+    const onMediaInputTurnedOn = ((event: CustomEvent) => {
+      const detail = event.detail || {};
+      const mediaInput = detail.mediaInput;
 
-        const audioInputs = [];
-        const audioOutputs = [];
-        const videoInputs = [];
+      if (mediaInput instanceof MediaStream) {
+        setLocalStream(mediaInput);
+      }
+    }) as EventListener;
 
-        for (const device of devices) {
-          if (device.kind === 'audioinput') {
-            audioInputs.push(device);
-          } else if (device.kind === 'audiooutput') {
-            audioOutputs.push(device);
-          } else {
-            videoInputs.push(device);
-          }
-        }
+    document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
 
-        let currentAudioInput: MediaDeviceInfo | undefined =
-          devicesState.currentAudioInput
-            ? devicesState.currentAudioInput
-            : audioInputs[0];
+    return () => {
+      document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
+    };
+  }, []);
 
-        window.sessionStorage.setItem(
-          'device:selected-audio-input-id',
-          currentAudioInput.deviceId
-        );
-
-        let currentVideoInput: MediaDeviceInfo | undefined =
-          devicesState.currentVideoInput
-            ? devicesState.currentVideoInput
-            : videoInputs[0];
-
-        window.sessionStorage.setItem(
-          'device:selected-video-input-id',
-          currentVideoInput.deviceId
-        );
-
-        const currentAudioOutput: MediaDeviceInfo | undefined =
-          devicesState.currentAudioOutput
-            ? devicesState.currentAudioOutput
-            : audioOutputs[0];
-
-        window.sessionStorage.setItem(
-          'device:selected-audio-output-id',
-          currentAudioOutput.deviceId
-        );
-
-        if (localStream) {
-          const currentAudioInputId = localStream
-            .getAudioTracks()[0]
-            ?.getSettings().deviceId;
-
-          const currentVideoInputId = localStream
-            .getVideoTracks()[0]
-            ?.getSettings().deviceId;
-
-          currentAudioInput =
-            audioInputs.find((audioInput) => {
-              return audioInput.deviceId === currentAudioInputId;
-            }) || currentAudioInput;
-
-          currentVideoInput =
-            videoInputs.find((videoInput) => {
-              return videoInput.deviceId === currentVideoInputId;
-            }) || currentVideoInput;
-        }
-
-        if (
-          devicesState.currentAudioInput?.deviceId ===
-            currentAudioInput?.deviceId &&
-          devicesState.currentAudioOutput?.deviceId ===
-            currentAudioOutput?.deviceId &&
-          devicesState.currentVideoInput?.deviceId ===
-            currentVideoInput?.deviceId
-        ) {
-          return;
-        }
-
-        setDevicesState({
-          currentAudioInput: currentAudioInput,
-          currentAudioOutput: currentAudioOutput,
-          currentVideoInput: currentVideoInput,
-          audioInputs: audioInputs,
-          audioOutputs: audioOutputs,
-          videoInputs: videoInputs,
-          devices: devices,
-        });
-      };
-
-      getDevices();
+  useEffect(() => {
+    if (localStream) {
+      getDevices(localStream);
     }
-  }, [peer, localStream, devicesState]);
+  }, [localStream, getDevices]);
 
   return (
     <DeviceContext.Provider value={{ ...devicesState, setCurrentActiveDevice }}>
