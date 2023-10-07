@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 import InviteBox from '@/_features/room/components/invite-box';
-import { useToggle } from '@/_shared/hooks/use-toggle';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
@@ -16,9 +15,6 @@ type LobbyProps = {
 };
 
 export default function Lobby({ roomID, client }: LobbyProps) {
-  const { active: isComponentActive, setInActive: setInActiveComponent } =
-    useToggle(true);
-
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return false;
 
@@ -64,82 +60,66 @@ export default function Lobby({ roomID, client }: LobbyProps) {
   }, []);
 
   const openConferenceRoom = useCallback(async () => {
-    if (isComponentActive) {
-      try {
-        const resumeAudioContextPromise = new Promise<null>(async (resolve) => {
-          if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
-            await AudioOutputContext.resume();
+    try {
+      const resumeAudioContextPromise = new Promise<null>(async (resolve) => {
+        if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
+          await AudioOutputContext.resume();
+        }
+
+        return resolve(null);
+      });
+
+      const mediaStreamPromise = navigator.mediaDevices
+        .enumerateDevices()
+        .then(async (devices) => {
+          const videoInput = devices.find(
+            (device) => device.kind === 'videoinput'
+          );
+          const audioInput = devices.find(
+            (device) => device.kind === 'audioinput'
+          );
+
+          if (!audioInput) {
+            throw new Error(
+              'Your device needs to have an active microphone in order to continue'
+            );
           }
 
-          return resolve(null);
-        });
-
-        const mediaStreamPromise = navigator.mediaDevices
-          .enumerateDevices()
-          .then(async (devices) => {
-            const videoInput = devices.find(
-              (device) => device.kind === 'videoinput'
-            );
-            const audioInput = devices.find(
-              (device) => device.kind === 'audioinput'
-            );
-
-            if (!audioInput) {
-              throw new Error(
-                'Your device needs to have an active microphone in order to continue'
-              );
-            }
-
-            const mediaStream = await getUserMedia({
-              video: videoInput ? videoConstraints : false,
-              audio: audioConstraints,
-            });
-
-            return mediaStream;
+          const mediaStream = await getUserMedia({
+            video: videoInput ? videoConstraints : false,
+            audio: audioConstraints,
           });
 
-        const [mediaStream] = await Promise.all([
-          mediaStreamPromise,
-          resumeAudioContextPromise,
-        ]);
-
-        document.dispatchEvent(
-          new CustomEvent('turnon:media-input', {
-            detail: {
-              mediaInput: mediaStream,
-            },
-          })
-        );
-
-        document.dispatchEvent(new CustomEvent('open:conference-component'));
-
-        Mixpanel.track('Join room', {
-          roomID: roomID,
+          return mediaStream;
         });
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(error);
-          alert(error.message);
-        }
+
+      const [mediaStream] = await Promise.all([
+        mediaStreamPromise,
+        resumeAudioContextPromise,
+      ]);
+
+      document.dispatchEvent(
+        new CustomEvent('turnon:media-input', {
+          detail: {
+            mediaInput: mediaStream,
+          },
+        })
+      );
+
+      document.dispatchEvent(new CustomEvent('open:conference-component'));
+
+      Mixpanel.track('Join room', {
+        roomID: roomID,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        alert(error.message);
       }
     }
-  }, [videoConstraints, audioConstraints, isComponentActive, roomID]);
+  }, [videoConstraints, audioConstraints, roomID]);
 
-  useEffect(() => {
-    document.addEventListener(
-      'open:conference-component',
-      setInActiveComponent
-    );
-
-    return () => {
-      document.removeEventListener(
-        'open:conference-component',
-        setInActiveComponent
-      );
-    };
-  }, [setInActiveComponent]);
-
-  return isComponentActive ? (
+  return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4">
         <Header />
@@ -206,5 +186,5 @@ export default function Lobby({ roomID, client }: LobbyProps) {
         <Footer />
       </div>
     </div>
-  ) : null;
+  );
 }
