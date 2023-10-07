@@ -40,7 +40,9 @@ export class service implements iRoomService {
       throw new Error('room not found');
     }
 
-    const clientResp = await this._sdk.createClient(roomData?.id);
+    const clientResp = await this._sdk.createClient(roomData?.id, {
+      clientName: name,
+    });
 
     if (!clientResp.data.clientId) {
       throw new Error(
