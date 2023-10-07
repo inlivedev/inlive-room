@@ -53,7 +53,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
 
     registerClient = async (
       roomId: string,
-      config: { id?: string; name?: string } = {}
+      config: { clientId?: string; clientName?: string } = {}
     ) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string');
@@ -61,12 +61,12 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
 
       const body: RoomAPIType.RegisterClientRequestBody = {};
 
-      if (config.id) {
-        body.uid = config.id;
+      if (config.clientId) {
+        body.uid = config.clientId;
       }
 
-      if (config.name) {
-        body.name = config.name;
+      if (config.clientName) {
+        body.name = config.clientName;
       }
 
       const options =
