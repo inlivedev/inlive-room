@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
-import LobbyInvite from '@/_features/room/components/invite-box';
+import InviteBox from '@/_features/room/components/invite-box';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
@@ -178,7 +178,7 @@ export default function Lobby({ roomID, client }: LobbyProps) {
               </p>
             </div>
             <div>
-              <LobbyInvite roomID={roomID} />
+              <InviteBox roomID={roomID} />
             </div>
             <div className="flex flex-row flex-wrap justify-center gap-x-8 gap-y-6">
               <div className="flex-1">
