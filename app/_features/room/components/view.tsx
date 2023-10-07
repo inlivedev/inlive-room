@@ -1,3 +1,5 @@
+'use client';
+
 import Lobby from '@/_features/room/components/lobby';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
@@ -16,10 +18,10 @@ export default function View({ roomID, client }: ViewProps) {
       <PeerProvider roomID={roomID} client={client}>
         <DeviceProvider>
           <ParticipantProvider client={client}>
+            <Lobby roomID={roomID} client={client} />
             <Conference />
           </ParticipantProvider>
         </DeviceProvider>
-        <Lobby roomID={roomID} client={client} />
       </PeerProvider>
     </div>
   );
