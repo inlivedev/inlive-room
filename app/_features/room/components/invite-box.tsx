@@ -3,7 +3,7 @@ import { Button } from '@nextui-org/react';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
-export default function LobbyInvite({ roomID }: { roomID: string }) {
+export default function InviteBox({ roomID }: { roomID: string }) {
   const handleCopyLink = async (text = '') => {
     const success = await copyToClipboard(text);
     if (success) {
