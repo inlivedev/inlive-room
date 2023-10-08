@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { InstanceStream } from '@/_shared/sdk/room/stream/stream-types';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { useClientContext } from '@/_features/room/contexts/client-context';
 import { room } from '@/_shared/utils/sdk';
-import type { ClientType } from '@/_shared/types/client';
 
 export type ParticipantStream = InstanceStream;
 
@@ -18,11 +18,10 @@ export const useParticipantContext = () => {
 
 export function ParticipantProvider({
   children,
-  client,
 }: {
   children: React.ReactNode;
-  client: ClientType.ClientData;
 }) {
+  const { clientID, clientName } = useClientContext();
   const { peer } = usePeerContext();
   const [streams, setStreams] = useState<ParticipantStream[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -55,14 +54,14 @@ export function ParticipantProvider({
       });
 
       peer.addStream(localStream.id, {
-        clientId: client.id,
-        name: client.name,
+        clientId: clientID,
+        name: clientName,
         origin: 'local',
         source: 'media',
         mediaStream: localStream,
       });
     }
-  }, [peer, localStream, client]);
+  }, [peer, localStream, clientID, clientName]);
 
   return (
     <ParticipantContext.Provider value={{ streams }}>

@@ -3,6 +3,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { cookies } from 'next/headers';
 import type { RoomType } from '@/_shared/types/room';
 import type { UserType } from '@/_shared/types/user';
+import type { ClientType } from '@/_shared/types/client';
 import { uniqueNamesGenerator, names } from 'unique-names-generator';
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
@@ -19,7 +20,10 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         });
 
       const roomData = roomResponse.data ? roomResponse.data : null;
-      let clientData = null;
+      let clientData: ClientType.ClientData = {
+        clientID: '',
+        clientName: '',
+      };
 
       if (roomData) {
         const clientID = cookies().get('client_id')?.value || '';
@@ -38,8 +42,8 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
 
           if (participant) {
             clientData = {
-              id: participant.clientID,
-              name: participant.name,
+              clientID: participant.clientID,
+              clientName: participant.name,
             };
           }
         } else {
@@ -55,22 +59,27 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
                 length: 2,
               });
 
-          const createClientResponse: RoomType.CreateClientResponse =
-            await InternalApiFetcher.post(`/api/room/${roomID}/register`, {
-              body: JSON.stringify({
-                name: clientName,
-              }),
-            });
+          try {
+            const createClientResponse: RoomType.CreateClientResponse =
+              await InternalApiFetcher.post(`/api/room/${roomID}/register`, {
+                body: JSON.stringify({
+                  name: clientName,
+                }),
+              });
 
-          clientData = {
-            id: createClientResponse.data.clientID,
-            name: createClientResponse.data.name,
-          };
+            clientData = {
+              clientID: createClientResponse.data.clientID,
+              clientName: createClientResponse.data.name,
+            };
 
-          response.headers.set(
-            'Set-Cookie',
-            `client_id=${createClientResponse.data.clientID};path=${request.nextUrl.pathname};SameSite=lax;`
-          );
+            response.headers.set(
+              'Set-Cookie',
+              `client_id=${createClientResponse.data.clientID};path=${request.nextUrl.pathname};SameSite=lax;`
+            );
+          } catch (error) {
+            console.error(error);
+            throw error;
+          }
         }
       }
 

@@ -9,7 +9,6 @@ type Peer = ReturnType<typeof useCreatePeer>;
 const defaultValue = {
   roomID: '',
   peer: null as Peer | null,
-  client: null as ClientType.ClientData | null,
 };
 
 const PeerContext = createContext(defaultValue);
@@ -25,14 +24,13 @@ type PeerProviderProps = {
 };
 
 export function PeerProvider({ children, roomID, client }: PeerProviderProps) {
-  const peer = useCreatePeer(roomID, client.id);
+  const peer = useCreatePeer(roomID, client.clientID);
 
   return (
     <PeerContext.Provider
       value={{
         roomID: roomID,
         peer: peer,
-        client: client,
       }}
     >
       {children}

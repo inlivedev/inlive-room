@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { room } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 
 export const useLeaveRoom = () => {
-  const { roomId, clientId, peer } = usePeerContext();
+  const { roomID, peer } = usePeerContext();
+  const { clientID } = useClientContext();
   const { navigateTo, prefetch } = useNavigate();
 
   useEffect(() => {
@@ -16,7 +18,7 @@ export const useLeaveRoom = () => {
 
     peer.disconnect();
     room
-      .leaveRoom(roomId, clientId)
+      .leaveRoom(roomID, clientID)
       .then((response) => {
         if (response.code >= 300) {
           console.error('Failed to end the call');

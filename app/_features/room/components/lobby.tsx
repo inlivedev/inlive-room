@@ -6,15 +6,16 @@ import Footer from '@/_shared/components/footer/footer';
 import InviteBox from '@/_features/room/components/invite-box';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
+import { useClientContext } from '@/_features/room/contexts/client-context';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
-import type { ClientType } from '@/_shared/types/client';
 
 type LobbyProps = {
   roomID: string;
-  client: ClientType.ClientData;
 };
 
-export default function Lobby({ roomID, client }: LobbyProps) {
+export default function Lobby({ roomID }: LobbyProps) {
+  const { clientName } = useClientContext();
+
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return false;
 
@@ -151,7 +152,7 @@ export default function Lobby({ roomID, client }: LobbyProps) {
                 type="text"
                 placeholder="Your real name or nickname"
                 readOnly
-                defaultValue={client.name}
+                defaultValue={clientName}
               />
               <p className="mt-3 text-xs text-zinc-400">
                 Other participants can easily recognize you by your display name

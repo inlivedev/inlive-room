@@ -1,6 +1,6 @@
 export declare namespace ClientType {
   type ClientData = {
-    id: string;
-    name: string;
+    clientID: string;
+    clientName: string;
   };
 }

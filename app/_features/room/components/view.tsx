@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Lobby from '@/_features/room/components/lobby';
+import { ClientProvider } from '@/_features/room/contexts/client-context';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
 import { ParticipantProvider } from '@/_features/room/contexts/participant-context';
@@ -31,17 +32,15 @@ export default function View({ roomID, client }: ViewProps) {
 
   return (
     <div className="flex flex-1 flex-col bg-zinc-900 text-zinc-200">
-      <PeerProvider roomID={roomID} client={client}>
-        <DeviceProvider>
-          <ParticipantProvider client={client}>
-            {isConferenceActive ? (
-              <Conference />
-            ) : (
-              <Lobby roomID={roomID} client={client} />
-            )}
-          </ParticipantProvider>
-        </DeviceProvider>
-      </PeerProvider>
+      <ClientProvider client={client}>
+        <PeerProvider roomID={roomID} client={client}>
+          <DeviceProvider>
+            <ParticipantProvider>
+              {isConferenceActive ? <Conference /> : <Lobby roomID={roomID} />}
+            </ParticipantProvider>
+          </DeviceProvider>
+        </PeerProvider>
+      </ClientProvider>
     </div>
   );
 }
