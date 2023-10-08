@@ -1,6 +1,6 @@
-import { chain } from './middlewares/chain';
-import { withAuthMiddleware } from './middlewares/auth';
-import { withRoomMiddleware } from './middlewares/room';
+import { chain } from './app/_shared/middlewares/chain';
+import { withAuthMiddleware } from './app/_shared/middlewares/auth';
+import { withRoomMiddleware } from './app/_shared/middlewares/room';
 
 export default chain([withRoomMiddleware, withAuthMiddleware]);
 
