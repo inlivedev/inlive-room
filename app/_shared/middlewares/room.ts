@@ -6,6 +6,57 @@ import type { UserType } from '@/_shared/types/user';
 import type { ClientType } from '@/_shared/types/client';
 import { uniqueNamesGenerator, names } from 'unique-names-generator';
 
+const createClientRequest = async (
+  roomID: string,
+  request: NextRequest,
+  response: Awaited<ReturnType<NextMiddleware>>
+) => {
+  try {
+    let clientData: ClientType.ClientData = {
+      clientID: '',
+      clientName: '',
+    };
+
+    if (response) {
+      const userAuthHeader = response.headers.get('user-auth');
+      const user: UserType.AuthUserData | null =
+        typeof userAuthHeader === 'string'
+          ? JSON.parse(userAuthHeader)
+          : userAuthHeader;
+
+      const clientName = user
+        ? user.name
+        : uniqueNamesGenerator({
+            dictionaries: [names, names],
+            separator: ' ',
+            length: 2,
+          });
+
+      const createClientResponse: RoomType.CreateClientResponse =
+        await InternalApiFetcher.post(`/api/room/${roomID}/register`, {
+          body: JSON.stringify({
+            name: clientName,
+          }),
+        });
+
+      clientData = {
+        clientID: createClientResponse.data.clientID,
+        clientName: createClientResponse.data.name,
+      };
+
+      response.headers.set(
+        'Set-Cookie',
+        `client_id=${clientData.clientID};path=${request.nextUrl.pathname};SameSite=lax;`
+      );
+    }
+
+    return clientData;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export function withRoomMiddleware(middleware: NextMiddleware) {
   return async (request: NextRequest, event: NextFetchEvent) => {
     const response = await middleware(request, event);
@@ -45,41 +96,27 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
               clientID: participant.clientID,
               clientName: participant.name,
             };
+          } else {
+            const clientDataResponse = await createClientRequest(
+              roomID,
+              request,
+              response
+            );
+            clientData = {
+              clientID: clientDataResponse.clientID,
+              clientName: clientDataResponse.clientName,
+            };
           }
         } else {
-          const userAuth: UserType.AuthUserData = JSON.parse(
-            response.headers.get('user-auth') || ''
+          const clientDataResponse = await createClientRequest(
+            roomID,
+            request,
+            response
           );
-
-          const clientName = userAuth
-            ? userAuth.name
-            : uniqueNamesGenerator({
-                dictionaries: [names, names],
-                separator: ' ',
-                length: 2,
-              });
-
-          try {
-            const createClientResponse: RoomType.CreateClientResponse =
-              await InternalApiFetcher.post(`/api/room/${roomID}/register`, {
-                body: JSON.stringify({
-                  name: clientName,
-                }),
-              });
-
-            clientData = {
-              clientID: createClientResponse.data.clientID,
-              clientName: createClientResponse.data.name,
-            };
-
-            response.headers.set(
-              'Set-Cookie',
-              `client_id=${createClientResponse.data.clientID};path=${request.nextUrl.pathname};SameSite=lax;`
-            );
-          } catch (error) {
-            console.error(error);
-            throw error;
-          }
+          clientData = {
+            clientID: clientDataResponse.clientID,
+            clientName: clientDataResponse.clientName,
+          };
         }
       }
 
