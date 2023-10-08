@@ -6,7 +6,10 @@ import type { UserType } from '@/_shared/types/user';
 export default async function NotFound() {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
-  const user: UserType.AuthUserData | null = JSON.parse(userAuthHeader || '');
+  const user: UserType.AuthUserData | null =
+    typeof userAuthHeader === 'string'
+      ? JSON.parse(userAuthHeader)
+      : userAuthHeader;
 
   return (
     <AppContainer user={user}>

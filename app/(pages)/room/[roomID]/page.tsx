@@ -25,9 +25,18 @@ export default async function Page() {
   const userAuthHeader = headersList.get('user-auth');
   const userClientHeader = headersList.get('user-client');
 
-  const roomData: RoomType.RoomData = JSON.parse(roomDataHeader || '');
-  const userAuth: UserType.AuthUserData = JSON.parse(userAuthHeader || '');
-  const userClient: ClientType.ClientData = JSON.parse(userClientHeader || '');
+  const roomData: RoomType.RoomData | null =
+    typeof roomDataHeader === 'string'
+      ? JSON.parse(roomDataHeader)
+      : roomDataHeader;
+  const userAuth: UserType.AuthUserData | null =
+    typeof userAuthHeader === 'string'
+      ? JSON.parse(userAuthHeader)
+      : userAuthHeader;
+  const userClient: ClientType.ClientData =
+    typeof userClientHeader === 'string'
+      ? JSON.parse(userClientHeader)
+      : userClientHeader;
 
   if (!roomData || !roomData.id) {
     notFound();
