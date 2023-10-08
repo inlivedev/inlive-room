@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
@@ -7,7 +7,6 @@ import InviteBox from '@/_features/room/components/invite-box';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
-import { useToggle } from '@/_shared/hooks/use-toggle';
 import type { ClientType } from '@/_shared/types/client';
 
 type LobbyProps = {
@@ -16,9 +15,6 @@ type LobbyProps = {
 };
 
 export default function Lobby({ roomID, client }: LobbyProps) {
-  const { active: isComponentActive, setInActive: setInActiveComponent } =
-    useToggle(true);
-
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return false;
 
@@ -123,21 +119,7 @@ export default function Lobby({ roomID, client }: LobbyProps) {
     }
   }, [videoConstraints, audioConstraints, roomID]);
 
-  useEffect(() => {
-    document.addEventListener(
-      'open:conference-component',
-      setInActiveComponent
-    );
-
-    return () => {
-      document.removeEventListener(
-        'open:conference-component',
-        setInActiveComponent
-      );
-    };
-  }, [setInActiveComponent]);
-
-  return isComponentActive ? (
+  return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4">
         <Header />
@@ -204,5 +186,5 @@ export default function Lobby({ roomID, client }: LobbyProps) {
         <Footer />
       </div>
     </div>
-  ) : null;
+  );
 }

@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import Lobby from '@/_features/room/components/lobby';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
 import { ParticipantProvider } from '@/_features/room/contexts/participant-context';
 import Conference from '@/_features/room/components/conference';
+import { useToggle } from '@/_shared/hooks/use-toggle';
 import type { ClientType } from '@/_shared/types/client';
 
 type ViewProps = {
@@ -13,13 +15,30 @@ type ViewProps = {
 };
 
 export default function View({ roomID, client }: ViewProps) {
+  const { active: isConferenceActive, setActive: setActiveConference } =
+    useToggle(false);
+
+  useEffect(() => {
+    document.addEventListener('open:conference-component', setActiveConference);
+
+    return () => {
+      document.removeEventListener(
+        'open:conference-component',
+        setActiveConference
+      );
+    };
+  }, [setActiveConference]);
+
   return (
     <div className="flex flex-1 flex-col bg-zinc-900 text-zinc-200">
       <PeerProvider roomID={roomID} client={client}>
         <DeviceProvider>
           <ParticipantProvider client={client}>
-            <Lobby roomID={roomID} client={client} />
-            <Conference />
+            {isConferenceActive ? (
+              <Conference />
+            ) : (
+              <Lobby roomID={roomID} client={client} />
+            )}
           </ParticipantProvider>
         </DeviceProvider>
       </PeerProvider>
