@@ -16,7 +16,6 @@ module.exports = {
         trailingComma: 'es5',
       },
     ],
-    'tailwindcss/no-custom-classname': 'off',
   },
   overrides: [
     {
