@@ -1,18 +1,11 @@
 import ConferenceParticipants from '@/_features/room/components/conference-participants';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import styles from '@/_features/room/styles/conference.module.css';
-
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
-import { useDisclosure } from '@nextui-org/react';
-import ChatWindow from './chat-window';
+import ChatMenu from '@/_features/room/components/chat-menu';
 
 export default function Conference() {
   const { streams } = useParticipantContext();
-  const {
-    isOpen: isChatWindowOpen,
-    onOpen: openChatWindow,
-    onOpenChange,
-  } = useDisclosure();
 
   const hasScreen = (): boolean => {
     return Object.values(streams).some((stream) => stream.source === 'screen');
@@ -30,17 +23,16 @@ export default function Conference() {
   };
 
   return (
-    <div className="h-screen w-screen">
-      <ChatWindow
-        isChatWindowOpen={isChatWindowOpen}
-        onOpenChange={onOpenChange}
-      />
-      <div className={`${styles['participants']} ${getClass()}`}>
-        <ConferenceParticipants />
+    <>
+      <ChatMenu />
+      <div className="h-screen w-screen">
+        <div className={`${styles['participants']} ${getClass()}`}>
+          <ConferenceParticipants />
+        </div>
+        <div className={`${styles['actionbar']}`}>
+          <ConferenceActionsBar />
+        </div>
       </div>
-      <div className={`${styles['actionbar']}`}>
-        <ConferenceActionsBar onChatButton={openChatWindow} />
-      </div>
-    </div>
+    </>
   );
 }
