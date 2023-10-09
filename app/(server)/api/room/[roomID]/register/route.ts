@@ -2,6 +2,7 @@ import { roomRoutesHandler } from '@/(server)/_features/room/routes';
 import { NextResponse, type NextRequest } from 'next/server';
 
 interface RegisterClientRequest {
+  uid: string;
   name: string;
 }
 
@@ -11,7 +12,10 @@ export async function POST(
 ) {
   const body = (await request.json()) as RegisterClientRequest;
 
-  if (!body.name) {
+  const clientID = body.uid || '';
+  const clientName = body.name || '';
+
+  if (!clientName) {
     return NextResponse.json({
       code: 400,
       message: 'Name is missing from request',
@@ -21,7 +25,8 @@ export async function POST(
   try {
     const clientData = await roomRoutesHandler.registerClientHandler(
       params.roomID,
-      body.name
+      clientID,
+      clientName
     );
 
     return NextResponse.json(

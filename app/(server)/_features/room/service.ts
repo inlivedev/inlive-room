@@ -33,31 +33,44 @@ export class service implements iRoomService {
     this._participantRepo = participantRepo;
   }
 
-  async createClient(roomId: string, name: string): Promise<Participant> {
+  async createClient(
+    roomId: string,
+    clientID: string,
+    clientName: string
+  ): Promise<Participant> {
     const roomData = await this._roomRepo.getRoomById(roomId);
 
     if (!roomData) {
       throw new Error('room not found');
     }
 
-    const clientResp = await this._sdk.createClient(roomData?.id, {
-      clientName: name,
+    const clientResponse = await this._sdk.createClient(roomData?.id, {
+      clientId: clientID,
+      clientName: clientName,
     });
 
-    if (!clientResp.data.clientId) {
+    const getClient = await this._participantRepo.getByClientID(
+      roomId,
+      clientResponse.data.clientId || clientID
+    );
+
+    if (getClient) {
+      return getClient;
+    }
+
+    if (!clientResponse.data.clientId) {
       throw new Error(
-        'failed to add client to the meeting room, please try again later'
+        'Failed to add client to the meeting room. Please try again later!'
       );
     }
 
     const data: Participant = {
-      clientID: clientResp.data.clientId,
-      name: name,
+      clientID: clientResponse.data.clientId,
+      name: clientResponse.data.name,
       roomID: roomId,
     };
 
-    const participant = await this._participantRepo.addParticipant(data);
-    return participant;
+    return await this._participantRepo.addParticipant(data);
   }
 
   async getClients(
