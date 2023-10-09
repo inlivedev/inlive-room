@@ -1,4 +1,5 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
+import type { UserType } from '@/_shared/types/user';
 
 export declare namespace AuthType {
   type AuthorizeResponse = FetcherResponse & {
@@ -20,24 +21,14 @@ export declare namespace AuthType {
     } | null;
   };
 
-  type UserData = {
-    email: string;
-    id: number;
-    login_type: number;
-    name: string;
-    picture_url: string;
-    role_id: number;
-    username: string;
-  };
-
   type CurrentAuthExternalResponse = FetcherResponse & {
     message: string;
-    data: UserData;
+    data: UserType.AuthUserData;
   };
 
   type CurrentAuthInternalResponse = FetcherResponse & {
     message: string;
-    data: UserData | null;
+    data: UserType.AuthUserData | null;
   };
 
   type SignOutResponse = FetcherResponse & {

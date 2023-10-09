@@ -51,19 +51,26 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return room;
     };
 
-    registerClient = async (roomId: string, clientId = '') => {
+    registerClient = async (
+      roomId: string,
+      config: { clientId?: string; clientName?: string } = {}
+    ) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string');
       }
 
-      if (typeof clientId !== 'string') {
-        throw new Error('Client ID must be a valid string');
+      const body: RoomAPIType.RegisterClientRequestBody = {};
+
+      if (config.clientId) {
+        body.uid = config.clientId;
+      }
+
+      if (config.clientName) {
+        body.name = config.clientName;
       }
 
       const options =
-        clientId.trim().length > 0
-          ? { body: JSON.stringify({ uid: clientId }) }
-          : undefined;
+        body.uid || body.name ? { body: JSON.stringify(body) } : undefined;
 
       const response: RoomAPIType.RegisterClientResponseBody =
         await this._fetcher.post(`/rooms/${roomId}/register`, options);

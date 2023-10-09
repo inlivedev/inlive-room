@@ -6,7 +6,11 @@ import { ParticiantRepo } from '../participants/repository';
 export interface iRoomService {
   createRoom(userID: number): Promise<Room>;
   joinRoom(roomId: string): Promise<Room | undefined>;
-  createClient(roomId: string, name: string): Promise<Participant>;
+  createClient(
+    roomId: string,
+    clientID: string,
+    clientName: string
+  ): Promise<Participant>;
   getClients(roomID: string, clientIDs: string[]): Promise<Participant[]>;
   getAllClients(roomID: string): Promise<Participant[]>;
 }
@@ -40,8 +44,12 @@ const createRoomRoutesHandler = () => {
       return await this.roomService.joinRoom(roomID);
     };
 
-    registerClientHandler = async (roomID: string, name: string) => {
-      return await this.roomService.createClient(roomID, name);
+    registerClientHandler = async (
+      roomID: string,
+      clientID: string,
+      clientName: string
+    ) => {
+      return await this.roomService.createClient(roomID, clientID, clientName);
     };
 
     getClientHandler = async (roomID: string, clientIDs: string[]) => {

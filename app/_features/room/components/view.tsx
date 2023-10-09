@@ -1,149 +1,46 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect } from 'react';
 import Lobby from '@/_features/room/components/lobby';
-import LobbyHeader from '@/_features/room/components/lobby-header';
-import LobbyInvite from '@/_features/room/components/lobby-invite';
-import LobbyCTA from '@/_features/room/components/lobby-cta';
+import { ClientProvider } from '@/_features/room/contexts/client-context';
+import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
 import { ParticipantProvider } from '@/_features/room/contexts/participant-context';
 import Conference from '@/_features/room/components/conference';
 import { useToggle } from '@/_shared/hooks/use-toggle';
-import { getUserMedia } from '@/_shared/utils/get-user-media';
-import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
-import { AudioOutputContext } from '@/_features/room/contexts/device-context';
+import type { ClientType } from '@/_shared/types/client';
 
 type ViewProps = {
-  roomId: string;
-  origin: string;
+  roomID: string;
+  client: ClientType.ClientData;
 };
 
-export default function View({ roomId, origin }: ViewProps) {
-  const { active: openConference, setActive: setOpenConference } =
+export default function View({ roomID, client }: ViewProps) {
+  const { active: isConferenceActive, setActive: setActiveConference } =
     useToggle(false);
 
-  const [localStream, setLocalStream] = useState<MediaStream | undefined>();
+  useEffect(() => {
+    document.addEventListener('open:conference-component', setActiveConference);
 
-  const videoConstraints = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-
-    const selectedVideoInputId = window.sessionStorage.getItem(
-      'device:selected-video-input-id'
-    );
-
-    if (selectedVideoInputId) {
-      return { deviceId: { exact: selectedVideoInputId } };
-    }
-
-    return {
-      width: {
-        ideal: 1280,
-      },
-      height: {
-        ideal: 720,
-      },
+    return () => {
+      document.removeEventListener(
+        'open:conference-component',
+        setActiveConference
+      );
     };
-  }, []);
-
-  const audioConstraints = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-
-    const selectedAudioInputId = window.sessionStorage.getItem(
-      'device:selected-audio-input-id'
-    );
-
-    const defaultConstraints = {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    };
-
-    if (selectedAudioInputId) {
-      return {
-        deviceId: { exact: selectedAudioInputId },
-        ...defaultConstraints,
-      };
-    }
-
-    return defaultConstraints;
-  }, []);
-
-  const openConferenceHandler = useCallback(async () => {
-    if (openConference) return;
-
-    try {
-      const resumeAudioContextPromise = new Promise<null>(async (resolve) => {
-        if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
-          await AudioOutputContext.resume();
-        }
-
-        return resolve(null);
-      });
-
-      const mediaStreamPromise = navigator.mediaDevices
-        .enumerateDevices()
-        .then(async (devices) => {
-          const videoInput = devices.find(
-            (device) => device.kind === 'videoinput'
-          );
-          const audioInput = devices.find(
-            (device) => device.kind === 'audioinput'
-          );
-
-          if (!audioInput) {
-            alert(
-              `Your device needs to have an active microphone in order to continue`
-            );
-          }
-
-          const mediaStream = await getUserMedia({
-            video: videoInput ? videoConstraints : false,
-            audio: audioConstraints,
-          });
-
-          return mediaStream;
-        });
-
-      const [mediaStream] = await Promise.all([
-        mediaStreamPromise,
-        resumeAudioContextPromise,
-      ]);
-
-      setLocalStream(mediaStream);
-      setOpenConference();
-
-      Mixpanel.track('Join room', {
-        roomID: roomId,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error);
-        alert(error.message);
-      }
-    }
-  }, [
-    roomId,
-    openConference,
-    setOpenConference,
-    videoConstraints,
-    audioConstraints,
-  ]);
+  }, [setActiveConference]);
 
   return (
-    <div className="flex flex-1 flex-col bg-neutral-900 text-neutral-200">
-      {openConference && localStream ? (
-        <DeviceProvider localStream={localStream}>
-          <ParticipantProvider localStream={localStream}>
-            <Conference />
-          </ParticipantProvider>
-        </DeviceProvider>
-      ) : (
-        <Lobby>
-          <LobbyHeader pageId={roomId} />
-          <LobbyInvite pageId={roomId} origin={origin} />
-          <LobbyCTA openConferenceRoom={openConferenceHandler} />
-        </Lobby>
-      )}
+    <div className="flex flex-1 flex-col bg-zinc-900 text-zinc-200">
+      <ClientProvider client={client}>
+        <PeerProvider roomID={roomID} client={client}>
+          <DeviceProvider>
+            <ParticipantProvider>
+              {isConferenceActive ? <Conference /> : <Lobby roomID={roomID} />}
+            </ParticipantProvider>
+          </DeviceProvider>
+        </PeerProvider>
+      </ClientProvider>
     </div>
   );
 }

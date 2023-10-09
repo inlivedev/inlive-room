@@ -2,6 +2,7 @@
 
 import { useVideoScreen } from '@/_features/room/hooks/use-video-screen';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
+import styles from '@/_features/room/styles/conference.module.css';
 
 export default function ConferenceScreen({
   stream,
@@ -11,9 +12,21 @@ export default function ConferenceScreen({
   const { videoRef } = useVideoScreen(stream);
 
   return (
-    <video
-      className="rounded-lg object-contain object-center "
-      ref={videoRef}
-    ></video>
+    <div className={`${styles['video-screen']} relative rounded-lg shadow-lg`}>
+      {/* video screen overlay */}
+      <div className="absolute flex h-full w-full flex-col justify-end rounded-lg p-2">
+        <div className="flex">
+          <div
+            className={`${styles['video-screen-name']} max-w-full truncate rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-200 md:text-sm`}
+          >
+            <span>{stream.name}</span>
+          </div>
+        </div>
+      </div>
+      <video
+        className="aspect-video h-full rounded-lg object-cover object-center"
+        ref={videoRef}
+      ></video>
+    </div>
   );
 }

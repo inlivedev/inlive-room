@@ -1,22 +1,17 @@
-import { useEffect } from 'react';
 import { room } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import { useNavigate } from '@/_shared/hooks/use-navigate';
+import { useClientContext } from '@/_features/room/contexts/client-context';
 
 export const useLeaveRoom = () => {
-  const { roomId, clientId, peer } = usePeerContext();
-  const { navigateTo, prefetch } = useNavigate();
-
-  useEffect(() => {
-    prefetch('/');
-  }, [prefetch]);
+  const { roomID, peer } = usePeerContext();
+  const { clientID } = useClientContext();
 
   const leaveRoom = async () => {
     if (!peer) return;
 
     peer.disconnect();
     room
-      .leaveRoom(roomId, clientId)
+      .leaveRoom(roomID, clientID)
       .then((response) => {
         if (response.code >= 300) {
           console.error('Failed to end the call');
@@ -26,7 +21,7 @@ export const useLeaveRoom = () => {
         console.error(error);
       });
 
-    navigateTo('/');
+    window.location.href = '/';
   };
 
   return { leaveRoom };

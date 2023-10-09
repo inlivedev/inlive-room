@@ -76,6 +76,14 @@ export const createPeer = ({
       this._peerConnection = null;
     };
 
+    getClientId = () => {
+      return this._clientId;
+    };
+
+    getRoomId = () => {
+      return this._roomId;
+    };
+
     getPeerConnection = () => {
       return Object.freeze(this._peerConnection);
     };
@@ -386,6 +394,8 @@ export const createPeer = ({
       const draftStream = this._streams.getDraft(mediaStream.id) || {};
 
       this.addStream(mediaStream.id, {
+        clientId: draftStream.clientId || '',
+        name: draftStream.name || '',
         origin: draftStream.origin || 'remote',
         source: draftStream.source || 'media',
         mediaStream: mediaStream,
@@ -452,10 +462,27 @@ export const createPeer = ({
         const transceiver = this._peerConnection.addTransceiver(track, {
           direction: 'sendonly',
           streams: [stream.mediaStream],
-          sendEncodings: [{ priority: 'medium' }],
+          sendEncodings: [
+            // for firefox order matters... first high resolution, then scaled resolutions...
+            {
+              rid: 'high',
+              maxBitrate: maxBitrate,
+              maxFramerate: 30,
+            },
+            {
+              rid: 'mid',
+              scaleResolutionDownBy: 2.0,
+              maxFramerate: 20,
+              maxBitrate: midBitrate,
+            },
+            {
+              rid: 'low',
+              scaleResolutionDownBy: 4.0,
+              maxBitrate: minBitrate,
+              maxFramerate: 15,
+            },
+          ],
         });
-
-        console.log(transceiver);
 
         track.addEventListener('ended', () => {
           if (!this._peerConnection || !transceiver.sender) return;
@@ -473,6 +500,8 @@ export const createPeer = ({
       return {
         connect: peer.connect,
         disconnect: peer.disconnect,
+        getClientId: peer.getClientId,
+        getRoomId: peer.getRoomId,
         getPeerConnection: peer.getPeerConnection,
         addStream: peer.addStream,
         removeStream: peer.removeStream,

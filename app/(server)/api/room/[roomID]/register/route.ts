@@ -1,18 +1,21 @@
 import { roomRoutesHandler } from '@/(server)/_features/room/routes';
-import { isError } from 'lodash-es';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
-interface RegisterClientReq {
+interface RegisterClientRequest {
+  uid: string;
   name: string;
 }
 
 export async function POST(
-  req: Request,
+  request: NextRequest,
   { params }: { params: { roomID: string } }
 ) {
-  const body = (await req.json()) as RegisterClientReq;
+  const body = (await request.json()) as RegisterClientRequest;
 
-  if (!body.name) {
+  const clientID = body.uid || '';
+  const clientName = body.name || '';
+
+  if (!clientName) {
     return NextResponse.json({
       code: 400,
       message: 'Name is missing from request',
@@ -22,19 +25,23 @@ export async function POST(
   try {
     const clientData = await roomRoutesHandler.registerClientHandler(
       params.roomID,
-      body.name
+      clientID,
+      clientName
     );
 
-    return NextResponse.json({
-      code: 200,
-      message: 'client registered',
-      data: clientData,
-    });
+    return NextResponse.json(
+      {
+        code: 200,
+        message: 'Client has been successfully registered',
+        data: clientData,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    if (!isError(error)) {
+    if (error instanceof Error) {
       const response = {
         code: 500,
-        message: 'an error has occured on our side please try again later',
+        message: error.message,
       };
 
       return NextResponse.json(response, { status: 500 });
@@ -42,7 +49,7 @@ export async function POST(
 
     const response = {
       code: 500,
-      message: error.message,
+      message: 'An error has occured on the server, please try again later.',
     };
 
     return NextResponse.json(response, { status: 500 });

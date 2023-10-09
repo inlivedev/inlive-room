@@ -51,6 +51,8 @@ export const createStreams = () => {
       const draft = this._drafts.get(key) || {};
 
       this._drafts.set(key, {
+        clientId: value.clientId || draft.clientId || undefined,
+        name: value.name || draft.name || undefined,
         origin: value.origin || draft.origin || undefined,
         source: value.source || draft.source || undefined,
         mediaStream: value.mediaStream || draft.mediaStream || undefined,
@@ -80,10 +82,12 @@ export const createStreams = () => {
         !data ||
         !(data.mediaStream instanceof MediaStream) ||
         typeof data.origin !== 'string' ||
-        typeof data.source !== 'string'
+        typeof data.source !== 'string' ||
+        typeof data.clientId !== 'string' ||
+        typeof data.name !== 'string'
       ) {
         throw new Error(
-          'Please provide valid stream origin, source, and MediaStream data'
+          'Please provide valid stream data (clientId, name, origin, source, MediaStream)'
         );
       }
 

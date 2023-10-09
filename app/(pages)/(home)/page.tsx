@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import View from '@/_features/home/view';
-import { getClientAuth } from '@/_shared/utils/get-client-auth';
+import { headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
+import type { UserType } from '@/_shared/types/user';
 
 export const metadata: Metadata = {
   title: 'inLive Room',
@@ -9,11 +10,15 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const currentAuth = await getClientAuth();
-  const currentUser = currentAuth.data ? currentAuth.data : undefined;
+  const headersList = headers();
+  const userAuthHeader = headersList.get('user-auth');
+  const user: UserType.AuthUserData | null =
+    typeof userAuthHeader === 'string'
+      ? JSON.parse(userAuthHeader)
+      : userAuthHeader;
 
   return (
-    <AppContainer currentUser={currentUser}>
+    <AppContainer user={user}>
       <View />
     </AppContainer>
   );

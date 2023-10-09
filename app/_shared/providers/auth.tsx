@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AuthContext, defaultValue } from '@/_shared/contexts/auth';
-import type { AuthType } from '@/_shared/types/auth';
+import type { UserType } from '@/_shared/types/user';
 
 export default function AuthProvider({
   children,
@@ -10,7 +10,7 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
   value: {
-    currentUser: AuthType.UserData | undefined;
+    user: UserType.AuthUserData | null;
   };
 }) {
   const [authState, setAuthState] = useState<typeof defaultValue>({

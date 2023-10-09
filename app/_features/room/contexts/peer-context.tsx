@@ -2,13 +2,12 @@
 
 import { createContext, useContext } from 'react';
 import { useCreatePeer } from '@/_features/room/hooks/use-create-peer';
+import type { ClientType } from '@/_shared/types/client';
 
 type Peer = ReturnType<typeof useCreatePeer>;
 
 const defaultValue = {
-  pageId: '',
-  roomId: '',
-  clientId: '',
+  roomID: '',
   peer: null as Peer | null,
 };
 
@@ -20,25 +19,17 @@ export const usePeerContext = () => {
 
 type PeerProviderProps = {
   children: React.ReactNode;
-  pageId: string;
-  roomId: string;
-  clientId: string;
+  roomID: string;
+  client: ClientType.ClientData;
 };
 
-export function PeerProvider({
-  children,
-  pageId,
-  roomId,
-  clientId,
-}: PeerProviderProps) {
-  const peer = useCreatePeer(roomId, clientId);
+export function PeerProvider({ children, roomID, client }: PeerProviderProps) {
+  const peer = useCreatePeer(roomID, client.clientID);
 
   return (
     <PeerContext.Provider
       value={{
-        pageId: pageId,
-        roomId: roomId,
-        clientId: clientId,
+        roomID: roomID,
         peer: peer,
       }}
     >

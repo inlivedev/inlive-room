@@ -1,13 +1,18 @@
 import AppContainer from '@/_shared/components/containers/app-container';
 import HTTPError from '@/_shared/components/errors/http-error';
-import { getClientAuth } from '@/_shared/utils/get-client-auth';
+import { headers } from 'next/headers';
+import type { UserType } from '@/_shared/types/user';
 
 export default async function NotFound() {
-  const currentAuth = await getClientAuth();
-  const currentUser = currentAuth.data ? currentAuth.data : undefined;
+  const headersList = headers();
+  const userAuthHeader = headersList.get('user-auth');
+  const user: UserType.AuthUserData | null =
+    typeof userAuthHeader === 'string'
+      ? JSON.parse(userAuthHeader)
+      : userAuthHeader;
 
   return (
-    <AppContainer currentUser={currentUser}>
+    <AppContainer user={user}>
       <HTTPError
         code={404}
         title="Room Not Found"
