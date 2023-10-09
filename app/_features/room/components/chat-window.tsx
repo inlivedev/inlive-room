@@ -8,8 +8,9 @@ import {
   ModalHeader,
 } from '@nextui-org/react';
 import styles from '@/_features/room/styles/conference.module.css';
-import { UseChannelContext, messageData } from '../contexts/channel-context';
-import { useEffect } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { usePeerContext } from '../contexts/peer-context';
+import { ChatType } from '@/_shared/types/chat';
 
 export default function ChatWindow({
   isChatWindowOpen,
@@ -18,25 +19,47 @@ export default function ChatWindow({
   isChatWindowOpen: boolean | undefined;
   onOpenChange: () => void;
 }) {
-  const { dataChannel, isChannelOpen } = UseChannelContext();
+  const { peer } = usePeerContext();
+  const [isChatActive, setChatActive] = useState(false);
+  const [chatInputValue, setInputValue] = useState('');
+  const [dataChannel, setDataChannel] = useState<RTCDataChannel | undefined>();
 
   useEffect(() => {
-    if (!dataChannel) return;
+    const peerConnection = peer?.getPeerConnection();
 
-    if (isChannelOpen) {
-      console.log('Open gannn');
-    }
+    if (!peerConnection) return;
 
-    dataChannel.addEventListener('message', (event) => {
-      if (dataChannel.label == 'chat') {
-        const decoder = new TextDecoder();
-        const bufferData = event.data as ArrayBuffer;
-        const data = decoder.decode(bufferData);
-        const message: messageData = JSON.parse(data);
-        console.log(message);
-      }
+    setChatActive(true);
+
+    peerConnection.addEventListener('datachannel', (chEvent) => {
+      const receiveChannel = chEvent.channel;
+      receiveChannel.binaryType = 'arraybuffer';
+
+      if (receiveChannel.label == 'chat') setDataChannel(receiveChannel);
+
+      receiveChannel.addEventListener('message', (event) => {
+        if (receiveChannel.label == 'chat') {
+          const decoder = new TextDecoder();
+          const bufferData = event.data as ArrayBuffer;
+          const data = decoder.decode(bufferData);
+          const message: ChatType.ChatMessage = JSON.parse(data);
+          console.log(message);
+        }
+      });
     });
-  }, [dataChannel, isChannelOpen]);
+  }, [peer]);
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  };
+
+  const sendChatMessage = useCallback(() => {
+    console.log(chatInputValue);
+    if (!chatInputValue || chatInputValue != '')
+      dataChannel?.send(
+        JSON.stringify({ sender: 'test', message: chatInputValue })
+      );
+  }, [dataChannel, chatInputValue]);
 
   return (
     <Modal
@@ -74,16 +97,20 @@ export default function ChatWindow({
         <ModalBody>
           <ChatWindowBody></ChatWindowBody>
         </ModalBody>
-        <ModalFooter>
-          <div className="flex">
+        <ModalFooter className="flex-col">
+          <div className="flex min-w-max space-x-1">
             <div className="flex-auto">
-              <Input></Input>
+              <Input
+                value={chatInputValue}
+                onChange={handleInputChange}
+              ></Input>
             </div>
-            <div className="flex-none">
+            <div className="flex-1">
               <Button
                 className="bg-green-500 hover:bg-blue-600 focus:outline-zinc-100 active:bg-blue-500 disabled:bg-red-600/70"
                 isIconOnly={true}
-                isDisabled={!isChannelOpen}
+                isDisabled={!isChatActive}
+                onClick={sendChatMessage}
               ></Button>
             </div>
           </div>

@@ -1,12 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { Badge, Button, Spinner } from '@nextui-org/react';
 import { usePeerContext } from '../contexts/peer-context';
-import { Button } from '@nextui-org/react';
-import { messageData } from '../contexts/channel-context';
 
 export default function ButtonChat({ onOpen }: { onOpen: () => void }) {
   const { peer } = usePeerContext();
-  const [isDisabled, setDisabled] = useState(true);
-  const [chatChannel, setChatChannel] = useState<RTCDataChannel | undefined>();
+  const [numChat, setNumChat] = useState(0);
+  const [isChannelOpen, setChannelOpen] = useState(false);
 
   useEffect(() => {
     const peerConnection = peer?.getPeerConnection();
@@ -17,61 +16,49 @@ export default function ButtonChat({ onOpen }: { onOpen: () => void }) {
       const receiveChannel = chEevent.channel;
       receiveChannel.binaryType = 'arraybuffer';
 
-      if (receiveChannel.label == 'chat') {
-        setChatChannel(receiveChannel);
-      }
-
-      receiveChannel.addEventListener('message', (event) => {
+      receiveChannel.addEventListener('message', () => {
         if (receiveChannel.label == 'chat') {
-          const decoder = new TextDecoder();
-          const bufferData = event.data as ArrayBuffer;
-          const data = decoder.decode(bufferData);
-          const message: messageData = JSON.parse(data);
-          console.log(message);
+          console.log(numChat);
+          setNumChat((prevNumChat) => prevNumChat + 1);
+          console.log(numChat);
         }
       });
 
       receiveChannel.addEventListener('open', () => {
         if (receiveChannel.label == 'chat') {
-          setDisabled(false);
-          console.log('chat channel open, ready to send message');
+          setChannelOpen(true);
         }
       });
 
       receiveChannel.addEventListener('close', () => {
         if (receiveChannel.label == 'chat') {
-          setDisabled(true);
-          console.log('chat channel closed');
+          setChannelOpen(false);
         }
       });
     });
-  }, [peer]);
+  }, [peer, numChat]);
 
-  const sendMessage = useCallback(() => {
-    let num = 1;
-
-    if (!chatChannel) {
-      console.log('chat channel is not ready to send message');
-      return;
-    }
-
-    chatChannel.send(
-      JSON.stringify({
-        sender: 'test',
-        message: num.toString(),
-      })
-    );
-
-    num++;
-  }, [chatChannel]);
+  const resetBadge = () => {
+    onOpen();
+    setNumChat(0);
+  };
 
   return (
-    <Button
-      isIconOnly
-      variant="flat"
-      isDisabled={isDisabled}
-      onClick={onOpen}
-      className="bg-green-500 hover:bg-green-600 focus:outline-zinc-100 active:bg-green-500 disabled:bg-red-600/70"
-    ></Button>
+    <Badge
+      content={isChannelOpen ? numChat : <Spinner size="sm"></Spinner>}
+      isInvisible={isChannelOpen && numChat == 0 ? true : false}
+    >
+      <Button
+        isDisabled={false}
+        isIconOnly
+        variant="flat"
+        onClick={resetBadge}
+        className={`
+        bg-zinc-700/70 
+        hover:bg-zinc-600 
+        active:bg-zinc-500
+        `}
+      ></Button>
+    </Badge>
   );
 }

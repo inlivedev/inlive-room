@@ -2,7 +2,6 @@ import { iRoomService, Participant } from './routes';
 import { room } from '@/_shared/utils/sdk';
 import { Room } from './routes';
 import Sqids from 'sqids';
-import { FetcherResponse, InliveHubFetcher } from '@/_shared/utils/fetcher';
 import * as Sentry from '@sentry/nextjs';
 
 export interface iRoomRepo {
