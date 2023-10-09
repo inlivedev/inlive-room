@@ -63,7 +63,7 @@ export default function ChatWindow({
 
   return (
     <Modal
-      className={`${styles['modalContainerRight']} min-h-screen bg-neutral-900 opacity-80 backdrop-blur-md`}
+      className={`fixed inset-y-0 right-0 h-screen min-h-screen w-1/5 bg-neutral-900 opacity-80 backdrop-blur-md`}
       isOpen={isChatWindowOpen}
       onOpenChange={onOpenChange}
       size={'full'}
