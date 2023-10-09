@@ -3,13 +3,10 @@
 import { createContext, useContext, useState } from 'react';
 import type { ClientType } from '@/_shared/types/client';
 
-const defaultValue: ClientType.ClientData = {
+const ClientContext = createContext({
+  roomID: '',
   clientID: '',
   clientName: '',
-};
-
-const ClientContext = createContext({
-  ...defaultValue,
 });
 
 export const useClientContext = () => {
@@ -17,9 +14,11 @@ export const useClientContext = () => {
 };
 
 export function ClientProvider({
+  roomID,
   client,
   children,
 }: {
+  roomID: string;
   client: ClientType.ClientData;
   children: React.ReactNode;
 }) {
@@ -28,6 +27,7 @@ export function ClientProvider({
   return (
     <ClientContext.Provider
       value={{
+        roomID: roomID,
         clientID: clientState.clientID,
         clientName: clientState.clientName,
       }}
