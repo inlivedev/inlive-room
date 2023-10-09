@@ -13,10 +13,7 @@ export interface iRoomRepo {
 export interface iParticipantRepo {
   addParticipant(participant: Participant): Promise<Participant>;
   getAllParticipant(roomID: string): Promise<Participant[]>;
-  getByClientID(
-    roomID: string,
-    clientID: string
-  ): Promise<Participant | undefined>;
+  getByClientID(clientID: string): Promise<Participant | undefined>;
   getByMultipleClientID(
     roomID: string,
     clientID: string[]
@@ -50,7 +47,6 @@ export class service implements iRoomService {
     });
 
     const getClient = await this._participantRepo.getByClientID(
-      roomId,
       clientResponse.data.clientId || clientID
     );
 

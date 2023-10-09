@@ -6,44 +6,59 @@ import { and, eq, inArray } from 'drizzle-orm';
 
 export class ParticiantRepo implements iParticipantRepo {
   async addParticipant(participant: Participant): Promise<Participant> {
-    const data = await db.insert(participants).values(participant).returning();
-    return data[0];
+    try {
+      const data = await db
+        .insert(participants)
+        .values(participant)
+        .returning();
+      return data[0];
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getAllParticipant(roomID: string): Promise<Participant[]> {
-    const data = await db.query.participants.findMany({
-      where: eq(participants.roomID, roomID),
-    });
-    return data;
+    try {
+      const data = await db.query.participants.findMany({
+        where: eq(participants.roomID, roomID),
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  async getByClientID(
-    roomID: string,
-    clientID: string
-  ): Promise<Participant | undefined> {
-    const data = await db.query.participants.findFirst({
-      where: and(
-        eq(participants.clientID, clientID),
-        eq(participants.roomID, roomID)
-      ),
-    });
+  async getByClientID(clientID: string): Promise<Participant | undefined> {
+    try {
+      const data = await db.query.participants.findFirst({
+        where: (participants, { eq }) => {
+          return eq(participants.clientID, clientID);
+        },
+      });
 
-    return data;
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getByMultipleClientID(
     roomID: string,
     clientID: string[]
   ): Promise<Participant[]> {
-    const data = await db
-      .select()
-      .from(participants)
-      .where(
-        and(
-          inArray(participants.clientID, clientID),
-          eq(participants.roomID, roomID)
-        )
-      );
-    return data;
+    try {
+      const data = await db
+        .select()
+        .from(participants)
+        .where(
+          and(
+            inArray(participants.clientID, clientID),
+            eq(participants.roomID, roomID)
+          )
+        );
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 }
