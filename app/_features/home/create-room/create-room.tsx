@@ -5,11 +5,11 @@ import { Button } from '@nextui-org/react';
 import { useAuthContext } from '@/_shared/contexts/auth';
 
 export default function CreateRoom() {
-  const { currentUser } = useAuthContext();
+  const { user } = useAuthContext();
   const { createRoom } = useCreateRoom();
 
   const handleCreateRoom = async () => {
-    if (currentUser) {
+    if (user) {
       createRoom();
     } else {
       document.dispatchEvent(new CustomEvent('open:sign-in-modal'));

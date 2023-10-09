@@ -1,9 +1,6 @@
-import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { useInput } from '@/_shared/hooks/use-input';
 
 export const useJoinRoom = () => {
-  const { navigateTo } = useNavigate();
-
   const { value: roomId, bindValue: bindField } = useInput('');
 
   const joinRoomHandler = async (
@@ -15,7 +12,7 @@ export const useJoinRoom = () => {
       throw new Error('Please enter the room code');
     }
 
-    navigateTo(`/room/${roomId}`);
+    window.location.href = `/room/${roomId}`;
   };
 
   const getRoomId = () => {

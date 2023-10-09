@@ -24,6 +24,11 @@ export type SubscribeTracksRequestBody = {
   track_id: string;
 };
 
+export type RegisterClientRequestBody = {
+  uid?: string;
+  name?: string;
+};
+
 export type BaseResponseBody = {
   code: number;
   ok: boolean;

@@ -12,3 +12,4 @@
 !next.config.js
 !.eslintrc.js
 !*.ts
+!/middlewares

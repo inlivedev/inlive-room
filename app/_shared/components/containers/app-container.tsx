@@ -1,19 +1,19 @@
 import NextUIProvider from '@/_shared/providers/nextui';
 import AuthProvider from '@/_shared/providers/auth';
-import type { AuthType } from '@/_shared/types/auth';
+import type { UserType } from '@/_shared/types/user';
 import SignInModal from '@/_shared/components/auth/sign-in-modal';
 
 export default function AppContainer({
   children,
-  currentUser,
+  user,
 }: {
   children: React.ReactNode;
-  currentUser: AuthType.UserData | undefined;
+  user: UserType.AuthUserData | null;
 }) {
   return (
     <>
       <NextUIProvider className="flex flex-1 flex-col">
-        <AuthProvider value={{ currentUser: currentUser }}>
+        <AuthProvider value={{ user: user }}>
           {children}
           <SignInModal />
         </AuthProvider>

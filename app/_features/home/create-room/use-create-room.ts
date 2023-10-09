@@ -1,11 +1,8 @@
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
-import { useNavigate } from '@/_shared/hooks/use-navigate';
 import type { RoomType } from '@/_shared/types/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
 export const useCreateRoom = () => {
-  const { navigateTo } = useNavigate();
-
   const createRoomHandler = async (name?: string) => {
     try {
       const response: RoomType.CreateJoinRoomResponse =
@@ -26,7 +23,7 @@ export const useCreateRoom = () => {
         createdBy: roomData.createdBy,
       });
 
-      navigateTo(`/room/${roomData.id}`);
+      window.location.href = `/room/${roomData.id}`;
     } catch (error) {
       alert('Failed to create a room. Please try again later! ');
 

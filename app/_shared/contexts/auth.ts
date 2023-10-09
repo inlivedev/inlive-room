@@ -6,17 +6,17 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import type { AuthType } from '@/_shared/types/auth';
+import type { UserType } from '@/_shared/types/user';
 
 export const defaultValue = {
-  currentUser: undefined as AuthType.UserData | undefined,
+  user: null as UserType.AuthUserData | null,
 };
 
 type SetAuthState = Dispatch<SetStateAction<typeof defaultValue>>;
 
 export const AuthContext = createContext({
   ...defaultValue,
-  setAuthState: undefined as undefined | SetAuthState,
+  setAuthState: null as null | SetAuthState,
 });
 
 export const useAuthContext = () => {

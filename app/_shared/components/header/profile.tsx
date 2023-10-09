@@ -16,7 +16,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 
 export default function Profile() {
-  const { currentUser, setAuthState } = useAuthContext();
+  const { user, setAuthState } = useAuthContext();
 
   const openSignInModal = () => {
     document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
@@ -32,7 +32,7 @@ export default function Profile() {
           setAuthState &&
             setAuthState((prevState) => ({
               ...prevState,
-              currentUser: undefined,
+              user: null,
             }));
         }
       }
@@ -42,7 +42,7 @@ export default function Profile() {
 
   return (
     <>
-      {currentUser ? (
+      {user ? (
         <Dropdown placement="bottom-end" className=" ring-1 ring-zinc-800">
           <DropdownTrigger>
             <Button
@@ -54,8 +54,8 @@ export default function Profile() {
               <div className="h-7 w-7 rounded-full ring-2 ring-zinc-700 ring-offset-2 ring-offset-zinc-800 lg:mr-1 lg:h-6 lg:w-6">
                 <Image
                   referrerPolicy="no-referrer"
-                  src={currentUser.picture_url}
-                  alt={`Image of ${currentUser.name}`}
+                  src={user.picture_url}
+                  alt={`Image of ${user.name}`}
                   loading="lazy"
                   width={28}
                   height={28}
@@ -63,9 +63,7 @@ export default function Profile() {
                   unoptimized
                 />
               </div>
-              <span className="hidden text-sm lg:inline-flex">
-                {currentUser.name}
-              </span>
+              <span className="hidden text-sm lg:inline-flex">{user.name}</span>
               <ArrowDownFillIcon className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
             </Button>
           </DropdownTrigger>
@@ -93,8 +91,8 @@ export default function Profile() {
                     <div className="h-7 w-7 rounded-full ring-2 ring-zinc-700 ring-offset-2 ring-offset-zinc-800">
                       <Image
                         referrerPolicy="no-referrer"
-                        src={currentUser.picture_url}
-                        alt={`Image of ${currentUser.name}`}
+                        src={user.picture_url}
+                        alt={`Image of ${user.name}`}
                         loading="lazy"
                         width={28}
                         height={28}
@@ -104,10 +102,8 @@ export default function Profile() {
                     </div>
                   </div>
                   <div className="flex flex-col">
-                    <p>{currentUser.name}</p>
-                    <p className="text-xs text-foreground-400">
-                      {currentUser.email}
-                    </p>
+                    <p>{user.name}</p>
+                    <p className="text-xs text-foreground-400">{user.email}</p>
                   </div>
                 </div>
               </DropdownItem>

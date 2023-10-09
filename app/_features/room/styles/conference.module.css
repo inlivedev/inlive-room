@@ -4,7 +4,7 @@
 
 .presentation{
   display: grid;
-  padding:0.5rem
+  padding: 0.5rem;
 }
 
 .actionbar{
@@ -27,13 +27,19 @@
   z-index: 10;
 }
 
-.oneonone .local{
+.oneonone .local {
   position: absolute;
   bottom:1rem;
   right: 1rem;
-  height: 15%;
-  width: 15%;
+  aspect-ratio: 16/9;
+  max-width: 220px;
   z-index: 20;
+}
+
+@media only screen and (max-width: 440px) {
+  .oneonone .local {
+    max-width: 50%;
+  }
 }
 
 .media {
@@ -50,7 +56,7 @@
 .gallery {
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   grid-template-rows: repeat(auto-fit, minmax(180px, 1fr));
-  padding:0.5rem;
+  padding: 0.5rem;
 }
 
 .presenting {
@@ -71,21 +77,19 @@
   grid-column:auto/auto;
 }
 
-
-.gallery-media video {
+.gallery-media .video-screen,
+.presenting-media .video-screen {
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  margin: 0 auto;
   height: 100%;
-  aspect-ratio: 16/9;
-  object-fit: cover;
-  margin:0 auto;
+  max-width: 100%;
 }
 
-.presenting-media video {
-  aspect-ratio: 16/9;
-  object-fit: cover;
-  margin:0 auto;
-  height: 100%;    
+.gallery-media .video-screen-name,
+.presenting-media .video-screen-name {
+  text-shadow: 0 1px 2px rgba(0,0,0,.6), 0 0 2px rgba(0,0,0,.3);
 }
-
 
 @media only screen and (max-width: 600px) {
   .gallery {
@@ -93,11 +97,8 @@
     grid-template-rows: repeat(auto-fit, minmax(80px, 1fr));
   }
 
-  .gallery-media video {
-    height: 100%;
+  .gallery-media .video-screen {
     aspect-ratio: 9/16;
-    object-fit: cover;
-    margin:0 auto;
   }
 
   .presenting {
@@ -105,13 +106,13 @@
     grid-template-columns: none;
   }
 
-  .presenting-media video {
-    aspect-ratio:1;
+  .presenting-media .video-screen {
+    aspect-ratio: 1;
   }
 }
 
 @media (orientation: portrait) {
-  .gallery-media video,.presenting-media video {
+  .gallery-media .video-screen,.presenting-media .video-screen {
     aspect-ratio: 9/16;
   }
 }
