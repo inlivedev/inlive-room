@@ -1,17 +1,14 @@
 'use client';
 
-import { createContext, useContext } from 'react';
-import { useCreatePeer } from '@/_features/room/hooks/use-create-peer';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ClientType } from '@/_shared/types/client';
+import { room } from '@/_shared/utils/sdk';
 
-type Peer = ReturnType<typeof useCreatePeer>;
+type Peer = Awaited<ReturnType<typeof room.createPeer>>;
 
-const defaultValue = {
-  roomID: '',
+const PeerContext = createContext({
   peer: null as Peer | null,
-};
-
-const PeerContext = createContext(defaultValue);
+});
 
 export const usePeerContext = () => {
   return useContext(PeerContext);
@@ -24,13 +21,21 @@ type PeerProviderProps = {
 };
 
 export function PeerProvider({ children, roomID, client }: PeerProviderProps) {
-  const peer = useCreatePeer(roomID, client.clientID);
+  const [peerState, setPeerState] = useState<Peer | null>(null);
+
+  useEffect(() => {
+    const createPeer = async () => {
+      const peer = await room.createPeer(roomID, client.clientID);
+      setPeerState(peer);
+    };
+
+    createPeer();
+  }, [roomID, client.clientID]);
 
   return (
     <PeerContext.Provider
       value={{
-        roomID: roomID,
-        peer: peer,
+        peer: peerState,
       }}
     >
       {children}
