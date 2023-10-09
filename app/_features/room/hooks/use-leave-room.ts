@@ -3,8 +3,8 @@ import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 
 export const useLeaveRoom = () => {
-  const { roomID, peer } = usePeerContext();
-  const { clientID } = useClientContext();
+  const { peer } = usePeerContext();
+  const { clientID, roomID } = useClientContext();
 
   const leaveRoom = async () => {
     if (!peer) return;

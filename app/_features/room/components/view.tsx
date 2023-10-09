@@ -32,7 +32,7 @@ export default function View({ roomID, client }: ViewProps) {
 
   return (
     <div className="flex flex-1 flex-col bg-zinc-900 text-zinc-200">
-      <ClientProvider client={client}>
+      <ClientProvider roomID={roomID} client={client}>
         <PeerProvider roomID={roomID} client={client}>
           <DeviceProvider>
             <ParticipantProvider>

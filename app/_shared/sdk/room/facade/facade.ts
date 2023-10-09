@@ -50,7 +50,7 @@ export const createFacade = ({
         createRoom: api.createRoom,
         createClient: api.registerClient,
         getRoom: api.getRoom,
-        createPeer: (roomId: string, clientId: string) => {
+        createPeer: async (roomId: string, clientId: string) => {
           peer.connect(roomId, clientId);
           channel.connect(roomId, clientId);
 
