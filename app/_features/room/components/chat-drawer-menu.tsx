@@ -30,6 +30,10 @@ export default function ChatDrawerMenu() {
     onOpen();
   }, [onOpen]);
 
+  const onMenuClosed = useCallback(() => {
+    document.dispatchEvent(new CustomEvent('close:room-chat-menu'));
+  }, []);
+
   const onSubmitMessage = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -72,6 +76,7 @@ export default function ChatDrawerMenu() {
       isOpen={isOpen}
       size="full"
       onOpenChange={onOpenChange}
+      onClose={onMenuClosed}
       backdrop="transparent"
       scrollBehavior="inside"
       className="fixed inset-y-0 right-0 h-full min-h-full w-full max-w-full bg-zinc-800/75 shadow-md backdrop-blur-md sm:w-96"
@@ -102,7 +107,7 @@ export default function ChatDrawerMenu() {
           <form className="relative w-full" onSubmit={onSubmitMessage}>
             <input
               type="text"
-              className="w-full rounded-md bg-zinc-950 p-2.5 text-sm text-zinc-200 outline-none ring-1 ring-zinc-700 placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-zinc-400"
+              className="w-full rounded-md bg-zinc-950 p-2.5 pr-11 text-sm text-zinc-200 outline-none ring-1 ring-zinc-700 placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-zinc-400"
               placeholder="Type a message"
               {...bindMessageInputField}
             />
