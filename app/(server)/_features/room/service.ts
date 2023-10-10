@@ -36,6 +36,23 @@ export class service implements iRoomService {
     clientID: string,
     clientName: string
   ): Promise<Participant> {
+    if (!this._roomRepo.isPersistent()) {
+      const clientResponse = await this._sdk.createClient(roomId, {
+        clientId: clientID,
+        clientName: clientName,
+      });
+
+      if (clientResponse.code > 299) {
+        throw new Error(clientResponse.message);
+      }
+
+      return {
+        clientID: clientResponse.data.clientId,
+        name: clientResponse.data.name,
+        roomID: roomId,
+      };
+    }
+
     const roomData = await this._roomRepo.getRoomById(roomId);
 
     if (!roomData) {

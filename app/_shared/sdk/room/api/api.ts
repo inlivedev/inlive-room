@@ -85,6 +85,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
           name: data.name || '',
           bitratesConfig: data.bitrates_config || {},
         },
+        message: response.message,
       };
 
       return client;
