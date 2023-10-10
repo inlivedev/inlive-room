@@ -91,10 +91,10 @@ export default function ChatDrawerMenu() {
               return (
                 <li key={index}>
                   <div className="px-4 py-2">
-                    <b className="block text-sm font-semibold text-rose-300">
+                    <b className="block break-words text-sm font-semibold text-rose-300">
                       {data.sender.name}
                     </b>
-                    <p className="mt-0.5 text-sm text-zinc-100">
+                    <p className="mt-0.5 break-words text-sm text-zinc-100">
                       {data.message}
                     </p>
                   </div>
