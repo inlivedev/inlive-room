@@ -2,7 +2,6 @@ import ConferenceParticipants from '@/_features/room/components/conference-parti
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import styles from '@/_features/room/styles/conference.module.css';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
-import ChatMenu from '@/_features/room/components/chat-menu';
 
 export default function Conference() {
   const { streams } = useParticipantContext();
@@ -23,16 +22,13 @@ export default function Conference() {
   };
 
   return (
-    <>
-      <ChatMenu />
-      <div className="h-screen w-screen">
-        <div className={`${styles['participants']} ${getClass()}`}>
-          <ConferenceParticipants />
-        </div>
-        <div className={`${styles['actionbar']}`}>
-          <ConferenceActionsBar />
-        </div>
+    <div className="h-screen w-screen">
+      <div className={`${styles['participants']} ${getClass()}`}>
+        <ConferenceParticipants />
       </div>
-    </>
+      <div className={`${styles['actionbar']}`}>
+        <ConferenceActionsBar />
+      </div>
+    </div>
   );
 }
