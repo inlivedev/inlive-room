@@ -2,6 +2,7 @@ import ButtonLeave from '@/_features/room/components/button-leave';
 import ButtonMicrophone from '@/_features/room/components/button-microphone';
 import ButtonCamera from '@/_features/room/components/button-camera';
 import ButtonScreenShare from '@/_features/room/components/button-screen-share';
+import ButtonChat from '@/_features/room/components/button-chat';
 
 export default function ConferenceActionsBar() {
   return (
@@ -12,8 +13,11 @@ export default function ConferenceActionsBar() {
       <div className="flex h-full flex-col justify-center">
         <ButtonCamera />
       </div>
-      <div className="flex h-full flex-col justify-center">
+      <div className="hidden h-full flex-col justify-center landscape:flex">
         <ButtonScreenShare />
+      </div>
+      <div className="flex h-full flex-col justify-center">
+        <ButtonChat />
       </div>
       <div className="flex h-full flex-col justify-center">
         <ButtonLeave />

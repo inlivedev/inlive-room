@@ -2,6 +2,7 @@ import { iRoomService, Participant } from './routes';
 import { room } from '@/_shared/utils/sdk';
 import { Room } from './routes';
 import Sqids from 'sqids';
+import * as Sentry from '@sentry/nextjs';
 
 export interface iRoomRepo {
   addRoom(room: Room): Promise<Room>;
@@ -92,6 +93,19 @@ export class service implements iRoomService {
       if (RoomResp.code == 409) continue;
       if (RoomResp.code > 299)
         throw new Error('Error during creating room, please try again later');
+
+      const ChannelResp = await this._sdk.createDataChannel(
+        roomID,
+        'chat',
+        true
+      );
+
+      if (!ChannelResp.ok) {
+        Sentry.captureException(
+          new Error(`Room ${roomID} : failed to create chat data channel`)
+        );
+      }
+
       if (!this._roomRepo.isPersistent())
         return {
           id: RoomResp.data.roomId,
@@ -116,11 +130,13 @@ export class service implements iRoomService {
     if (!this._roomRepo.isPersistent()) {
       const remoteRoom = await this._sdk.getRoom(roomId);
       if (remoteRoom.ok) {
-        return {
+        const room: Room = {
           id: remoteRoom.data.roomId,
           name: remoteRoom.data.roomName,
           createdBy: 0,
         };
+
+        return room;
       }
 
       throw new Error('Room not exists');
@@ -140,6 +156,18 @@ export class service implements iRoomService {
         if (newRemoteRoom.code == 409) throw new Error(newRemoteRoom.message);
         throw new Error(
           'Error occured during accessing room data, please try again later'
+        );
+      }
+
+      const ChannelResp = await this._sdk.createDataChannel(
+        room.id,
+        'chat',
+        true
+      );
+
+      if (!ChannelResp.ok) {
+        Sentry.captureException(
+          new Error(`Room ${room.id} : failed to create chat data channel`)
         );
       }
     }

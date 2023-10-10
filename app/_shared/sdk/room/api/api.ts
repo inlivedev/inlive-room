@@ -264,6 +264,26 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
 
       return result;
     };
+
+    createDataChannel = async (
+      roomId: string,
+      name: string,
+      ordered: boolean
+    ) => {
+      const response: RoomAPIType.BaseResponseBody = await this._fetcher.post(
+        `/room/${roomId}/channel/create`,
+        {
+          body: JSON.stringify({ name: name, ordered: ordered }),
+        }
+      );
+
+      return {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: null,
+      };
+    };
   };
 
   return {
@@ -281,6 +301,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         subscribeTracks: api.subscribeTracks,
         leaveRoom: api.leaveRoom,
         terminateRoom: api.terminateRoom,
+        createDataChannel: api.createDataChannel,
       };
     },
   };
