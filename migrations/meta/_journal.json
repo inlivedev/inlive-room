@@ -29,6 +29,13 @@
       "when": 1696500297795,
       "tag": "0003_remove_hub_id_from_room",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1696842709330,
+      "tag": "0004_client_id_unique-per-room",
+      "breakpoints": true
     }
   ]
 }
