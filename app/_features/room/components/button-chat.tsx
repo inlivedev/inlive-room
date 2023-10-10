@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Button, Badge } from '@nextui-org/react';
+import { Button } from '@nextui-org/react';
 import { useChatContext } from '@/_features/room/contexts/chat-context';
 import ChatIcon from '@/_shared/components/icons/chat-icon';
+import ChatIconWithCircle from '@/_shared/components/icons/chat-icon-with-circle';
 
 export default function ButtonChat() {
   const [openChatMenu, setOpenChatMenu] = useState(false);
-  const [showBadge, setShowBadge] = useState(false);
+  const [unreadBadge, setUnreadBadge] = useState(false);
 
   const { datachannel } = useChatContext();
 
@@ -18,7 +19,7 @@ export default function ButtonChat() {
   useEffect(() => {
     const onChatMenuOpened = () => {
       setOpenChatMenu(true);
-      setShowBadge(false);
+      setUnreadBadge(false);
     };
 
     const onChatMenuClosed = () => {
@@ -32,14 +33,14 @@ export default function ButtonChat() {
       document.removeEventListener('open:room-chat-menu', onChatMenuOpened);
       document.removeEventListener('close:room-chat-menu', onChatMenuClosed);
     };
-  }, [datachannel, openChatMenu, showBadge]);
+  }, [datachannel, openChatMenu, unreadBadge]);
 
   useEffect(() => {
     if (!datachannel) return;
 
     const onMessageAdded = () => {
-      if (!openChatMenu && !showBadge) {
-        setShowBadge(true);
+      if (!openChatMenu && !unreadBadge) {
+        setUnreadBadge(true);
       }
     };
 
@@ -48,25 +49,21 @@ export default function ButtonChat() {
     return () => {
       datachannel.removeEventListener('message', onMessageAdded);
     };
-  }, [datachannel, openChatMenu, showBadge]);
+  }, [datachannel, openChatMenu, unreadBadge]);
 
   return (
-    <Badge
-      content=""
-      shape="circle"
-      placement="top-right"
-      className="bg-sky-500"
-      isInvisible={!showBadge}
+    <Button
+      isIconOnly
+      variant="flat"
+      aria-label="Toggle chat menu"
+      className="relative bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
+      onClick={openChat}
     >
-      <Button
-        isIconOnly
-        variant="flat"
-        aria-label="Toggle chat menu"
-        className="bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-        onClick={openChat}
-      >
+      {unreadBadge ? (
+        <ChatIconWithCircle width={22} height={22} />
+      ) : (
         <ChatIcon width={20} height={20} />
-      </Button>
-    </Badge>
+      )}
+    </Button>
   );
 }
