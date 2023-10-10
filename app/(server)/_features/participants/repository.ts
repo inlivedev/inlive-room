@@ -28,12 +28,16 @@ export class ParticiantRepo implements iParticipantRepo {
     }
   }
 
-  async getByClientID(clientID: string): Promise<Participant | undefined> {
+  async getByClientID(
+    roomID: string,
+    clientID: string
+  ): Promise<Participant | undefined> {
     try {
       const data = await db.query.participants.findFirst({
-        where: (participants, { eq }) => {
-          return eq(participants.clientID, clientID);
-        },
+        where: and(
+          eq(participants.clientID, clientID),
+          eq(participants.roomID, roomID)
+        ),
       });
 
       return data;
