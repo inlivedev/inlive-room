@@ -14,10 +14,7 @@ export interface iRoomRepo {
 export interface iParticipantRepo {
   addParticipant(participant: Participant): Promise<Participant>;
   getAllParticipant(roomID: string): Promise<Participant[]>;
-  getByClientID(
-    roomID: string,
-    clientID: string
-  ): Promise<Participant | undefined>;
+  getByClientID(clientID: string): Promise<Participant | undefined>;
   getByMultipleClientID(
     roomID: string,
     clientID: string[]
@@ -35,11 +32,11 @@ export class service implements iRoomService {
   }
 
   async createClient(
-    roomID: string,
+    roomId: string,
     clientID: string,
     clientName: string
   ): Promise<Participant> {
-    const roomData = await this._roomRepo.getRoomById(roomID);
+    const roomData = await this._roomRepo.getRoomById(roomId);
 
     if (!roomData) {
       throw new Error('room not found');
@@ -51,7 +48,6 @@ export class service implements iRoomService {
     });
 
     const getClient = await this._participantRepo.getByClientID(
-      roomID,
       clientResponse.data.clientId || clientID
     );
 
@@ -68,7 +64,7 @@ export class service implements iRoomService {
     const data: Participant = {
       clientID: clientResponse.data.clientId,
       name: clientResponse.data.name,
-      roomID: roomID,
+      roomID: roomId,
     };
 
     return await this._participantRepo.addParticipant(data);
