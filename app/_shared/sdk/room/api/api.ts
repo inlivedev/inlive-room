@@ -93,7 +93,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         message: response.message || '',
         data: {
           clientId: data.client_id || '',
-          name: data.name || '',
+          clientName: data.name || '',
           bitrates: {
             audio: bitrates.audio || 0,
             audioRed: bitrates.audio_red || 0,
@@ -142,7 +142,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         message: response.message || '',
         data: {
           clientId: data.client_id,
-          name: data.name,
+          clientName: data.name,
           bitrates: {
             audio: bitrates.audio || 0,
             audioRed: bitrates.audio_red || 0,
