@@ -29,6 +29,14 @@ export type RegisterClientRequestBody = {
   name?: string;
 };
 
+export type UpdateClientNameResponse = BaseResponseBody & {
+  data: {
+    client_id: string;
+    name: string;
+    bitrates: BitratesConfig;
+  };
+};
+
 export type BaseResponseBody = {
   code: number;
   ok: boolean;
@@ -63,7 +71,7 @@ export type RegisterClientResponseBody = BaseResponseBody & {
   data: {
     client_id: string;
     name: string;
-    bitrates_config: BitratesConfig;
+    bitrates: BitratesConfig;
   };
 };
 

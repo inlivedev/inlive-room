@@ -1,5 +1,5 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
-import { service } from '@/(server)/_features/room/service';
+import { Participant, Room, service } from '@/(server)/_features/room/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 import { ParticiantRepo } from '../participants/repository';
 
@@ -13,18 +13,11 @@ export interface iRoomService {
   ): Promise<Participant>;
   getClients(roomID: string, clientIDs: string[]): Promise<Participant[]>;
   getAllClients(roomID: string): Promise<Participant[]>;
-}
-
-export interface Room {
-  id: string;
-  name?: string | null;
-  createdBy: number;
-}
-
-export interface Participant {
-  clientID: string;
-  name: string;
-  roomID: string | null;
+  updateClientName(
+    roomID: string,
+    clientID: string,
+    name: string
+  ): Promise<Participant>;
 }
 
 const createRoomRoutesHandler = () => {
@@ -59,6 +52,14 @@ const createRoomRoutesHandler = () => {
     getAllClientHandler = async (roomID: string) => {
       return await this.roomService.getAllClients(roomID);
     };
+
+    updateClientNameHandler = async (
+      roomID: string,
+      clientID: string,
+      name: string
+    ) => {
+      return await this.roomService.updateClientName(roomID, clientID, name);
+    };
   };
 
   return {
@@ -71,6 +72,7 @@ const createRoomRoutesHandler = () => {
         registerClientHandler: roomRoutesHandler.registerClientHandler,
         getClientHandler: roomRoutesHandler.getClientHandler,
         getAllClientHandler: roomRoutesHandler.getAllClientHandler,
+        updateClientNameHandler: roomRoutesHandler.updateClientNameHandler,
       };
     },
   };

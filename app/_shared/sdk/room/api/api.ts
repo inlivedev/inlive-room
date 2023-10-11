@@ -51,6 +51,42 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return room;
     };
 
+    updateClientName = async (
+      roomID: string,
+      clientID: string,
+      name: string
+    ) => {
+      if (roomID.trim().length === 0) {
+        throw new Error('Room ID must be a valid string');
+      }
+
+      if (clientID.trim().length === 0) {
+        throw new Error('Client ID must be a valid string');
+      }
+
+      if (name.trim().length === 0) {
+        throw new Error("Client name can't be empty");
+      }
+
+      const response: RoomAPIType.UpdateClientNameResponse =
+        await this._fetcher.put(`rooms/${roomID}/setname/${clientID}`, {
+          body: JSON.stringify({
+            name: name,
+          }),
+        });
+
+      return {
+        code: response.code || 500,
+        ok: response.ok || false,
+        data: {
+          clientId: response.data.client_id,
+          name: response.data.name,
+          bitratesConfig: response.data.bitrates,
+        },
+        message: response.message,
+      };
+    };
+
     registerClient = async (
       roomId: string,
       config: { clientId?: string; clientName?: string } = {}
@@ -83,7 +119,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         data: {
           clientId: data.client_id || '',
           name: data.name || '',
-          bitratesConfig: data.bitrates_config || {},
+          bitratesConfig: data.bitrates || {},
         },
         message: response.message,
       };
@@ -303,6 +339,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         leaveRoom: api.leaveRoom,
         terminateRoom: api.terminateRoom,
         createDataChannel: api.createDataChannel,
+        updateClientName: api.updateClientName,
       };
     },
   };

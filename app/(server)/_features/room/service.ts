@@ -1,8 +1,19 @@
-import { iRoomService, Participant } from './routes';
+import { iRoomService } from './routes';
 import { room } from '@/_shared/utils/sdk';
-import { Room } from './routes';
 import Sqids from 'sqids';
 import * as Sentry from '@sentry/nextjs';
+
+export interface Room {
+  id: string;
+  name?: string | null;
+  createdBy: number;
+}
+
+export interface Participant {
+  clientID: string;
+  name: string;
+  roomID: string | null;
+}
 
 export interface iRoomRepo {
   addRoom(room: Room): Promise<Room>;
@@ -85,6 +96,30 @@ export class service implements iRoomService {
     };
 
     return await this._participantRepo.addParticipant(data);
+  }
+
+  async updateClientName(
+    roomID: string,
+    clientID: string,
+    name: string
+  ): Promise<Participant> {
+    const updateResp = await this._sdk.updateClientName(roomID, clientID, name);
+
+    if (updateResp.code > 499) {
+      throw new Error(
+        'an error has occured on our side please try again later'
+      );
+    }
+
+    if (updateResp.code > 299) {
+      throw new Error(updateResp.message);
+    }
+
+    return {
+      clientID: updateResp.data.clientId,
+      name: updateResp.data.name,
+      roomID: roomID,
+    };
   }
 
   async getClients(

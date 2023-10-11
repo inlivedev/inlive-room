@@ -64,6 +64,7 @@ export const createFacade = ({
           STREAM_ADDED: roomEvents.peer.STREAM_ADDED,
           STREAM_REMOVED: roomEvents.peer.STREAM_REMOVED,
         },
+        updateClientName: api.updateClientName,
       };
     },
   };

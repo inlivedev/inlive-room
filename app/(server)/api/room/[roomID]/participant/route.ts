@@ -1,7 +1,5 @@
-import {
-  Participant,
-  roomRoutesHandler,
-} from '@/(server)/_features/room/routes';
+import { roomRoutesHandler } from '@/(server)/_features/room/routes';
+import { Participant } from '@/(server)/_features/room/service';
 import { isError } from 'lodash-es';
 import { NextRequest, NextResponse } from 'next/server';
 
