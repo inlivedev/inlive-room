@@ -43,7 +43,7 @@ export default function View({ roomID, client }: ViewProps) {
                 {isConferenceActive ? (
                   <Conference />
                 ) : (
-                  <Lobby roomID={roomID} />
+                  <Lobby roomID={roomID} client={client} />
                 )}
               </ChatProvider>
             </ParticipantProvider>
