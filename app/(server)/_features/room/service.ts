@@ -59,7 +59,7 @@ export class service implements iRoomService {
 
       return {
         clientID: clientResponse.data.clientId,
-        name: clientResponse.data.name,
+        name: clientResponse.data.clientName,
         roomID: roomId,
       };
     }
@@ -91,19 +91,19 @@ export class service implements iRoomService {
 
     const data: Participant = {
       clientID: clientResponse.data.clientId,
-      name: clientResponse.data.name,
+      name: clientResponse.data.clientName,
       roomID: roomId,
     };
 
     return await this._participantRepo.addParticipant(data);
   }
 
-  async updateClientName(
+  async setClientName(
     roomID: string,
     clientID: string,
     name: string
   ): Promise<Participant> {
-    const updateResp = await this._sdk.updateClientName(roomID, clientID, name);
+    const updateResp = await this._sdk.setClientName(roomID, clientID, name);
 
     if (updateResp.code > 499) {
       throw new Error(
@@ -117,7 +117,7 @@ export class service implements iRoomService {
 
     return {
       clientID: updateResp.data.clientId,
-      name: updateResp.data.name,
+      name: updateResp.data.clientName,
       roomID: roomID,
     };
   }
