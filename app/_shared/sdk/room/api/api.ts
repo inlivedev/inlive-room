@@ -13,6 +13,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         });
 
       const data = response.data || {};
+      const bitrates = data.bitrates_config || {};
 
       const room = {
         message: response.message || '',
@@ -21,7 +22,15 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         data: {
           roomId: data.room_id || '',
           roomName: data.name || '',
-          bitrates: data.bitrates_config || {},
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
       };
 
@@ -76,16 +85,25 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         await this._fetcher.post(`/rooms/${roomId}/register`, options);
 
       const data = response.data || {};
+      const bitrates = data.bitrates || {};
 
       const client = {
         code: response.code || 500,
         ok: response.ok || false,
+        message: response.message || '',
         data: {
           clientId: data.client_id || '',
           name: data.name || '',
-          bitrates: data.bitrates || {},
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
-        message: response.message,
       };
 
       return client;
@@ -116,6 +134,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         });
 
       const data = response.data || {};
+      const bitrates = data.bitrates || {};
 
       return {
         code: response.code || 500,
@@ -124,7 +143,15 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         data: {
           clientId: data.client_id,
           name: data.name,
-          bitrates: data.bitrates,
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
       };
     };

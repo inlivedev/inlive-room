@@ -31,6 +31,7 @@ export type RegisterClientRequestBody = {
 
 export type Bitrates = {
   audio: number;
+  audio_red: number;
   video: number;
   video_high: number;
   video_mid: number;
