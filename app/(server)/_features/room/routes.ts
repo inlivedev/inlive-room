@@ -13,7 +13,7 @@ export interface iRoomService {
   ): Promise<Participant>;
   getClients(roomID: string, clientIDs: string[]): Promise<Participant[]>;
   getAllClients(roomID: string): Promise<Participant[]>;
-  updateClientName(
+  setClientName(
     roomID: string,
     clientID: string,
     name: string
@@ -53,12 +53,12 @@ const createRoomRoutesHandler = () => {
       return await this.roomService.getAllClients(roomID);
     };
 
-    updateClientNameHandler = async (
+    setClientNameHandler = async (
       roomID: string,
       clientID: string,
-      name: string
+      clientName: string
     ) => {
-      return await this.roomService.updateClientName(roomID, clientID, name);
+      return await this.roomService.setClientName(roomID, clientID, clientName);
     };
   };
 
@@ -72,7 +72,7 @@ const createRoomRoutesHandler = () => {
         registerClientHandler: roomRoutesHandler.registerClientHandler,
         getClientHandler: roomRoutesHandler.getClientHandler,
         getAllClientHandler: roomRoutesHandler.getAllClientHandler,
-        updateClientNameHandler: roomRoutesHandler.updateClientNameHandler,
+        setClientNameHandler: roomRoutesHandler.setClientNameHandler,
       };
     },
   };
