@@ -49,6 +49,7 @@ export const createFacade = ({
       return {
         createRoom: api.createRoom,
         createClient: api.registerClient,
+        setClientName: api.setClientName,
         getRoom: api.getRoom,
         createPeer: async (roomId: string, clientId: string) => {
           peer.connect(roomId, clientId);
@@ -64,7 +65,6 @@ export const createFacade = ({
           STREAM_ADDED: roomEvents.peer.STREAM_ADDED,
           STREAM_REMOVED: roomEvents.peer.STREAM_REMOVED,
         },
-        updateClientName: api.updateClientName,
       };
     },
   };
