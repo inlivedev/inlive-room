@@ -1,4 +1,4 @@
-import { Room } from './routes';
+import type { Room } from '@/(server)/_features/room/service';
 import { iRoomRepo } from './service';
 import { db } from '@/(server)/_shared/database/database';
 import { rooms } from '@/(server)/_features/room/schema';

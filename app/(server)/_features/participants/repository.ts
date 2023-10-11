@@ -1,7 +1,7 @@
 import { db } from '@/(server)/_shared/database/database';
+import type { Participant } from '@/(server)/_features/room/service';
 import { iParticipantRepo } from '../room/service';
 import { participants } from './schema';
-import { Participant } from '../room/routes';
 import { and, eq, inArray } from 'drizzle-orm';
 
 export class ParticiantRepo implements iParticipantRepo {
