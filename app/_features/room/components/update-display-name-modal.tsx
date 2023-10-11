@@ -111,7 +111,7 @@ export default function UpdateClientModal({ client }: Props) {
                 htmlFor="display-name-input"
                 className="mb-3 block text-sm text-zinc-200"
               >
-                Your display name
+                New display name
               </label>
               <input
                 id="display-name-input"
