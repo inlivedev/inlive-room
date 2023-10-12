@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ClientType } from '@/_shared/types/client';
 
 const ClientContext = createContext({
@@ -22,7 +22,25 @@ export function ClientProvider({
   client: ClientType.ClientData;
   children: React.ReactNode;
 }) {
-  const [clientState] = useState<ClientType.ClientData>(client);
+  const [clientState, setClientState] = useState<ClientType.ClientData>(client);
+
+  useEffect(() => {
+    const setClientName = ((event: CustomEvent) => {
+      const detail = event.detail || {};
+      const clientName = detail.clientName;
+
+      setClientState((prevData) => ({
+        ...prevData,
+        clientName: clientName,
+      }));
+    }) as EventListener;
+
+    document.addEventListener('set:client-name', setClientName);
+
+    return () => {
+      document.removeEventListener('set:client-name', setClientName);
+    };
+  }, []);
 
   return (
     <ClientContext.Provider
