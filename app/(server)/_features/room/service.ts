@@ -22,24 +22,12 @@ export interface iRoomRepo {
   isPersistent(): boolean;
 }
 
-export interface iParticipantRepo {
-  addParticipant(participant: Participant): Promise<Participant>;
-  getAllParticipant(roomID: string): Promise<Participant[]>;
-  getByClientID(clientID: string): Promise<Participant | undefined>;
-  getByMultipleClientID(
-    roomID: string,
-    clientID: string[]
-  ): Promise<Participant[]>;
-}
-
 export class service implements iRoomService {
   _roomRepo: iRoomRepo;
-  _participantRepo: iParticipantRepo;
   _sdk = room;
 
-  constructor(roomRepo: iRoomRepo, participantRepo: iParticipantRepo) {
+  constructor(roomRepo: iRoomRepo) {
     this._roomRepo = roomRepo;
-    this._participantRepo = participantRepo;
   }
 
   async createClient(
@@ -75,15 +63,11 @@ export class service implements iRoomService {
       clientName: clientName,
     });
 
-    const getClient = await this._participantRepo.getByClientID(
-      clientResponse.data.clientId || clientID
-    );
-
-    if (getClient) {
-      return getClient;
+    if (clientResponse.code == 409) {
+      throw new Error('Unable to create client ID Client ID already exist');
     }
 
-    if (!clientResponse.data.clientId) {
+    if (clientResponse.code > 299) {
       throw new Error(
         'Failed to add client to the meeting room. Please try again later!'
       );
@@ -95,7 +79,7 @@ export class service implements iRoomService {
       roomID: roomId,
     };
 
-    return await this._participantRepo.addParticipant(data);
+    return data;
   }
 
   async updateClientName(
@@ -120,22 +104,6 @@ export class service implements iRoomService {
       name: updateResp.data.name,
       roomID: roomID,
     };
-  }
-
-  async getClients(
-    roomID: string,
-    clientIDs: string[]
-  ): Promise<Participant[]> {
-    const clients = await this._participantRepo.getByMultipleClientID(
-      roomID,
-      clientIDs
-    );
-
-    return clients;
-  }
-
-  async getAllClients(roomID: string) {
-    return await this._participantRepo.getAllParticipant(roomID);
   }
 
   async createRoom(userID: number): Promise<Room> {

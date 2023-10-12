@@ -11,8 +11,6 @@ export interface iRoomService {
     clientID: string,
     clientName: string
   ): Promise<Participant>;
-  getClients(roomID: string, clientIDs: string[]): Promise<Participant[]>;
-  getAllClients(roomID: string): Promise<Participant[]>;
   updateClientName(
     roomID: string,
     clientID: string,
@@ -42,15 +40,7 @@ const createRoomRoutesHandler = () => {
       clientID: string,
       clientName: string
     ) => {
-      return await this.roomService.createClient(roomID, clientID, clientName);
-    };
-
-    getClientHandler = async (roomID: string, clientIDs: string[]) => {
-      return await this.roomService.getClients(roomID, clientIDs);
-    };
-
-    getAllClientHandler = async (roomID: string) => {
-      return await this.roomService.getAllClients(roomID);
+      
     };
 
     updateClientNameHandler = async (
@@ -70,8 +60,6 @@ const createRoomRoutesHandler = () => {
         createRoomHandler: roomRoutesHandler.createRoomHandler,
         joinRoomHandler: roomRoutesHandler.joinRoomHandler,
         registerClientHandler: roomRoutesHandler.registerClientHandler,
-        getClientHandler: roomRoutesHandler.getClientHandler,
-        getAllClientHandler: roomRoutesHandler.getAllClientHandler,
         updateClientNameHandler: roomRoutesHandler.updateClientNameHandler,
       };
     },
@@ -79,5 +67,5 @@ const createRoomRoutesHandler = () => {
 };
 
 export const roomRoutesHandler = createRoomRoutesHandler().createInstance(
-  new service(new RoomRepo(), new ParticiantRepo())
+  new service(new RoomRepo())
 );
