@@ -62,6 +62,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
             })
           );
           onClose();
+          setClientNameInput('');
         } else {
           throw new Error(
             'An error has occured on our side please try again later'
@@ -75,7 +76,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
         }
       }
     },
-    [roomID, clientID, clientNameInput, onClose]
+    [roomID, clientID, clientNameInput, setClientNameInput, onClose]
   );
 
   const onCloseModal = useCallback(() => {
