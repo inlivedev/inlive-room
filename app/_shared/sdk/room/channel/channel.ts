@@ -20,6 +20,8 @@ export const createChannel = ({
     _peer;
     _streams;
     _channel: EventSource | null = null;
+    _startTime;
+    _reconnecting;
 
     constructor(baseUrl: string) {
       this._baseUrl = baseUrl;
@@ -27,6 +29,8 @@ export const createChannel = ({
       this._event = event;
       this._peer = peer;
       this._streams = streams;
+      this._startTime = 0;
+      this._reconnecting = false;
 
       this._event.on(PeerEvents.PEER_CONNECTED, this._onPeerConnected);
       this._event.on(PeerEvents.PEER_DISCONNECTED, this._onPeerDisconnected);
@@ -42,30 +46,7 @@ export const createChannel = ({
         `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
       );
 
-      let startTime = Date.now();
-
-      const reconnect = () => {
-        if (this._channel?.readyState === EventSource.CLOSED) {
-          const reconnect = new EventSource(
-            `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
-          );
-          startTime = Date.now();
-          this._channel = reconnect;
-        }
-      };
-
-      channel.onerror = () => {
-        const errorTime = Date.now();
-
-        if (errorTime - startTime < 1000) {
-          setTimeout(() => {
-            reconnect();
-          }, 1000);
-        } else {
-          reconnect();
-        }
-      };
-
+      this._startTime = Date.now();
       this._channel = channel;
       this._addEventListener();
       this._event.emit(ChannelEvents.CHANNEL_CONNECTED);
@@ -83,6 +64,7 @@ export const createChannel = ({
     _addEventListener = () => {
       if (!this._channel) return;
 
+      this._channel.addEventListener('error', this._onError);
       this._channel.addEventListener('candidate', this._onCandidate);
       this._channel.addEventListener('offer', this._onOffer);
       this._channel.addEventListener('tracks_added', this._onTracksAdded);
@@ -99,6 +81,7 @@ export const createChannel = ({
     _removeEventListener = () => {
       if (!this._channel) return;
 
+      this._channel.removeEventListener('error', this._onError);
       this._channel.removeEventListener('candidate', this._onCandidate);
       this._channel.removeEventListener('offer', this._onOffer);
       this._channel.removeEventListener('tracks_added', this._onTracksAdded);
@@ -110,6 +93,35 @@ export const createChannel = ({
         'allowed_renegotation',
         this._onAllowedRenegotiation
       );
+    };
+
+    _reconnect = () => {
+      if (
+        this._channel?.readyState === EventSource.CLOSED &&
+        !this._reconnecting
+      ) {
+        console.log('channel starts to reconnect');
+        this._reconnecting = true;
+        this.disconnect();
+        this.connect(this._roomId, this._clientId);
+        this._reconnecting = false;
+        console.log('channel is reconnected');
+      }
+    };
+
+    _onError = () => {
+      const errorTime = Date.now();
+
+      if (this._roomId && this._clientId) {
+        // Reconnect Event Source
+        if (errorTime - this._startTime < 1000) {
+          setTimeout(() => {
+            this._reconnect();
+          }, 1000);
+        } else {
+          this._reconnect();
+        }
+      }
     };
 
     _onPeerConnected = (data: { roomId: string; clientId: string }) => {
