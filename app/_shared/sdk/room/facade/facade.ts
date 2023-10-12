@@ -40,8 +40,9 @@ export const createFacade = ({
         event,
         streams,
       }).createInstance();
-      const channel = createChannel({
+      createChannel({
         api,
+        event,
         peer,
         streams,
       }).createInstance(baseUrl);
@@ -52,9 +53,7 @@ export const createFacade = ({
         setClientName: api.setClientName,
         getRoom: api.getRoom,
         createPeer: async (roomId: string, clientId: string) => {
-          peer.connect(roomId, clientId);
-          channel.connect(roomId, clientId);
-
+          await peer.connect(roomId, clientId);
           return peer;
         },
         createDataChannel: api.createDataChannel,
