@@ -44,7 +44,10 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
           await InternalApiFetcher.put(
             `/api/room/${roomID}/setname/${client.clientID}`,
             {
-              body: JSON.stringify({ name: clientName }),
+              body: JSON.stringify({
+                name: clientName,
+                pathname: window.location.pathname,
+              }),
             }
           );
 

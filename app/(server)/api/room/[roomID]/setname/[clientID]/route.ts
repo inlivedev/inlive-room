@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 type SetClientName = {
   name: string;
+  pathname: string;
 };
 
 export async function PUT(
@@ -12,22 +13,33 @@ export async function PUT(
 ) {
   try {
     const body = (await request.json()) as SetClientName;
+    const clientName = body.name;
+    const pathname = body.pathname;
 
-    const response = await roomRoutesHandler.setClientNameHandler(
+    const setNameResponse = await roomRoutesHandler.setClientNameHandler(
       params.roomID,
       params.clientID,
-      body.name
+      clientName
     );
 
-    return NextResponse.json(
+    const routeResponse = NextResponse.json(
       {
         code: 200,
         ok: true,
         message: 'OK',
-        data: response,
+        data: setNameResponse,
       },
       { status: 200 }
     );
+
+    routeResponse.cookies.set({
+      name: 'client_name',
+      value: setNameResponse.name,
+      path: pathname,
+      sameSite: 'lax',
+    });
+
+    return routeResponse;
   } catch (error) {
     console.error(error);
 
