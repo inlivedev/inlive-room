@@ -1,5 +1,5 @@
-import { type FetcherResponse } from '@/_shared/utils/fetcher';
-import { type Room, Participant } from '@/(server)/_features/room/routes';
+import type { FetcherResponse } from '@/_shared/utils/fetcher';
+import type { Room, Participant } from '@/(server)/_features/room/service';
 
 export declare namespace RoomType {
   type RoomData = Room;
