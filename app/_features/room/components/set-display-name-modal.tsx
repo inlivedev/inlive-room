@@ -12,14 +12,16 @@ import {
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';
 import type { ClientType } from '@/_shared/types/client';
+import { useClientContext } from '@/_features/room/contexts/client-context';
 
 type Props = {
   roomID: string;
-  client: ClientType.ClientData;
 };
 
-export default function SetDisplayNameModal({ roomID, client }: Props) {
+export default function SetDisplayNameModal({ roomID }: Props) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+  const { clientID } = useClientContext();
+
   const {
     value: clientNameInput,
     bindValue: bindClientNameInput,
@@ -41,7 +43,7 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
 
         const response: ClientType.SetClientNameResponse =
           await InternalApiFetcher.put(
-            `/api/room/${roomID}/setname/${client.clientID}`,
+            `/api/room/${roomID}/setname/${clientID}`,
             {
               body: JSON.stringify({
                 name: clientNameInput,
@@ -73,7 +75,7 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
         }
       }
     },
-    [roomID, client, clientNameInput, onClose]
+    [roomID, clientID, clientNameInput, onClose]
   );
 
   const onCloseModal = useCallback(() => {
