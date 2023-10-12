@@ -15,10 +15,11 @@ import { useInput } from '@/_shared/hooks/use-input';
 import type { ClientType } from '@/_shared/types/client';
 
 type Props = {
+  roomID: string;
   client: ClientType.ClientData;
 };
 
-export default function UpdateClientModal({ client }: Props) {
+export default function SetDisplayNameModal({ roomID, client }: Props) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const {
     value: clientName,
@@ -31,7 +32,7 @@ export default function UpdateClientModal({ client }: Props) {
   }, [onOpen]);
 
   const onSubmitDisplayName = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
+    async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
       try {
@@ -39,10 +40,26 @@ export default function UpdateClientModal({ client }: Props) {
           throw new Error('Please enter a valid display name');
         }
 
-        alert(
-          `Change display name with client ID ${client.clientID} is success`
-        );
-        onClose();
+        const response: ClientType.SetClientNameResponse =
+          await InternalApiFetcher.put(
+            `/api/room/${roomID}/setname/${client.clientID}`,
+            {
+              body: JSON.stringify({ name: clientName }),
+            }
+          );
+
+        if (response.ok) {
+          console.log('response', response);
+
+          alert(
+            `Change display name with client ID ${client.clientID} is success`
+          );
+          onClose();
+        } else {
+          throw new Error(
+            'An error has occured on our side please try again later'
+          );
+        }
       } catch (error) {
         console.error(error);
 
@@ -51,7 +68,7 @@ export default function UpdateClientModal({ client }: Props) {
         }
       }
     },
-    [client, clientName, onClose]
+    [roomID, client, clientName, onClose]
   );
 
   const onCloseModal = useCallback(() => {
@@ -59,10 +76,10 @@ export default function UpdateClientModal({ client }: Props) {
   }, [setClientName]);
 
   useEffect(() => {
-    document.addEventListener('open:update-display-name-modal', openModal);
+    document.addEventListener('open:set-display-name-modal', openModal);
 
     return () => {
-      document.removeEventListener('open:update-display-name-modal', openModal);
+      document.removeEventListener('open:set-display-name-modal', openModal);
     };
   }, [openModal]);
 
@@ -70,7 +87,6 @@ export default function UpdateClientModal({ client }: Props) {
     <Modal
       size="md"
       placement="center"
-      backdrop="blur"
       isOpen={isOpen}
       onClose={onCloseModal}
       onOpenChange={onOpenChange}

@@ -4,7 +4,7 @@ import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 import InviteBox from '@/_features/room/components/invite-box';
-import UpdateClientModal from '@/_features/room/components/update-display-name-modal';
+import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
@@ -121,12 +121,12 @@ export default function Lobby({ roomID, client }: LobbyProps) {
   }, [videoConstraints, audioConstraints, roomID]);
 
   const openUpdateClientForm = useCallback(() => {
-    document.dispatchEvent(new CustomEvent('open:update-display-name-modal'));
+    document.dispatchEvent(new CustomEvent('open:set-display-name-modal'));
   }, []);
 
   return (
     <>
-      <UpdateClientModal client={client} />
+      <SetDisplayNameModal roomID={roomID} client={client} />
       <div className="flex min-h-screen flex-col">
         <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4">
           <Header />
