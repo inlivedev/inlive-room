@@ -1,5 +1,13 @@
+import { PeerEvents } from '../peer/peer';
+
+export const ChannelEvents: RoomChannelType.ChannelEvents = {
+  CHANNEL_CONNECTED: 'channelConnected',
+  CHANNEL_DISCONNECTED: 'channelDisconnected',
+};
+
 export const createChannel = ({
   api,
+  event,
   peer,
   streams,
 }: RoomChannelType.ChannelDependencies) => {
@@ -8,6 +16,7 @@ export const createChannel = ({
     _clientId = '';
     _baseUrl;
     _api;
+    _event;
     _peer;
     _streams;
     _channel: EventSource | null = null;
@@ -15,8 +24,12 @@ export const createChannel = ({
     constructor(baseUrl: string) {
       this._baseUrl = baseUrl;
       this._api = api;
+      this._event = event;
       this._peer = peer;
       this._streams = streams;
+
+      this._event.on(PeerEvents.PEER_CONNECTED, this._onPeerConnected);
+      this._event.on(PeerEvents.PEER_DISCONNECTED, this._onPeerDisconnected);
     }
 
     connect = (roomId: string, clientId: string) => {
@@ -24,6 +37,7 @@ export const createChannel = ({
 
       this._roomId = roomId;
       this._clientId = clientId;
+
       const channel = new EventSource(
         `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
       );
@@ -53,6 +67,21 @@ export const createChannel = ({
       };
 
       this._channel = channel;
+      this._addEventListener();
+      this._event.emit(ChannelEvents.CHANNEL_CONNECTED);
+    };
+
+    disconnect = () => {
+      if (!this._channel) return;
+
+      this._removeEventListener();
+      this._channel.close();
+      this._channel = null;
+      this._event.emit(ChannelEvents.CHANNEL_DISCONNECTED);
+    };
+
+    _addEventListener = () => {
+      if (!this._channel) return;
 
       this._channel.addEventListener('candidate', this._onCandidate);
       this._channel.addEventListener('offer', this._onOffer);
@@ -65,6 +94,34 @@ export const createChannel = ({
         'allowed_renegotation',
         this._onAllowedRenegotiation
       );
+    };
+
+    _removeEventListener = () => {
+      if (!this._channel) return;
+
+      this._channel.removeEventListener('candidate', this._onCandidate);
+      this._channel.removeEventListener('offer', this._onOffer);
+      this._channel.removeEventListener('tracks_added', this._onTracksAdded);
+      this._channel.removeEventListener(
+        'tracks_available',
+        this._onTracksAvailable
+      );
+      this._channel.removeEventListener(
+        'allowed_renegotation',
+        this._onAllowedRenegotiation
+      );
+    };
+
+    _onPeerConnected = (data: { roomId: string; clientId: string }) => {
+      if (!data) {
+        throw new Error('Channel failed to connect');
+      }
+
+      this.connect(data.roomId, data.clientId);
+    };
+
+    _onPeerDisconnected = () => {
+      this.disconnect();
     };
 
     _onCandidate = async (event: MessageEvent<any>) => {
@@ -91,7 +148,7 @@ export const createChannel = ({
       await peerConnection.setLocalDescription(answer);
 
       if (peerConnection.localDescription) {
-        this._api.negotiateConnection(
+        await this._api.negotiateConnection(
           this._roomId,
           this._clientId,
           peerConnection.localDescription
