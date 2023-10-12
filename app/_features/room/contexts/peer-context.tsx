@@ -36,6 +36,7 @@ export function PeerProvider({ children, roomID, client }: PeerProviderProps) {
     return () => {
       if (peerState) {
         peerState.disconnect();
+        setPeerState(null);
       }
     };
   }, [roomID, client.clientID, peerState]);
