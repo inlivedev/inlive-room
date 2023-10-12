@@ -10,7 +10,7 @@ export interface iRoomService {
     clientName: string,
     clientID?: string
   ): Promise<Participant>;
-  updateClientName(
+  setClientName(
     roomID: string,
     clientID: string,
     name: string
@@ -47,7 +47,7 @@ const createRoomRoutesHandler = () => {
       clientID: string,
       name: string
     ) => {
-      return await this.roomService.updateClientName(roomID, clientID, name);
+      return await this.roomService.setClientName(roomID, clientID, name);
     };
   };
 

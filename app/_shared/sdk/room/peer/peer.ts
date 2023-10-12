@@ -2,6 +2,8 @@ import { CreateBandwidthController } from './bandwidth-controller';
 import { BandwidthController, PublisherStats } from './peer-types';
 
 export const PeerEvents: RoomPeerType.PeerEvents = {
+  PEER_CONNECTED: 'peerConnected',
+  PEER_DISCONNECTED: 'peerDisconnected',
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
   _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream',
@@ -60,6 +62,10 @@ export const createPeer = ({
       });
 
       this._addEventListener();
+      this._event.emit(PeerEvents.PEER_CONNECTED, {
+        roomId: this._roomId,
+        clientId: this._clientId,
+      });
     };
 
     disconnect = () => {
@@ -74,6 +80,7 @@ export const createPeer = ({
       this._removeEventListener();
       this._peerConnection.close();
       this._peerConnection = null;
+      this._event.emit(PeerEvents.PEER_DISCONNECTED);
     };
 
     getClientId = () => {

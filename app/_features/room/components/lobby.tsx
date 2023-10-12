@@ -4,18 +4,17 @@ import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 import InviteBox from '@/_features/room/components/invite-box';
-import UpdateClientModal from '@/_features/room/components/update-display-name-modal';
+import DisplayNameBox from '@/_features/room/components/display-name-box';
+import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
-import type { ClientType } from '@/_shared/types/client';
 
 type LobbyProps = {
   roomID: string;
-  client: ClientType.ClientData;
 };
 
-export default function Lobby({ roomID, client }: LobbyProps) {
+export default function Lobby({ roomID }: LobbyProps) {
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return false;
 
@@ -120,13 +119,9 @@ export default function Lobby({ roomID, client }: LobbyProps) {
     }
   }, [videoConstraints, audioConstraints, roomID]);
 
-  const openUpdateClientForm = useCallback(() => {
-    document.dispatchEvent(new CustomEvent('open:update-display-name-modal'));
-  }, []);
-
   return (
     <>
-      <UpdateClientModal client={client} />
+      <SetDisplayNameModal roomID={roomID} />
       <div className="flex min-h-screen flex-col">
         <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4">
           <Header />
@@ -148,37 +143,7 @@ export default function Lobby({ roomID, client }: LobbyProps) {
                 </p>
               </div>
               <div>
-                <label
-                  htmlFor="display-name-readonly"
-                  className="mb-3 inline-block text-sm font-medium"
-                >
-                  Your display name
-                </label>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <input
-                      id="display-name-readonly"
-                      className="w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-200 outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
-                      type="text"
-                      placeholder="There is no display name"
-                      readOnly
-                      defaultValue={client.clientName}
-                    />
-                  </div>
-                  <div>
-                    <Button
-                      variant="flat"
-                      className="rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
-                      onClick={openUpdateClientForm}
-                    >
-                      Change
-                    </Button>
-                  </div>
-                </div>
-                <p className="mt-3 text-xs text-zinc-400">
-                  Other participants can easily recognize you by your display
-                  name
-                </p>
+                <DisplayNameBox />
               </div>
               <div>
                 <InviteBox roomID={roomID} />

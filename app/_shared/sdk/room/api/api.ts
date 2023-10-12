@@ -13,6 +13,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         });
 
       const data = response.data || {};
+      const bitrates = data.bitrates_config || {};
 
       const room = {
         message: response.message || '',
@@ -21,7 +22,15 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         data: {
           roomId: data.room_id || '',
           roomName: data.name || '',
-          bitratesConfig: data.bitrates_config || {},
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
       };
 
@@ -51,42 +60,6 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return room;
     };
 
-    updateClientName = async (
-      roomID: string,
-      clientID: string,
-      name: string
-    ) => {
-      if (roomID.trim().length === 0) {
-        throw new Error('Room ID must be a valid string');
-      }
-
-      if (clientID.trim().length === 0) {
-        throw new Error('Client ID must be a valid string');
-      }
-
-      if (name.trim().length === 0) {
-        throw new Error("Client name can't be empty");
-      }
-
-      const response: RoomAPIType.UpdateClientNameResponse =
-        await this._fetcher.put(`rooms/${roomID}/setname/${clientID}`, {
-          body: JSON.stringify({
-            name: name,
-          }),
-        });
-
-      return {
-        code: response.code || 500,
-        ok: response.ok || false,
-        data: {
-          clientId: response.data.client_id,
-          name: response.data.name,
-          bitratesConfig: response.data.bitrates,
-        },
-        message: response.message,
-      };
-    };
-
     registerClient = async (
       roomId: string,
       config: { clientId?: string; clientName?: string } = {}
@@ -112,19 +85,75 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         await this._fetcher.post(`/rooms/${roomId}/register`, options);
 
       const data = response.data || {};
+      const bitrates = data.bitrates || {};
 
       const client = {
         code: response.code || 500,
         ok: response.ok || false,
+        message: response.message || '',
         data: {
           clientId: data.client_id || '',
-          name: data.name || '',
-          bitratesConfig: data.bitrates || {},
+          clientName: data.name || '',
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
-        message: response.message,
       };
 
       return client;
+    };
+
+    setClientName = async (
+      roomId: string,
+      clientId: string,
+      clientName: string
+    ) => {
+      if (roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string');
+      }
+
+      if (clientId.trim().length === 0) {
+        throw new Error('Client ID must be a valid string');
+      }
+
+      if (clientName.trim().length === 0) {
+        throw new Error('Client name must be a valid string');
+      }
+
+      const response: RoomAPIType.SetClientNameResponse =
+        await this._fetcher.put(`/rooms/${roomId}/setname/${clientId}`, {
+          body: JSON.stringify({
+            name: clientName,
+          }),
+        });
+
+      const data = response.data || {};
+      const bitrates = data.bitrates || {};
+
+      return {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: {
+          clientId: data.client_id,
+          clientName: data.name,
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
+        },
+      };
     };
 
     sendIceCandidate = async (
@@ -339,7 +368,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         leaveRoom: api.leaveRoom,
         terminateRoom: api.terminateRoom,
         createDataChannel: api.createDataChannel,
-        updateClientName: api.updateClientName,
+        setClientName: api.setClientName,
       };
     },
   };
