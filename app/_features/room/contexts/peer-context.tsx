@@ -24,13 +24,21 @@ export function PeerProvider({ children, roomID, client }: PeerProviderProps) {
   const [peerState, setPeerState] = useState<Peer | null>(null);
 
   useEffect(() => {
-    const createPeer = async () => {
-      const peer = await room.createPeer(roomID, client.clientID);
-      setPeerState(peer);
-    };
+    if (!peerState) {
+      const createPeer = async () => {
+        const peer = await room.createPeer(roomID, client.clientID);
+        setPeerState(peer);
+      };
 
-    createPeer();
-  }, [roomID, client.clientID]);
+      createPeer();
+    }
+
+    return () => {
+      if (peerState) {
+        peerState.disconnect();
+      }
+    };
+  }, [roomID, client.clientID, peerState]);
 
   return (
     <PeerContext.Provider

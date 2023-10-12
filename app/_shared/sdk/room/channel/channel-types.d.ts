@@ -9,8 +9,14 @@ export type InstanceChannel = ReturnType<
 export type ChannelDependencies = {
   api: RoomAPIType.InstanceApi;
   peer: RoomPeerType.InstancePeer;
+  event: RoomEventType.InstanceEvent;
   streams: RoomStreamType.InstanceStreams;
 };
+
+type ChannelEvents = {
+  CHANNEL_CONNECTED: 'channelConnected'
+  CHANNEL_DISCONNECTED: 'channelDisconnected'
+}
 
 export type TrackSource = {
   track_id: string;
