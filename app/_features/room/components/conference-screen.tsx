@@ -2,7 +2,9 @@
 
 import { useVideoScreen } from '@/_features/room/hooks/use-video-screen';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
+import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import styles from '@/_features/room/styles/conference.module.css';
+import { useEffect } from 'react';
 
 export default function ConferenceScreen({
   stream,
@@ -10,6 +12,16 @@ export default function ConferenceScreen({
   stream: ParticipantStream;
 }) {
   const { videoRef } = useVideoScreen(stream);
+  const { peer } = usePeerContext();
+
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (videoEl && stream.origin === 'remote') peer?.observeVideo(videoEl);
+
+    return () => {
+      if (videoEl && stream.origin === 'remote') peer?.unobserveVideo(videoEl);
+    };
+  });
 
   return (
     <div className={`${styles['video-screen']} relative rounded-lg shadow-lg`}>

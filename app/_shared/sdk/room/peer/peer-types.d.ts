@@ -19,6 +19,8 @@ export type InstancePeer = {
   turnOffCamera: () => void;
   turnOffMic: () => void;
   sendStats: (stats: PublisherStats) => void;
+  observeVideo: (video: HTMLVideoElement) => void;
+  unobserveVideo: (video: HTMLVideoElement) => void;
 };
 
 export type BandwidthController = {
@@ -49,9 +51,24 @@ export interface RTCOutboundRtpStreamStatsExtra
   qualityLimitationReason?: string;
 }
 
-export type PublisherStats = {
+type PublisherStatsData = {
   available_outgoing_bitrate: number;
   quality_limitation_reason: string;
+};
+export type PublisherStatsReport = {
+  type: string;
+  data: PublisherStatsData;
+};
+
+type VideoSizeData = {
+  track_id: string;
+  width: number;
+  height: number;
+};
+
+export type VideoSizeReport = {
+  type: string;
+  data: VideoSizeData;
 };
 
 export type Bitrates = {

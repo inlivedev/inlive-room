@@ -1,5 +1,12 @@
 import { CreateBandwidthController } from './bandwidth-controller';
-import { BandwidthController, PublisherStats } from './peer-types';
+import { VideoObserver } from './video-observer';
+import {
+  BandwidthController,
+  VideoSizeData,
+  VideoSizeReport,
+  PublisherStatsData,
+  PublisherStatsReport,
+} from './peer-types';
 
 export const PeerEvents: RoomPeerType.PeerEvents = {
   PEER_CONNECTED: 'peerConnected',
@@ -25,23 +32,25 @@ export const createPeer = ({
     _roomId = '';
     _clientId = '';
     _api;
+    _videoObserver: VideoObserver | null = null;
     _event;
     _streams;
     _stream;
-    _statsChannel: RTCDataChannel | null = null;
+    _internalChannel: RTCDataChannel | null = null;
     _bwController: BandwidthController;
     _prevBytesReceived;
     _prevHighBytesSent;
     _prevMidBytesSent;
     _prevLowBytesSent;
     _peerConnection: RTCPeerConnection | null = null;
+    _pendingObservedVideo: Array<HTMLVideoElement> = [];
 
     constructor() {
       this._api = api;
       this._event = event;
       this._streams = streams;
       this._stream = createStream();
-      this._statsChannel = null;
+      this._internalChannel = null;
       this._prevBytesReceived = 0;
 
       this._prevHighBytesSent = 0;
@@ -179,16 +188,38 @@ export const createPeer = ({
       }
     };
 
-    sendStats = async (stats: PublisherStats) => {
-      if (!this._statsChannel) return;
+    sendStats = async (stats: PublisherStatsData) => {
+      if (!this._internalChannel) return;
 
-      if (this._statsChannel?.readyState !== 'open') return;
+      if (this._internalChannel?.readyState !== 'open') return;
+
+      const statsReport: PublisherStatsReport = {
+        type: 'stats',
+        data: stats,
+      };
 
       try {
-        await this._statsChannel.send(JSON.stringify(stats));
+        await this._internalChannel.send(JSON.stringify(statsReport));
       } catch (error) {
         console.error(error);
       }
+    };
+
+    observeVideo = (videoElement: HTMLVideoElement) => {
+      if (!this._videoObserver) {
+        this._pendingObservedVideo.push(videoElement);
+        return;
+      }
+
+      this._videoObserver.observe(videoElement);
+    };
+
+    unobserveVideo = (videoElement: HTMLVideoElement) => {
+      if (!this._videoObserver) {
+        return;
+      }
+
+      this._videoObserver.unobserve(videoElement);
     };
 
     _addEventListener = () => {
@@ -212,8 +243,12 @@ export const createPeer = ({
       this._peerConnection.addEventListener('track', this._onTrack);
 
       this._peerConnection.addEventListener('datachannel', (e) => {
-        if (e.channel.label === 'stats') {
-          this._statsChannel = e.channel;
+        if (e.channel.label === 'internal') {
+          this._internalChannel = e.channel;
+          this._videoObserver = new VideoObserver(this._internalChannel, 1000);
+          this._pendingObservedVideo.forEach((videoElement) => {
+            this._videoObserver?.observe(videoElement);
+          });
         }
       });
 
@@ -523,6 +558,8 @@ export const createPeer = ({
         turnOffMic: peer.turnOffMic,
         replaceTrack: peer.replaceTrack,
         sendStats: peer.sendStats,
+        observeVideo: peer.observeVideo,
+        unobserveVideo: peer.unobserveVideo,
       };
     },
   };
