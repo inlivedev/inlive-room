@@ -7,7 +7,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   useDisclosure,
 } from '@nextui-org/react';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -22,9 +21,9 @@ type Props = {
 export default function SetDisplayNameModal({ roomID, client }: Props) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const {
-    value: clientName,
+    value: clientNameInput,
     bindValue: bindClientNameInput,
-    setValue: setClientName,
+    setValue: setClientNameInput,
   } = useInput('');
 
   const openModal = useCallback(() => {
@@ -36,7 +35,7 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
       event.preventDefault();
 
       try {
-        if (clientName.trim().length === 0) {
+        if (clientNameInput.trim().length === 0) {
           throw new Error('Please enter a valid display name');
         }
 
@@ -45,17 +44,20 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
             `/api/room/${roomID}/setname/${client.clientID}`,
             {
               body: JSON.stringify({
-                name: clientName,
+                name: clientNameInput,
                 pathname: window.location.pathname,
               }),
             }
           );
 
         if (response.ok) {
-          console.log('response', response);
-
-          alert(
-            `Change display name with client ID ${client.clientID} is success`
+          const clientName = response.data.name;
+          document.dispatchEvent(
+            new CustomEvent('set:client-name', {
+              detail: {
+                clientName: clientName,
+              },
+            })
           );
           onClose();
         } else {
@@ -71,12 +73,12 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
         }
       }
     },
-    [roomID, client, clientName, onClose]
+    [roomID, client, clientNameInput, onClose]
   );
 
   const onCloseModal = useCallback(() => {
-    setClientName('');
-  }, [setClientName]);
+    setClientNameInput('');
+  }, [setClientNameInput]);
 
   useEffect(() => {
     document.addEventListener('open:set-display-name-modal', openModal);
@@ -115,17 +117,17 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
       }}
     >
       <ModalContent className="ring-1 ring-zinc-800">
-        <form onSubmit={onSubmitDisplayName}>
-          <ModalHeader>
-            <div>
-              <h3>Change display name</h3>
-              <p className="mt-1 text-sm font-normal text-zinc-400">
-                Use a display name which easily recognized by others
-              </p>
-            </div>
-          </ModalHeader>
-          <ModalBody className="px-6 py-4">
-            <div>
+        <ModalHeader className="p-4 sm:px-6">
+          <div>
+            <h3>Change display name</h3>
+            <p className="mt-1 text-sm font-normal text-zinc-400">
+              Use a display name which easily recognized by others
+            </p>
+          </div>
+        </ModalHeader>
+        <ModalBody className="p-0">
+          <form onSubmit={onSubmitDisplayName}>
+            <div className="p-4 sm:px-6">
               <label
                 htmlFor="display-name-input"
                 className="mb-3 block text-sm text-zinc-200"
@@ -140,24 +142,24 @@ export default function SetDisplayNameModal({ roomID, client }: Props) {
                 {...bindClientNameInput}
               />
             </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="flat"
-              className="rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
-              onPress={onClose}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="flat"
-              className="rounded-md bg-zinc-200 px-4  py-2 text-sm text-zinc-900 hover:bg-zinc-100 active:bg-zinc-50"
-              type="submit"
-            >
-              Change display name
-            </Button>
-          </ModalFooter>
-        </form>
+            <div className="flex justify-end gap-3 p-4 sm:px-6">
+              <Button
+                variant="flat"
+                className="rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
+                onPress={onClose}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="flat"
+                className="rounded-md bg-zinc-200 px-4  py-2 text-sm text-zinc-900 hover:bg-zinc-100 active:bg-zinc-50"
+                type="submit"
+              >
+                Change display name
+              </Button>
+            </div>
+          </form>
+        </ModalBody>
       </ModalContent>
     </Modal>
   );
