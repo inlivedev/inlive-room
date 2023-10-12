@@ -1,15 +1,14 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
 import { Participant, Room, service } from '@/(server)/_features/room/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
-import { ParticiantRepo } from '../participants/repository';
 
 export interface iRoomService {
   createRoom(userID: number): Promise<Room>;
   joinRoom(roomId: string): Promise<Room | undefined>;
   createClient(
     roomId: string,
-    clientID: string,
-    clientName: string
+    clientName: string,
+    clientID?: string
   ): Promise<Participant>;
   updateClientName(
     roomID: string,
@@ -37,10 +36,10 @@ const createRoomRoutesHandler = () => {
 
     registerClientHandler = async (
       roomID: string,
-      clientID: string,
-      clientName: string
+      clientName: string,
+      clientID?: string
     ) => {
-      
+      return await this.roomService.createClient(roomID, clientName, clientID);
     };
 
     updateClientNameHandler = async (

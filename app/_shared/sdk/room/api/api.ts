@@ -97,11 +97,11 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
 
       const body: RoomAPIType.RegisterClientRequestBody = {};
 
-      if (config.clientId) {
+      if (config.clientId && config.clientId.trim().length > 0) {
         body.uid = config.clientId;
       }
 
-      if (config.clientName) {
+      if (config.clientName && config.clientName.trim().length > 0) {
         body.name = config.clientName;
       }
 

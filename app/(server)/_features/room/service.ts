@@ -32,17 +32,22 @@ export class service implements iRoomService {
 
   async createClient(
     roomId: string,
-    clientID: string,
-    clientName: string
+    clientName: string,
+    clientID?: string
   ): Promise<Participant> {
     if (!this._roomRepo.isPersistent()) {
       const clientResponse = await this._sdk.createClient(roomId, {
-        clientId: clientID,
         clientName: clientName,
       });
 
+      if (clientResponse.code == 409) {
+        throw new Error('Unable to create client ID Client ID already exist');
+      }
+
       if (clientResponse.code > 299) {
-        throw new Error(clientResponse.message);
+        throw new Error(
+          'Failed to add client to the meeting room. Please try again later!'
+        );
       }
 
       return {
@@ -58,7 +63,7 @@ export class service implements iRoomService {
       throw new Error('room not found');
     }
 
-    const clientResponse = await this._sdk.createClient(roomData?.id, {
+    const clientResponse = await this._sdk.createClient(roomData.id, {
       clientId: clientID,
       clientName: clientName,
     });
