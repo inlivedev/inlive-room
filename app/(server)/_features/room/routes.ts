@@ -42,7 +42,7 @@ const createRoomRoutesHandler = () => {
       return await this.roomService.createClient(roomID, clientName, clientID);
     };
 
-    updateClientNameHandler = async (
+    setClientNameHandler = async (
       roomID: string,
       clientID: string,
       name: string
@@ -59,7 +59,7 @@ const createRoomRoutesHandler = () => {
         createRoomHandler: roomRoutesHandler.createRoomHandler,
         joinRoomHandler: roomRoutesHandler.joinRoomHandler,
         registerClientHandler: roomRoutesHandler.registerClientHandler,
-        updateClientNameHandler: roomRoutesHandler.updateClientNameHandler,
+        setClientNameHandler: roomRoutesHandler.setClientNameHandler,
       };
     },
   };
