@@ -1,30 +1,20 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
-import { service } from '@/(server)/_features/room/service';
+import { Participant, Room, service } from '@/(server)/_features/room/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
-import { ParticiantRepo } from '../participants/repository';
 
 export interface iRoomService {
   createRoom(userID: number): Promise<Room>;
   joinRoom(roomId: string): Promise<Room | undefined>;
   createClient(
     roomId: string,
-    clientID: string,
-    clientName: string
+    clientName: string,
+    clientID?: string
   ): Promise<Participant>;
-  getClients(roomID: string, clientIDs: string[]): Promise<Participant[]>;
-  getAllClients(roomID: string): Promise<Participant[]>;
-}
-
-export interface Room {
-  id: string;
-  name?: string | null;
-  createdBy: number;
-}
-
-export interface Participant {
-  clientID: string;
-  name: string;
-  roomID: string | null;
+  setClientName(
+    roomID: string,
+    clientID: string,
+    name: string
+  ): Promise<Participant>;
 }
 
 const createRoomRoutesHandler = () => {
@@ -46,18 +36,18 @@ const createRoomRoutesHandler = () => {
 
     registerClientHandler = async (
       roomID: string,
-      clientID: string,
-      clientName: string
+      clientName: string,
+      clientID?: string
     ) => {
-      return await this.roomService.createClient(roomID, clientID, clientName);
+      return await this.roomService.createClient(roomID, clientName, clientID);
     };
 
-    getClientHandler = async (roomID: string, clientIDs: string[]) => {
-      return await this.roomService.getClients(roomID, clientIDs);
-    };
-
-    getAllClientHandler = async (roomID: string) => {
-      return await this.roomService.getAllClients(roomID);
+    setClientNameHandler = async (
+      roomID: string,
+      clientID: string,
+      name: string
+    ) => {
+      return await this.roomService.setClientName(roomID, clientID, name);
     };
   };
 
@@ -69,13 +59,12 @@ const createRoomRoutesHandler = () => {
         createRoomHandler: roomRoutesHandler.createRoomHandler,
         joinRoomHandler: roomRoutesHandler.joinRoomHandler,
         registerClientHandler: roomRoutesHandler.registerClientHandler,
-        getClientHandler: roomRoutesHandler.getClientHandler,
-        getAllClientHandler: roomRoutesHandler.getAllClientHandler,
+        setClientNameHandler: roomRoutesHandler.setClientNameHandler,
       };
     },
   };
 };
 
 export const roomRoutesHandler = createRoomRoutesHandler().createInstance(
-  new service(new RoomRepo(), new ParticiantRepo())
+  new service(new RoomRepo())
 );

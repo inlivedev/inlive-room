@@ -1,13 +1,42 @@
 import type { NextFetchEvent, NextMiddleware, NextRequest } from 'next/server';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { cookies } from 'next/headers';
 import type { RoomType } from '@/_shared/types/room';
 import type { UserType } from '@/_shared/types/user';
 import type { ClientType } from '@/_shared/types/client';
 import { uniqueNamesGenerator, names } from 'unique-names-generator';
 
-const generateName = (response: Awaited<ReturnType<NextMiddleware>>) => {
+const registerClient = async (roomID: string, clientName: string) => {
+  try {
+    const response: RoomType.CreateClientResponse =
+      await InternalApiFetcher.post(`/api/room/${roomID}/register`, {
+        body: JSON.stringify({
+          name: clientName,
+        }),
+      });
+
+    const data = response.data || {};
+
+    const client: ClientType.ClientData = {
+      clientID: data.clientID,
+      clientName: data.name,
+    };
+
+    return client;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+const getClientName = (
+  request: NextRequest,
+  response: Awaited<ReturnType<NextMiddleware>>
+) => {
   if (!response) return '';
+
+  const clientName = request.cookies.get('client_name')?.value || '';
+
+  if (clientName) return clientName;
 
   const userAuthHeader = response.headers.get('user-auth');
   const user: UserType.AuthUserData | null =
@@ -15,53 +44,19 @@ const generateName = (response: Awaited<ReturnType<NextMiddleware>>) => {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const clientName = user
-    ? user.name
-    : uniqueNamesGenerator({
-        dictionaries: [names, names],
-        separator: ' ',
-        length: 2,
-      });
+  if (user) return user.name;
 
-  return clientName;
+  return '';
 };
 
-const createClient = async (
-  request: NextRequest,
-  response: Awaited<ReturnType<NextMiddleware>>,
-  roomID: string,
-  clientID: string
-) => {
-  const clientData = {
-    clientID: clientID,
-    clientName: '',
-  };
+const generateName = (name = '') => {
+  if (name) return name;
 
-  if (!response) return clientData;
-
-  const clientName = generateName(response);
-
-  try {
-    const createClientResponse: RoomType.CreateClientResponse =
-      await InternalApiFetcher.post(`/api/room/${roomID}/register`, {
-        body: JSON.stringify({
-          uid: clientData.clientID,
-          name: clientName,
-        }),
-      });
-
-    clientData.clientID = createClientResponse.data
-      ? createClientResponse.data.clientID
-      : clientData.clientID;
-    clientData.clientName = createClientResponse.data
-      ? createClientResponse.data.name
-      : clientData.clientName;
-  } finally {
-    clientData.clientID = clientData.clientID;
-    clientData.clientName = clientData.clientName;
-  }
-
-  return clientData;
+  return uniqueNamesGenerator({
+    dictionaries: [names, names],
+    separator: ' ',
+    length: 2,
+  });
 };
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
@@ -78,17 +73,21 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         });
 
       const roomData = roomResponse.data ? roomResponse.data : null;
-      const clientID = cookies().get('client_id')?.value || '';
-      const client: ClientType.ClientData = roomData
-        ? await createClient(request, response, roomID, clientID)
-        : {
-            clientID: '',
-            clientName: '',
-          };
+
+      let client: ClientType.ClientData = {
+        clientID: '',
+        clientName: '',
+      };
+
+      if (roomData) {
+        const clientName = getClientName(request, response);
+        const newName = generateName(clientName);
+        client = await registerClient(roomID, newName);
+      }
 
       response.headers.set(
         'Set-Cookie',
-        `client_id=${client.clientID};path=${request.nextUrl.pathname};SameSite=lax;`
+        `client_name=${client.clientName};path=${request.nextUrl.pathname};SameSite=lax;`
       );
       response.headers.set('user-client', JSON.stringify(client));
       response.headers.set('room-data', JSON.stringify(roomData));

@@ -2,31 +2,30 @@ import { roomRoutesHandler } from '@/(server)/_features/room/routes';
 import { NextResponse, type NextRequest } from 'next/server';
 
 interface RegisterClientRequest {
-  uid: string;
-  name: string;
+  uid?: string;
+  name?: string;
 }
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { roomID: string } }
 ) {
-  const body = (await request.json()) as RegisterClientRequest;
+  const reqBody = (await request.json()) as RegisterClientRequest | undefined;
 
-  const clientID = body.uid || '';
-  const clientName = body.name || '';
-
-  if (!clientName) {
+  if (!reqBody)
     return NextResponse.json({
       code: 400,
-      message: 'Name is missing from request',
+      message: 'invalid request body, please check again',
     });
-  }
+
+  if (!reqBody.name)
+    return NextResponse.json({ code: 400, message: 'name is empty' });
 
   try {
     const clientData = await roomRoutesHandler.registerClientHandler(
       params.roomID,
-      clientID,
-      clientName
+      reqBody.name,
+      reqBody.uid
     );
 
     return NextResponse.json(

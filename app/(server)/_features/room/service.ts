@@ -1,8 +1,19 @@
-import { iRoomService, Participant } from './routes';
+import { iRoomService } from './routes';
 import { room } from '@/_shared/utils/sdk';
-import { Room } from './routes';
 import Sqids from 'sqids';
 import * as Sentry from '@sentry/nextjs';
+
+export interface Room {
+  id: string;
+  name?: string | null;
+  createdBy: number;
+}
+
+export interface Participant {
+  clientID: string;
+  name: string;
+  roomID: string | null;
+}
 
 export interface iRoomRepo {
   addRoom(room: Room): Promise<Room>;
@@ -11,44 +22,37 @@ export interface iRoomRepo {
   isPersistent(): boolean;
 }
 
-export interface iParticipantRepo {
-  addParticipant(participant: Participant): Promise<Participant>;
-  getAllParticipant(roomID: string): Promise<Participant[]>;
-  getByClientID(clientID: string): Promise<Participant | undefined>;
-  getByMultipleClientID(
-    roomID: string,
-    clientID: string[]
-  ): Promise<Participant[]>;
-}
-
 export class service implements iRoomService {
   _roomRepo: iRoomRepo;
-  _participantRepo: iParticipantRepo;
   _sdk = room;
 
-  constructor(roomRepo: iRoomRepo, participantRepo: iParticipantRepo) {
+  constructor(roomRepo: iRoomRepo) {
     this._roomRepo = roomRepo;
-    this._participantRepo = participantRepo;
   }
 
   async createClient(
     roomId: string,
-    clientID: string,
-    clientName: string
+    clientName: string,
+    clientID?: string
   ): Promise<Participant> {
     if (!this._roomRepo.isPersistent()) {
       const clientResponse = await this._sdk.createClient(roomId, {
-        clientId: clientID,
         clientName: clientName,
       });
 
+      if (clientResponse.code == 409) {
+        throw new Error('Unable to create client ID Client ID already exist');
+      }
+
       if (clientResponse.code > 299) {
-        throw new Error(clientResponse.message);
+        throw new Error(
+          'Failed to add client to the meeting room. Please try again later!'
+        );
       }
 
       return {
         clientID: clientResponse.data.clientId,
-        name: clientResponse.data.name,
+        name: clientResponse.data.clientName,
         roomID: roomId,
       };
     }
@@ -59,20 +63,16 @@ export class service implements iRoomService {
       throw new Error('room not found');
     }
 
-    const clientResponse = await this._sdk.createClient(roomData?.id, {
+    const clientResponse = await this._sdk.createClient(roomData.id, {
       clientId: clientID,
       clientName: clientName,
     });
 
-    const getClient = await this._participantRepo.getByClientID(
-      clientResponse.data.clientId || clientID
-    );
-
-    if (getClient) {
-      return getClient;
+    if (clientResponse.code == 409) {
+      throw new Error('Unable to create client ID Client ID already exist');
     }
 
-    if (!clientResponse.data.clientId) {
+    if (clientResponse.code > 299) {
       throw new Error(
         'Failed to add client to the meeting room. Please try again later!'
       );
@@ -80,27 +80,35 @@ export class service implements iRoomService {
 
     const data: Participant = {
       clientID: clientResponse.data.clientId,
-      name: clientResponse.data.name,
+      name: clientResponse.data.clientName,
       roomID: roomId,
     };
 
-    return await this._participantRepo.addParticipant(data);
+    return data;
   }
 
-  async getClients(
+  async setClientName(
     roomID: string,
-    clientIDs: string[]
-  ): Promise<Participant[]> {
-    const clients = await this._participantRepo.getByMultipleClientID(
-      roomID,
-      clientIDs
-    );
+    clientID: string,
+    name: string
+  ): Promise<Participant> {
+    const updateResp = await this._sdk.setClientName(roomID, clientID, name);
 
-    return clients;
-  }
+    if (updateResp.code > 499) {
+      throw new Error(
+        'an error has occured on our side please try again later'
+      );
+    }
 
-  async getAllClients(roomID: string) {
-    return await this._participantRepo.getAllParticipant(roomID);
+    if (updateResp.code > 299) {
+      throw new Error(updateResp.message);
+    }
+
+    return {
+      clientID: updateResp.data.clientId,
+      name: updateResp.data.clientName,
+      roomID: roomID,
+    };
   }
 
   async createRoom(userID: number): Promise<Room> {

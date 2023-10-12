@@ -36,6 +36,13 @@
       "when": 1696842709330,
       "tag": "0004_client_id_unique-per-room",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1697089538283,
+      "tag": "0005_remove_participant_table",
+      "breakpoints": true
     }
   ]
 }
