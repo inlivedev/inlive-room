@@ -5,8 +5,8 @@ import Footer from '@/_shared/components/footer/footer';
 
 export default function View() {
   return (
-    <div className="flex flex-1 flex-col bg-zinc-900 text-zinc-200">
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
+    <div className="min-viewport-height bg-zinc-900 text-zinc-200">
+      <div className="min-viewport-height mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
         <Header />
         <main className="mx-auto flex flex-1 flex-col justify-center">
           <div className="flex w-full flex-col gap-20 lg:flex-row">

@@ -14,8 +14,8 @@ export default function HTTPError({
   description,
 }: HTTPErrorProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-900 text-neutral-200">
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
+    <div className="min-viewport-height bg-neutral-900 text-neutral-200">
+      <div className="min-viewport-height mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
         <Header />
         <main className="mx-auto flex flex-1 flex-col justify-center">
           <div className="flex items-center gap-5">

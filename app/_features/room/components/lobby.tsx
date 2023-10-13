@@ -130,8 +130,8 @@ export default function Lobby({ roomID }: LobbyProps) {
   return (
     <>
       <SetDisplayNameModal roomID={roomID} />
-      <div className="flex min-h-screen flex-col">
-        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4">
+      <div className="min-viewport-height">
+        <div className="min-viewport-height mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4">
           <Header />
           <main className="flex flex-1 flex-col">
             <div className="flex flex-col gap-10">
