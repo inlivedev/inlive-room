@@ -11,6 +11,7 @@ import Conference from '@/_features/room/components/conference';
 import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import type { ClientType } from '@/_shared/types/client';
+import { useViewportHeight } from '@/_shared/hooks/use-viewport-height';
 
 type ViewProps = {
   roomID: string;
@@ -18,6 +19,7 @@ type ViewProps = {
 };
 
 export default function View({ roomID, client }: ViewProps) {
+  useViewportHeight();
   const { active: isConferenceActive, setActive: setActiveConference } =
     useToggle(false);
 
