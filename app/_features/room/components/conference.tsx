@@ -2,8 +2,10 @@ import ConferenceParticipants from '@/_features/room/components/conference-parti
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import styles from '@/_features/room/styles/conference.module.css';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
+import { useViewportHeight } from '@/_shared/hooks/use-viewport-height';
 
 export default function Conference() {
+  useViewportHeight();
   const { streams } = useParticipantContext();
 
   const hasScreen = (): boolean => {
@@ -22,7 +24,7 @@ export default function Conference() {
   };
 
   return (
-    <div className="h-screen w-screen">
+    <div className="viewport-height w-full">
       <div className={`${styles['participants']} ${getClass()}`}>
         <ConferenceParticipants />
       </div>

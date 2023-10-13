@@ -12,7 +12,7 @@ export default function AppContainer({
 }) {
   return (
     <>
-      <NextUIProvider className="flex flex-1 flex-col">
+      <NextUIProvider>
         <AuthProvider value={{ user: user }}>
           {children}
           <SignInModal />

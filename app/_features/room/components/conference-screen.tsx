@@ -26,7 +26,7 @@ export default function ConferenceScreen({
   return (
     <div className={`${styles['video-screen']} relative rounded-lg shadow-lg`}>
       {/* video screen overlay */}
-      <div className="absolute flex h-full w-full flex-col justify-end rounded-lg p-2">
+      <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
         <div className="flex">
           <div
             className={`${styles['video-screen-name']} max-w-full truncate rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-200 md:text-sm`}

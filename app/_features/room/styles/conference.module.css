@@ -42,6 +42,10 @@
   }
 }
 
+.gallery .local video {
+  transform: scaleX(-1);
+}
+
 .media {
   min-height: 0;
   height: 100%;

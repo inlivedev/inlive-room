@@ -26,7 +26,10 @@ export default function RootLayout({
         />
         <link rel="manifest" href="/images/favicon/manifest.webmanifest" />
       </head>
-      <body className={inter.className} suppressHydrationWarning={true}>
+      <body
+        className={`${inter.className} antialiased`}
+        suppressHydrationWarning={true}
+      >
         <Suspense fallback={null}>
           <MixpanelContainer />
         </Suspense>
