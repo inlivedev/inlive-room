@@ -13,7 +13,7 @@ export default function ConferenceActionsBar() {
       <div className="flex h-full flex-col justify-center">
         <ButtonCamera />
       </div>
-      <div className="hidden h-full flex-col justify-center landscape:flex">
+      <div className="hidden h-full flex-col justify-center xl:landscape:flex">
         <ButtonScreenShare />
       </div>
       <div className="flex h-full flex-col justify-center">
