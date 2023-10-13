@@ -1,14 +1,24 @@
 @tailwind base;
 @tailwind components;
 
+:root {
+  --vh: 1vh;
+}
+
 /* To ensure the minimum height of body is 100% screen height */
 html, body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
 
-  @apply antialiased;
+.min-viewport-height {
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+.viewport-height {
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 @tailwind utilities;
