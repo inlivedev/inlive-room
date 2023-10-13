@@ -79,7 +79,7 @@ export default function ChatDrawerMenu() {
       onClose={onMenuClosed}
       backdrop="transparent"
       scrollBehavior="inside"
-      className="fixed inset-y-0 right-0 h-full min-h-full w-full max-w-full bg-zinc-800/75 shadow-md backdrop-blur-md sm:w-96"
+      className="min-viewport-height fixed inset-y-0 right-0 w-full bg-zinc-800/75 shadow-md backdrop-blur-md sm:w-96"
     >
       <ModalContent>
         <ModalHeader className="border-b border-zinc-700 p-4">
