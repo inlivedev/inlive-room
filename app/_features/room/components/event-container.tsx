@@ -11,6 +11,8 @@ export default function EventContainer({
   const { peer } = usePeerContext();
 
   useEffect(() => {
+    if (!peer) return;
+
     const onTurnOnCamera = () => {
       if (peer) peer.turnOnCamera();
     };
@@ -41,6 +43,8 @@ export default function EventContainer({
   }, [peer]);
 
   useEffect(() => {
+    if (!peer) return;
+
     const onVisibilityChange = () => {
       const isTouchScreen = hasTouchScreen();
 
