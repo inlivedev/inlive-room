@@ -59,13 +59,7 @@ export default function Lobby({ roomID }: LobbyProps) {
     return defaultConstraints;
   }, []);
 
-  const isMediaSet = useState(false);
-
   const openConferenceRoom = useCallback(async () => {
-    // if (isMediaSet[0]) return;
-
-    console.log('Opening conference room');
-
     try {
       const resumeAudioContextPromise = new Promise<null>(async (resolve) => {
         if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
@@ -103,8 +97,6 @@ export default function Lobby({ roomID }: LobbyProps) {
         mediaStreamPromise,
         resumeAudioContextPromise,
       ]);
-
-      isMediaSet[1](true);
 
       document.dispatchEvent(
         new CustomEvent('turnon:media-input', {
