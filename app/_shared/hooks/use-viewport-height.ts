@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+let timeout: ReturnType<typeof setTimeout> | null = null;
+
 const useViewportHeight = () => {
   useEffect(() => {
     const setViewportHeight = () => {
@@ -7,11 +9,21 @@ const useViewportHeight = () => {
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
 
+    const onOrientationChange = () => setViewportHeight();
+
+    const onResize = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(setViewportHeight, 250);
+    };
+
+    window.addEventListener('orientationchange', onOrientationChange);
+    window.addEventListener('resize', onResize);
+
     setViewportHeight();
-    window.addEventListener('orientationchange', setViewportHeight);
 
     return () => {
-      window.removeEventListener('orientationchange', setViewportHeight);
+      window.removeEventListener('orientationchange', onOrientationChange);
+      window.removeEventListener('resize', onResize);
     };
   }, []);
 };
