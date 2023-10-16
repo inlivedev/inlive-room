@@ -504,24 +504,6 @@ export const createPeer = ({
         const transceiver = this._peerConnection.addTransceiver(track, {
           direction: 'sendonly',
           streams: [stream.mediaStream],
-          sendEncodings: [
-            // for firefox order matters... first high resolution, then scaled resolutions...
-            {
-              rid: 'high',
-              maxBitrate: maxBitrate,
-              maxFramerate: 30,
-            },
-            {
-              rid: 'mid',
-              maxFramerate: 20,
-              maxBitrate: midBitrate,
-            },
-            {
-              rid: 'low',
-              maxBitrate: minBitrate,
-              maxFramerate: 15,
-            },
-          ],
         });
 
         track.addEventListener('ended', () => {

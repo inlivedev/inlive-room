@@ -84,7 +84,7 @@
 .gallery-media .video-screen,
 .presenting-media .video-screen {
   aspect-ratio: 16/9;
-  object-fit: cover;
+  display: flex;
   margin: 0 auto;
   height: 100%;
   max-width: 100%;

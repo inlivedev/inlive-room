@@ -35,10 +35,7 @@ export default function ConferenceScreen({
           </div>
         </div>
       </div>
-      <video
-        className="aspect-video h-full rounded-lg object-cover object-center"
-        ref={videoRef}
-      ></video>
+      <video className="h-full rounded-lg object-center" ref={videoRef}></video>
     </div>
   );
 }
