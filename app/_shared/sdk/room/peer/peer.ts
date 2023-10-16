@@ -1,6 +1,13 @@
 import { CreateBandwidthController } from './bandwidth-controller';
 import { VideoObserver } from './video-observer';
 import {
+  getBrowserName,
+  CHROME,
+  EDGE,
+  OPERA,
+  SAFARI,
+} from '@/_shared/utils/get-browser-name';
+import {
   BandwidthController,
   VideoSizeData,
   VideoSizeReport,
@@ -465,32 +472,42 @@ export const createPeer = ({
         }
       );
 
+      const browserName = getBrowserName();
+      const simulcastBrowsers = [SAFARI, CHROME, EDGE, OPERA];
+
+      const simulcastInit: RTCRtpTransceiverInit = {
+        direction: 'sendonly',
+        streams: [stream.mediaStream],
+      };
+
+      if (browserName !== null && simulcastBrowsers.includes(browserName)) {
+        console.log('simulcast enabled');
+
+        simulcastInit['sendEncodings'] = [
+          // for firefox order matters... first high resolution, then scaled resolutions...
+          {
+            rid: 'high',
+            maxBitrate: maxBitrate,
+            maxFramerate: 30,
+          },
+          {
+            rid: 'mid',
+            scaleResolutionDownBy: 2.0,
+            maxFramerate: 20,
+            maxBitrate: midBitrate,
+          },
+          {
+            rid: 'low',
+            scaleResolutionDownBy: 4.0,
+            maxBitrate: minBitrate,
+            maxFramerate: 15,
+          },
+        ];
+      }
+
       this._peerConnection.addTransceiver(
         stream.mediaStream.getVideoTracks()[0],
-        {
-          direction: 'sendonly',
-          streams: [stream.mediaStream],
-          sendEncodings: [
-            // for firefox order matters... first high resolution, then scaled resolutions...
-            {
-              rid: 'high',
-              maxBitrate: maxBitrate,
-              maxFramerate: 30,
-            },
-            {
-              rid: 'mid',
-              scaleResolutionDownBy: 2.0,
-              maxFramerate: 20,
-              maxBitrate: midBitrate,
-            },
-            {
-              rid: 'low',
-              scaleResolutionDownBy: 4.0,
-              maxBitrate: minBitrate,
-              maxFramerate: 15,
-            },
-          ],
-        }
+        simulcastInit
       );
     };
 
