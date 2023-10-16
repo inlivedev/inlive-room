@@ -59,7 +59,7 @@ export const useVideoScreen = (stream: ParticipantStream) => {
       video.srcObject = stream.mediaStream;
       video.playsInline = true;
       video.muted = stream.origin === 'local';
-      video.play();
+      video.autoplay = true;
     };
 
     play();

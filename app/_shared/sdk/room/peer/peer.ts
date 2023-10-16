@@ -428,8 +428,13 @@ export const createPeer = ({
 
       if (!(mediaStream instanceof MediaStream)) return;
 
-      if (this.hasStream(mediaStream.id)) return;
-
+      if (this.hasStream(mediaStream.id)) {
+        if (event.track.kind === 'video') {
+          this.removeStream(mediaStream.id);
+        } else {
+          return;
+        }
+      }
       mediaStream.addEventListener('removetrack', (event) => {
         const target = event.target;
 
