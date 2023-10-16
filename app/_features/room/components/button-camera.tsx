@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -47,13 +47,23 @@ export default function ButtonCamera() {
 
   const handleClick = useCallback(() => {
     if (active) {
-      setInActive();
       document.dispatchEvent(new CustomEvent('trigger:turnoff-camera'));
     } else {
-      setActive();
       document.dispatchEvent(new CustomEvent('trigger:turnon-camera'));
     }
-  }, [active, setActive, setInActive]);
+  }, [active]);
+
+  useEffect(() => {
+    const onTurnOnCamera = () => setActive();
+    const onTurnOffCamera = () => setInActive();
+    document.addEventListener('trigger:turnon-camera', onTurnOnCamera);
+    document.addEventListener('trigger:turnoff-camera', onTurnOffCamera);
+
+    return () => {
+      document.removeEventListener('trigger:turnon-camera', onTurnOnCamera);
+      document.removeEventListener('trigger:turnoff-camera', onTurnOffCamera);
+    };
+  }, [setActive, setInActive]);
 
   return (
     <ButtonGroup variant="flat">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -78,13 +78,23 @@ export default function ButtonMicrophone() {
 
   const handleClick = useCallback(() => {
     if (active) {
-      setInActive();
       document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
     } else {
-      setActive();
       document.dispatchEvent(new CustomEvent('trigger:turnon-mic'));
     }
-  }, [active, setActive, setInActive]);
+  }, [active]);
+
+  useEffect(() => {
+    const onTurnOnMic = () => setActive();
+    const onTurnOffMic = () => setInActive();
+    document.addEventListener('trigger:turnon-mic', onTurnOnMic);
+    document.addEventListener('trigger:turnoff-mic', onTurnOffMic);
+
+    return () => {
+      document.removeEventListener('trigger:turnon-mic', onTurnOnMic);
+      document.removeEventListener('trigger:turnoff-mic', onTurnOffMic);
+    };
+  }, [setActive, setInActive]);
 
   return (
     <ButtonGroup variant="flat">
