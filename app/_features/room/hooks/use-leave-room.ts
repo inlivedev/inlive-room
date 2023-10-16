@@ -17,7 +17,7 @@ export const useLeaveRoom = () => {
 
       try {
         peer.disconnect();
-        room
+        await room
           .leaveRoom(roomID, clientID)
           .then((response) => {
             if (response.code >= 300) {
@@ -27,6 +27,8 @@ export const useLeaveRoom = () => {
           .catch((error) => {
             throw error;
           });
+
+        peer.setAsLeftRoom();
 
         setIsSubmitting(false);
         window.location.href = '/';

@@ -459,10 +459,15 @@ export const createPeer = ({
     };
 
     _onBeforeUnload = async () => {
-      if (!this._roomId || !this._clientId) return;
+      if (this._roomId === '' || this._clientId === '') return;
 
       this.disconnect();
       await this._api.leaveRoom(this._roomId, this._clientId);
+    };
+
+    setAsLeftRoom = () => {
+      this._roomId = '';
+      this._clientId = '';
     };
 
     _onAddLocalMediaStream = (stream: RoomStreamType.InstanceStream) => {
@@ -560,6 +565,7 @@ export const createPeer = ({
         turnOffMic: peer.turnOffMic,
         replaceTrack: peer.replaceTrack,
         sendStats: peer.sendStats,
+        setAsLeftRoom: peer.setAsLeftRoom,
         observeVideo: peer.observeVideo,
         unobserveVideo: peer.unobserveVideo,
       };
