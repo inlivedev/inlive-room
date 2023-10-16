@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import {
   Button,
   Modal,
@@ -23,6 +23,7 @@ const providers = [
 
 export default function SignInModal() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const openModal = useCallback(() => {
     onOpen();
@@ -37,20 +38,25 @@ export default function SignInModal() {
   }, [openModal]);
 
   const handleSignIn = async (provider: string) => {
-    try {
-      const response: AuthType.AuthorizeResponse =
-        await InternalApiFetcher.post(`/api/auth/${provider}/authorize`, {
-          body: JSON.stringify({
-            pathname: window.location.pathname,
-          }),
-        });
+    if (!isSubmitting) {
+      setIsSubmitting(true);
 
-      window.location.href = response.data;
-    } catch (error) {
-      console.error(error);
-      alert(
-        `There is a problem with ${provider} sign in. Please try again later.`
-      );
+      try {
+        const response: AuthType.AuthorizeResponse =
+          await InternalApiFetcher.post(`/api/auth/${provider}/authorize`, {
+            body: JSON.stringify({
+              pathname: window.location.pathname,
+            }),
+          });
+
+        window.location.href = response.data;
+      } catch (error) {
+        setIsSubmitting(false);
+        console.error(error);
+        alert(
+          `There is a problem with ${provider} sign in. Please try again later.`
+        );
+      }
     }
   };
 
@@ -93,6 +99,9 @@ export default function SignInModal() {
                 variant="flat"
                 className="bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600"
                 onClick={() => handleSignIn(provider.name)}
+                isDisabled={isSubmitting}
+                aria-disabled={isSubmitting}
+                disabled={isSubmitting}
               >
                 {provider.text}
               </Button>
