@@ -1,14 +1,16 @@
 'use client';
 
 import { useCreateRoom } from '@/_features/home/create-room/use-create-room';
-import { Button } from '@nextui-org/react';
+import { Button, Spinner } from '@nextui-org/react';
 import { useAuthContext } from '@/_shared/contexts/auth';
 
 export default function CreateRoom() {
   const { user } = useAuthContext();
-  const { createRoom } = useCreateRoom();
+  const { createRoom, isSubmitting } = useCreateRoom();
 
-  const handleCreateRoom = async () => {
+  const handleCreateRoom = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     if (user) {
       createRoom();
     } else {
@@ -27,13 +29,31 @@ export default function CreateRoom() {
           started now by creating a room or join to other rooms with room code.
         </p>
         <div className="mt-8 ">
-          <Button
-            variant="flat"
-            className="w-full rounded-md bg-red-700 px-6 py-2 text-sm text-zinc-200 hover:bg-red-600 active:bg-red-500 lg:w-auto"
-            onClick={handleCreateRoom}
-          >
-            Create a new room
-          </Button>
+          <form onSubmit={handleCreateRoom}>
+            <Button
+              variant="flat"
+              className="w-full rounded-md bg-red-700 px-6 py-2 text-sm text-zinc-200 hover:bg-red-600 active:bg-red-500 lg:w-auto"
+              type="submit"
+              isDisabled={isSubmitting}
+              aria-disabled={isSubmitting}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <div className="flex gap-2">
+                  <Spinner
+                    classNames={{
+                      circle1: 'border-b-zinc-200',
+                      circle2: 'border-b-zinc-200',
+                      wrapper: 'w-4 h-4',
+                    }}
+                  />
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                <span>Create a new room</span>
+              )}
+            </Button>
+          </form>
         </div>
       </section>
     </>
