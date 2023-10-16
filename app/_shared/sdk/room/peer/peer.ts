@@ -503,14 +503,14 @@ export const createPeer = ({
           {
             rid: 'mid',
             scaleResolutionDownBy: 2.0,
-            maxFramerate: 20,
+            maxFramerate: 30,
             maxBitrate: midBitrate,
           },
           {
             rid: 'low',
             scaleResolutionDownBy: 4.0,
             maxBitrate: minBitrate,
-            maxFramerate: 15,
+            maxFramerate: 30,
           },
         ];
       }

@@ -29,12 +29,19 @@ export default function Lobby({ roomID }: LobbyProps) {
     }
 
     return {
-      width: {
-        ideal: 1280,
-      },
-      height: {
-        ideal: 720,
-      },
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      advanced: [
+        {
+          frameRate: { min: 30 },
+        },
+        { height: { min: 360 } },
+        { width: { min: 720 } },
+        { frameRate: { max: 30 } },
+        { width: { max: 1280 } },
+        { height: { max: 720 } },
+        { aspectRatio: { exact: 1.77778 } },
+      ],
     };
   }, []);
 
