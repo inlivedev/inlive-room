@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import {
   Button,
   Modal,
   ModalContent,
   ModalHeader,
   ModalBody,
+  Spinner,
   useDisclosure,
 } from '@nextui-org/react';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -21,6 +22,7 @@ type Props = {
 export default function SetDisplayNameModal({ roomID }: Props) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const { clientID } = useClientContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     value: clientNameInput,
@@ -36,47 +38,60 @@ export default function SetDisplayNameModal({ roomID }: Props) {
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
-      try {
-        if (clientNameInput.trim().length === 0) {
-          throw new Error('Please enter a valid display name');
-        }
+      if (!isSubmitting) {
+        setIsSubmitting(true);
 
-        const response: ClientType.SetClientNameResponse =
-          await InternalApiFetcher.put(
-            `/api/room/${roomID}/setname/${clientID}`,
-            {
-              body: JSON.stringify({
-                name: clientNameInput,
-                pathname: window.location.pathname,
-              }),
-            }
-          );
+        try {
+          if (clientNameInput.trim().length === 0) {
+            throw new Error('Please enter a valid display name');
+          }
 
-        if (response.ok) {
-          const clientName = response.data.name;
-          document.dispatchEvent(
-            new CustomEvent('set:client-name', {
-              detail: {
-                clientName: clientName,
-              },
-            })
-          );
-          onClose();
-          setClientNameInput('');
-        } else {
-          throw new Error(
-            'An error has occured on our side please try again later'
-          );
-        }
-      } catch (error) {
-        console.error(error);
+          const response: ClientType.SetClientNameResponse =
+            await InternalApiFetcher.put(
+              `/api/room/${roomID}/setname/${clientID}`,
+              {
+                body: JSON.stringify({
+                  name: clientNameInput,
+                  pathname: window.location.pathname,
+                }),
+              }
+            );
 
-        if (error instanceof Error) {
-          alert(error.message);
+          if (response.ok) {
+            const clientName = response.data.name;
+            document.dispatchEvent(
+              new CustomEvent('set:client-name', {
+                detail: {
+                  clientName: clientName,
+                },
+              })
+            );
+            onClose();
+            setClientNameInput('');
+            setIsSubmitting(false);
+          } else {
+            throw new Error(
+              'An error has occured on our side please try again later'
+            );
+          }
+        } catch (error) {
+          setIsSubmitting(false);
+          console.error(error);
+
+          if (error instanceof Error) {
+            alert(error.message);
+          }
         }
       }
     },
-    [roomID, clientID, clientNameInput, setClientNameInput, onClose]
+    [
+      roomID,
+      clientID,
+      clientNameInput,
+      setClientNameInput,
+      onClose,
+      isSubmitting,
+    ]
   );
 
   const onCloseModal = useCallback(() => {
@@ -157,8 +172,24 @@ export default function SetDisplayNameModal({ roomID }: Props) {
                 variant="flat"
                 className="rounded-md bg-zinc-200 px-4  py-2 text-sm text-zinc-900 hover:bg-zinc-100 active:bg-zinc-50"
                 type="submit"
+                isDisabled={isSubmitting}
+                aria-disabled={isSubmitting}
+                disabled={isSubmitting}
               >
-                Change display name
+                {isSubmitting ? (
+                  <div className="flex gap-2">
+                    <Spinner
+                      classNames={{
+                        circle1: 'border-b-zinc-900',
+                        circle2: 'border-b-zinc-900',
+                        wrapper: 'w-4 h-4',
+                      }}
+                    />
+                    <span>Changing...</span>
+                  </div>
+                ) : (
+                  <span>Change display name</span>
+                )}
               </Button>
             </div>
           </form>
