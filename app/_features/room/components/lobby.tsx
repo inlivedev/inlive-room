@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@nextui-org/react';
+import { Button, Spinner } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 import InviteBox from '@/_features/room/components/invite-box';
@@ -15,6 +15,8 @@ type LobbyProps = {
 };
 
 export default function Lobby({ roomID }: LobbyProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return false;
 
@@ -59,65 +61,83 @@ export default function Lobby({ roomID }: LobbyProps) {
     return defaultConstraints;
   }, []);
 
-  const openConferenceRoom = useCallback(async () => {
-    try {
-      const resumeAudioContextPromise = new Promise<null>(async (resolve) => {
-        if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
-          await AudioOutputContext.resume();
-        }
+  const openConferenceRoom = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
 
-        return resolve(null);
-      });
+      if (!isSubmitting) {
+        setIsSubmitting(true);
 
-      const mediaStreamPromise = navigator.mediaDevices
-        .enumerateDevices()
-        .then(async (devices) => {
-          const videoInput = devices.find(
-            (device) => device.kind === 'videoinput'
+        try {
+          const resumeAudioContextPromise = new Promise<null>(
+            async (resolve) => {
+              if (
+                AudioOutputContext &&
+                AudioOutputContext.state === 'suspended'
+              ) {
+                await AudioOutputContext.resume();
+              }
+
+              return resolve(null);
+            }
           );
-          const audioInput = devices.find(
-            (device) => device.kind === 'audioinput'
+
+          const mediaStreamPromise = navigator.mediaDevices
+            .enumerateDevices()
+            .then(async (devices) => {
+              const videoInput = devices.find(
+                (device) => device.kind === 'videoinput'
+              );
+              const audioInput = devices.find(
+                (device) => device.kind === 'audioinput'
+              );
+
+              if (!audioInput) {
+                throw new Error(
+                  'Your device needs to have an active microphone in order to continue'
+                );
+              }
+
+              const mediaStream = await getUserMedia({
+                video: videoInput ? videoConstraints : false,
+                audio: audioConstraints,
+              });
+
+              return mediaStream;
+            });
+
+          const [mediaStream] = await Promise.all([
+            mediaStreamPromise,
+            resumeAudioContextPromise,
+          ]);
+
+          document.dispatchEvent(
+            new CustomEvent('turnon:media-input', {
+              detail: {
+                mediaInput: mediaStream,
+              },
+            })
           );
 
-          if (!audioInput) {
-            throw new Error(
-              'Your device needs to have an active microphone in order to continue'
-            );
-          }
+          document.dispatchEvent(new CustomEvent('open:conference-component'));
 
-          const mediaStream = await getUserMedia({
-            video: videoInput ? videoConstraints : false,
-            audio: audioConstraints,
+          Mixpanel.track('Join room', {
+            roomID: roomID,
           });
 
-          return mediaStream;
-        });
+          setIsSubmitting(false);
+        } catch (error) {
+          setIsSubmitting(false);
 
-      const [mediaStream] = await Promise.all([
-        mediaStreamPromise,
-        resumeAudioContextPromise,
-      ]);
-
-      document.dispatchEvent(
-        new CustomEvent('turnon:media-input', {
-          detail: {
-            mediaInput: mediaStream,
-          },
-        })
-      );
-
-      document.dispatchEvent(new CustomEvent('open:conference-component'));
-
-      Mixpanel.track('Join room', {
-        roomID: roomID,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error);
-        alert(error.message);
+          if (error instanceof Error) {
+            console.error(error);
+            alert(error.message);
+          }
+        }
       }
-    }
-  }, [videoConstraints, audioConstraints, roomID]);
+    },
+    [videoConstraints, audioConstraints, roomID, isSubmitting]
+  );
 
   return (
     <>
@@ -160,13 +180,31 @@ export default function Lobby({ roomID }: LobbyProps) {
                   </Button>
                 </div>
                 <div className="flex-1">
-                  <Button
-                    variant="flat"
-                    className="w-full min-w-[240px] rounded-md bg-red-700 px-4 py-2 text-sm text-zinc-200 hover:bg-red-600 active:bg-red-500 lg:w-auto"
-                    onClick={openConferenceRoom}
-                  >
-                    Enter this room
-                  </Button>
+                  <form onSubmit={openConferenceRoom}>
+                    <Button
+                      variant="flat"
+                      className="w-full min-w-[240px] rounded-md bg-red-700 px-4 py-2 text-sm text-zinc-200 hover:bg-red-600 active:bg-red-500 lg:w-auto"
+                      type="submit"
+                      isDisabled={isSubmitting}
+                      aria-disabled={isSubmitting}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <div className="flex gap-2">
+                          <Spinner
+                            classNames={{
+                              circle1: 'border-b-zinc-200',
+                              circle2: 'border-b-zinc-200',
+                              wrapper: 'w-4 h-4',
+                            }}
+                          />
+                          <span>Entering this room...</span>
+                        </div>
+                      ) : (
+                        <span>Enter this room</span>
+                      )}
+                    </Button>
+                  </form>
                 </div>
               </div>
             </div>
