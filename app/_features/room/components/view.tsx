@@ -7,6 +7,7 @@ import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
 import { ParticipantProvider } from '@/_features/room/contexts/participant-context';
 import { ChatProvider } from '@/_features/room/contexts/chat-context';
+import EventContainer from '@/_features/room/components/event-container';
 import Conference from '@/_features/room/components/conference';
 import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
 import { useToggle } from '@/_shared/hooks/use-toggle';
@@ -39,12 +40,14 @@ export default function View({ roomID, client }: ViewProps) {
           <DeviceProvider>
             <ParticipantProvider>
               <ChatProvider>
-                <ChatDrawerMenu />
-                {isConferenceActive ? (
-                  <Conference />
-                ) : (
-                  <Lobby roomID={roomID} />
-                )}
+                <EventContainer roomID={roomID}>
+                  <ChatDrawerMenu />
+                  {isConferenceActive ? (
+                    <Conference />
+                  ) : (
+                    <Lobby roomID={roomID} />
+                  )}
+                </EventContainer>
               </ChatProvider>
             </ParticipantProvider>
           </DeviceProvider>
