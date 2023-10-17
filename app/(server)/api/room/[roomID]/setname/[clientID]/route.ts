@@ -50,7 +50,7 @@ export async function PUT(
 
     routeResponse.cookies.set({
       name: 'client_name',
-      value: setNameResponse.name,
+      value: setNameResponse.name || clientName,
       path: pathname,
       sameSite: 'lax',
     });
