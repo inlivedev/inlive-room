@@ -3,7 +3,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
 import type { UserType } from '@/_shared/types/user';
 import type { ClientType } from '@/_shared/types/client';
-import { uniqueNamesGenerator, names } from 'unique-names-generator';
+import { customAlphabet } from 'nanoid';
 
 const registerClient = async (roomID: string, clientName: string) => {
   try {
@@ -34,29 +34,23 @@ const getClientName = (
 ) => {
   if (!response) return '';
 
-  const clientName = request.cookies.get('client_name')?.value || '';
-
-  if (clientName) return clientName;
-
   const userAuthHeader = response.headers.get('user-auth');
   const user: UserType.AuthUserData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  if (user) return user.name;
-
-  return '';
+  const clientName = request.cookies.get('client_name')?.value || '';
+  return user ? user.name : clientName;
 };
 
 const generateName = (name = '') => {
-  if (name) return name;
+  if (name.trim().length > 0) return name;
 
-  return uniqueNamesGenerator({
-    dictionaries: [names, names],
-    separator: ' ',
-    length: 2,
-  });
+  const characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+  const nanoid = customAlphabet(characters, 5);
+  const generatedName = `guest-${nanoid()}`;
+  return generatedName;
 };
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
