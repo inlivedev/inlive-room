@@ -16,6 +16,22 @@ export async function PUT(
     const clientName = body.name;
     const pathname = body.pathname;
 
+    if (typeof clientName !== 'string' || clientName.trim().length === 0) {
+      return NextResponse.json({
+        code: 400,
+        ok: false,
+        message: 'Name is not valid',
+      });
+    }
+
+    if (typeof pathname !== 'string' || pathname.trim().length === 0) {
+      return NextResponse.json({
+        code: 400,
+        ok: false,
+        message: 'Current pathname is not valid',
+      });
+    }
+
     const setNameResponse = await roomRoutesHandler.setClientNameHandler(
       params.roomID,
       params.clientID,
