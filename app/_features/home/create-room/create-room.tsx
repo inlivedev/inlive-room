@@ -20,11 +20,11 @@ export default function CreateRoom() {
     <>
       <section className="max-w-xl lg:max-w-lg">
         <h2 className="text-3xl font-bold tracking-wide lg:text-4xl">
-          Conference room for real-time video and audio calls
+          Virtual room for real-time video and audio calls
         </h2>
         <p className="mt-4 text-base text-zinc-400 lg:text-lg">
-          The alternative for Google Meet and Zoom video and audio calls. Get
-          started now by creating a room or join to other rooms with room code.
+          An open source virtual space for messaging, video, and audio calls in
+          real-time. Get started by creating a room or joining others now.
         </p>
         <div className="mt-8 ">
           <Button
