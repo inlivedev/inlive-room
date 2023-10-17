@@ -7,6 +7,8 @@ import { useParticipantContext } from '@/_features/room/contexts/participant-con
 import styles from '@/_features/room/styles/conference.module.css';
 import { Button, CircularProgress } from '@nextui-org/react';
 import { usePeerContext } from '../contexts/peer-context';
+import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
+import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 
 const isMobile = () => {
   if (typeof window !== 'undefined') {
@@ -24,16 +26,14 @@ export default function ConferenceParticipants() {
 
     if (!peerConnection) return;
 
-    peerConnection.addEventListener('iceconnectionstatechange', (event) => {
-      if (peerConnection.iceConnectionState !== 'closed' || 'connected') {
-        console.log(peerConnection.iceConnectionState);
+    peerConnection.addEventListener('iceconnectionstatechange', () => {
+      if (peerConnection.iceConnectionState !== 'failed' || 'connected') {
         setConnectionState('connecting');
       }
 
-      if (peerConnection.iceConnectionState === 'closed') {
+      if (peerConnection.iceConnectionState === 'failed') {
         setConnectionState('disconnected');
       }
-
       if (peerConnection.iceConnectionState === 'connected') {
         setConnectionState('connected');
       }
@@ -131,18 +131,17 @@ export default function ConferenceParticipants() {
           zIndex: 9999, // Adjust the z-index value as needed
         }}
       >
-        <Button
-          isIconOnly
-          className={`${
-            connectionState === 'disconnected'
-              ? 'bg-red-500'
-              : connectionState === 'connected'
-              ? 'bg-green-500'
-              : ''
-          }`}
-          style={{ padding: '0.5rem', fontSize: '0.75rem' }}
-        >
-          {connectionState === 'connecting' && <CircularProgress />}
+        <Button isIconOnly style={{ padding: '0.5rem', fontSize: '0.75rem' }}>
+          {connectionState === 'connecting' && (
+            <CircularProgress size="sm" strokeWidth={8} />
+          )}
+
+          {connectionState === 'connected' && (
+            <PlugConnectedFillIcon fill="#22C55E" />
+          )}
+          {connectionState === 'disconnected' && (
+            <PlugDisconnectedFillIcon fill="#EF4444" />
+          )}
         </Button>
       </div>
     );
