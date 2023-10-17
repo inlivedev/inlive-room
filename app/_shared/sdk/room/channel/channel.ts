@@ -206,12 +206,14 @@ export const createChannel = ({
           track_id: trackId,
         });
 
-        this._streams.addDraft(streamId, {
-          clientId: clientId,
-          name: clientName,
-          origin: 'remote',
-          source: source,
-        });
+        if (!this._streams.getDraft(streamId)) {
+          this._streams.addDraft(streamId, {
+            clientId: clientId,
+            name: clientName,
+            origin: 'remote',
+            source: source,
+          });
+        }
       }
 
       this._api.subscribeTracks(
