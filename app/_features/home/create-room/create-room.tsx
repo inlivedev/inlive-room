@@ -23,7 +23,7 @@ export default function CreateRoom() {
           Virtual room for real-time video and audio calls
         </h2>
         <p className="mt-4 text-base text-zinc-400 lg:text-lg">
-          An open source virtual space for messaging, video, and audio calls in
+          An open source virtual room for messaging, video, and audio calls in
           real-time. Get started by creating a room or joining others now.
         </p>
         <div className="mt-8 ">
