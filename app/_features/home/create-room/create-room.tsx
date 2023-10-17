@@ -44,7 +44,7 @@ export default function CreateRoom() {
                     wrapper: 'w-4 h-4',
                   }}
                 />
-                <span>Processing...</span>
+                <span>Creating a new room...</span>
               </div>
             ) : (
               <span>Create a new room</span>
