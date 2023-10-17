@@ -40,7 +40,7 @@ export default function View({ roomID, client }: ViewProps) {
           <DeviceProvider>
             <ParticipantProvider>
               <ChatProvider>
-                <EventContainer roomID={roomID}>
+                <EventContainer>
                   <ChatDrawerMenu />
                   {isConferenceActive ? (
                     <Conference />
