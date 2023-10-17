@@ -18,8 +18,9 @@ export const useLeaveRoom = () => {
       try {
         peer.disconnect();
         await room
-          .leaveRoom(roomID, clientID)
+          .leaveRoom(roomID, clientID, true)
           .then((response) => {
+            if (!response) throw new Error('Failed to end the call');
             if (response.code >= 300) {
               console.error('Failed to end the call');
             }
