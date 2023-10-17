@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -15,14 +15,11 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
-import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
 export default function ButtonCamera() {
-  const { active, toggle } = useToggle(true);
-  const { peer } = usePeerContext();
-  const didMount = useRef(false);
+  const { active, setActive, setInActive } = useToggle(true);
   const { currentVideoInput, videoInputs, devices } = useDeviceContext();
 
   const {
@@ -48,19 +45,25 @@ export default function ButtonCamera() {
     [devices, onVideoInputSelectionChange]
   );
 
-  useEffect(() => {
-    if (!peer) return;
-
-    if (didMount.current) {
-      if (active) {
-        peer.turnOnCamera();
-      } else {
-        peer.turnOffCamera();
-      }
+  const handleClick = useCallback(() => {
+    if (active) {
+      document.dispatchEvent(new CustomEvent('trigger:turnoff-camera'));
     } else {
-      didMount.current = true;
+      document.dispatchEvent(new CustomEvent('trigger:turnon-camera'));
     }
-  }, [active, peer]);
+  }, [active]);
+
+  useEffect(() => {
+    const onTurnOnCamera = () => setActive();
+    const onTurnOffCamera = () => setInActive();
+    document.addEventListener('trigger:turnon-camera', onTurnOnCamera);
+    document.addEventListener('trigger:turnoff-camera', onTurnOffCamera);
+
+    return () => {
+      document.removeEventListener('trigger:turnon-camera', onTurnOnCamera);
+      document.removeEventListener('trigger:turnoff-camera', onTurnOffCamera);
+    };
+  }, [setActive, setInActive]);
 
   return (
     <ButtonGroup variant="flat">
@@ -69,7 +72,7 @@ export default function ButtonCamera() {
         variant="flat"
         aria-label="Toggle Video Camera"
         className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-        onClick={toggle}
+        onClick={handleClick}
       >
         {active ? (
           <CameraOnIcon width={20} height={20} />

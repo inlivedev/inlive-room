@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -15,14 +15,11 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
-import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
 export default function ButtonMicrophone() {
-  const { active, toggle } = useToggle(true);
-  const { peer } = usePeerContext();
-  const didMount = useRef(false);
+  const { active, setActive, setInActive } = useToggle(true);
   const {
     currentAudioInput,
     currentAudioOutput,
@@ -79,19 +76,25 @@ export default function ButtonMicrophone() {
     [devices, onAudioInputSelectionChange, onAudioOutputSelectionChange]
   );
 
-  useEffect(() => {
-    if (!peer) return;
-
-    if (didMount.current) {
-      if (active) {
-        peer.turnOnMic();
-      } else {
-        peer.turnOffMic();
-      }
+  const handleClick = useCallback(() => {
+    if (active) {
+      document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
     } else {
-      didMount.current = true;
+      document.dispatchEvent(new CustomEvent('trigger:turnon-mic'));
     }
-  }, [active, peer]);
+  }, [active]);
+
+  useEffect(() => {
+    const onTurnOnMic = () => setActive();
+    const onTurnOffMic = () => setInActive();
+    document.addEventListener('trigger:turnon-mic', onTurnOnMic);
+    document.addEventListener('trigger:turnoff-mic', onTurnOffMic);
+
+    return () => {
+      document.removeEventListener('trigger:turnon-mic', onTurnOnMic);
+      document.removeEventListener('trigger:turnoff-mic', onTurnOffMic);
+    };
+  }, [setActive, setInActive]);
 
   return (
     <ButtonGroup variant="flat">
@@ -100,7 +103,7 @@ export default function ButtonMicrophone() {
         variant="flat"
         aria-label="Toggle Microphone"
         className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-        onClick={toggle}
+        onClick={handleClick}
       >
         {active ? (
           <MicrophoneOnIcon width={20} height={20} />
