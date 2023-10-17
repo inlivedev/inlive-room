@@ -52,19 +52,20 @@ export default function EventContainer({
 
   useEffect(() => {
     if (!peer) return;
+
     const isTouchScreen = hasTouchScreen();
 
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && isTouchScreen && peer) {
+    const onWindowBlur = () => {
+      if (isTouchScreen && peer) {
         document.dispatchEvent(new CustomEvent('trigger:turnoff-camera'));
         document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
       }
     };
 
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('blur', onWindowBlur);
 
     return () => {
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('blur', onWindowBlur);
     };
   }, [peer]);
 
