@@ -141,8 +141,8 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         ok: response.ok || false,
         message: response.message || '',
         data: {
-          clientId: data.client_id,
-          clientName: data.name,
+          clientId: data.client_id || '',
+          clientName: data.name || '',
           bitrates: {
             audio: bitrates.audio || 0,
             audioRed: bitrates.audio_red || 0,

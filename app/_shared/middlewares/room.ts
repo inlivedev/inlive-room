@@ -3,7 +3,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
 import type { UserType } from '@/_shared/types/user';
 import type { ClientType } from '@/_shared/types/client';
-import { uniqueNamesGenerator, names } from 'unique-names-generator';
+import { customAlphabet } from 'nanoid';
 
 const registerClient = async (roomID: string, clientName: string) => {
   try {
@@ -34,29 +34,29 @@ const getClientName = (
 ) => {
   if (!response) return '';
 
-  const clientName = request.cookies.get('client_name')?.value || '';
-
-  if (clientName) return clientName;
-
   const userAuthHeader = response.headers.get('user-auth');
   const user: UserType.AuthUserData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  if (user) return user.name;
-
-  return '';
+  const userName = user ? user.name : '';
+  const clientName = request.cookies.get('client_name')?.value || '';
+  return clientName ? clientName : userName;
 };
 
 const generateName = (name = '') => {
-  if (name) return name;
+  if (name.trim().length > 0) return name;
 
-  return uniqueNamesGenerator({
-    dictionaries: [names, names],
-    separator: ' ',
-    length: 2,
-  });
+  const alphabets = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '012345789'; // number 6 is removed
+
+  const generatedAlphabets = customAlphabet(alphabets, 4);
+  const generatedNumbers = customAlphabet(numbers, 2);
+  const id = generatedAlphabets() + generatedNumbers();
+
+  const result = `guest-${id}`;
+  return result;
 };
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
@@ -85,10 +85,6 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         client = await registerClient(roomID, newName);
       }
 
-      response.headers.set(
-        'Set-Cookie',
-        `client_name=${client.clientName};path=${request.nextUrl.pathname};SameSite=lax;`
-      );
       response.headers.set('user-client', JSON.stringify(client));
       response.headers.set('room-data', JSON.stringify(roomData));
     }
