@@ -24,11 +24,7 @@ export default function Lobby({ roomID }: LobbyProps) {
       'device:selected-video-input-id'
     );
 
-    if (selectedVideoInputId) {
-      return { deviceId: { exact: selectedVideoInputId } };
-    }
-
-    return {
+    const defaultVideoConstraints: MediaTrackConstraints = {
       width: { ideal: 1280 },
       height: { ideal: 720 },
       advanced: [
@@ -43,6 +39,12 @@ export default function Lobby({ roomID }: LobbyProps) {
         { aspectRatio: { exact: 1.77778 } },
       ],
     };
+
+    if (selectedVideoInputId) {
+      defaultVideoConstraints['deviceId'] = { exact: selectedVideoInputId };
+    }
+
+    return defaultVideoConstraints;
   }, []);
 
   const audioConstraints = useMemo(() => {

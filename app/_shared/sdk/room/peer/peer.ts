@@ -462,7 +462,7 @@ export const createPeer = ({
       if (this._roomId === '' || this._clientId === '') return;
 
       this.disconnect();
-      await this._api.leaveRoom(this._roomId, this._clientId);
+      await this._api.leaveRoom(this._roomId, this._clientId, true);
     };
 
     setAsLeftRoom = () => {

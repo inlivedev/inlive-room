@@ -1,6 +1,6 @@
 export const createFetcher = () => {
   const Fetcher = class {
-    _baseUrl;
+    _baseUrl: string;
 
     constructor(baseUrl: string) {
       this._baseUrl = baseUrl;
@@ -41,6 +41,10 @@ export const createFetcher = () => {
       })
         .then(this._resolution)
         .catch(this._rejection);
+    };
+
+    getBaseUrl = () => {
+      return this._baseUrl;
     };
 
     get = (endpoint: string, options: RequestInit | undefined = {}) => {
@@ -84,6 +88,7 @@ export const createFetcher = () => {
       const fetcher = new Fetcher(baseUrl);
 
       return {
+        getBaseUrl: fetcher.getBaseUrl,
         get: fetcher.get,
         post: fetcher.post,
         put: fetcher.put,

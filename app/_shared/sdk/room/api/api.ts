@@ -292,13 +292,24 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       return result;
     };
 
-    leaveRoom = async (roomId: string, clientId: string) => {
+    leaveRoom = async (
+      roomId: string,
+      clientId: string,
+      useBeacon: boolean
+    ) => {
       if (!roomId || !clientId) {
         throw new Error('Room ID, and client ID are required');
       }
 
+      const endpoint = `/rooms/${roomId}/leave/${clientId}`;
+      if (useBeacon) {
+        navigator.sendBeacon(`${this._fetcher.getBaseUrl()}${endpoint}`);
+
+        return;
+      }
+
       const response: RoomAPIType.BaseResponseBody = await this._fetcher.delete(
-        `/rooms/${roomId}/leave/${clientId}`,
+        endpoint,
         {
           keepalive: true,
         }
