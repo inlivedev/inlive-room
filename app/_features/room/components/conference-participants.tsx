@@ -81,12 +81,16 @@ export default function ConferenceParticipants() {
         : styles['presenting-media']
       : styles['gallery-media'];
 
+    const isLocal = stream.origin === 'local';
+    const isUserCameraScreen =
+      stream.origin === 'local' && stream.source === 'media';
+
     return (
       <div
         key={stream.id}
         className={`${className} ${
-          stream.origin === 'local' ? styles['local'] : styles['remote']
-        }`}
+          isLocal ? styles['local'] : styles['remote']
+        } ${isUserCameraScreen ? styles['user-camera-screen'] : ''}`}
         style={videoLayout(hasScreen, stream.source)}
       >
         <ConferenceScreen stream={stream} />

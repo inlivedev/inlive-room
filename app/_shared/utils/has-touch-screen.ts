@@ -1,6 +1,8 @@
 export const hasTouchScreen = () => {
   let hasTouchScreen = false;
 
+  if (typeof window === 'undefined') return hasTouchScreen;
+
   if ('maxTouchPoints' in navigator) {
     hasTouchScreen = navigator.maxTouchPoints > 0;
   } else if ('msMaxTouchPoints' in navigator) {
