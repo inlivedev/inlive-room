@@ -48,10 +48,15 @@ const getClientName = (
 const generateName = (name = '') => {
   if (name.trim().length > 0) return name;
 
-  const characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-  const nanoid = customAlphabet(characters, 5);
-  const generatedName = `guest-${nanoid()}`;
-  return generatedName;
+  const alphabets = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '012345789'; // number 6 is removed
+
+  const generatedAlphabets = customAlphabet(alphabets, 4);
+  const generatedNumbers = customAlphabet(numbers, 2);
+  const id = generatedAlphabets() + generatedNumbers();
+
+  const result = `guest-${id}`;
+  return result;
 };
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
