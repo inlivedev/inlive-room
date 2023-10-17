@@ -428,13 +428,8 @@ export const createPeer = ({
 
       if (!(mediaStream instanceof MediaStream)) return;
 
-      if (this.hasStream(mediaStream.id)) {
-        if (event.track.kind === 'video') {
-          this.removeStream(mediaStream.id);
-        } else {
-          return;
-        }
-      }
+      if (this.hasStream(mediaStream.id)) return;
+
       mediaStream.addEventListener('removetrack', (event) => {
         const target = event.target;
 
@@ -491,8 +486,6 @@ export const createPeer = ({
       };
 
       if (browserName !== null && simulcastBrowsers.includes(browserName)) {
-        console.log('simulcast enabled');
-
         simulcastInit['sendEncodings'] = [
           // for firefox order matters... first high resolution, then scaled resolutions...
           {
