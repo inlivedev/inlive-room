@@ -40,8 +40,9 @@ const getClientName = (
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
+  const userName = user ? user.name : '';
   const clientName = request.cookies.get('client_name')?.value || '';
-  return user ? user.name : clientName;
+  return clientName ? clientName : userName;
 };
 
 const generateName = (name = '') => {
@@ -79,10 +80,6 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         client = await registerClient(roomID, newName);
       }
 
-      response.headers.set(
-        'Set-Cookie',
-        `client_name=${client.clientName};path=${request.nextUrl.pathname};SameSite=lax;`
-      );
       response.headers.set('user-client', JSON.stringify(client));
       response.headers.set('room-data', JSON.stringify(roomData));
     }
