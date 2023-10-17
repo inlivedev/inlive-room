@@ -42,7 +42,7 @@
   }
 }
 
-.gallery .local video {
+.user-camera-screen video {
   transform: scaleX(-1);
 }
 
