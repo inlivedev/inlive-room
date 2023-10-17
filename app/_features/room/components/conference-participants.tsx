@@ -1,10 +1,14 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import type { InstanceStream } from '@/_shared/sdk/room/stream/stream-types';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import styles from '@/_features/room/styles/conference.module.css';
+import { Button, CircularProgress } from '@nextui-org/react';
+import { usePeerContext } from '../contexts/peer-context';
+import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
+import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 
 const isMobile = () => {
   if (typeof window !== 'undefined') {
@@ -14,6 +18,28 @@ const isMobile = () => {
 
 export default function ConferenceParticipants() {
   const { streams } = useParticipantContext();
+  const { peer } = usePeerContext();
+  const [connectionState, setConnectionState] = useState('connecting');
+
+  useEffect(() => {
+    const peerConnection = peer?.getPeerConnection();
+
+    if (!peerConnection) return;
+
+    peerConnection.addEventListener('iceconnectionstatechange', () => {
+      if (peerConnection.iceConnectionState !== 'failed' || 'connected') {
+        setConnectionState('connecting');
+      }
+
+      if (peerConnection.iceConnectionState === 'failed') {
+        setConnectionState('disconnected');
+      }
+      if (peerConnection.iceConnectionState === 'connected') {
+        setConnectionState('connected');
+      }
+    });
+  });
+
   const screenCount = useRef<number>(0);
 
   const { medias, screens } = useMemo(() => {
@@ -98,6 +124,33 @@ export default function ConferenceParticipants() {
     );
   };
 
+  function ConnectionStatusOverlay() {
+    return (
+      <div
+        className="p-2.5"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          zIndex: 9999, // Adjust the z-index value as needed
+        }}
+      >
+        <Button isIconOnly style={{ padding: '0.5rem', fontSize: '0.75rem' }}>
+          {connectionState === 'connecting' && (
+            <CircularProgress size="sm" strokeWidth={8} />
+          )}
+
+          {connectionState === 'connected' && (
+            <PlugConnectedFillIcon fill="#22C55E" />
+          )}
+          {connectionState === 'disconnected' && (
+            <PlugDisconnectedFillIcon fill="#EF4444" />
+          )}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`${styles[hasScreen ? 'presenting' : 'gallery']} w-full ${
@@ -105,6 +158,7 @@ export default function ConferenceParticipants() {
       }`}
       style={layout(screens)}
     >
+      <ConnectionStatusOverlay></ConnectionStatusOverlay>
       {screens
         ? screens.map((stream) => {
             screenCount.current = 0;
