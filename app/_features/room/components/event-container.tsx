@@ -4,11 +4,7 @@ import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
 
-export default function EventContainer({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function EventContainer() {
   const { peer } = usePeerContext();
   const { streams } = useParticipantContext();
 
@@ -69,5 +65,5 @@ export default function EventContainer({
     };
   }, [peer]);
 
-  return <>{children}</>;
+  return <></>;
 }
