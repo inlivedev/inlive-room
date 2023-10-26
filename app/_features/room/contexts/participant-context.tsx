@@ -1,10 +1,17 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { InstanceStream } from '@/_shared/sdk/room/stream/stream-types';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { room } from '@/_shared/utils/sdk';
 
-export type ParticipantStream = InstanceStream;
+export type ParticipantStream = {
+  readonly id: string;
+  readonly clientId: string;
+  readonly name: string;
+  readonly origin: 'local' | 'remote';
+  readonly source: 'media' | 'screen';
+  readonly mediaStream: MediaStream;
+  readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
+};
 
 const defaultValue = {
   streams: [] as ParticipantStream[],
@@ -45,7 +52,7 @@ export function ParticipantProvider({
 
   useEffect(() => {
     if (peer && localStream) {
-      room.on(room.event.STREAM_ADDED, () => {
+      room.on(room.event.STREAM_AVAILABLE, () => {
         setStreams(peer.getAllStreams());
       });
 

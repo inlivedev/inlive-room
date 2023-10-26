@@ -10,7 +10,7 @@ export const useScreenShare = () => {
   const { active, setActive, setInActive } = useToggle(false);
 
   useEffect(() => {
-    room.on(room.event.STREAM_ADDED, (data) => {
+    room.on(room.event.STREAM_AVAILABLE, (data) => {
       if (
         data?.stream?.origin !== 'local' ||
         data?.stream?.source !== 'screen'
