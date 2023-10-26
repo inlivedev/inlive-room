@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
-import type { InstanceStream } from '@/_shared/sdk/room/stream/stream-types';
-import { useParticipantContext } from '@/_features/room/contexts/participant-context';
+import {
+  useParticipantContext,
+  type ParticipantStream,
+} from '@/_features/room/contexts/participant-context';
 import styles from '@/_features/room/styles/conference.module.css';
 import { Button, CircularProgress } from '@nextui-org/react';
 import { usePeerContext } from '../contexts/peer-context';
@@ -43,8 +45,8 @@ export default function ConferenceParticipants() {
   const screenCount = useRef<number>(0);
 
   const { medias, screens } = useMemo(() => {
-    const medias: InstanceStream[] = [];
-    const screens: InstanceStream[] = [];
+    const medias: ParticipantStream[] = [];
+    const screens: ParticipantStream[] = [];
 
     for (const stream of streams) {
       if (stream.source === 'screen') {
@@ -61,7 +63,7 @@ export default function ConferenceParticipants() {
     return screens.length > 0;
   }, [screens]);
 
-  const layout = (streams: InstanceStream[]) => {
+  const layout = (streams: ParticipantStream[]) => {
     if (hasScreen) {
       return isMobile()
         ? {
@@ -100,7 +102,7 @@ export default function ConferenceParticipants() {
     return {};
   };
 
-  const renderVideo = (stream: InstanceStream) => {
+  const renderVideo = (stream: ParticipantStream) => {
     const className = hasScreen
       ? stream.source === 'screen' && screenCount.current === 0
         ? styles['presenting-screen']
