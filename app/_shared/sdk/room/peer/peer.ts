@@ -13,6 +13,7 @@ import {
   VideoSizeReport,
   PublisherStatsData,
   PublisherStatsReport,
+  RTCRtpSVCTransceiverInit,
 } from './peer-types';
 
 export const PeerEvents: RoomPeerType.PeerEvents = {
@@ -480,6 +481,29 @@ export const createPeer = ({
       const browserName = getBrowserName();
       const simulcastBrowsers = [SAFARI, CHROME, EDGE, OPERA];
 
+      let svc = true;
+
+      let codecList: RTCRtpCodecCapability[] = [];
+
+      codecList = this._addCodec(codecList, 'video/VP9');
+
+      if (codecList.length == 0) {
+        svc = false;
+        codecList = this._addCodec(codecList, 'video/H264');
+      }
+
+      const scaleableInit: RTCRtpSVCTransceiverInit = {
+        direction: 'sendonly',
+        streams: [stream.mediaStream],
+        sendEncodings: [
+          {
+            maxBitrate: maxBitrate,
+            /* tslint:disable-next-line */
+            scalabilityMode: 'L3T3',
+          },
+        ],
+      };
+
       const simulcastInit: RTCRtpTransceiverInit = {
         direction: 'sendonly',
         streams: [stream.mediaStream],
@@ -508,10 +532,39 @@ export const createPeer = ({
         ];
       }
 
-      this._peerConnection.addTransceiver(
-        stream.mediaStream.getVideoTracks()[0],
-        simulcastInit
-      );
+      let tcvr;
+      if (svc) {
+        tcvr = this._peerConnection.addTransceiver(
+          stream.mediaStream.getVideoTracks()[0],
+          scaleableInit
+        );
+      } else {
+        tcvr = this._peerConnection.addTransceiver(
+          stream.mediaStream.getVideoTracks()[0],
+          simulcastInit
+        );
+      }
+
+      // currently not all browsers support setCodecPreferences
+      if (tcvr.setCodecPreferences != undefined) {
+        tcvr.setCodecPreferences(codecList);
+      }
+    };
+
+    _addCodec = (
+      codecsList: RTCRtpCodecCapability[],
+      codec: string
+    ): RTCRtpCodecCapability[] => {
+      const codecs = RTCRtpReceiver?.getCapabilities('video')?.codecs;
+      if (codecs) {
+        for (let i = 0; i < codecs.length; i++) {
+          if (codecs[i].mimeType == codec) {
+            codecsList.push(codecs[i]);
+          }
+        }
+      }
+
+      return codecsList;
     };
 
     _sleep = (delay: number) =>

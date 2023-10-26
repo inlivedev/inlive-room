@@ -80,3 +80,11 @@ export type Bitrates = {
 };
 
 export as namespace RoomPeerType;
+
+export interface RTCRtpSVCEncodingParameters extends RTCRtpEncodingParameters {
+  scalabilityMode?: string;
+}
+
+export interface RTCRtpSVCTransceiverInit extends RTCRtpTransceiverInit {
+  sendEncodings?: RTCRtpSVCEncodingParameters[];
+}
