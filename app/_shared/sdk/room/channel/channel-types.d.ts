@@ -14,9 +14,10 @@ export type ChannelDependencies = {
 };
 
 type ChannelEvents = {
-  CHANNEL_CONNECTED: 'channelConnected'
-  CHANNEL_DISCONNECTED: 'channelDisconnected'
-}
+  CHANNEL_CONNECTED: 'channelConnected';
+  CHANNEL_DISCONNECTED: 'channelDisconnected';
+  CHANNEL_NOT_FOUND: 'channelNotFound';
+};
 
 export type TrackSource = {
   track_id: string;

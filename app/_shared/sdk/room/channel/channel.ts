@@ -3,6 +3,7 @@ import { PeerEvents } from '../peer/peer';
 export const ChannelEvents: RoomChannelType.ChannelEvents = {
   CHANNEL_CONNECTED: 'channelConnected',
   CHANNEL_DISCONNECTED: 'channelDisconnected',
+  CHANNEL_NOT_FOUND: 'channelNotFound',
 };
 
 export const createChannel = ({
@@ -111,8 +112,16 @@ export const createChannel = ({
       }
     };
 
-    _onError = () => {
+    _onError = async () => {
       const errorTime = Date.now();
+
+      const code = await this._api.isClientExist(this._roomId, this._clientId);
+
+      if (code == 404) {
+        this.disconnect();
+        this._event.emit(ChannelEvents.CHANNEL_NOT_FOUND);
+        return;
+      }
 
       if (this._roomId && this._clientId) {
         // Reconnect Event Source

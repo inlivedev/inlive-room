@@ -6,6 +6,14 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       this._fetcher = fetcher;
     }
 
+    isClientExist = async (roomId: string, clientId: string) => {
+      const resp: RoomAPIType.BaseResponseBody = await this._fetcher.get(
+        `/rooms/${roomId}/events/${clientId}`
+      );
+
+      return resp.code;
+    };
+
     createRoom = async (name = '', id?: string) => {
       const response: RoomAPIType.CreateRoomResponseBody =
         await this._fetcher.post(`/rooms/create`, {
@@ -323,6 +331,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
+        message: response.message,
         data: null,
       };
 
@@ -385,6 +394,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         terminateRoom: api.terminateRoom,
         createDataChannel: api.createDataChannel,
         setClientName: api.setClientName,
+        isClientExist: api.isClientExist,
       };
     },
   };

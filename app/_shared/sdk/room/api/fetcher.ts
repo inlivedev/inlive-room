@@ -12,6 +12,7 @@ export const createFetcher = () => {
         return response
           .json()
           .then((json) => ({
+            code: response.status,
             ok: response.ok,
             ...json,
           }))
