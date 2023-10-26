@@ -49,7 +49,6 @@ export const createChannel = ({
       this._startTime = Date.now();
       this._channel = channel;
       this._addEventListener();
-      this._event.emit(ChannelEvents.CHANNEL_CONNECTED);
     };
 
     disconnect = () => {
@@ -64,6 +63,9 @@ export const createChannel = ({
     _addEventListener = () => {
       if (!this._channel) return;
 
+      this._channel.addEventListener('open', () => {
+        this._event.emit(ChannelEvents.CHANNEL_CONNECTED);
+      });
       this._channel.addEventListener('error', this._onError);
       this._channel.addEventListener('candidate', this._onCandidate);
       this._channel.addEventListener('offer', this._onOffer);
