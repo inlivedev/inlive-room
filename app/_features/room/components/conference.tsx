@@ -3,6 +3,7 @@ import ConferenceActionsBar from '@/_features/room/components/conference-actions
 import styles from '@/_features/room/styles/conference.module.css';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { useViewportHeight } from '@/_shared/hooks/use-viewport-height';
+import ReconncectModal from './reconnect-modal';
 
 export default function Conference() {
   useViewportHeight();
@@ -25,6 +26,7 @@ export default function Conference() {
 
   return (
     <div className="viewport-height w-full">
+      {/* <ReconncectModal></ReconncectModal> */}
       <div className={`${styles['participants']} ${getClass()}`}>
         <ConferenceParticipants />
       </div>

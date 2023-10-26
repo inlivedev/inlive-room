@@ -12,6 +12,7 @@ import Conference from '@/_features/room/components/conference';
 import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import type { ClientType } from '@/_shared/types/client';
+import { ConnectionProvider } from '../contexts/connection-status-context';
 
 type ViewProps = {
   roomID: string;
@@ -37,19 +38,21 @@ export default function View({ roomID, client }: ViewProps) {
     <div className="bg-zinc-900 text-zinc-200">
       <ClientProvider roomID={roomID} client={client}>
         <PeerProvider roomID={roomID} client={client}>
-          <DeviceProvider>
-            <ParticipantProvider>
-              <ChatProvider>
-                <EventContainer />
-                <ChatDrawerMenu />
-                {isConferenceActive ? (
-                  <Conference />
-                ) : (
-                  <Lobby roomID={roomID} />
-                )}
-              </ChatProvider>
-            </ParticipantProvider>
-          </DeviceProvider>
+          <ConnectionProvider>
+            <DeviceProvider>
+              <ParticipantProvider>
+                <ChatProvider>
+                  <EventContainer />
+                  <ChatDrawerMenu />
+                  {isConferenceActive ? (
+                    <Conference />
+                  ) : (
+                    <Lobby roomID={roomID} />
+                  )}
+                </ChatProvider>
+              </ParticipantProvider>
+            </DeviceProvider>
+          </ConnectionProvider>
         </PeerProvider>
       </ClientProvider>
     </div>

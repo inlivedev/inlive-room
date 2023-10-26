@@ -1,11 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import type { InstanceStream } from '@/_shared/sdk/room/stream/stream-types';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import styles from '@/_features/room/styles/conference.module.css';
-import { Button, CircularProgress } from '@nextui-org/react';
+import {
+  Button,
+  CircularProgress,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from '@nextui-org/react';
 import { usePeerContext } from '../contexts/peer-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
