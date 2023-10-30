@@ -6,12 +6,12 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
       this._fetcher = fetcher;
     }
 
-    isClientExist = async (roomId: string, clientId: string) => {
-      const resp: RoomAPIType.BaseResponseBody = await this._fetcher.get(
-        `/rooms/${roomId}/events/${clientId}`
+    getClient = async (roomId: string, clientId: string) => {
+      const resp: RoomAPIType.GetClientResponseBody = await this._fetcher.get(
+        `/rooms/${roomId}/client/${clientId}`
       );
 
-      return resp.code;
+      return resp;
     };
 
     createRoom = async (name = '', id?: string) => {
@@ -394,7 +394,7 @@ export const createApi = ({ fetcher }: RoomAPIType.ApiDependencies) => {
         terminateRoom: api.terminateRoom,
         createDataChannel: api.createDataChannel,
         setClientName: api.setClientName,
-        isClientExist: api.isClientExist,
+        getClient: api.getClient,
       };
     },
   };

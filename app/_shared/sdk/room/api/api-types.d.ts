@@ -53,6 +53,22 @@ export type BaseResponseBody = {
   message: string;
 };
 
+export type GetClientResponseBody = BaseResponseBody & {
+  data: {
+    id: string;
+    name: string;
+    peer_connection_state: RTCPeerConnectionState;
+    ice_peer_connection_state: RTCIceConnectionState;
+    events: {
+      [key: string]: {
+        name: string;
+        timestamp: number;
+        data: { [key: string]: string };
+      };
+    };
+  };
+};
+
 export type CreateRoomResponseBody = BaseResponseBody & {
   data: {
     room_id: string;

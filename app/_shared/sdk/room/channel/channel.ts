@@ -115,9 +115,9 @@ export const createChannel = ({
     _onError = async () => {
       const errorTime = Date.now();
 
-      const code = await this._api.isClientExist(this._roomId, this._clientId);
+      const resp = await this._api.getClient(this._roomId, this._clientId);
 
-      if (code == 404) {
+      if (resp.code == 404) {
         this.disconnect();
         this._event.emit(ChannelEvents.CHANNEL_NOT_FOUND);
         return;
