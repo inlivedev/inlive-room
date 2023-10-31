@@ -499,7 +499,7 @@ export const createPeer = ({
           {
             maxBitrate: maxBitrate,
             /* tslint:disable-next-line */
-            scalabilityMode: 'L3T3',
+            scalabilityMode: 'L3T2',
           },
         ],
       };
