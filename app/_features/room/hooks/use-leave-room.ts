@@ -23,8 +23,6 @@ export const useLeaveRoom = () => {
           console.error('Failed to end the call');
         }
 
-        peer.setAsLeftRoom();
-
         setIsSubmitting(false);
         window.location.href = '/';
       } catch (error) {

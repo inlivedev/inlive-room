@@ -21,7 +21,7 @@ export default function ConferenceScreen({
     return () => {
       if (videoEl && stream.origin === 'remote') peer?.unobserveVideo(videoEl);
     };
-  });
+  }, [peer, stream.origin, videoRef]);
 
   return (
     <div className={`${styles['video-screen']} relative rounded-lg shadow-lg`}>
