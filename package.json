@@ -13,7 +13,7 @@
     "migrate": "ts-node ./migrate.ts"
   },
   "dependencies": {
-    "@inlivedev/inlive-js-sdk": "^0.10.1",
+    "@inlivedev/inlive-js-sdk": "^0.10.2",
     "@nextui-org/react": "^2.1.12",
     "@sentry/nextjs": "^7.70.0",
     "drizzle-orm": "^0.28.6",
