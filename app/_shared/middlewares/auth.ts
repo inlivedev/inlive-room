@@ -9,6 +9,12 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
   return async (request: NextRequest, event: NextFetchEvent) => {
     const response = await middleware(request, event);
 
+    if (request.nextUrl.pathname.startsWith('/health')) {
+      return response;
+    }
+
+    console.log('withAuthMiddleware', request.nextUrl.pathname);
+
     if (response) {
       const clientAuthResponse = await getClientAuth();
       const currentAuth = clientAuthResponse.data
