@@ -13,15 +13,15 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
       return response;
     }
 
-    console.log('withAuthMiddleware', request.nextUrl.pathname);
-
     if (response) {
-      const clientAuthResponse = await getClientAuth();
-      const currentAuth = clientAuthResponse.data
-        ? clientAuthResponse.data
-        : null;
+      try {
+        const clientAuthResponse = await getClientAuth();
+        const currentAuth = clientAuthResponse.data
+          ? clientAuthResponse.data
+          : null;
 
-      response.headers.set('user-auth', JSON.stringify(currentAuth));
+        response.headers.set('user-auth', JSON.stringify(currentAuth));
+      } catch (error) {}
     }
 
     return response;
