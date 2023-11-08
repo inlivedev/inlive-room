@@ -191,14 +191,16 @@ export class service implements iRoomService {
 
     const remoteRoom = await this._sdk.getRoom(room.id);
 
-    if (remoteRoom.code > 299) {
+    if (!remoteRoom.ok) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
-      if (newRemoteRoom.code > 299) {
-        if (newRemoteRoom.code == 409) throw new Error(newRemoteRoom.message);
+
+      if (!newRemoteRoom.ok && Math.trunc(newRemoteRoom.code / 100) == 4)
+        throw new Error(newRemoteRoom.message);
+
+      if (!newRemoteRoom.ok)
         throw new Error(
           'Error occured during accessing room data, please try again later'
         );
-      }
 
       const ChannelResp = await this._sdk.createDataChannel(
         room.id,
