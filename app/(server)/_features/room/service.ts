@@ -164,7 +164,15 @@ export class service implements iRoomService {
       }
     }
 
-    throw new Error('Failed to create a unique room ID');
+    // Error for logging
+    Sentry.captureException(
+      new Error('failed to create meeting room : too many retires')
+    );
+
+    // Error message given to user
+    throw new Error(
+      'Failed to create a unique room ID, please try again later'
+    );
   }
 
   async joinRoom(roomId: string): Promise<Room | undefined> {
@@ -197,10 +205,16 @@ export class service implements iRoomService {
       if (!newRemoteRoom.ok && Math.trunc(newRemoteRoom.code / 100) == 4)
         throw new Error(newRemoteRoom.message);
 
-      if (!newRemoteRoom.ok)
+      if (!newRemoteRoom.ok) {
+        Sentry.captureException(
+          new Error(
+            `failed to create room, got ${newRemoteRoom.code} response code from the SDK`
+          )
+        );
         throw new Error(
           'Error occured during accessing room data, please try again later'
         );
+      }
 
       const ChannelResp = await this._sdk.createDataChannel(
         room.id,
