@@ -25,6 +25,8 @@ export function ConnectionProvider({
     });
 
     room.on(room.event.CHANNEL_CLOSED, ({ reason }) => {
+      if (typeof reason != 'string')
+        console.log('failed to handle channel closed, reason type invalid');
       if (reason === 'notfound') {
         setConnectionState(false);
         console.log('event endpoint removed');
