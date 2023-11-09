@@ -197,13 +197,10 @@ export class service implements iRoomService {
       throw new Error('Room not exists');
     }
 
-    const remoteRoom = await this._sdk.getRoom(room.id);
+    const remoteRoom = await this._sdk.getRoom(roomId);
 
-    if (!remoteRoom.ok) {
+    if (room.id && remoteRoom.code === 404) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
-
-      if (!newRemoteRoom.ok && Math.trunc(newRemoteRoom.code / 100) == 4)
-        throw new Error(newRemoteRoom.message);
 
       if (!newRemoteRoom.ok) {
         Sentry.captureException(
@@ -216,13 +213,13 @@ export class service implements iRoomService {
         );
       }
 
-      const ChannelResp = await this._sdk.createDataChannel(
+      const channelResponse = await this._sdk.createDataChannel(
         room.id,
         'chat',
         true
       );
 
-      if (!ChannelResp.ok) {
+      if (!channelResponse.ok) {
         Sentry.captureException(
           new Error(`Room ${room.id} : failed to create chat data channel`)
         );
