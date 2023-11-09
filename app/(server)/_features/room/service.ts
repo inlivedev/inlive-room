@@ -112,30 +112,40 @@ export class service implements iRoomService {
   }
 
   async createRoom(userID: number): Promise<Room> {
-    while (true) {
-      const roomID = generateID();
-      const RoomResp = await this._sdk.createRoom('', roomID);
-      if (RoomResp.code == 409) continue;
-      if (RoomResp.code > 299)
-        throw new Error('Error during creating room, please try again later');
+    let retries = 0;
+    const maxRetries = 3;
 
-      const ChannelResp = await this._sdk.createDataChannel(
+    while (retries < maxRetries) {
+      const roomID = generateID();
+      const roomResp = await this._sdk.createRoom('', roomID);
+
+      if (roomResp.code == 409) {
+        retries++;
+        continue;
+      }
+
+      if (roomResp.code > 299) {
+        throw new Error('Error during creating room, please try again later');
+      }
+
+      const channelResp = await this._sdk.createDataChannel(
         roomID,
         'chat',
         true
       );
 
-      if (!ChannelResp.ok) {
+      if (!channelResp.ok) {
         Sentry.captureException(
           new Error(`Room ${roomID} : failed to create chat data channel`)
         );
       }
 
-      if (!this._roomRepo.isPersistent())
+      if (!this._roomRepo.isPersistent()) {
         return {
-          id: RoomResp.data.roomId,
+          id: roomResp.data.roomId,
           createdBy: userID,
         };
+      }
 
       try {
         const room = await this._roomRepo.addRoom({
@@ -145,10 +155,24 @@ export class service implements iRoomService {
         return room;
       } catch (error) {
         const err = error as Error;
-        if (err.message.includes('duplicate key')) continue;
-        else throw err;
+        if (err.message.includes('duplicate key')) {
+          retries++;
+          continue;
+        } else {
+          throw err;
+        }
       }
     }
+
+    // Error for logging
+    Sentry.captureException(
+      new Error('failed to create meeting room : too many retires')
+    );
+
+    // Error message given to user
+    throw new Error(
+      'Failed to create a unique room ID, please try again later'
+    );
   }
 
   async joinRoom(roomId: string): Promise<Room | undefined> {
@@ -175,10 +199,18 @@ export class service implements iRoomService {
 
     const remoteRoom = await this._sdk.getRoom(room.id);
 
-    if (remoteRoom.code > 299) {
+    if (!remoteRoom.ok) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
-      if (newRemoteRoom.code > 299) {
-        if (newRemoteRoom.code == 409) throw new Error(newRemoteRoom.message);
+
+      if (!newRemoteRoom.ok && Math.trunc(newRemoteRoom.code / 100) == 4)
+        throw new Error(newRemoteRoom.message);
+
+      if (!newRemoteRoom.ok) {
+        Sentry.captureException(
+          new Error(
+            `failed to create room, got ${newRemoteRoom.code} response code from the SDK`
+          )
+        );
         throw new Error(
           'Error occured during accessing room data, please try again later'
         );
