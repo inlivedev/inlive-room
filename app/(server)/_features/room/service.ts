@@ -175,35 +175,32 @@ export class service implements iRoomService {
     );
   }
 
-  async joinRoom(roomId: string): Promise<Room | undefined> {
+  async joinRoom(roomId: string) {
     if (!this._roomRepo.isPersistent()) {
+      let room;
+
       const remoteRoom = await this._sdk.getRoom(roomId);
       if (remoteRoom.ok) {
-        const room: Room = {
+        room = {
           id: remoteRoom.data.roomId,
           name: remoteRoom.data.roomName,
           createdBy: 0,
-        };
-
-        return room;
+        } as Room;
       }
 
-      throw new Error('Room not exists');
+      return room;
     }
 
-    const room = await this._roomRepo.getRoomById(roomId);
+    const roomPromise = this._roomRepo.getRoomById(roomId);
+    const remoteRoomPromise = this._sdk.getRoom(roomId);
 
-    if (!room) {
-      throw new Error('Room not exists');
-    }
+    const [room, remoteRoom] = await Promise.all([
+      roomPromise,
+      remoteRoomPromise,
+    ]);
 
-    const remoteRoom = await this._sdk.getRoom(room.id);
-
-    if (!remoteRoom.ok) {
+    if (room && room.id && remoteRoom.code === 404) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
-
-      if (!newRemoteRoom.ok && Math.trunc(newRemoteRoom.code / 100) == 4)
-        throw new Error(newRemoteRoom.message);
 
       if (!newRemoteRoom.ok) {
         Sentry.captureException(
@@ -216,13 +213,13 @@ export class service implements iRoomService {
         );
       }
 
-      const ChannelResp = await this._sdk.createDataChannel(
+      const channelResponse = await this._sdk.createDataChannel(
         room.id,
         'chat',
         true
       );
 
-      if (!ChannelResp.ok) {
+      if (!channelResponse.ok) {
         Sentry.captureException(
           new Error(`Room ${room.id} : failed to create chat data channel`)
         );
