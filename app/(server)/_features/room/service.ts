@@ -175,31 +175,26 @@ export class service implements iRoomService {
     );
   }
 
-  async joinRoom(roomId: string): Promise<Room | undefined> {
+  async joinRoom(roomId: string) {
     if (!this._roomRepo.isPersistent()) {
+      let room;
+
       const remoteRoom = await this._sdk.getRoom(roomId);
       if (remoteRoom.ok) {
-        const room: Room = {
+        room = {
           id: remoteRoom.data.roomId,
           name: remoteRoom.data.roomName,
           createdBy: 0,
-        };
-
-        return room;
+        } as Room;
       }
 
-      throw new Error('Room not exists');
+      return room;
     }
 
     const room = await this._roomRepo.getRoomById(roomId);
-
-    if (!room) {
-      throw new Error('Room not exists');
-    }
-
     const remoteRoom = await this._sdk.getRoom(roomId);
 
-    if (room.id && remoteRoom.code === 404) {
+    if (room && room.id && remoteRoom.code === 404) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
 
       if (!newRemoteRoom.ok) {
