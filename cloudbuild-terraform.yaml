@@ -45,21 +45,21 @@ steps:
       - push
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
 
- 
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - auth 
+      - configure-docker 
+      - ${_REGION}-docker.pkg.dev 
   # Clone terraform repo and deploy with new image
   - name: 'gcr.io/cloud-builders/git'
-    entrypoint: /bin/bash
-    args:
-    - -c
-    - |
+    script: |
+      #!/usr/bin/env bash
       # clone the terraform repo without history, make sure cloudbuild has access to this repo
       git clone --depth 1 https://$$GITHUB_TOKEN@github.com/asumsi/parthenon
     secretEnv: ['GITHUB_TOKEN']
   - name: 'hashicorp/terraform:1.0.0'
-    entrypoint: /bin/sh
-    args:
-    - -c
-    - |
+    script: |
+      #!/usr/bin/env bash
       # switch working directory to gcp/deployment/prod
       cd parthenon/gcp/deployment/prod
       # execute terraform commands to deploy with new image passed with variable
