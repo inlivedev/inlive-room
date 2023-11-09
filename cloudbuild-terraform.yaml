@@ -60,7 +60,7 @@ steps:
     secretEnv: ['GITHUB_TOKEN']
   - name: 'hashicorp/terraform:1.0.0'
     script: |
-      #!/usr/bin/env bash
+      #!/usr/bin/env
       # switch working directory to gcp/deployment/prod
       cd parthenon/gcp/deployment/prod
       # execute terraform commands to deploy with new image passed with variable
