@@ -55,12 +55,15 @@ steps:
     entrypoint: bash
     args:
     - -c
-    - # clone the terraform repo without history, make sure cloudbuild has access to this repo
-    - git clone --depth 1 https://$$GITHUB_TOKEN@github.com/asumsi/parthenon
+    - |
+      # clone the terraform repo without history, make sure cloudbuild has access to this repo
+      git clone --depth 1 https://$$GITHUB_TOKEN@github.com/asumsi/parthenon
     secretEnv: ['GITHUB_TOKEN']
   - name: 'hashicorp/terraform:1.0.0'
-    script: |
-      #!/usr/bin/env
+    entrypoint: /bin/sh
+    args:
+    - -c
+    - |
       # switch working directory to gcp/deployment/prod
       cd parthenon/gcp/deployment/prod
       # execute terraform commands to deploy with new image passed with variable
