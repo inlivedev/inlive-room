@@ -2,7 +2,7 @@ import { roomRoutesHandler } from '@/(server)/_features/room/routes';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   _: Request,
