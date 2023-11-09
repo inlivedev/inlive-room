@@ -191,8 +191,13 @@ export class service implements iRoomService {
       return room;
     }
 
-    const room = await this._roomRepo.getRoomById(roomId);
-    const remoteRoom = await this._sdk.getRoom(roomId);
+    const roomPromise = this._roomRepo.getRoomById(roomId);
+    const remoteRoomPromise = this._sdk.getRoom(roomId);
+
+    const [room, remoteRoom] = await Promise.all([
+      roomPromise,
+      remoteRoomPromise,
+    ]);
 
     if (room && room.id && remoteRoom.code === 404) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
