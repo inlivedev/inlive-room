@@ -1,7 +1,7 @@
 import { db } from '@/(server)/_shared/database/database';
 import { iEventRepo } from './service';
 import { events, insertEvent } from './schema';
-import { eq } from 'drizzle-orm';
+import { DBQueryConfig, eq } from 'drizzle-orm';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: typeof insertEvent) {
@@ -14,6 +14,32 @@ export class EventRepo implements iEventRepo {
     const data = await db.query.events.findFirst({
       where: eq(events.slug, slug),
     });
+
+    return data;
+  }
+
+  async getEvents(page: number, limit: number, userId?: number) {
+    if (page <= 0) {
+      page = 1;
+    }
+
+    if (limit <= 0) {
+      limit = 10;
+    }
+
+    const filter: DBQueryConfig = {
+      limit: limit,
+      offset: page * limit,
+      orderBy(fields, operators) {
+        return [operators.desc(fields.createdAt)];
+      },
+    };
+
+    if (userId) {
+      filter.where = eq(events.createdBy, userId);
+    }
+
+    const data = await db.query.events.findMany(filter);
 
     return data;
   }
