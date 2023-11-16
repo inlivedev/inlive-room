@@ -43,6 +43,13 @@
       "when": 1697089538283,
       "tag": "0005_remove_participant_table",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1700144801130,
+      "tag": "0006_event_webinar",
+      "breakpoints": true
     }
   ]
 }
