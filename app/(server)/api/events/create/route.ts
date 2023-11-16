@@ -1,4 +1,3 @@
-import { Event } from '@/(server)/_features/event/service';
 import { NextRequest, NextResponse } from 'next/server';
 import { eventService } from '../_index';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';

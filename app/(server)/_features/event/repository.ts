@@ -1,10 +1,10 @@
 import { db } from '@/(server)/_shared/database/database';
-import { Event, iEventRepo } from './service';
-import { events } from './schema';
+import { iEventRepo } from './service';
+import { events, insertEvent } from './schema';
 import { eq } from 'drizzle-orm';
 
 export class EventRepo implements iEventRepo {
-  async addEvent(event: Event) {
+  async addEvent(event: typeof insertEvent) {
     const data = await db.insert(events).values(event).returning();
 
     return data[0];
