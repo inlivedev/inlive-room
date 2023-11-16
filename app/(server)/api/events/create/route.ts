@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       createdBy: response.data.id,
     };
 
-    eventService.addEvent(Event);
+    eventService.createEvent(Event);
   } catch (error) {
     console.error(error);
   }

@@ -3,7 +3,7 @@ import { insertEvent } from '@/(server)/_features/event/schema';
 import { Event, EventService } from '@/(server)/_features/event/service';
 
 export interface iEventService {
-  addEvent(eventData: typeof insertEvent): Promise<Event>;
+  createEvent(eventData: typeof insertEvent): Promise<Event>;
   getEvent(slug: string): Promise<Event | undefined>;
 }
 

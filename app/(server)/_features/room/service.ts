@@ -1,7 +1,9 @@
 import { iRoomService } from './routes';
 import { room } from '@/_shared/utils/sdk';
-import Sqids from 'sqids';
+
 import * as Sentry from '@sentry/nextjs';
+
+import { generateID } from '@/(server)/_shared/utils/generateid';
 
 export interface Room {
   id: string;
@@ -229,19 +231,3 @@ export class service implements iRoomService {
     return room;
   }
 }
-
-const generateRandomNumber = (): number => {
-  return Math.floor(Math.random() * 10);
-};
-
-const generateID = (): string => {
-  const sqids = new Sqids();
-  const numArray = [
-    generateRandomNumber(),
-    generateRandomNumber(),
-    generateRandomNumber(),
-    generateRandomNumber(),
-    generateRandomNumber(),
-  ];
-  return sqids.encode(numArray);
-};

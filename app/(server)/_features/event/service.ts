@@ -1,5 +1,6 @@
 import { iEventService } from '@/(server)/api/events/_index';
 import { insertEvent } from './schema';
+import { generateID } from '@/(server)/_shared/utils/generateid';
 
 export interface iEventRepo {
   addEvent(eventData: typeof insertEvent): Promise<Event>;
@@ -29,9 +30,9 @@ export class EventService implements iEventService {
 
   error: Map<string, Error> = new Map();
 
-  async addEvent(eventData: typeof insertEvent): Promise<Event> {
+  async createEvent(eventData: typeof insertEvent): Promise<Event> {
+    eventData.slug = eventData.slug + '-' + generateID(8);
     const event = await this.repo.addEvent(eventData);
-
     return event;
   }
 
