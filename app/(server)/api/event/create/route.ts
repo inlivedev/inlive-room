@@ -8,6 +8,7 @@ import { insertEvent } from '@/(server)/_features/event/schema';
 type CreateEvent = {
   name: string;
   startTime: string;
+  description: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CreateEvent;
     const eventName = body.name;
     const eventStartTime = new Date(body.startTime);
+    const eventDesc = body.description;
 
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       return NextResponse.json({

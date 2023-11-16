@@ -50,6 +50,13 @@
       "when": 1700144801130,
       "tag": "0006_event_webinar",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1700145299091,
+      "tag": "0007_event_webinar_desc",
+      "breakpoints": true
     }
   ]
 }
