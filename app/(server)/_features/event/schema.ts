@@ -15,6 +15,7 @@ export const events = pgTable('events', {
   startTime: timestamp('start_time').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   description: text('description'),
+  createdBy: integer('created_by').notNull(),
 });
 
 export const eventsRelation = relations(events, ({ many }) => ({

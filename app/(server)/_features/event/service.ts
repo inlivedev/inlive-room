@@ -1,4 +1,4 @@
-import { iEventService } from '@/(server)/api/event/_index';
+import { iEventService } from '@/(server)/api/events/_index';
 import { insertEvent } from './schema';
 
 export interface iEventRepo {

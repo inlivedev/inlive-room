@@ -39,12 +39,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const Event: typeof insertEvent = {
-      name: eventName,
-      startTime: eventStartTime,
-      slug: eventName.toLowerCase().replace(/\s/g, '-'),
-    };
-
     const response = await getCurrentAuthenticated(requestToken.value);
 
     if (!response.ok) {
@@ -54,6 +48,14 @@ export async function POST(request: NextRequest) {
         message: 'Please check if token is provided in the cookie',
       });
     }
+
+    const Event: typeof insertEvent = {
+      name: eventName,
+      startTime: eventStartTime,
+      slug: eventName.toLowerCase().replace(/\s/g, '-'),
+      description: eventDesc,
+      createdBy: response.data.id,
+    };
 
     eventService.addEvent(Event);
   } catch (error) {
