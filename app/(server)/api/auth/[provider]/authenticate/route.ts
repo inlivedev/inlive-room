@@ -23,7 +23,7 @@ export async function GET(
         status: 307,
       });
 
-      const sevenDays = 60 * 60 * 24 * 7;
+      const thirtyDays = 60 * 60 * 24 * 30;
 
       response.cookies.set({
         name: 'token',
@@ -31,7 +31,7 @@ export async function GET(
         path: '/',
         sameSite: 'lax',
         httpOnly: true,
-        maxAge: sevenDays,
+        maxAge: thirtyDays,
       });
 
       return response;
