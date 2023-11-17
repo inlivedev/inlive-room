@@ -48,7 +48,7 @@ export async function PUT(
       { status: 200 }
     );
 
-    const thirtyDays = 1000 * 60 * 60 * 24 * 30;
+    const thirtyDays = 60 * 60 * 24 * 30;
 
     routeResponse.cookies.set({
       name: 'client_name',
