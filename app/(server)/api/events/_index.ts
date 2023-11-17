@@ -7,4 +7,5 @@ export interface iEventService {
   getEvent(slug: string): Promise<Event | undefined>;
 }
 
-export const eventService = new EventService(new EventRepo());
+export const eventRepo = new EventRepo();
+export const eventService = new EventService(eventRepo);

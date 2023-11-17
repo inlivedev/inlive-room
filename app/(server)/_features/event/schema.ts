@@ -11,7 +11,7 @@ import {
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
   slug: text('slug').notNull().unique(),
-  name: text('name'),
+  name: text('name').notNull(),
   startTime: timestamp('start_time').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   description: text('description'),

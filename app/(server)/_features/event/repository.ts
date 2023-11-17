@@ -1,7 +1,7 @@
 import { db } from '@/(server)/_shared/database/database';
 import { iEventRepo } from './service';
 import { events, insertEvent } from './schema';
-import { DBQueryConfig, eq } from 'drizzle-orm';
+import { DBQueryConfig, and, eq } from 'drizzle-orm';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: typeof insertEvent) {
@@ -42,6 +42,36 @@ export class EventRepo implements iEventRepo {
     const data = await db.query.events.findMany(filter);
 
     return data;
+  }
+
+  async deleteEvent(id: number, userId: number) {
+    return await db
+      .delete(events)
+      .where(and(eq(events.id, id), eq(events.id, userId)))
+      .returning();
+  }
+
+  async deleteEventBySlug(slug: string, userId: number) {
+    return await db
+      .delete(events)
+      .where(and(eq(events.slug, slug), eq(events.id, userId)))
+      .returning();
+  }
+
+  async updateEvent(userId: number, id: number, event: typeof insertEvent) {
+    return await db
+      .update(events)
+      .set(event)
+      .where(and(eq(events.id, id), eq(events.id, userId)))
+      .returning();
+  }
+
+  async updateEventBySlug(slug: string, event: typeof insertEvent) {
+    return await db
+      .update(events)
+      .set(event)
+      .where(eq(events.slug, slug))
+      .returning();
   }
 }
 
