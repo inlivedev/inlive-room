@@ -4,13 +4,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Profile from '@/_shared/components/header/profile';
 
-export default function Header() {
+export default function Header({
+  logoText,
+  logoHref,
+}: {
+  logoText: string;
+  logoHref: string;
+}) {
   return (
     <header className="w-full py-6 lg:py-8">
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center">
           <Link
-            href="/"
+            href={logoHref}
             className="inline-flex items-center justify-center gap-2"
           >
             <Image
@@ -21,7 +27,7 @@ export default function Header() {
               height={28}
             />
             <h1 className="text-lg font-semibold tracking-wide lg:text-xl">
-              inLive Room
+              {logoText}
             </h1>
           </Link>
         </div>
