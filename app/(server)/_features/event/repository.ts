@@ -62,15 +62,19 @@ export class EventRepo implements iEventRepo {
     return await db
       .update(events)
       .set(event)
-      .where(and(eq(events.id, id), eq(events.id, userId)))
+      .where(and(eq(events.id, id), eq(events.createdBy, userId)))
       .returning();
   }
 
-  async updateEventBySlug(slug: string, event: typeof insertEvent) {
+  async updateEventBySlug(
+    userId: number,
+    slug: string,
+    event: typeof insertEvent
+  ) {
     return await db
       .update(events)
       .set(event)
-      .where(eq(events.slug, slug))
+      .where(and(eq(events.slug, slug), eq(events.createdBy, userId)))
       .returning();
   }
 }
