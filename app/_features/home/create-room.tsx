@@ -1,11 +1,11 @@
 'use client';
 
 import { Button, Spinner } from '@nextui-org/react';
-import { useAuthContext } from '@/_shared/contexts/auth';
+import { useAuthContext } from '@/_contexts/auth';
 import { useState } from 'react';
-import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
-import type { RoomType } from '@/_shared/types/room';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { Mixpanel } from '@/_components/analytics/mixpanel';
+import type { RoomType } from '@/_types/room';
+import { InternalApiFetcher } from '@/_utils/fetcher';
 
 export default function CreateRoom() {
   const { user } = useAuthContext();

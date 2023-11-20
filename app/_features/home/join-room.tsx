@@ -1,6 +1,6 @@
 'use client';
 
-import { useInput } from '@/_shared/hooks/use-input';
+import { useInput } from '@/_hooks/use-input';
 
 export default function JoinRoom() {
   const { value: roomId, bindValue: bindField } = useInput('');
