@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import View from '@/_features/home/view';
+import Home from '@/_features/home/home';
 import { headers } from 'next/headers';
 import AppContainer from '@/_components/containers/app-container';
 import type { UserType } from '@/_types/user';
@@ -19,7 +19,7 @@ export default async function Page() {
 
   return (
     <AppContainer user={user}>
-      <View />
+      <Home />
     </AppContainer>
   );
 }
