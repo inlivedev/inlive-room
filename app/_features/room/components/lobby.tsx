@@ -1,13 +1,13 @@
 import { useMemo, useCallback, useState } from 'react';
 import Link from 'next/link';
 import { Button, Spinner } from '@nextui-org/react';
-import Header from '@/_shared/components/header/header';
-import Footer from '@/_shared/components/footer/footer';
+import Header from '@/_components/header/header';
+import Footer from '@/_components/footer/footer';
 import InviteBox from '@/_features/room/components/invite-box';
 import DisplayNameBox from '@/_features/room/components/display-name-box';
 import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
-import { getUserMedia } from '@/_shared/utils/get-user-media';
-import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
+import { getUserMedia } from '@/_utils/get-user-media';
+import { Mixpanel } from '@/_components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
 
 type LobbyProps = {

@@ -1,4 +1,4 @@
-import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { copyToClipboard } from '@/_utils/copy-to-clipboard';
 import { Button } from '@nextui-org/react';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;

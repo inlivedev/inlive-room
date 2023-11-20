@@ -10,9 +10,9 @@ import {
   Spinner,
   useDisclosure,
 } from '@nextui-org/react';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { useInput } from '@/_shared/hooks/use-input';
-import type { ClientType } from '@/_shared/types/client';
+import { InternalApiFetcher } from '@/_utils/fetcher';
+import { useInput } from '@/_hooks/use-input';
+import type { ClientType } from '@/_types/client';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 
 type Props = {

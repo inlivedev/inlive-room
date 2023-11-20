@@ -1,6 +1,6 @@
-import '@/_shared/styles/tailwind.css';
+import '@/_styles/tailwind.css';
 import { Inter } from 'next/font/google';
-import { MixpanelContainer } from '@/_shared/components/analytics/mixpanel';
+import { MixpanelContainer } from '@/_components/analytics/mixpanel';
 import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });

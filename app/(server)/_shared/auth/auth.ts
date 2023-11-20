@@ -1,5 +1,5 @@
-import type { InliveApiFetcher } from '@/_shared/utils/fetcher';
-import type { AuthType } from '@/_shared/types/auth';
+import type { InliveApiFetcher } from '@/_utils/fetcher';
+import type { AuthType } from '@/_types/auth';
 
 export const createAuth = (fetcher: typeof InliveApiFetcher) => {
   const Auth = class {

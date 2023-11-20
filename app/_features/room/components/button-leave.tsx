@@ -1,5 +1,5 @@
 import { Button, Spinner } from '@nextui-org/react';
-import HangUpIcon from '@/_shared/components/icons/hang-up-icon';
+import HangUpIcon from '@/_components/icons/hang-up-icon';
 import { useLeaveRoom } from '@/_features/room/hooks/use-leave-room';
 
 export default function ButtonLeave() {

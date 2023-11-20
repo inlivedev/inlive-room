@@ -2,8 +2,8 @@ import { useEffect, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
-import { useToggle } from '@/_shared/hooks/use-toggle';
-import { room, RoomEvent } from '@/_shared/utils/sdk';
+import { useToggle } from '@/_hooks/use-toggle';
+import { room, RoomEvent } from '@/_utils/sdk';
 
 export const useScreenShare = () => {
   const { peer } = usePeerContext();

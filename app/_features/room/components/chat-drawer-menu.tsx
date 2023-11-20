@@ -10,11 +10,11 @@ import {
   useDisclosure,
   ModalFooter,
 } from '@nextui-org/react';
-import SendPlaneIcon from '@/_shared/components/icons/send-plane-icon';
+import SendPlaneIcon from '@/_components/icons/send-plane-icon';
 import { useChatContext } from '@/_features/room/contexts/chat-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
-import { useInput } from '@/_shared/hooks/use-input';
-import type { ChatType } from '@/_shared/types/chat';
+import { useInput } from '@/_hooks/use-input';
+import type { ChatType } from '@/_types/chat';
 
 export default function ChatDrawerMenu() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();

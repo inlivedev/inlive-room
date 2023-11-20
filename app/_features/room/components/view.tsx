@@ -10,8 +10,8 @@ import { ChatProvider } from '@/_features/room/contexts/chat-context';
 import EventContainer from '@/_features/room/components/event-container';
 import Conference from '@/_features/room/components/conference';
 import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
-import { useToggle } from '@/_shared/hooks/use-toggle';
-import type { ClientType } from '@/_shared/types/client';
+import { useToggle } from '@/_hooks/use-toggle';
+import type { ClientType } from '@/_types/client';
 
 type ViewProps = {
   roomID: string;

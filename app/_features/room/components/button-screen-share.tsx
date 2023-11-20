@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@nextui-org/react';
-import ScreenShareOnIcon from '@/_shared/components/icons/screen-share-on-icon';
-import ScreenShareOffIcon from '@/_shared/components/icons/screen-share-off-icon';
+import ScreenShareOnIcon from '@/_components/icons/screen-share-on-icon';
+import ScreenShareOffIcon from '@/_components/icons/screen-share-off-icon';
 import { useScreenShare } from '@/_features/room/hooks/use-screen-share';
 
 export default function ButtonScreenShare() {

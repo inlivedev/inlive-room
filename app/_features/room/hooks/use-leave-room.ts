@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { room } from '@/_shared/utils/sdk';
+import { room } from '@/_utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 

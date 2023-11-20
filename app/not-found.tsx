@@ -1,7 +1,7 @@
-import AppContainer from '@/_shared/components/containers/app-container';
-import HTTPError from '@/_shared/components/errors/http-error';
+import AppContainer from '@/_components/containers/app-container';
+import HTTPError from '@/_components/errors/http-error';
 import { headers } from 'next/headers';
-import type { UserType } from '@/_shared/types/user';
+import type { UserType } from '@/_types/user';
 
 export default async function NotFound() {
   const headersList = headers();

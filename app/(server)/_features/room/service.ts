@@ -1,5 +1,5 @@
 import { iRoomService } from './routes';
-import { room } from '@/_shared/utils/sdk';
+import { room } from '@/_utils/sdk';
 import Sqids from 'sqids';
 import * as Sentry from '@sentry/nextjs';
 

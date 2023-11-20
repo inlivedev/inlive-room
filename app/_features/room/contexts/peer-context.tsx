@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { ClientType } from '@/_shared/types/client';
-import { room } from '@/_shared/utils/sdk';
+import type { ClientType } from '@/_types/client';
+import { room } from '@/_utils/sdk';
 
 type Peer = Awaited<ReturnType<typeof room.createPeer>>;
 

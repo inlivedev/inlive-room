@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import View from '@/_features/home/view';
 import { headers } from 'next/headers';
-import AppContainer from '@/_shared/components/containers/app-container';
-import type { UserType } from '@/_shared/types/user';
+import AppContainer from '@/_components/containers/app-container';
+import type { UserType } from '@/_types/user';
 
 export const metadata: Metadata = {
   title: 'inLive Room',

@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
-import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
+import { hasTouchScreen } from '@/_utils/has-touch-screen';
 
 export default function EventContainer() {
   const { peer } = usePeerContext();

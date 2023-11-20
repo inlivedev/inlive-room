@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { ClientType } from '@/_shared/types/client';
+import type { ClientType } from '@/_types/client';
 
 const ClientContext = createContext({
   roomID: '',

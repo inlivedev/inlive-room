@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@nextui-org/react';
 import { useChatContext } from '@/_features/room/contexts/chat-context';
-import ChatIcon from '@/_shared/components/icons/chat-icon';
-import ChatIconWithCircle from '@/_shared/components/icons/chat-icon-with-circle';
+import ChatIcon from '@/_components/icons/chat-icon';
+import ChatIconWithCircle from '@/_components/icons/chat-icon-with-circle';
 
 export default function ButtonChat() {
   const [openChatMenu, setOpenChatMenu] = useState(false);

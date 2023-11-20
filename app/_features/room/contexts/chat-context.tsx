@@ -7,7 +7,7 @@ import {
   useEffect,
   useCallback,
 } from 'react';
-import type { ChatType } from '@/_shared/types/chat';
+import type { ChatType } from '@/_types/chat';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 type AddMessageType = (message: ChatType.ChatMessage) => void;

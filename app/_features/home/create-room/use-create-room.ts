@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
-import type { RoomType } from '@/_shared/types/room';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { Mixpanel } from '@/_components/analytics/mixpanel';
+import type { RoomType } from '@/_types/room';
+import { InternalApiFetcher } from '@/_utils/fetcher';
 
 export const useCreateRoom = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);

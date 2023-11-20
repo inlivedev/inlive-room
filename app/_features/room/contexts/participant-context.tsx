@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
-import { room, RoomEvent } from '@/_shared/utils/sdk';
+import { room, RoomEvent } from '@/_utils/sdk';
 
 export type ParticipantStream = {
   readonly id: string;

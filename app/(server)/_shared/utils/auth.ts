@@ -1,4 +1,4 @@
-import { InliveApiFetcher } from '@/_shared/utils/fetcher';
+import { InliveApiFetcher } from '@/_utils/fetcher';
 import { createAuth } from '@/(server)/_shared/auth/auth';
 
 const authService = createAuth(InliveApiFetcher).createInstance();

@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
-import AppContainer from '@/_shared/components/containers/app-container';
+import AppContainer from '@/_components/containers/app-container';
 import View from '@/_features/room/components/view';
-import type { RoomType } from '@/_shared/types/room';
-import type { UserType } from '@/_shared/types/user';
-import type { ClientType } from '@/_shared/types/client';
+import type { RoomType } from '@/_types/room';
+import type { UserType } from '@/_types/user';
+import type { ClientType } from '@/_types/client';
 
 type PageProps = {
   params: {

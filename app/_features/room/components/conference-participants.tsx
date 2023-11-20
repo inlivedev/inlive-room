@@ -9,8 +9,8 @@ import {
 import styles from '@/_features/room/styles/conference.module.css';
 import { Button, CircularProgress } from '@nextui-org/react';
 import { usePeerContext } from '../contexts/peer-context';
-import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
-import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
+import PlugConnectedFillIcon from '@/_components/icons/plug-connected-fill-icon';
+import PlugDisconnectedFillIcon from '@/_components/icons/plug-disconnected-fill-icon';
 
 const isMobile = () => {
   if (typeof window !== 'undefined') {

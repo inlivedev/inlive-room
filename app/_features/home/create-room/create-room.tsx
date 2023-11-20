@@ -2,7 +2,7 @@
 
 import { useCreateRoom } from '@/_features/home/create-room/use-create-room';
 import { Button, Spinner } from '@nextui-org/react';
-import { useAuthContext } from '@/_shared/contexts/auth';
+import { useAuthContext } from '@/_contexts/auth';
 
 export default function CreateRoom() {
   const { user } = useAuthContext();

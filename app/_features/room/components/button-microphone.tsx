@@ -11,12 +11,12 @@ import {
   Button,
 } from '@nextui-org/react';
 import type { Selection } from '@nextui-org/react';
-import { useToggle } from '@/_shared/hooks/use-toggle';
+import { useToggle } from '@/_hooks/use-toggle';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
-import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
-import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
+import MicrophoneOnIcon from '@/_components/icons/microphone-on-icon';
+import MicrophoneOffIcon from '@/_components/icons/microphone-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
-import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
+import ArrowDownFillIcon from '@/_components/icons/arrow-down-fill-icon';
 
 export default function ButtonMicrophone() {
   const { active, setActive, setInActive } = useToggle(true);

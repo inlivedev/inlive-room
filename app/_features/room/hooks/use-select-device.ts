@@ -6,7 +6,7 @@ import {
   useDeviceContext,
   AudioOutputContext,
 } from '@/_features/room/contexts/device-context';
-import { getUserMedia } from '@/_shared/utils/get-user-media';
+import { getUserMedia } from '@/_utils/get-user-media';
 
 export const useSelectDevice = (
   devices: MediaDeviceInfo[],

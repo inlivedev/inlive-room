@@ -1,7 +1,7 @@
-import Header from '@/_shared/components/header/header';
+import Header from '@/_components/header/header';
 import CreateRoom from '@/_features/home/create-room/create-room';
 import JoinRoom from '@/_features/home/join-room/join-room';
-import Footer from '@/_shared/components/footer/footer';
+import Footer from '@/_components/footer/footer';
 
 export default function View() {
   return (
