@@ -9,7 +9,8 @@ export default function JoinRoom() {
     event.preventDefault();
 
     if (roomId.trim().length === 0) {
-      throw new Error('Please enter the room code');
+      alert('Please enter the room code');
+      return;
     }
 
     window.location.href = `/room/${roomId}`;
