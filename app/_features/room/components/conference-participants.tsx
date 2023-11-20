@@ -6,7 +6,7 @@ import {
   useParticipantContext,
   type ParticipantStream,
 } from '@/_features/room/contexts/participant-context';
-import styles from '@/_features/room/styles/conference.module.css';
+import styles from '@/_styles/conference.module.css';
 import { Button, CircularProgress } from '@nextui-org/react';
 import { usePeerContext } from '../contexts/peer-context';
 import PlugConnectedFillIcon from '@/_components/icons/plug-connected-fill-icon';

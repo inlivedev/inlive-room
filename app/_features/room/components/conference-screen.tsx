@@ -3,7 +3,7 @@
 import { useVideoScreen } from '@/_features/room/hooks/use-video-screen';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import styles from '@/_features/room/styles/conference.module.css';
+import styles from '@/_styles/conference.module.css';
 import { useEffect } from 'react';
 
 export default function ConferenceScreen({

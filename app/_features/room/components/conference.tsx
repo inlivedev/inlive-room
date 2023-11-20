@@ -1,6 +1,6 @@
 import ConferenceParticipants from '@/_features/room/components/conference-participants';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
-import styles from '@/_features/room/styles/conference.module.css';
+import styles from '@/_styles/conference.module.css';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { useViewportHeight } from '@/_hooks/use-viewport-height';
 
