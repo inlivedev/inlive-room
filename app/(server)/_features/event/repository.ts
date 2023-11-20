@@ -54,7 +54,7 @@ export class EventRepo implements iEventRepo {
   async deleteEventBySlug(slug: string, userId: number) {
     return await db
       .delete(events)
-      .where(and(eq(events.slug, slug), eq(events.id, userId)))
+      .where(and(eq(events.slug, slug), eq(events.createdBy, userId)))
       .returning();
   }
 

@@ -56,8 +56,19 @@ export async function POST(request: NextRequest) {
       createdBy: response.data.id,
     };
 
-    eventService.createEvent(Event);
+    const createdEvent = await eventService.createEvent(Event);
+    return NextResponse.json({
+      code: 201,
+      ok: true,
+      message: 'Event created successfully',
+      data: createdEvent,
+    });
   } catch (error) {
-    console.error(error);
+    console.log(error);
+    return NextResponse.json({
+      code: 500,
+      ok: false,
+      message: 'Something went wrong, please try again later',
+    });
   }
 }

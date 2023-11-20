@@ -81,7 +81,8 @@ export async function DELETE(
       slug,
       response.data.id
     );
-    if (!deletedEvent) {
+
+    if (!deletedEvent || deletedEvent.length == 0) {
       return NextResponse.json({
         code: 404,
         ok: false,
@@ -93,6 +94,7 @@ export async function DELETE(
       code: 200,
       ok: true,
       message: 'Event deleted successfully',
+      data: deletedEvent,
     });
   } catch (error) {
     return NextResponse.json({
