@@ -6,6 +6,7 @@ import {
   integer,
   primaryKey,
   serial,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 
 export const events = pgTable('events', {
@@ -16,6 +17,7 @@ export const events = pgTable('events', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   description: text('description'),
   createdBy: integer('created_by').notNull(),
+  roomId: text('room_id').notNull(),
 });
 
 export const eventsRelation = relations(events, ({ many }) => ({
@@ -24,10 +26,13 @@ export const eventsRelation = relations(events, ({ many }) => ({
 
 export const participant = pgTable('events_participant', {
   id: serial('id').primaryKey(),
-  eventId: integer('event_id').notNull(),
   clientId: text('client_id').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-  passCode: text('pass_code').notNull(),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  email: text('email').notNull(),
+  descrtiption: text('description'),
+  data: jsonb('data'),
 });
 
 export const participantRelation = relations(participant, ({ many }) => ({
@@ -65,3 +70,9 @@ export const eventToParticipantRelation = relations(
 
 export const insertEvent = events.$inferInsert;
 export const selectEvent = events.$inferSelect;
+
+export const insertParticipant = participant.$inferInsert;
+export const selectParticipant = participant.$inferSelect;
+
+export const insertEventsToParticipant = eventsToParticipant.$inferInsert;
+export const selectEventsToParticipant = eventsToParticipant.$inferSelect;

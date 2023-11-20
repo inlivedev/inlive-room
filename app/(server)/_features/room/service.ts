@@ -24,7 +24,7 @@ export interface iRoomRepo {
   isPersistent(): boolean;
 }
 
-export class service implements iRoomService {
+export class RoomService implements iRoomService {
   _roomRepo: iRoomRepo;
   _sdk = room;
 

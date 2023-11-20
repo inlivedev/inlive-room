@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eventService } from '../_index';
+import { eventService, roomService } from '../_index';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
@@ -48,12 +48,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const eventRoom = await roomService.createRoom(response.data.id);
+
     const Event: typeof insertEvent = {
       name: eventName,
       startTime: eventStartTime,
       slug: eventName.toLowerCase().replace(/\s/g, '-'),
       description: eventDesc,
       createdBy: response.data.id,
+      roomId: eventRoom.id,
     };
 
     const createdEvent = await eventService.createEvent(Event);

@@ -1,9 +1,9 @@
 import { iEventService } from '@/(server)/api/events/_index';
-import { insertEvent } from './schema';
+import { insertEvent, selectEvent } from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 
 export interface iEventRepo {
-  addEvent(eventData: typeof insertEvent): Promise<Event>;
+  addEvent(eventData: typeof insertEvent): Promise<typeof selectEvent>;
   getEvent(slug: string): Promise<Event | undefined>;
   getEvents(page: number, limit: number, userId?: number): Promise<Event[]>;
 }
