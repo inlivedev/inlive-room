@@ -23,12 +23,15 @@ export async function GET(
         status: 307,
       });
 
+      const thirtyDays = 60 * 60 * 24 * 30;
+
       response.cookies.set({
         name: 'token',
         value: authResponse.data.token,
         path: '/',
         sameSite: 'lax',
         httpOnly: true,
+        maxAge: thirtyDays,
       });
 
       return response;
