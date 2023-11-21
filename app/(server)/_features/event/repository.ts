@@ -2,7 +2,7 @@ import { db } from '@/(server)/_shared/database/database';
 import { iEventRepo } from './service';
 import {
   events,
-  eventsToParticipant,
+  eventHasParticipant,
   insertEvent,
   insertParticipant,
   participant as participants,
@@ -26,8 +26,8 @@ export class EventRepo implements iEventRepo {
   }
 
   async getEvents(page: number, limit: number, userId?: number) {
-    if (page <= 0) {
-      page = 1;
+    if (page < 0) {
+      page = 0;
     }
 
     if (limit <= 0) {
@@ -36,7 +36,7 @@ export class EventRepo implements iEventRepo {
 
     const filter: DBQueryConfig = {
       limit: limit,
-      offset: page * limit,
+      offset: page,
       orderBy(fields, operators) {
         return [operators.desc(fields.createdAt)];
       },
@@ -89,24 +89,27 @@ export class EventRepo implements iEventRepo {
     participant: typeof insertParticipant,
     eventId: number
   ) {
-    const insertedParticipant = await db
-      .insert(participants)
-      .values(participant)
-      .returning();
+    const res = await db.transaction(async (tx) => {
+      const insertedParticipant = await tx
+        .insert(participants)
+        .values(participant)
+        .returning();
 
-    await db.insert(eventsToParticipant).values({
-      eventId: eventId,
-      participantId: insertedParticipant[0].id,
+      await tx
+        .insert(eventHasParticipant)
+        .values({
+          eventId: eventId,
+          participantId: insertedParticipant[0].id,
+        })
+        .returning();
+
+      const event = await db.query.events.findFirst({
+        where: eq(events.id, eventId),
+      });
+
+      return { participant: insertedParticipant[0], event: event };
     });
 
-    return await db.query.participant.findFirst({
-      where: and(
-        eq(participants.id, insertedParticipant[0].id),
-        eq(eventsToParticipant.eventId, eventId)
-      ),
-      with: { events: true },
-    });
+    return res;
   }
 }
-
-export class EventParticipant {}

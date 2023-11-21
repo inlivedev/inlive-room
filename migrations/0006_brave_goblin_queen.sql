@@ -1,9 +1,12 @@
 CREATE TABLE IF NOT EXISTS "events" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"slug" text NOT NULL,
-	"name" text,
+	"name" text NOT NULL,
 	"start_time" timestamp NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
+	"description" text,
+	"created_by" integer NOT NULL,
+	"room_id" text NOT NULL,
 	CONSTRAINT "events_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
@@ -15,10 +18,13 @@ CREATE TABLE IF NOT EXISTS "events_to_participant" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "events_participant" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"event_id" integer NOT NULL,
 	"client_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"pass_code" text NOT NULL
+	"first_name" text NOT NULL,
+	"last_name" text NOT NULL,
+	"email" text NOT NULL,
+	"description" text,
+	"data" jsonb
 );
 --> statement-breakpoint
 DO $$ BEGIN

@@ -9,6 +9,7 @@ import {
   jsonb,
 } from 'drizzle-orm/pg-core';
 
+// Event Table
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
   slug: text('slug').notNull().unique(),
@@ -21,9 +22,10 @@ export const events = pgTable('events', {
 });
 
 export const eventsRelation = relations(events, ({ many }) => ({
-  eventsToParticipant: many(eventsToParticipant),
+  eventsToParticipant: many(eventHasParticipant),
 }));
 
+// Participant Table
 export const participant = pgTable('events_participant', {
   id: serial('id').primaryKey(),
   clientId: text('client_id').notNull(),
@@ -36,10 +38,11 @@ export const participant = pgTable('events_participant', {
 });
 
 export const participantRelation = relations(participant, ({ many }) => ({
-  eventsToParticipant: many(eventsToParticipant),
+  eventsToParticipant: many(eventHasParticipant),
 }));
 
-export const eventsToParticipant = pgTable(
+// Junction Table
+export const eventHasParticipant = pgTable(
   'events_to_participant',
   {
     eventId: integer('event_id')
@@ -54,15 +57,15 @@ export const eventsToParticipant = pgTable(
   })
 );
 
-export const eventToParticipantRelation = relations(
-  eventsToParticipant,
+export const eventHasParticipantRelation = relations(
+  eventHasParticipant,
   ({ one }) => ({
-    group: one(events, {
-      fields: [eventsToParticipant.eventId],
+    events: one(events, {
+      fields: [eventHasParticipant.eventId],
       references: [events.id],
     }),
-    user: one(participant, {
-      fields: [eventsToParticipant.participantId],
+    participant: one(participant, {
+      fields: [eventHasParticipant.participantId],
       references: [participant.id],
     }),
   })
@@ -74,5 +77,5 @@ export const selectEvent = events.$inferSelect;
 export const insertParticipant = participant.$inferInsert;
 export const selectParticipant = participant.$inferSelect;
 
-export const insertEventsToParticipant = eventsToParticipant.$inferInsert;
-export const selectEventsToParticipant = eventsToParticipant.$inferSelect;
+export const insertEventsToParticipant = eventHasParticipant.$inferInsert;
+export const selectEventsToParticipant = eventHasParticipant.$inferSelect;

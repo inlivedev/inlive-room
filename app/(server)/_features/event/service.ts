@@ -1,4 +1,4 @@
-import { iEventService } from '@/(server)/api/events/_index';
+import { iEventService } from '@/(server)/api/_index';
 import { insertEvent, selectEvent } from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 
@@ -40,15 +40,5 @@ export class EventService implements iEventService {
     const event = await this.repo.getEvent(slug);
 
     return event;
-  }
-
-  async getEvents(page: number, limit: number, userId?: number) {
-    const events = await this.repo.getEvents(page, limit, userId);
-
-    if (events.length === 0) {
-      throw this.error.get('EVENT_NOT_FOUND');
-    }
-
-    return events;
   }
 }

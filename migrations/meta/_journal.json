@@ -47,29 +47,8 @@
     {
       "idx": 6,
       "version": "5",
-      "when": 1700144801130,
-      "tag": "0006_event_webinar",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1700145299091,
-      "tag": "0007_event_webinar_desc",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "5",
-      "when": 1700145581041,
-      "tag": "0008_event_missing_creator",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "5",
-      "when": 1700257914635,
-      "tag": "0009_event_name_shouldnt_null",
+      "when": 1700543142574,
+      "tag": "0006_brave_goblin_queen",
       "breakpoints": true
     }
   ]

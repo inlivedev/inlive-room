@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { eventRepo, eventService } from '../_index';
+import { eventRepo, eventService } from '../../_index';
 import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
@@ -114,14 +114,14 @@ export async function PUT(
   const requestToken = cookieStore.get('token');
 
   type updateEvent = {
-    name: string;
-    startTime: string;
-    description: string;
+    name?: string;
+    startTime?: string;
+    description?: string;
   };
 
   const body = (await request.json()) as updateEvent;
   const eventName = body.name;
-  const eventStartTime = new Date(body.startTime);
+
   const eventDesc = body.description;
 
   if (!requestToken) {
@@ -145,13 +145,26 @@ export async function PUT(
   }
 
   try {
+    const oldEvent = await eventRepo.getEvent(slug);
+
+    if (oldEvent.createdBy !== response.data.id)
+      return NextResponse.json({
+        code: 401,
+        ok: false,
+        message: 'You are not authorized to update this event',
+      });
+
     const newEvent: typeof insertEvent = {
-      name: eventName,
-      startTime: eventStartTime,
-      slug: eventName.toLowerCase().replace(/\s/g, '-') + '-' + generateID(8),
-      description: eventDesc,
-      createdBy: response.data.id,
+      name: eventName ?? oldEvent.name,
+      startTime: body.startTime ? new Date(body.startTime) : oldEvent.startTime,
+      slug: eventName
+        ? eventName.toLowerCase().replace(/\s/g, '-') + '-' + generateID(8)
+        : oldEvent.slug,
+      description: eventDesc ?? oldEvent.description,
+      createdBy: oldEvent.createdBy,
+      roomId: oldEvent.roomId,
     };
+
     const updatedEvent = await eventRepo.updateEventBySlug(
       response.data.id,
       slug,

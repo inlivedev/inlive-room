@@ -1,7 +1,7 @@
 import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { eventRepo } from '../../_index';
+import { eventRepo } from '../../../_index';
 import { insertParticipant } from '@/(server)/_features/event/schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { SendEventInvitationEmail } from '@/(server)/_shared/mailer/mailer';
@@ -11,10 +11,13 @@ type RegisterParticipant = {
   lastName: string;
   email: string;
   description: string;
-  data: Map<string, string>;
+  data?: Map<string, string>;
 };
 
-export async function POST(request: Request, params: { slug: string }) {
+export async function POST(
+  request: Request,
+  { params }: { params: { slug: string } }
+) {
   const slug = params.slug;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
@@ -55,16 +58,16 @@ export async function POST(request: Request, params: { slug: string }) {
       existingEvent.id
     );
 
-    SendEventInvitationEmail(
-      newParticipant.firstName + ' ' + newParticipant.lastName,
-      newParticipant.email,
-      existingEvent
-    );
+    // SendEventInvitationEmail(
+    //   newParticipant.firstName + ' ' + newParticipant.lastName,
+    //   newParticipant.email,
+    //   existingEvent
+    // );
 
     return NextResponse.json(
       {
         code: 200,
-        message: 'Event joined',
+        message: 'Registered Successfully',
         data: registeredParticipant,
       },
       { status: 200 }
