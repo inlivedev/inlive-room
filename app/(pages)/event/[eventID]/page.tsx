@@ -12,7 +12,7 @@ type PageProps = {
 
 export const generateMetadata = ({ params }: PageProps): Metadata => {
   return {
-    title: `Event - ${params.eventID}`,
+    title: `Detail Event`,
   };
 };
 
