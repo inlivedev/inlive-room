@@ -16,7 +16,7 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
   };
 };
 
-export default async function Page() {
+export default async function Page({ params: { eventID } }: PageProps) {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
@@ -27,7 +27,7 @@ export default async function Page() {
 
   return (
     <AppContainer user={userAuth}>
-      <EventDetail />
+      <EventDetail eventID={eventID} />
     </AppContainer>
   );
 }

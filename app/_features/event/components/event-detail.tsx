@@ -4,10 +4,22 @@ import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import EventRegistrationModal from '@/_features/event/components/event-registration-modal';
+import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 
-export default function EventDetail() {
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+
+export default function EventDetail({ eventID }: { eventID: string }) {
   const openRegisterEventForm = () => {
     document.dispatchEvent(new CustomEvent('open:event-registration-modal'));
+  };
+
+  const handleCopyLink = async (text = '') => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      alert('Link has been successfully copied!');
+    } else {
+      alert('Fail to copy link');
+    }
   };
 
   return (
@@ -67,6 +79,9 @@ export default function EventDetail() {
                           <Button
                             variant="flat"
                             className="rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                            onClick={() =>
+                              handleCopyLink(`${APP_ORIGIN}/room/${eventID}`)
+                            }
                           >
                             Copy link
                           </Button>
