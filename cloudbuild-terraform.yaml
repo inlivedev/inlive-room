@@ -89,6 +89,8 @@ availableSecrets:
     env: 'DB_NAME'
   - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_PASS/versions/latest
     env: 'DB_PASS'
+  - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_USER/versions/latest
+    env: 'DB_USER'
   - versionName: projects/$PROJECT_ID/secrets/prod_mailgun_key/versions/latest
     env: 'MAILER_API_KEY'
   - versionName: projects/$PROJECT_ID/secrets/prod_mailgun_domain/versions/latest
