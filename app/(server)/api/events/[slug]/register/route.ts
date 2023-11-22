@@ -1,10 +1,8 @@
 import { isError } from 'lodash-es';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { eventRepo } from '../../../_index';
 import { insertParticipant } from '@/(server)/_features/event/schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
-import { SendEventInvitationEmail } from '@/(server)/_shared/mailer/mailer';
 
 type RegisterParticipant = {
   firstName: string;
@@ -19,18 +17,6 @@ export async function POST(
   { params }: { params: { slug: string } }
 ) {
   const slug = params.slug;
-  const cookieStore = cookies();
-  const requestToken = cookieStore.get('token');
-
-  if (!requestToken) {
-    return NextResponse.json(
-      {
-        code: 401,
-        message: 'Please check if token is provided in the cookie',
-      },
-      { status: 401 }
-    );
-  }
 
   try {
     const body = (await request.json()) as RegisterParticipant;
@@ -58,11 +44,15 @@ export async function POST(
       existingEvent.id
     );
 
-    // SendEventInvitationEmail(
-    //   newParticipant.firstName + ' ' + newParticipant.lastName,
-    //   newParticipant.email,
-    //   existingEvent
-    // );
+    // const MailerEnabled = process.env.ENABLE_MAILER || false;
+
+    // if (MailerEnabled) {
+    //   SendEventInvitationEmail(
+    //     newParticipant.firstName + ' ' + newParticipant.lastName,
+    //     newParticipant.email,
+    //     existingEvent
+    //   );
+    // }
 
     return NextResponse.json(
       {

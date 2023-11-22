@@ -5,9 +5,10 @@ import * as Sentry from '@sentry/nextjs';
 
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
+const ROOM_INV_EMAIL_TEMPLATE = process.env.ROOM_INV_EMAIL_TEMPLATE || '';
 
 const mg = new Mailgun(formData);
-export const mailer = mg.client({
+const mailer = mg.client({
   key: MAILER_API_KEY,
   username: 'api',
 });
@@ -21,7 +22,7 @@ export async function SendEventInvitationEmail(
   const eventTime = event.startTime.toTimeString();
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
-    template: 'event-invitation',
+    template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
     to: email,
     title: `Your invitation URL for ${event.name}`,
