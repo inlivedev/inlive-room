@@ -7,6 +7,7 @@ const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
 const ROOM_INV_EMAIL_TEMPLATE = process.env.ROOM_INV_EMAIL_TEMPLATE || '';
 const ENABLE_MAILER = process.env.ENABLE_MAILER || false;
+const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
 export function isMailerEnabled(): boolean {
   if (ENABLE_MAILER === 'true') return true;
@@ -32,12 +33,13 @@ export async function SendEventInvitationEmail(
     from: 'inLive Room Events <notification@inlive.app>',
     to: email,
     subject: `Your invitation URL for ${event.name}`,
-    'v:room-url': event.roomId,
-    'v:event-url': event.slug,
+    'v:room-url': `${PUBLIC_URL}/room/${event.roomId}`,
+    'v:event-url': `${PUBLIC_URL}/event/${event.slug}`,
     'v:event-name': event.name,
     'v:event-description': event.description,
     'v:event-date': eventDate,
     'v:event-time': eventTime,
+    'v:event-host': event.host,
   });
 
   if (res.status >= 400) {
