@@ -48,7 +48,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (!eventHost) {
+    if (
+      !eventHost ||
+      eventHost.trim().length === 0 ||
+      typeof eventHost !== 'string'
+    ) {
       return NextResponse.json({
         code: 400,
         ok: false,
