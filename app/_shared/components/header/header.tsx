@@ -12,7 +12,7 @@ export default function Header({
   logoHref: string;
 }) {
   return (
-    <header className="w-full py-6 lg:py-8">
+    <header className="w-full py-6 lg:py-12">
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center">
           <Link

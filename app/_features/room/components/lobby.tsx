@@ -142,7 +142,7 @@ export default function Lobby({ roomID }: LobbyProps) {
     <>
       <SetDisplayNameModal roomID={roomID} />
       <div className="min-viewport-height">
-        <div className="min-viewport-height mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4">
+        <div className="min-viewport-height mx-auto flex w-full max-w-xl flex-1 flex-col px-4">
           <Header logoText="inLive Room" logoHref="/" />
           <main className="flex flex-1 flex-col">
             <div className="flex flex-col gap-10">

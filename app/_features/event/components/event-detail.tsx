@@ -52,7 +52,7 @@ export default function EventDetail({
     <>
       <EventRegistrationModal slug={slug} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
-        <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4">
+        <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
           <Header logoText="inLive Event" logoHref="/event" />
           <main className="flex flex-1 flex-col">
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
