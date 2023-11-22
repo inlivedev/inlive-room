@@ -7,7 +7,7 @@ import { insertEvent } from '@/(server)/_features/event/schema';
 type CreateEvent = {
   name: string;
   startTime: string;
-  description: string;
+  description?: string;
   host: string;
 };
 
@@ -37,6 +37,22 @@ export async function POST(request: NextRequest) {
         code: 400,
         ok: false,
         message: 'Name is not valid',
+      });
+    }
+
+    if (!eventStartTime) {
+      return NextResponse.json({
+        code: 400,
+        ok: false,
+        message: 'Start time is not valid',
+      });
+    }
+
+    if (!eventHost) {
+      return NextResponse.json({
+        code: 400,
+        ok: false,
+        message: 'Host is not valid',
       });
     }
 
