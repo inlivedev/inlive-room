@@ -19,18 +19,22 @@ export interface EventParticipant {
   createdAt: Date;
 }
 
-export interface Event {
+export interface IEvent {
   id: number;
   slug: string;
-  name: string | null;
+  name: string;
   startTime: Date;
   createdAt: Date;
+  description: string | null;
+  createdBy: number;
+  roomId: string;
+  host: string;
 }
 
 export class EventService implements iEventService {
   constructor(private repo: iEventRepo) {}
 
-  async createEvent(eventData: typeof insertEvent): Promise<Event> {
+  async createEvent(eventData: typeof insertEvent) {
     eventData.slug = eventData.slug + '-' + generateID(8);
     const event = await this.repo.addEvent(eventData);
     return event;
