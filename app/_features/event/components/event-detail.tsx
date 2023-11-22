@@ -36,13 +36,13 @@ export default function EventDetail({
     }
   };
 
-  const eventStartDate = new Date(startTime).toLocaleDateString('en-US', {
+  const eventStartDate = new Date(startTime).toLocaleDateString('en-GB', {
     month: 'long',
     day: '2-digit',
     year: 'numeric',
   });
 
-  const eventStartTime = new Date(startTime).toLocaleTimeString('en-US', {
+  const eventStartTime = new Date(startTime).toLocaleTimeString('en-GB', {
     minute: '2-digit',
     hour: '2-digit',
     hour12: true,
@@ -50,7 +50,7 @@ export default function EventDetail({
 
   return (
     <>
-      <EventRegistrationModal />
+      <EventRegistrationModal slug={slug} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4">
           <Header logoText="inLive Event" logoHref="/event" />
