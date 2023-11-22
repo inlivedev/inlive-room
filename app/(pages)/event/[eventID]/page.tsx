@@ -28,7 +28,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const { data: eventData }: EventType.SingleEventResponse =
+  const { data: eventData }: EventType.DetailEventResponse =
     await InternalApiFetcher.get(`/api/events/${eventID}`);
 
   if (!eventData || !eventData.id) {
