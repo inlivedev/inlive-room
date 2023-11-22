@@ -126,12 +126,13 @@ export async function PUT(
     name?: string;
     startTime?: string;
     description?: string;
+    host?: string;
   };
 
   const body = (await request.json()) as updateEvent;
   const eventName = body.name;
-
   const eventDesc = body.description;
+  const eventHost = body.host;
 
   if (!requestToken) {
     return NextResponse.json(
@@ -172,6 +173,7 @@ export async function PUT(
       description: eventDesc ?? oldEvent.description,
       createdBy: oldEvent.createdBy,
       roomId: oldEvent.roomId,
+      host: eventHost ?? oldEvent.host,
     };
 
     const updatedEvent = await eventRepo.updateEventBySlug(

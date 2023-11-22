@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "host" text NOT NULL;

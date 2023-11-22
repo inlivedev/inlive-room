@@ -19,6 +19,7 @@ export const events = pgTable('events', {
   description: text('description'),
   createdBy: integer('created_by').notNull(),
   roomId: text('room_id').notNull(),
+  host: text('host').notNull(),
 });
 
 export const eventsRelation = relations(events, ({ many }) => ({

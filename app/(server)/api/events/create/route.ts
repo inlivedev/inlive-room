@@ -8,6 +8,7 @@ type CreateEvent = {
   name: string;
   startTime: string;
   description: string;
+  host: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     const eventName = body.name;
     const eventStartTime = new Date(body.startTime);
     const eventDesc = body.description;
+    const eventHost = body.host;
 
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       return NextResponse.json({
@@ -57,6 +59,7 @@ export async function POST(request: NextRequest) {
       description: eventDesc,
       createdBy: response.data.id,
       roomId: eventRoom.id,
+      host: eventHost,
     };
 
     const createdEvent = await eventService.createEvent(Event);
