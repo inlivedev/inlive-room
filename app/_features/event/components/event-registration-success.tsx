@@ -8,12 +8,14 @@ type EventRegistrationSuccessProps = {
   participantName: string;
   title: string;
   startTime: Date;
+  slug: string;
 };
 
 export default function EventRegistrationSuccess({
   participantName,
   title,
   startTime,
+  slug,
 }: EventRegistrationSuccessProps) {
   const eventStartDate = new Date(startTime).toLocaleDateString('en-GB', {
     month: 'long',
@@ -71,7 +73,7 @@ export default function EventRegistrationSuccess({
           <div className="text-center lg:text-left">
             <Button
               as={Link}
-              href="/event"
+              href={`/event/${slug}`}
               variant="flat"
               className="rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
             >

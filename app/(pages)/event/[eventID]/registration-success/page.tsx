@@ -47,6 +47,7 @@ export default async function Page({
         participantName={participantName}
         title={eventData.name}
         startTime={eventData.startTime}
+        slug={eventData.slug}
       />
     </AppContainer>
   );
