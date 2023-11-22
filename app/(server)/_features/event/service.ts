@@ -4,8 +4,12 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 
 export interface iEventRepo {
   addEvent(eventData: typeof insertEvent): Promise<typeof selectEvent>;
-  getEvent(slug: string): Promise<Event | undefined>;
-  getEvents(page: number, limit: number, userId?: number): Promise<Event[]>;
+  getEvent(slug: string): Promise<typeof selectEvent | undefined>;
+  getEvents(
+    page: number,
+    limit: number,
+    userId?: number
+  ): Promise<(typeof selectEvent)[]>;
 }
 
 export interface EventParticipant {
@@ -24,11 +28,7 @@ export interface Event {
 }
 
 export class EventService implements iEventService {
-  constructor(private repo: iEventRepo) {
-    this.error.set('EVENT_NOT_FOUND', new Error('Event not found'));
-  }
-
-  error: Map<string, Error> = new Map();
+  constructor(private repo: iEventRepo) {}
 
   async createEvent(eventData: typeof insertEvent): Promise<Event> {
     eventData.slug = eventData.slug + '-' + generateID(8);
@@ -36,8 +36,16 @@ export class EventService implements iEventService {
     return event;
   }
 
-  async getEvent(slug: string) {
+  async getEvent(slug: string, userId?: number) {
     const event = await this.repo.getEvent(slug);
+
+    if (!event) {
+      return undefined;
+    }
+
+    if (event?.createdBy != userId) {
+      event.roomId = '';
+    }
 
     return event;
   }

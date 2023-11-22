@@ -11,8 +11,17 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   const slug = params.slug;
+  const cookieStore = cookies();
+  const requestToken = cookieStore.get('token');
   try {
-    const existingEvent = await eventService.getEvent(slug);
+    let userID = undefined;
+
+    if (requestToken) {
+      const response = await getCurrentAuthenticated(requestToken.value);
+      if (response.ok) userID = response.data.id;
+    }
+
+    const existingEvent = await eventService.getEvent(slug, userID);
 
     if (!existingEvent) {
       return NextResponse.json({

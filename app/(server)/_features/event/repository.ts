@@ -20,7 +20,6 @@ export class EventRepo implements iEventRepo {
   async getEvent(slug: string): Promise<typeof selectEvent> {
     const data = await db.query.events.findFirst({
       where: eq(events.slug, slug),
-      columns: { roomId: false },
     });
 
     return data as typeof selectEvent;
