@@ -11,10 +11,13 @@ import {
 } from '@nextui-org/react';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';
+import type { EventType } from '@/_shared/types/event';
+import { useNavigate } from '@/_shared/hooks/use-navigate';
 
-export default function EventRegistrationModal() {
+export default function EventRegistrationModal({ slug }: { slug: string }) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { navigateTo } = useNavigate();
 
   const {
     value: firstNameInput,
@@ -61,11 +64,45 @@ export default function EventRegistrationModal() {
       setIsSubmitting(true);
 
       try {
-        onClose();
-        setFirstNameInput('');
-        setLastNameInput('');
-        setEmailInput('');
-        setIsSubmitting(false);
+        if (firstNameInput.trim().length === 0) {
+          throw new Error('Please fill out the first name field');
+        }
+
+        if (emailInput.trim().length === 0) {
+          throw new Error('Please fill out the email field');
+        }
+
+        const body = {
+          firstName: firstNameInput,
+          lastName: lastNameInput,
+          email: emailInput,
+        };
+
+        const response: EventType.RegisterParticipantResponse =
+          await InternalApiFetcher.post(`/api/events/${slug}/register`, {
+            body: JSON.stringify(body),
+          });
+
+        if (response.ok) {
+          const participantName =
+            `${response.data.participant.firstName} ${response.data.participant.lastName}`.trim();
+
+          const redirectPath = new URL(
+            `/event/${slug}/registration-success?name=${participantName}`,
+            window.location.origin
+          ).href;
+
+          onClose();
+          setFirstNameInput('');
+          setLastNameInput('');
+          setEmailInput('');
+          setIsSubmitting(false);
+          navigateTo(redirectPath);
+        } else {
+          throw new Error(
+            'An error has occured on our side please try again later'
+          );
+        }
       } catch (error) {
         setIsSubmitting(false);
         console.error(error);
@@ -103,6 +140,7 @@ export default function EventRegistrationModal() {
                   <input
                     id="first-name-input"
                     type="text"
+                    required
                     placeholder="Enter your first name"
                     className="w-full rounded-md bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200 shadow-sm outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
                     {...bindFirstNameInput}
@@ -132,7 +170,8 @@ export default function EventRegistrationModal() {
                   </label>
                   <input
                     id="email-input"
-                    type="text"
+                    type="email"
+                    required
                     placeholder="Enter your email"
                     className="w-full rounded-md bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200 shadow-sm outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
                     {...bindEmailInput}
@@ -148,7 +187,20 @@ export default function EventRegistrationModal() {
                   aria-disabled={isSubmitting}
                   disabled={isSubmitting}
                 >
-                  Submit registration
+                  {isSubmitting ? (
+                    <div className="flex gap-2">
+                      <Spinner
+                        classNames={{
+                          circle1: 'border-b-zinc-900',
+                          circle2: 'border-b-zinc-900',
+                          wrapper: 'w-4 h-4',
+                        }}
+                      />
+                      <span>Submitting...</span>
+                    </div>
+                  ) : (
+                    <span>Submit registration</span>
+                  )}
                 </Button>
               </div>
             </form>

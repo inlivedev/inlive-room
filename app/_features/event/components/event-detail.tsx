@@ -36,13 +36,13 @@ export default function EventDetail({
     }
   };
 
-  const eventStartDate = new Date(startTime).toLocaleDateString('en-US', {
+  const eventStartDate = new Date(startTime).toLocaleDateString('en-GB', {
     month: 'long',
     day: '2-digit',
     year: 'numeric',
   });
 
-  const eventStartTime = new Date(startTime).toLocaleTimeString('en-US', {
+  const eventStartTime = new Date(startTime).toLocaleTimeString('en-GB', {
     minute: '2-digit',
     hour: '2-digit',
     hour12: true,
@@ -50,20 +50,19 @@ export default function EventDetail({
 
   return (
     <>
-      <EventRegistrationModal />
+      <EventRegistrationModal slug={slug} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
-        <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4">
+        <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
           <Header logoText="inLive Event" logoHref="/event" />
-          <main className="flex flex-1 flex-col">
+          <main className="mb-28 flex flex-1 flex-col">
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
               {title}
             </h2>
             <div className="mt-4">
-              <b className="text-sm font-semibold text-zinc-400">Hosted by</b>
-              <p className="text-base text-zinc-100">{host}</p>
+              <b className="font-medium text-zinc-100">Hosted by {host}</b>
             </div>
-            <div className="mt-6 flex flex-col gap-10 lg:flex-row">
-              <div className="flex-auto lg:max-w-xl xl:max-w-[640px]">
+            <div className="mt-3 flex flex-col gap-6 lg:mt-6 lg:flex-row lg:gap-10">
+              <div className="lg:max-w-xl lg:flex-auto xl:max-w-[640px]">
                 <h3 className="text-lg font-medium text-zinc-100">
                   About this event
                 </h3>
@@ -71,8 +70,8 @@ export default function EventDetail({
                   {description}
                 </div>
               </div>
-              <div className="flex-1">
-                <div className="flex w-full flex-col gap-6 rounded-3xl lg:bg-black/25 lg:p-6">
+              <div className="lg:flex-1">
+                <div className="flex w-full flex-col gap-4 rounded-3xl p-6 lg:bg-black/25">
                   <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 py-3 lg:relative lg:border-t-0 lg:bg-transparent lg:p-0">
                     <div className="flex flex-col gap-1 lg:gap-2">
                       <div className="lg:order-2">
@@ -87,7 +86,7 @@ export default function EventDetail({
                             className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
                             onClick={openRegisterEventForm}
                           >
-                            Register to Join
+                            Register to Attend
                           </Button>
                         </div>
                         <div>

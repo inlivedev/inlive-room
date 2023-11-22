@@ -6,4 +6,23 @@ export declare namespace EventType {
     message: string;
     data: IEvent;
   };
+
+  type RegisteredParticipant = FetcherResponse & {
+    id: number;
+    clientId: string;
+    createdAt: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    description: string;
+    data?: Map<string, string>;
+  };
+
+  type RegisterParticipantResponse = FetcherResponse & {
+    message: string;
+    data: {
+      event: IEvent;
+      participant: RegisteredParticipant;
+    };
+  };
 }

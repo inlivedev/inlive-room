@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="flex flex-col gap-5 py-6 lg:py-8">
+    <footer className="flex flex-col gap-5 py-6 lg:py-12">
       <hr className="border-t border-zinc-700" />
       <p className="text-center text-xs text-zinc-400">
         &copy; {new Date().getFullYear()}{' '}
