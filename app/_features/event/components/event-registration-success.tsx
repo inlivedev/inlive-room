@@ -4,7 +4,29 @@ import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Link from 'next/link';
 
-export default function EventRegistrationSuccess() {
+type EventRegistrationSuccessProps = {
+  participantName: string;
+  title: string;
+  startTime: Date;
+};
+
+export default function EventRegistrationSuccess({
+  participantName,
+  title,
+  startTime,
+}: EventRegistrationSuccessProps) {
+  const eventStartDate = new Date(startTime).toLocaleDateString('en-GB', {
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
+  });
+
+  const eventStartTime = new Date(startTime).toLocaleTimeString('en-GB', {
+    minute: '2-digit',
+    hour: '2-digit',
+    hour12: true,
+  });
+
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
@@ -19,18 +41,18 @@ export default function EventRegistrationSuccess() {
                 You’re in! Get ready to join.
               </h2>
               <div className="text-sm lg:text-base">
-                <p className="mt-4">Congratulations, Billy Batson! 🎉</p>
+                <p className="mt-4">Congratulations, {participantName}! 🎉</p>
                 <p className="mt-4">
                   You&#39;re successfully registered to this event:
                   <br />
-                  <b className="font-semibold">
-                    In-House vs Agency vs Freelance
-                  </b>
+                  <b className="font-semibold">{title}</b>
                 </p>
                 <p className="mt-4">
                   And don’t forget to mark your calendar at:
                   <br />
-                  <b className="font-semibold">Dec 21, 7:30pm (GMT +07:00)</b>
+                  <b className="font-semibold">
+                    {eventStartDate}, {eventStartTime}
+                  </b>
                 </p>
                 <p className="mt-4">
                   We&#39;ve sent you an invitation email with all the details
