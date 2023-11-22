@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         code: 400,
         ok: false,
-        message: 'Name is not valid',
+        message: 'Name is not valid, please check the request body',
       });
     }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         code: 400,
         ok: false,
-        message: 'Start time is not valid',
+        message: 'Start time is not valid, please check the request body',
       });
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         code: 400,
         ok: false,
-        message: 'Host is not valid',
+        message: 'Event host is not valid, please check the request body',
       });
     }
 

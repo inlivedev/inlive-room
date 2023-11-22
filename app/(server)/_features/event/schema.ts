@@ -34,7 +34,7 @@ export const participant = pgTable('events_participant', {
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   email: text('email').notNull(),
-  descrtiption: text('description'),
+  description: text('description'),
   data: jsonb('data'),
 });
 

@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server';
 import { eventRepo } from '../../../_index';
 import { insertParticipant } from '@/(server)/_features/event/schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
+import {
+  SendEventInvitationEmail,
+  isMailerEnabled,
+} from '@/(server)/_shared/mailer/mailer';
 
 type RegisterParticipant = {
   firstName: string;
@@ -35,7 +39,7 @@ export async function POST(
       firstName: body.firstName,
       lastName: body.lastName,
       email: body.email,
-      descrtiption: body.description,
+      description: body.description,
       data: body.data,
     };
 
@@ -44,15 +48,13 @@ export async function POST(
       existingEvent.id
     );
 
-    // const MailerEnabled = process.env.ENABLE_MAILER || false;
-
-    // if (MailerEnabled) {
-    //   SendEventInvitationEmail(
-    //     newParticipant.firstName + ' ' + newParticipant.lastName,
-    //     newParticipant.email,
-    //     existingEvent
-    //   );
-    // }
+    if (isMailerEnabled()) {
+      SendEventInvitationEmail(
+        newParticipant.firstName + ' ' + newParticipant.lastName,
+        newParticipant.email,
+        existingEvent
+      );
+    }
 
     return NextResponse.json(
       {

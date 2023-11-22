@@ -20,7 +20,9 @@ steps:
       - NEXT_PUBLIC_MIXPANEL_TOKEN=${_NEXT_PUBLIC_MIXPANEL_TOKEN}
       - NEXT_PUBLIC_SENTRY_DSN=${_NEXT_PUBLIC_SENTRY_DSN}
       - PERSISTENT_DATA=true
-    secretEnv: ['DB_HOST','DB_NAME','DB_PASS','DB_USER']
+      - ENABLE_MAILER=true
+      - ROOM_INV_EMAIL_TEMPLATE=${_ROOM_INV_EMAIL_TEMPLATE}
+    secretEnv: ['DB_HOST','DB_NAME','DB_PASS','DB_USER',MAILER_API_KEY,MAILER_DOMAIN]
   # Build the container image
   - name: gcr.io/cloud-builders/docker
     args:
@@ -87,5 +89,7 @@ availableSecrets:
     env: 'DB_NAME'
   - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_PASS/versions/latest
     env: 'DB_PASS'
-  - versionName: projects/$PROJECT_ID/secrets/ROOM_PROD_DB_USER/versions/latest
-    env: 'DB_USER'
+  - versionName: projects/$PROJECT_ID/secrets/prod_mailgun_key/versions/latest
+    env: 'MAILER_API_KEY'
+   - versionName: projects/$PROJECT_ID/secrets/prod_mailgun_domain/versions/latest
+    env: 'MAILER_DOMAIN'
