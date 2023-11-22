@@ -20,6 +20,7 @@ export class EventRepo implements iEventRepo {
   async getEvent(slug: string): Promise<typeof selectEvent> {
     const data = await db.query.events.findFirst({
       where: eq(events.slug, slug),
+      columns: { roomId: false },
     });
 
     return data as typeof selectEvent;
@@ -40,6 +41,7 @@ export class EventRepo implements iEventRepo {
       orderBy(fields, operators) {
         return [operators.desc(fields.createdAt)];
       },
+      columns: { roomId: false },
     };
 
     if (userId) {
@@ -105,6 +107,7 @@ export class EventRepo implements iEventRepo {
 
       const event = await db.query.events.findFirst({
         where: eq(events.id, eventId),
+        columns: { roomId: false },
       });
 
       return { participant: insertedParticipant[0], event: event };
