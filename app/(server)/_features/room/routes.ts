@@ -1,5 +1,5 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
-import { Participant, Room, service } from '@/(server)/_features/room/service';
+import { Participant, Room, RoomService } from '@/(server)/_features/room/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 
 export interface iRoomService {
@@ -66,5 +66,5 @@ const createRoomRoutesHandler = () => {
 };
 
 export const roomRoutesHandler = createRoomRoutesHandler().createInstance(
-  new service(new RoomRepo())
+  new RoomService(new RoomRepo())
 );

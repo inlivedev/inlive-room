@@ -43,6 +43,20 @@
       "when": 1697089538283,
       "tag": "0005_remove_participant_table",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1700543142574,
+      "tag": "0006_add_event_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1700617005448,
+      "tag": "0007_add_host_to_event_table",
+      "breakpoints": true
     }
   ]
 }

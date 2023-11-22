@@ -17,15 +17,16 @@
     "@nextui-org/react": "^2.2.9",
     "@sentry/nextjs": "^7.70.0",
     "drizzle-orm": "^0.28.6",
+    "form-data": "^4.0.0",
     "framer-motion": "^10.16.4",
     "lodash-es": "^4.17.21",
+    "mailgun.js": "^9.3.0",
     "mixpanel-browser": "^2.47.0",
-    "nanoid": "^5.0.2",
+    "nanoid": "^5.0.3",
     "next": "^13.5.4",
     "postgres": "^3.3.5",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "sqids": "^0.3.0"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
