@@ -37,7 +37,7 @@ export default async function Page({
 
   const participantName = searchParams.name;
 
-  if (!eventData || !eventData.id || !userAuth || !participantName) {
+  if (!eventData || !eventData.id || !participantName) {
     notFound();
   }
 
