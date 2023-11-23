@@ -64,6 +64,14 @@ export default function ButtonLeave({ isModerator }: { isModerator: boolean }) {
           };
 
           moderatorDataChannel.send(JSON.stringify(message));
+
+          document.dispatchEvent(
+            new CustomEvent('trigger:client-leave', {
+              detail: {
+                clientID: clientID,
+              },
+            })
+          );
         }
       }
     },
