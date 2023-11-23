@@ -8,7 +8,11 @@ import ButtonScreenShare from '@/_features/room/components/button-screen-share';
 import ButtonChat from '@/_features/room/components/button-chat';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
 
-export default function ConferenceActionsBar() {
+export default function ConferenceActionsBar({
+  isModerator,
+}: {
+  isModerator: boolean;
+}) {
   const [isTouchScreen, setIsTouchScreen] = useState(false);
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export default function ConferenceActionsBar() {
         <ButtonChat />
       </div>
       <div className="flex h-full flex-col justify-center">
-        <ButtonLeave />
+        <ButtonLeave isModerator={isModerator} />
       </div>
     </div>
   );

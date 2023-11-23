@@ -29,7 +29,7 @@ export default function Conference({ isModerator }: { isModerator: boolean }) {
         <ConferenceParticipants isModerator={isModerator} />
       </div>
       <div className={`${styles['actionbar']}`}>
-        <ConferenceActionsBar />
+        <ConferenceActionsBar isModerator={isModerator} />
       </div>
     </div>
   );
