@@ -191,8 +191,8 @@ export default function EventRegistrationModal({ slug }: { slug: string }) {
                     <div className="flex gap-2">
                       <Spinner
                         classNames={{
-                          circle1: 'border-b-zinc-900',
-                          circle2: 'border-b-zinc-900',
+                          circle1: 'border-b-zinc-200',
+                          circle2: 'border-b-zinc-200',
                           wrapper: 'w-4 h-4',
                         }}
                       />

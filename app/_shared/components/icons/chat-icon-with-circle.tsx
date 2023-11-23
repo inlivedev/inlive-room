@@ -20,7 +20,7 @@ export default function ChatIconWithCircle(props: SVGElementPropsType) {
         rx="4"
         fill="#0EA5E9"
         stroke="#3f3f46"
-        stroke-width="2"
+        strokeWidth="2"
       />
     </svg>
   );
