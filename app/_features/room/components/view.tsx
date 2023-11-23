@@ -6,6 +6,7 @@ import { ClientProvider } from '@/_features/room/contexts/client-context';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
 import { ParticipantProvider } from '@/_features/room/contexts/participant-context';
+import { DataChannelProvider } from '../contexts/datachannel-context';
 import { ChatProvider } from '@/_features/room/contexts/chat-context';
 import EventContainer from '@/_features/room/components/event-container';
 import Conference from '@/_features/room/components/conference';
@@ -35,23 +36,25 @@ export default function View({ roomID, client }: ViewProps) {
 
   return (
     <div className="bg-zinc-900 text-zinc-200">
-      <ClientProvider roomID={roomID} client={client}>
-        <PeerProvider roomID={roomID} client={client}>
+      <PeerProvider roomID={roomID} client={client}>
+        <ClientProvider roomID={roomID} client={client}>
           <DeviceProvider>
             <ParticipantProvider>
-              <ChatProvider>
-                <EventContainer />
-                <ChatDrawerMenu />
-                {isConferenceActive ? (
-                  <Conference />
-                ) : (
-                  <Lobby roomID={roomID} />
-                )}
-              </ChatProvider>
+              <DataChannelProvider>
+                <ChatProvider>
+                  <EventContainer />
+                  <ChatDrawerMenu />
+                  {isConferenceActive ? (
+                    <Conference />
+                  ) : (
+                    <Lobby roomID={roomID} />
+                  )}
+                </ChatProvider>
+              </DataChannelProvider>
             </ParticipantProvider>
           </DeviceProvider>
-        </PeerProvider>
-      </ClientProvider>
+        </ClientProvider>
+      </PeerProvider>
     </div>
   );
 }
