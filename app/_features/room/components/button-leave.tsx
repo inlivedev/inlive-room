@@ -59,7 +59,7 @@ export default function ButtonLeave({ isModerator }: { isModerator: boolean }) {
           const message = {
             type: 'remove-client',
             data: {
-              clientIDs: [clientIDs],
+              clientIDs: clientIDs,
             },
           };
 
