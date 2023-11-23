@@ -25,8 +25,16 @@ export async function SendEventInvitationEmail(
   email: string,
   event: typeof selectEvent
 ) {
-  const eventDate = event.startTime.toDateString();
-  const eventTime = event.startTime.toTimeString();
+  const eventDate = Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'full',
+    timeZone: 'Asia/Bangkok',
+  }).format(event.startTime);
+
+  const eventTime = Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'full',
+    timeStyle: 'long',
+    timeZone: 'Asia/Bangkok',
+  }).format(event.startTime);
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
