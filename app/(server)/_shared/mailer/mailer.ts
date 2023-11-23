@@ -21,19 +21,19 @@ const mailer = mg.client({
 });
 
 export async function SendEventInvitationEmail(
-  name: string,
+  firstName: string,
+  lastName: string,
   email: string,
   event: typeof selectEvent
 ) {
   const eventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
-    timeZone: 'Asia/Bangkok',
+    timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
   const eventTime = Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'full',
     timeStyle: 'long',
-    timeZone: 'Asia/Bangkok',
+    timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
@@ -48,6 +48,8 @@ export async function SendEventInvitationEmail(
     'v:event-date': eventDate,
     'v:event-time': eventTime,
     'v:event-host': event.host,
+    'v:user-firstname': firstName,
+    'v:user-lastname': lastName,
   });
 
   if (res.status >= 400) {
@@ -55,7 +57,7 @@ export async function SendEventInvitationEmail(
       message: 'Event Invitation Email Request Fail',
       level: 'info',
       extra: {
-        name,
+        name: firstName,
         email,
         event,
         res,
@@ -68,6 +70,6 @@ export async function SendEventInvitationEmail(
   Sentry.captureEvent({
     message: 'Event Invitation Email Request Success',
     level: 'info',
-    extra: { name, email, event, res },
+    extra: { name: firstName, email, event, res },
   });
 }
