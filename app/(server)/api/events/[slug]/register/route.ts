@@ -50,7 +50,8 @@ export async function POST(
 
     if (isMailerEnabled()) {
       SendEventInvitationEmail(
-        newParticipant.firstName + ' ' + newParticipant.lastName,
+        newParticipant.firstName,
+        newParticipant.lastName,
         newParticipant.email,
         existingEvent
       );
