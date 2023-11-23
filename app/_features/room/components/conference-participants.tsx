@@ -18,7 +18,11 @@ const isMobile = () => {
   }
 };
 
-export default function ConferenceParticipants() {
+export default function ConferenceParticipants({
+  isModerator,
+}: {
+  isModerator: boolean;
+}) {
   const { streams } = useParticipantContext();
   const { peer } = usePeerContext();
   const [connectionState, setConnectionState] = useState('connecting');
@@ -121,7 +125,7 @@ export default function ConferenceParticipants() {
         } ${isUserCameraScreen ? styles['user-camera-screen'] : ''}`}
         style={videoLayout(hasScreen, stream.source)}
       >
-        <ConferenceScreen stream={stream} />
+        <ConferenceScreen stream={stream} isModerator={isModerator} />
       </div>
     );
   };

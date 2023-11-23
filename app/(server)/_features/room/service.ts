@@ -27,9 +27,11 @@ export interface iRoomRepo {
 export class RoomService implements iRoomService {
   _roomRepo: iRoomRepo;
   _sdk = room;
+  _datachannels: string[];
 
   constructor(roomRepo: iRoomRepo) {
     this._roomRepo = roomRepo;
+    this._datachannels = ['chat', 'moderator'];
   }
 
   async createClient(
@@ -130,16 +132,20 @@ export class RoomService implements iRoomService {
         throw new Error('Error during creating room, please try again later');
       }
 
-      const channelResp = await this._sdk.createDataChannel(
-        roomID,
-        'chat',
-        true
-      );
-
-      if (!channelResp.ok) {
-        Sentry.captureException(
-          new Error(`Room ${roomID} : failed to create chat data channel`)
+      for (const datachannel of this._datachannels) {
+        const channelResponse = await this._sdk.createDataChannel(
+          roomID,
+          datachannel,
+          true
         );
+
+        if (!channelResponse.ok) {
+          Sentry.captureException(
+            new Error(
+              `Room ${roomID} : failed to create ${datachannel} data channel`
+            )
+          );
+        }
       }
 
       if (!this._roomRepo.isPersistent()) {
@@ -215,16 +221,18 @@ export class RoomService implements iRoomService {
         );
       }
 
-      const channelResponse = await this._sdk.createDataChannel(
-        room.id,
-        'chat',
-        true
-      );
-
-      if (!channelResponse.ok) {
-        Sentry.captureException(
-          new Error(`Room ${room.id} : failed to create chat data channel`)
+      for (const datachannel of this._datachannels) {
+        const channelResponse = await this._sdk.createDataChannel(
+          room.id,
+          datachannel,
+          true
         );
+
+        if (!channelResponse.ok) {
+          Sentry.captureException(
+            new Error(`Room ${room.id} : failed to create chat data channel`)
+          );
+        }
       }
     }
 

@@ -42,9 +42,15 @@ export default async function Page() {
     notFound();
   }
 
+  const isModerator = roomData.createdBy === userAuth?.id;
+
   return (
     <AppContainer user={userAuth}>
-      <View roomID={roomData.id} client={userClient} />
+      <View
+        roomID={roomData.id}
+        client={userClient}
+        isModerator={isModerator}
+      />
     </AppContainer>
   );
 }

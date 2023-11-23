@@ -4,7 +4,7 @@ import styles from '@/_features/room/styles/conference.module.css';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { useViewportHeight } from '@/_shared/hooks/use-viewport-height';
 
-export default function Conference() {
+export default function Conference({ isModerator }: { isModerator: boolean }) {
   useViewportHeight();
   const { streams } = useParticipantContext();
 
@@ -26,7 +26,7 @@ export default function Conference() {
   return (
     <div className="viewport-height w-full">
       <div className={`${styles['participants']} ${getClass()}`}>
-        <ConferenceParticipants />
+        <ConferenceParticipants isModerator={isModerator} />
       </div>
       <div className={`${styles['actionbar']}`}>
         <ConferenceActionsBar />

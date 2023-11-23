@@ -6,6 +6,7 @@ import { ClientProvider } from '@/_features/room/contexts/client-context';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
 import { ParticipantProvider } from '@/_features/room/contexts/participant-context';
+import { DataChannelProvider } from '../contexts/datachannel-context';
 import { ChatProvider } from '@/_features/room/contexts/chat-context';
 import EventContainer from '@/_features/room/components/event-container';
 import Conference from '@/_features/room/components/conference';
@@ -16,9 +17,10 @@ import type { ClientType } from '@/_shared/types/client';
 type ViewProps = {
   roomID: string;
   client: ClientType.ClientData;
+  isModerator: boolean;
 };
 
-export default function View({ roomID, client }: ViewProps) {
+export default function View({ roomID, client, isModerator }: ViewProps) {
   const { active: isConferenceActive, setActive: setActiveConference } =
     useToggle(false);
 
@@ -35,23 +37,25 @@ export default function View({ roomID, client }: ViewProps) {
 
   return (
     <div className="bg-zinc-900 text-zinc-200">
-      <ClientProvider roomID={roomID} client={client}>
-        <PeerProvider roomID={roomID} client={client}>
+      <PeerProvider roomID={roomID} client={client}>
+        <ClientProvider roomID={roomID} client={client}>
           <DeviceProvider>
             <ParticipantProvider>
-              <ChatProvider>
-                <EventContainer />
-                <ChatDrawerMenu />
-                {isConferenceActive ? (
-                  <Conference />
-                ) : (
-                  <Lobby roomID={roomID} />
-                )}
-              </ChatProvider>
+              <DataChannelProvider>
+                <ChatProvider>
+                  <EventContainer />
+                  <ChatDrawerMenu />
+                  {isConferenceActive ? (
+                    <Conference isModerator={isModerator} />
+                  ) : (
+                    <Lobby roomID={roomID} />
+                  )}
+                </ChatProvider>
+              </DataChannelProvider>
             </ParticipantProvider>
           </DeviceProvider>
-        </PeerProvider>
-      </ClientProvider>
+        </ClientProvider>
+      </PeerProvider>
     </div>
   );
 }
