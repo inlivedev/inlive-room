@@ -6,7 +6,7 @@ import { useVideoScreen } from '@/_features/room/hooks/use-video-screen';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import styles from '@/_features/room/styles/conference.module.css';
-import PersonDeleteFillIcon from '@/_shared/components/icons/person-delete-fill-icon';
+import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
 
 export default function ConferenceScreen({
@@ -58,17 +58,17 @@ export default function ConferenceScreen({
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
         {isModerator && stream.origin !== 'local' && (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-active:opacity-100">
-            <div className="rounded-full bg-zinc-600/70 px-6 py-1">
+            <div className="rounded-xl bg-zinc-800/70 px-4 py-1 md:px-6">
               <Button
                 isIconOnly
                 size="sm"
                 variant="light"
                 aria-label="Remove this participant"
-                className="h-9 w-9 rounded-full"
+                className="h-8 w-8 rounded-full hover:bg-zinc-600 active:bg-zinc-500 md:h-9 md:w-9"
                 title="Remove this participant"
                 onClick={handleRemoveParticipant}
               >
-                <PersonDeleteFillIcon className="h-5 w-5 md:h-6 md:w-6" />
+                <XFillIcon className="h-4 w-4 md:h-5 md:w-5" />
               </Button>
             </div>
           </div>
