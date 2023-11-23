@@ -17,9 +17,10 @@ import type { ClientType } from '@/_shared/types/client';
 type ViewProps = {
   roomID: string;
   client: ClientType.ClientData;
+  isModerator: boolean;
 };
 
-export default function View({ roomID, client }: ViewProps) {
+export default function View({ roomID, client, isModerator }: ViewProps) {
   const { active: isConferenceActive, setActive: setActiveConference } =
     useToggle(false);
 
@@ -45,7 +46,7 @@ export default function View({ roomID, client }: ViewProps) {
                   <EventContainer />
                   <ChatDrawerMenu />
                   {isConferenceActive ? (
-                    <Conference />
+                    <Conference isModerator={isModerator} />
                   ) : (
                     <Lobby roomID={roomID} />
                   )}
