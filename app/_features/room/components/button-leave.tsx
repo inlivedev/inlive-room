@@ -70,7 +70,7 @@ export default function ButtonLeave({ isModerator }: { isModerator: boolean }) {
     [clientID, datachannels, isModerator, streams]
   );
 
-  return isModerator ? (
+  return (
     <ButtonGroup variant="flat">
       <Button
         isIconOnly
@@ -81,43 +81,35 @@ export default function ButtonLeave({ isModerator }: { isModerator: boolean }) {
       >
         <HangUpIcon width={20} height={20} />
       </Button>
-      <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
-        <DropdownTrigger>
-          <Button
-            isIconOnly
-            className="w-8 min-w-0 bg-red-600/70 hover:bg-red-600 active:bg-red-500"
+      {isModerator && (
+        <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
+          <DropdownTrigger>
+            <Button
+              isIconOnly
+              className="w-8 min-w-0 bg-red-600/70 hover:bg-red-600 active:bg-red-500"
+            >
+              <ArrowDownFillIcon className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label="Leave room options"
+            onAction={onLeaveSelection}
           >
-            <ArrowDownFillIcon className="h-3.5 w-3.5" />
-          </Button>
-        </DropdownTrigger>
-        <DropdownMenu
-          aria-label="Leave room options"
-          onAction={onLeaveSelection}
-        >
-          <DropdownItem
-            key="leave"
-            description="Others still stay in the room. You can rejoin later."
-          >
-            Leave room
-          </DropdownItem>
-          <DropdownItem
-            key="end"
-            description="This will make everyone leave the room."
-          >
-            End room for everyone
-          </DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
+            <DropdownItem
+              key="leave"
+              description="Others still stay in the room. You can rejoin later."
+            >
+              Leave room
+            </DropdownItem>
+            <DropdownItem
+              key="end"
+              description="This will make everyone leave the room."
+            >
+              End room for everyone
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+      )}
     </ButtonGroup>
-  ) : (
-    <Button
-      isIconOnly
-      variant="flat"
-      aria-label="Leave from this room"
-      className="bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500"
-      onClick={handleLeaveRoom}
-    >
-      <HangUpIcon width={20} height={20} />
-    </Button>
   );
 }
