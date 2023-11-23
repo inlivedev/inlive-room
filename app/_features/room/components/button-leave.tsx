@@ -70,7 +70,7 @@ export default function ButtonLeave({ isModerator }: { isModerator: boolean }) {
     [clientID, datachannels, isModerator, streams]
   );
 
-  return (
+  return isModerator ? (
     <ButtonGroup variant="flat">
       <Button
         isIconOnly
@@ -109,5 +109,15 @@ export default function ButtonLeave({ isModerator }: { isModerator: boolean }) {
         </DropdownMenu>
       </Dropdown>
     </ButtonGroup>
+  ) : (
+    <Button
+      isIconOnly
+      variant="flat"
+      aria-label="Leave from this room"
+      className="bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500"
+      onClick={handleLeaveRoom}
+    >
+      <HangUpIcon width={20} height={20} />
+    </Button>
   );
 }
