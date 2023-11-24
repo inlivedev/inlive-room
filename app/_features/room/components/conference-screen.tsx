@@ -57,7 +57,7 @@ export default function ConferenceScreen({
       {/* video screen overlay */}
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
         {isModerator &&
-          stream.origin !== 'local' &&
+          stream.origin === 'remote' &&
           stream.source === 'media' && (
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-active:opacity-100">
               <div className="rounded-xl bg-zinc-800/70 px-4 py-1 md:px-6">
