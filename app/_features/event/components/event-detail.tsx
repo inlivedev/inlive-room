@@ -10,7 +10,9 @@ const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 type EventDetailProps = {
   title: string;
-  description: string;
+  descriptionMarkup: {
+    __html: string | TrustedHTML;
+  };
   startTime: Date;
   slug: string;
   host: string;
@@ -18,7 +20,7 @@ type EventDetailProps = {
 
 export default function EventDetail({
   title,
-  description,
+  descriptionMarkup,
   slug,
   host,
   startTime,
@@ -66,9 +68,10 @@ export default function EventDetail({
                 <h3 className="text-lg font-medium text-zinc-100">
                   About this event
                 </h3>
-                <div className="prose prose-sm mt-3 max-w-none text-zinc-200 lg:prose-base">
-                  {description}
-                </div>
+                <div
+                  className="prose prose-sm mt-6 max-w-none text-zinc-200 lg:prose-base prose-img:rounded-[32px]"
+                  dangerouslySetInnerHTML={descriptionMarkup}
+                ></div>
               </div>
               <div className="lg:flex-1">
                 <div className="flex w-full flex-col gap-4 rounded-3xl p-6 lg:bg-black/25">
