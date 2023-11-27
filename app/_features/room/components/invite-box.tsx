@@ -1,13 +1,26 @@
-import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { Button } from '@nextui-org/react';
+import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { useToggle } from '@/_shared/hooks/use-toggle';
+import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
+import CheckIcon from '@/_shared/components/icons/check-icon';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export default function InviteBox({ roomID }: { roomID: string }) {
+  const {
+    active: copiedActive,
+    setActive: setCopiedActive,
+    setInActive: setCopiedInActive,
+  } = useToggle(false);
+
   const handleCopyLink = async (text = '') => {
     const success = await copyToClipboard(text);
+
     if (success) {
-      alert('Link has been successfully copied!');
+      setCopiedActive();
+      setTimeout(() => {
+        setCopiedInActive();
+      }, 2000);
     } else {
       alert('Fail to copy link');
     }
@@ -32,10 +45,19 @@ export default function InviteBox({ roomID }: { roomID: string }) {
         </div>
         <div>
           <Button
-            className="rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
+            className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
             onClick={() => handleCopyLink(`${APP_ORIGIN}/room/${roomID}`)}
           >
-            Copy Link
+            <span>
+              {copiedActive ? (
+                <CheckIcon className="h-5 w-5" />
+              ) : (
+                <CopyOutlineIcon className="h-5 w-5" />
+              )}
+            </span>
+            <span className="hidden md:inline">
+              {copiedActive ? 'Copied!' : 'Copy link'}
+            </span>
           </Button>
         </div>
       </div>
