@@ -5,6 +5,9 @@ import Header from '@/_shared/components/header/header';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import EventRegistrationModal from '@/_features/event/components/event-registration-modal';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { useToggle } from '@/_shared/hooks/use-toggle';
+import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
+import CheckIcon from '@/_shared/components/icons/check-icon';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -25,14 +28,24 @@ export default function EventDetail({
   host,
   startTime,
 }: EventDetailProps) {
+  const {
+    active: copiedActive,
+    setActive: setCopiedActive,
+    setInActive: setCopiedInActive,
+  } = useToggle(false);
+
   const openRegisterEventForm = () => {
     document.dispatchEvent(new CustomEvent('open:event-registration-modal'));
   };
 
   const handleCopyLink = async (text = '') => {
     const success = await copyToClipboard(text);
+
     if (success) {
-      alert('Link has been successfully copied!');
+      setCopiedActive();
+      setTimeout(() => {
+        setCopiedInActive();
+      }, 2000);
     } else {
       alert('Fail to copy link');
     }
@@ -63,13 +76,10 @@ export default function EventDetail({
             <div className="mt-4">
               <b className="font-medium text-zinc-100">Hosted by {host}</b>
             </div>
-            <div className="mt-3 flex flex-col gap-6 lg:mt-6 lg:flex-row lg:gap-10">
+            <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
               <div className="lg:max-w-xl lg:flex-auto xl:max-w-[640px]">
-                <h3 className="text-lg font-medium text-zinc-100">
-                  About this event
-                </h3>
                 <div
-                  className="prose prose-sm mt-6 max-w-none text-zinc-200 lg:prose-base prose-img:rounded-[32px]"
+                  className="prose prose-sm mt-6 max-w-none text-zinc-200 lg:prose-base prose-img:rounded-2xl prose-img:lg:rounded-3xl"
                   dangerouslySetInnerHTML={descriptionMarkup}
                 ></div>
               </div>
@@ -95,12 +105,21 @@ export default function EventDetail({
                         <div>
                           <Button
                             variant="flat"
-                            className="rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                            className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
                             onClick={() =>
                               handleCopyLink(`${APP_ORIGIN}/event/${slug}`)
                             }
                           >
-                            Copy link
+                            <span>
+                              {copiedActive ? (
+                                <CheckIcon className="h-5 w-5" />
+                              ) : (
+                                <CopyOutlineIcon className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="hidden lg:inline">
+                              {copiedActive ? 'Copied!' : 'Copy link'}
+                            </span>
                           </Button>
                         </div>
                       </div>
