@@ -2,6 +2,7 @@ import Mailgun from 'mailgun.js';
 import formData from 'form-data';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import * as Sentry from '@sentry/nextjs';
+import { generateID } from '../utils/generateid';
 
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
@@ -23,7 +24,7 @@ const mailer = mg.client({
 export async function SendEventInvitationEmail(
   firstName: string,
   lastName: string,
-  email: string,
+  address: string,
   event: typeof selectEvent
 ) {
   const eventDate = Intl.DateTimeFormat('en-GB', {
@@ -36,10 +37,30 @@ export async function SendEventInvitationEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
+  const icalString = `BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+PRODID:-//inLive//inLive//EN
+BEGIN:VEVENT
+UID:${generateID(12)}
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}
+DTSTART:${event.startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}
+DTEND:${event.endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}
+SUMMARY:${event.name}
+ORGANIZER:${event.host}
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;
+URL;VALUE=URI:${PUBLIC_URL}/event/${event.slug}
+DESCRIPTION:${event.name} - ${PUBLIC_URL}/event/${event.slug}
+END:VEVENT
+END:VCALENDAR`;
+
+  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
-    to: email,
+    to: address,
     subject: `Your invitation URL for ${event.name}`,
     'v:room-url': `${PUBLIC_URL}/room/${event.roomId}`,
     'v:event-url': `${PUBLIC_URL}/event/${event.slug}`,
@@ -50,6 +71,16 @@ export async function SendEventInvitationEmail(
     'v:event-host': event.host,
     'v:user-firstname': firstName,
     'v:user-lastname': lastName,
+    'h:Content-Type':
+      'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+    'h:Content-Transfer-Encoding': 'Base64',
+    'h:Content-Disposition': 'attachment; filename=invite.ics',
+    attachment: {
+      data: iCalendarBuffer,
+      filename: 'invite.ics',
+      encoding: 'base64',
+      contentType: 'application/ics',
+    },
   });
 
   if (res.status >= 400) {
@@ -58,7 +89,7 @@ export async function SendEventInvitationEmail(
       level: 'info',
       extra: {
         name: firstName,
-        email,
+        email: address,
         event,
         res,
       },
@@ -70,6 +101,6 @@ export async function SendEventInvitationEmail(
   Sentry.captureEvent({
     message: 'Event Invitation Email Request Success',
     level: 'info',
-    extra: { name: firstName, email, event, res },
+    extra: { name: firstName, email: address, event, res },
   });
 }
