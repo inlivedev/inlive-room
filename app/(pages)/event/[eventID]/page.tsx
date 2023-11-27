@@ -35,11 +35,15 @@ export default async function Page({ params: { eventID } }: PageProps) {
     notFound();
   }
 
+  const descriptionMarkup = {
+    __html: eventData.description || '',
+  };
+
   return (
     <AppContainer user={userAuth}>
       <EventDetail
         title={eventData.name}
-        description={eventData.description || ''}
+        descriptionMarkup={descriptionMarkup}
         slug={eventData.slug}
         host={eventData.host}
         startTime={eventData.startTime}
