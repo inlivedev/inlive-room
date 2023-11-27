@@ -52,6 +52,7 @@ export async function SendEventInvitationEmail(
     'v:event-date': eventDate,
     'v:event-time': eventTime,
     'v:event-host': event.host,
+    'v:event-calendar': `${PUBLIC_URL}/event/${event.slug}/calendar`,
     'v:user-firstname': firstName,
     'v:user-lastname': lastName,
     'h:Content-Type':
