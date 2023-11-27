@@ -13,9 +13,21 @@ type PageProps = {
   };
 };
 
-export const generateMetadata = ({ params }: PageProps): Metadata => {
+export const generateMetadata = async ({
+  params: { eventID },
+}: PageProps): Promise<Metadata> => {
+  const { data: eventData }: EventType.DetailEventResponse =
+    await InternalApiFetcher.get(`/api/events/${eventID}`);
+
+  if (!eventData || !eventData.id) {
+    return {
+      title: 'Page Not Found',
+      description: 'There is nothing to see on this page',
+    };
+  }
+
   return {
-    title: `Detail Event`,
+    title: eventData.name,
   };
 };
 
