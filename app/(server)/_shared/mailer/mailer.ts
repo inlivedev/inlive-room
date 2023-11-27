@@ -2,7 +2,7 @@ import Mailgun from 'mailgun.js';
 import formData from 'form-data';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import * as Sentry from '@sentry/nextjs';
-import { generateID } from '../utils/generateid';
+import { GenerateIcal } from '@/(server)/api/events';
 
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
@@ -37,24 +37,7 @@ export async function SendEventInvitationEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
-  const icalString = `BEGIN:VCALENDAR
-VERSION:2.0
-CALSCALE:GREGORIAN
-METHOD:REQUEST
-PRODID:-//inLive//inLive//EN
-BEGIN:VEVENT
-UID:${generateID(12)}
-DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}
-DTSTART:${event.startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}
-DTEND:${event.endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}
-SUMMARY:${event.name}
-ORGANIZER:${event.host}
-ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;
-URL;VALUE=URI:${PUBLIC_URL}/event/${event.slug}
-DESCRIPTION:${event.name} - ${PUBLIC_URL}/event/${event.slug}
-END:VEVENT
-END:VCALENDAR`;
-
+  const icalString = GenerateIcal(event);
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
