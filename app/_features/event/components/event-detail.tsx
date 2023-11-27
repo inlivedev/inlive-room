@@ -68,7 +68,7 @@ export default function EventDetail({
       <EventRegistrationModal slug={slug} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
-          <Header logoText="inLive Event" logoHref="/event" />
+          <Header logoText="inLive Event" logoHref="/event" needAuth={true} />
           <main className="mb-28 flex flex-1 flex-col">
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
               {title}
