@@ -7,6 +7,7 @@ import { insertEvent } from '@/(server)/_features/event/schema';
 type CreateEvent = {
   name: string;
   startTime: string;
+  endTime: string;
   description?: string;
   host: string;
 };
@@ -29,6 +30,10 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CreateEvent;
     const eventName = body.name;
     const eventStartTime = new Date(body.startTime);
+    const eventEndTime =
+      body.endTime == '' || undefined
+        ? new Date(eventStartTime.getTime() + (60 * 60 * 1000) / 2)
+        : new Date(body.endTime);
     const eventDesc = body.description;
     const eventHost = body.host;
 
@@ -75,6 +80,7 @@ export async function POST(request: NextRequest) {
     const Event: typeof insertEvent = {
       name: eventName,
       startTime: eventStartTime,
+      endTime: eventEndTime,
       slug: eventName.toLowerCase().replace(/\s/g, '-'),
       description: eventDesc,
       createdBy: response.data.id,
