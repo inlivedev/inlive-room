@@ -52,18 +52,16 @@ export async function SendEventInvitationEmail(
     'v:event-date': eventDate,
     'v:event-time': eventTime,
     'v:event-host': event.host,
-    'v:event-calendar': `${PUBLIC_URL}/event/${event.slug}/calendar`,
+    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar`,
     'v:user-firstname': firstName,
     'v:user-lastname': lastName,
-    'h:Content-Type':
-      'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
-    'h:Content-Transfer-Encoding': 'Base64',
-    'h:Content-Disposition': 'attachment; filename=invite.ics',
-    attachment: {
+    inline: {
       data: iCalendarBuffer,
       filename: 'invite.ics',
-      encoding: 'base64',
-      contentType: 'application/ics',
+      contentType:
+        'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+      contentDisposition: 'inline; filename=invite.ics',
+      contentTransferEncoding: 'base64',
     },
   });
 

@@ -19,9 +19,12 @@ export async function GET(
 
     const icalString = GenerateIcal(event);
     const resp = new Response(icalString);
-    resp.headers.set('Content-Type', 'text/calendar');
-    resp.headers.set('Content-Disposition', 'attachment; filename=invite.ics');
+    resp.headers.set(
+      'Content-Type',
+      'text/calendar; charset=utf-8; name=invite.ics'
+    );
     resp.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+    resp.headers.set('Content-Transfer-Encoding', 'base64');
 
     return resp;
   } catch (error) {
