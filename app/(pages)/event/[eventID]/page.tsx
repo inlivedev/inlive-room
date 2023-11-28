@@ -70,6 +70,7 @@ export const generateMetadata = async ({
   const eventStartDate = new Date(eventData.startTime).toLocaleDateString(
     'en-GB',
     {
+      timeZone: 'Asia/Jakarta',
       month: 'long',
       day: '2-digit',
       year: 'numeric',
@@ -79,6 +80,7 @@ export const generateMetadata = async ({
   const eventStartTime = new Date(eventData.startTime).toLocaleTimeString(
     'en-GB',
     {
+      timeZone: 'Asia/Jakarta',
       minute: '2-digit',
       hour: '2-digit',
       hour12: true,
