@@ -127,6 +127,7 @@ export async function PUT(
     startTime?: string;
     description?: string;
     host?: string;
+    endTime?: string;
   };
 
   const body = (await request.json()) as updateEvent;
@@ -167,6 +168,7 @@ export async function PUT(
     const newEvent: typeof insertEvent = {
       name: eventName ?? oldEvent.name,
       startTime: body.startTime ? new Date(body.startTime) : oldEvent.startTime,
+      endTime: body.endTime ? new Date(body.endTime) : oldEvent.endTime,
       slug: eventName
         ? eventName.toLowerCase().replace(/\s/g, '-') + '-' + generateID(8)
         : oldEvent.slug,

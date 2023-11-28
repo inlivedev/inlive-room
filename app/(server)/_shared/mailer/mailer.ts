@@ -2,6 +2,7 @@ import Mailgun from 'mailgun.js';
 import formData from 'form-data';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import * as Sentry from '@sentry/nextjs';
+import { GenerateIcal } from '@/(server)/api/events';
 
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
@@ -23,7 +24,7 @@ const mailer = mg.client({
 export async function SendEventInvitationEmail(
   firstName: string,
   lastName: string,
-  email: string,
+  address: string,
   event: typeof selectEvent
 ) {
   const eventDate = Intl.DateTimeFormat('en-GB', {
@@ -36,10 +37,13 @@ export async function SendEventInvitationEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
+  const icalString = GenerateIcal(event);
+  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
-    to: email,
+    to: address,
     subject: `Your invitation URL for ${event.name}`,
     'v:room-url': `${PUBLIC_URL}/room/${event.roomId}`,
     'v:event-url': `${PUBLIC_URL}/event/${event.slug}`,
@@ -48,8 +52,17 @@ export async function SendEventInvitationEmail(
     'v:event-date': eventDate,
     'v:event-time': eventTime,
     'v:event-host': event.host,
+    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar`,
     'v:user-firstname': firstName,
     'v:user-lastname': lastName,
+    inline: {
+      data: iCalendarBuffer,
+      filename: 'invite.ics',
+      contentType:
+        'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+      contentDisposition: 'inline; filename=invite.ics',
+      contentTransferEncoding: 'base64',
+    },
   });
 
   if (res.status >= 400) {
@@ -58,7 +71,7 @@ export async function SendEventInvitationEmail(
       level: 'info',
       extra: {
         name: firstName,
-        email,
+        email: address,
         event,
         res,
       },
@@ -70,6 +83,6 @@ export async function SendEventInvitationEmail(
   Sentry.captureEvent({
     message: 'Event Invitation Email Request Success',
     level: 'info',
-    extra: { name: firstName, email, event, res },
+    extra: { name: firstName, email: address, event, res },
   });
 }

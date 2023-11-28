@@ -16,6 +16,7 @@ export const events = pgTable('events', {
   name: text('name').notNull(),
   startTime: timestamp('start_time').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  endTime: timestamp('end_time').notNull(),
   description: text('description'),
   createdBy: integer('created_by').notNull(),
   roomId: text('room_id').notNull(),
