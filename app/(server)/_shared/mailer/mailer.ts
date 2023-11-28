@@ -37,7 +37,7 @@ export async function SendEventInvitationEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
-  const icalString = GenerateIcal(event);
+  const icalString = GenerateIcal(event, 'Asia/Jakarta');
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {

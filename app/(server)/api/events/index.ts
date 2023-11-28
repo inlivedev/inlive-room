@@ -3,16 +3,11 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
-export function GenerateIcal(event: typeof selectEvent) {
-  const eventDate = Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'full',
-    timeZone: 'Asia/Jakarta',
-  }).format(event.startTime);
-
-  const eventTime = Intl.DateTimeFormat('en-GB', {
-    timeStyle: 'long',
-    timeZone: 'Asia/Jakarta',
-  }).format(event.startTime);
+export function GenerateIcal(event: typeof selectEvent, timezone: string) {
+  const { eventDate, eventTime, DTSTAMP, DTSTART, DTEND } = generateDateTime(
+    event,
+    timezone
+  );
 
   const eventDesc = `Hi there!\\n
   Thanks for registering for our upcoming webinar!\\n
@@ -29,5 +24,88 @@ export function GenerateIcal(event: typeof selectEvent) {
   Joint the event : ${PUBLIC_URL}/room/${event.roomId}`;
 
   // eslint-disable-next-line prettier/prettier
-  return `BEGIN:VCALENDAR\rVERSION:2.0\rCALSCALE:GREGORIAN\rMETHOD:REQUEST\rPRODID:-//inLive//inLive//EN\rBEGIN:VEVENT\rUID:${generateID(12)}\rDTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}\rDTSTART:${event.startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}\rDTEND:${event.endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}\rSUMMARY:${event.name}\rORGANIZER:${event.host}\rATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:CN=${event.host}:MAILTO:hello@inlive.app\rURL;VALUE=URI:${PUBLIC_URL}/event/${event.slug}\rDESCRIPTION:${eventDesc}\rEND:VEVENT\rEND:VCALENDAR`;
+  return `BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+PRODID:-//inLive//inLive//EN
+BEGIN:VTIMEZONE
+TZID:Asia/Jakarta
+LAST-MODIFIED:20230911T053111Z
+TZURL:https://www.tzurl.org/zoneinfo-outlook/Asia/Jakarta
+X-LIC-LOCATION:Asia/Jakarta
+BEGIN:STANDARD
+TZNAME:WIB
+TZOFFSETFROM:+0700
+TZOFFSETTO:+0700
+DTSTART:19700101T000000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:${generateID(12)}
+DTSTAMP;TZID=${timezone}:${DTSTAMP}
+DTSTART;TZID=${timezone}:${DTSTART}
+DTEND;TZID=${timezone}:${DTEND}
+SUMMARY:${event.name}
+ORGANIZER:${event.host}
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTIONRSVP=TRUE:CN=${
+    event.host
+  }:MAILTO:example@example.com
+URL;VALUE=URI:${PUBLIC_URL}/event/${event.slug}
+DESCRIPTION:${eventDesc}
+END:VEVENT
+END:VCALENDAR`;
+}
+
+function generateDateTime(event: typeof selectEvent, timezone: string) {
+  const eventDate = Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'full',
+    timeZone: timezone,
+  }).format(event.startTime);
+
+  const eventTime = Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'long',
+    timeZone: timezone,
+  }).format(event.startTime);
+
+  const icalStartDate = Intl.DateTimeFormat('fr-CA', {
+    timeZone: timezone,
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+  })
+    .format(event.startTime)
+    .replaceAll('-', '');
+
+  const icalStartTime = Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: timezone,
+  })
+    .format(event.startTime)
+    .replaceAll(':', '');
+
+  const icalEndDate = Intl.DateTimeFormat('fr-CA', {
+    timeZone: timezone,
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+  })
+    .format(event.endTime)
+    .replaceAll('-', '');
+
+  const icalEndTime = Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: timezone,
+  })
+    .format(event.endTime)
+    .replaceAll(':', '');
+
+  const DTSTAMP = `${icalStartDate}T${icalStartTime}`;
+  const DTSTART = `${icalStartDate}T${icalStartTime}`;
+  const DTEND = `${icalEndDate}T${icalEndTime}`;
+  return { eventDate, eventTime, DTSTAMP, DTSTART, DTEND };
 }

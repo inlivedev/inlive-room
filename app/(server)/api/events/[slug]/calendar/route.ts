@@ -17,7 +17,7 @@ export async function GET(
       });
     }
 
-    const icalString = GenerateIcal(event);
+    const icalString = GenerateIcal(event, 'Asia/Jakarta');
     const resp = new Response(icalString);
     resp.headers.set(
       'Content-Type',
