@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import AppContainer from '@/_shared/components/containers/app-container';
 import HTTPError from '@/_shared/components/errors/http-error';
 import { headers } from 'next/headers';
 import type { UserType } from '@/_shared/types/user';
+
+export const metadata: Metadata = {
+  title: 'Page Not Found',
+  description: 'There is nothing to see on this page',
+};
 
 export default async function NotFound() {
   const headersList = headers();
