@@ -14,7 +14,17 @@ import { useInput } from '@/_shared/hooks/use-input';
 import type { EventType } from '@/_shared/types/event';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 
-export default function EventRegistrationModal({ slug }: { slug: string }) {
+type EventRegistrationModalProps = {
+  title: string;
+  slug: string;
+  startTime: Date;
+};
+
+export default function EventRegistrationModal({
+  title,
+  slug,
+  startTime,
+}: EventRegistrationModalProps) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { navigateTo } = useNavigate();
@@ -114,6 +124,18 @@ export default function EventRegistrationModal({ slug }: { slug: string }) {
     }
   };
 
+  const eventStartDate = new Date(startTime).toLocaleDateString('en-GB', {
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
+  });
+
+  const eventStartTime = new Date(startTime).toLocaleTimeString('en-GB', {
+    minute: '2-digit',
+    hour: '2-digit',
+    hour12: true,
+  });
+
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} onClose={onCloseModal}>
       <ModalContent className="w-screen max-w-none ring-1 ring-zinc-800 sm:max-w-[400px]">
@@ -122,11 +144,9 @@ export default function EventRegistrationModal({ slug }: { slug: string }) {
             <h2 className="text-xl font-bold text-zinc-100 ">
               Event registration
             </h2>
-            <p className="mt-3 text-sm font-semibold text-zinc-200">
-              In-House vs Agency vs Freelance
-            </p>
+            <p className="mt-3 text-sm font-semibold text-zinc-200">{title}</p>
             <p className="mt-1 text-sm text-zinc-200">
-              Dec 21, 7:30pm (GMT +07:00)
+              {eventStartDate} at {eventStartTime}
             </p>
             <form className="mt-10" onSubmit={onSubmitEventRegistration}>
               <div>
@@ -143,6 +163,7 @@ export default function EventRegistrationModal({ slug }: { slug: string }) {
                     required
                     placeholder="Enter your first name"
                     className="w-full rounded-md bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200 shadow-sm outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
+                    autoComplete="off"
                     {...bindFirstNameInput}
                   />
                 </div>
@@ -158,6 +179,7 @@ export default function EventRegistrationModal({ slug }: { slug: string }) {
                     type="text"
                     placeholder="Enter your last name"
                     className="w-full rounded-md bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200 shadow-sm outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
+                    autoComplete="off"
                     {...bindLastNameInput}
                   />
                 </div>
@@ -174,6 +196,7 @@ export default function EventRegistrationModal({ slug }: { slug: string }) {
                     required
                     placeholder="Enter your email"
                     className="w-full rounded-md bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200 shadow-sm outline-none ring-1 ring-zinc-700 focus-visible:ring-1 focus-visible:ring-zinc-400"
+                    autoComplete="off"
                     {...bindEmailInput}
                   />
                 </div>
