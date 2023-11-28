@@ -79,7 +79,6 @@ export const generateMetadata = async ({
       description: descriptionSummary,
       url: `${APP_ORIGIN}/event/${eventData.slug}`,
       images: [imageSrc],
-      locale: 'en_US',
       type: 'website',
     },
     twitter: {
