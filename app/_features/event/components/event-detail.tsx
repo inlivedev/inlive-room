@@ -65,7 +65,7 @@ export default function EventDetail({
 
   return (
     <>
-      <EventRegistrationModal slug={slug} />
+      <EventRegistrationModal title={title} slug={slug} startTime={startTime} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
           <Header logoText="inLive Event" logoHref="/event" needAuth={true} />
