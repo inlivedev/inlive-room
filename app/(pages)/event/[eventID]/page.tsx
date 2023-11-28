@@ -7,11 +7,52 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { UserType } from '@/_shared/types/user';
 import type { EventType } from '@/_shared/types/event';
 
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+
 type PageProps = {
   params: {
     eventID: string;
   };
 };
+
+const extractSrcImage = (htmlString: string) => {
+  let src = '';
+
+  const imgStartIndex = htmlString.indexOf('<img');
+  const imgEndIndex = htmlString.indexOf('>', imgStartIndex) + 1;
+  const imgTag = htmlString.slice(imgStartIndex, imgEndIndex);
+
+  const srcIndex = imgTag.indexOf('src=');
+
+  if (srcIndex !== -1) {
+    const valueStartIndex = htmlString.indexOf('"', srcIndex) + 1;
+    const valueEndIndex = htmlString.indexOf('"', valueStartIndex);
+    src = htmlString.slice(valueStartIndex, valueEndIndex);
+  }
+
+  return src;
+};
+
+function sanitizeHTML(htmlString: string) {
+  let sanitizedString = '';
+  let insideTag = false;
+
+  for (let i = 0; i < htmlString.length; i++) {
+    if (htmlString[i] === '<') {
+      insideTag = true;
+    } else if (htmlString[i] === '>') {
+      insideTag = false;
+    } else if (!insideTag) {
+      if (htmlString[i] === '\n') {
+        sanitizedString += ' ';
+      } else {
+        sanitizedString += htmlString[i];
+      }
+    }
+  }
+
+  return sanitizedString.trim();
+}
 
 export const generateMetadata = async ({
   params: { eventID },
@@ -26,8 +67,26 @@ export const generateMetadata = async ({
     };
   }
 
+  const imageSrc = extractSrcImage(eventData.description || '');
+  const description = sanitizeHTML(eventData.description || '');
+  const descriptionSummary = description.slice(0, 150);
+
   return {
     title: eventData.name,
+    description: descriptionSummary,
+    openGraph: {
+      title: eventData.name,
+      description: descriptionSummary,
+      url: `${APP_ORIGIN}/event/${eventData.slug}`,
+      images: [imageSrc],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: eventData.name,
+      description: descriptionSummary,
+      images: [imageSrc],
+    },
   };
 };
 
