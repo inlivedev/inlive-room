@@ -67,12 +67,33 @@ export const generateMetadata = async ({
     };
   }
 
+  const eventStartDate = new Date(eventData.startTime).toLocaleDateString(
+    'en-GB',
+    {
+      month: 'long',
+      day: '2-digit',
+      year: 'numeric',
+    }
+  );
+
+  const eventStartTime = new Date(eventData.startTime).toLocaleTimeString(
+    'en-GB',
+    {
+      minute: '2-digit',
+      hour: '2-digit',
+      hour12: true,
+    }
+  );
+
   const imageSrc = extractSrcImage(eventData.description || '');
   const description = sanitizeHTML(eventData.description || '');
-  const descriptionSummary = description.slice(0, 150);
+  const descriptionSummary = `${eventStartDate} at ${eventStartTime}, ${description.slice(
+    0,
+    150
+  )}`;
 
   return {
-    title: eventData.name,
+    title: `Webinar — ${eventData.name}`,
     description: descriptionSummary,
     openGraph: {
       title: eventData.name,
