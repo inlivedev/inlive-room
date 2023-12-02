@@ -245,7 +245,7 @@ export default function Lobby({ roomID }: LobbyProps) {
               </p>
               <p className="mt-4 text-xs font-light text-blue-300 md:text-sm">
                 You can edit your name to be easily recognized by other
-                participants in this Room.
+                participants in this room.
               </p>
             </div>
             <div className="mt-12">
