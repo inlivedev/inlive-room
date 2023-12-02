@@ -43,7 +43,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
 
         try {
           if (clientNameInput.trim().length === 0) {
-            throw new Error('Please enter a valid display name');
+            throw new Error('Please enter a valid name');
           }
 
           const response: ClientType.SetClientNameResponse =
@@ -95,8 +95,9 @@ export default function SetDisplayNameModal({ roomID }: Props) {
   );
 
   const onCloseModal = useCallback(() => {
+    onClose();
     setClientNameInput('');
-  }, [setClientNameInput]);
+  }, [onClose, setClientNameInput]);
 
   useEffect(() => {
     document.addEventListener('open:set-display-name-modal', openModal);
@@ -111,7 +112,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
       size="md"
       placement="center"
       isOpen={isOpen}
-      onClose={onCloseModal}
+      onClose={() => onCloseModal()}
       onOpenChange={onOpenChange}
       motionProps={{
         variants: {
@@ -137,9 +138,9 @@ export default function SetDisplayNameModal({ roomID }: Props) {
       <ModalContent className="ring-1 ring-zinc-800">
         <ModalHeader className="p-4 sm:px-6">
           <div>
-            <h3>Change display name</h3>
+            <h3>New name</h3>
             <p className="mt-1 text-sm font-normal text-zinc-400">
-              Use a display name which easily recognized by others
+              Use a name which easily recognized by others
             </p>
           </div>
         </ModalHeader>
@@ -150,7 +151,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
                 htmlFor="display-name-input"
                 className="mb-3 block text-sm text-zinc-200"
               >
-                New display name
+                New name
               </label>
               <input
                 id="display-name-input"
@@ -164,7 +165,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
               <Button
                 variant="flat"
                 className="rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
-                onPress={onClose}
+                onClick={() => onCloseModal()}
               >
                 Cancel
               </Button>
@@ -188,7 +189,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
                     <span>Changing...</span>
                   </div>
                 ) : (
-                  <span>Change display name</span>
+                  <span>Use this name</span>
                 )}
               </Button>
             </div>
