@@ -1,10 +1,11 @@
 import { useMemo, useCallback, useState } from 'react';
-import Link from 'next/link';
 import { Button, Spinner } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
-import Footer from '@/_shared/components/footer/footer';
-import InviteBox from '@/_features/room/components/invite-box';
-import DisplayNameBox from '@/_features/room/components/display-name-box';
+import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { useToggle } from '@/_shared/hooks/use-toggle';
+import { useClientContext } from '@/_features/room/contexts/client-context';
+import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
+import CheckIcon from '@/_shared/components/icons/check-icon';
 import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
@@ -14,8 +15,47 @@ type LobbyProps = {
   roomID: string;
 };
 
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+
 export default function Lobby({ roomID }: LobbyProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    active: copiedIDActive,
+    setActive: setCopiedIDActive,
+    setInActive: setCopiedIDInActive,
+  } = useToggle(false);
+
+  const {
+    active: copiedLinkActive,
+    setActive: setCopiedLinkActive,
+    setInActive: setCopiedLinkInActive,
+  } = useToggle(false);
+
+  const handleCopy = useCallback(
+    async (
+      text = '',
+      setCopiedActive: () => void,
+      setCopiedInActive: () => void
+    ) => {
+      const success = await copyToClipboard(text);
+
+      if (success) {
+        setCopiedActive();
+        setTimeout(() => {
+          setCopiedInActive();
+        }, 2000);
+      } else {
+        alert('Failed to copy');
+      }
+    },
+    []
+  );
+
+  const { clientName } = useClientContext();
+
+  const openUpdateClientForm = useCallback(() => {
+    document.dispatchEvent(new CustomEvent('open:set-display-name-modal'));
+  }, []);
 
   const videoConstraints = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -142,71 +182,121 @@ export default function Lobby({ roomID }: LobbyProps) {
     <>
       <SetDisplayNameModal roomID={roomID} />
       <div className="min-viewport-height">
-        <div className="min-viewport-height mx-auto flex w-full max-w-xl flex-1 flex-col px-4">
+        <div className="min-viewport-height mx-auto flex w-full max-w-xl flex-col px-4">
           <Header logoText="inLive Room" logoHref="/" />
-          <main className="flex flex-1 flex-col">
-            <div className="flex flex-col gap-10">
+          <main className="flex-1 md:pt-6">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-3 md:p-4">
               <div>
-                <h2 className="text-xs font-medium uppercase tracking-tight text-zinc-400">
+                <b className="block text-xs font-semibold uppercase text-zinc-500">
                   Room ID
-                </h2>
-                <b className="block text-2xl font-bold">{roomID}</b>
+                </b>
+                <b className="block text-xl font-bold lg:text-2xl">{roomID}</b>
               </div>
-              <div>
-                <h3 className="font-medium">
-                  You are about to enter this room
-                </h3>
-                <p className="mt-0.5 text-sm text-zinc-400">
-                  Anyone with the link or room ID can enter this room. Make sure
-                  your device camera and microphone are working properly.
-                </p>
-              </div>
-              <div>
-                <DisplayNameBox />
-              </div>
-              <div>
-                <InviteBox roomID={roomID} />
-              </div>
-              <div className="flex flex-row flex-wrap justify-center gap-x-8 gap-y-6">
+              <p className="mt-3 text-sm text-zinc-400 ">
+                Copy and share to invite and start joining with others in this
+                room
+              </p>
+              <div className="mt-4 flex gap-3 md:gap-4">
                 <div className="flex-1">
                   <Button
-                    as={Link}
-                    href="/"
-                    variant="flat"
-                    className="w-full min-w-[240px] rounded-md  bg-zinc-800 px-4  py-2 text-sm text-zinc-200 hover:bg-zinc-700 active:bg-zinc-600"
+                    className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                    onClick={() =>
+                      handleCopy(roomID, setCopiedIDActive, setCopiedIDInActive)
+                    }
                   >
-                    Back to front page
+                    <span>
+                      {copiedIDActive ? (
+                        <CheckIcon className="h-5 w-5" />
+                      ) : (
+                        <CopyOutlineIcon className="h-5 w-5" />
+                      )}
+                    </span>
+                    <span>{copiedIDActive ? 'Copied!' : 'Copy ID'}</span>
                   </Button>
                 </div>
+
                 <div className="flex-1">
                   <Button
-                    variant="flat"
-                    className="w-full min-w-[240px] rounded-md bg-red-700 px-4 py-2 text-sm text-zinc-200 hover:bg-red-600 active:bg-red-500 lg:w-auto"
-                    onClick={openConferenceRoom}
-                    isDisabled={isSubmitting}
-                    aria-disabled={isSubmitting}
-                    disabled={isSubmitting}
+                    className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                    onClick={() =>
+                      handleCopy(
+                        `${APP_ORIGIN}/room/${roomID}`,
+                        setCopiedLinkActive,
+                        setCopiedLinkInActive
+                      )
+                    }
                   >
-                    {isSubmitting ? (
-                      <div className="flex gap-2">
-                        <Spinner
-                          classNames={{
-                            circle1: 'border-b-zinc-200',
-                            circle2: 'border-b-zinc-200',
-                            wrapper: 'w-4 h-4',
-                          }}
-                        />
-                        <span>Entering this room...</span>
-                      </div>
-                    ) : (
-                      <span>Enter this room</span>
-                    )}
+                    <span>
+                      {copiedLinkActive ? (
+                        <CheckIcon className="h-5 w-5" />
+                      ) : (
+                        <CopyOutlineIcon className="h-5 w-5" />
+                      )}
+                    </span>
+                    <span>{copiedLinkActive ? 'Copied!' : 'Copy link'}</span>
                   </Button>
                 </div>
               </div>
             </div>
+            <div className="mt-12">
+              <p className="text-xs font-light text-blue-300 md:text-sm">
+                Make sure to allow access permissions to the camera and
+                microphone in the browser.
+              </p>
+              <p className="mt-4 text-xs font-light text-blue-300 md:text-sm">
+                You can edit your name to be easily recognized by other
+                participants in this room.
+              </p>
+            </div>
+            <div className="mt-12">
+              <div className="flex items-center gap-3">
+                <div className="flex-1 truncate">
+                  <div className="block w-full text-xs font-semibold text-zinc-500">
+                    You’ll join using name
+                  </div>
+                  <div className="mt-1 truncate text-sm font-medium">
+                    {clientName}
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <Button
+                    className="flex h-9 min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                    onClick={openUpdateClientForm}
+                  >
+                    Edit name
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-6 h-16">
+                <div className="fixed bottom-0 left-0 w-full border-t border-zinc-800 bg-zinc-900 py-2.5 lg:relative lg:border-t-0">
+                  <div className="mx-auto w-full max-w-xl px-4 lg:px-0">
+                    <Button
+                      className="w-full rounded-lg bg-red-700 px-4 py-2 font-semibold text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
+                      onClick={openConferenceRoom}
+                      isDisabled={isSubmitting}
+                      aria-disabled={isSubmitting}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <div className="flex gap-2">
+                          <Spinner
+                            classNames={{
+                              circle1: 'border-b-zinc-200',
+                              circle2: 'border-b-zinc-200',
+                              wrapper: 'w-4 h-4',
+                            }}
+                          />
+                          <span>Joining to room...</span>
+                        </div>
+                      ) : (
+                        <span>Join to Room</span>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </main>
-          <Footer />
         </div>
       </div>
     </>
