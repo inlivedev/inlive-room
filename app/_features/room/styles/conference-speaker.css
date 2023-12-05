@@ -1,0 +1,57 @@
+.conference-layout.speaker {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  display: grid;
+  grid-template-rows: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .conference-layout.speaker {
+    display: grid;
+    grid-template-rows: 6fr 4fr;
+  }
+}
+
+.conference-layout.speaker .speaker-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 460px) {
+  .conference-layout.speaker .speaker-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (min-width: 800px) {
+  .conference-layout.speaker .speaker-container {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+.conference-layout.speaker .participant-container {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .conference-layout.speaker .participant-container {
+    display: block;
+  }
+
+  .conference-layout.speaker .participant-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .conference-layout.speaker .participant-item {
+    flex-grow: 1;
+    flex-basis: 120px;
+    max-width: 140px;
+    min-height: 70px;
+    max-height: 120px;
+  }
+}

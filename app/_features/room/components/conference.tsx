@@ -1,32 +1,49 @@
-import ConferenceParticipants from '@/_features/room/components/conference-participants';
+import { useState } from 'react';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
-import styles from '@/_features/room/styles/conference.module.css';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
+import ConferenceSpeakerLayout from './conference-speaker-layout';
+import ConferencePresentationLayout from './conference-presentation-layout';
+import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 
 export default function Conference({ isModerator }: { isModerator: boolean }) {
+  const { host, speakers: speakerClientIDs } = useMetadataContext();
   const { streams } = useParticipantContext();
+  const [layout, setLayout] = useState<'speaker' | 'presentation'>('speaker');
 
-  const hasScreen = (): boolean => {
-    return Object.values(streams).some((stream) => stream.source === 'screen');
-  };
+  const speakers = streams.filter((stream) => {
+    return (
+      (host.clientIDs.includes(stream.clientId) && stream.source === 'media') ||
+      (speakerClientIDs.includes(stream.clientId) && stream.source === 'media')
+    );
+  });
 
-  const getClass = (): string => {
-    const streamCount = Object.keys(streams).length;
-    if (streamCount === 2) {
-      return styles['oneonone'];
-    } else if (hasScreen()) {
-      return styles['presentation'];
-    }
-
-    return '';
-  };
+  const participants = streams.filter((stream) => {
+    return (
+      !host.clientIDs.includes(stream.clientId) &&
+      !speakerClientIDs.includes(stream.clientId) &&
+      stream.source === 'media'
+    );
+  });
 
   return (
-    <div className="viewport-height w-full">
-      <div className={`${styles['participants']} ${getClass()}`}>
-        <ConferenceParticipants isModerator={isModerator} />
+    <div className="viewport-height grid grid-rows-[1fr,80px] overflow-y-hidden">
+      <div>
+        <ConferenceSpeakerLayout
+          isModerator={isModerator}
+          speakers={speakers}
+          participants={participants}
+        />
+        {layout === 'speaker' ? (
+          <ConferenceSpeakerLayout
+            isModerator={isModerator}
+            speakers={speakers}
+            participants={participants}
+          />
+        ) : layout === 'presentation' ? (
+          <ConferencePresentationLayout />
+        ) : null}
       </div>
-      <div className={`${styles['actionbar']}`}>
+      <div>
         <ConferenceActionsBar isModerator={isModerator} />
       </div>
     </div>
