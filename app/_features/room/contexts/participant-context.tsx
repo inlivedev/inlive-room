@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
-import { room, RoomEvent } from '@/_shared/utils/sdk';
+import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 
 export type ParticipantStream = {
   readonly id: string;
@@ -52,11 +52,11 @@ export function ParticipantProvider({
 
   useEffect(() => {
     if (peer && localStream) {
-      room.on(RoomEvent.STREAM_AVAILABLE, () => {
+      clientSDK.on(RoomEvent.STREAM_AVAILABLE, () => {
         setStreams(peer.getAllStreams());
       });
 
-      room.on(RoomEvent.STREAM_REMOVED, () => {
+      clientSDK.on(RoomEvent.STREAM_REMOVED, () => {
         setStreams(peer.getAllStreams());
       });
 

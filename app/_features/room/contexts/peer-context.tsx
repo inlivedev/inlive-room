@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ClientType } from '@/_shared/types/client';
-import { room } from '@/_shared/utils/sdk';
+import { clientSDK } from '@/_shared/utils/sdk';
 
-type Peer = Awaited<ReturnType<typeof room.createPeer>>;
+type Peer = Awaited<ReturnType<typeof clientSDK.createPeer>>;
 
 const PeerContext = createContext({
   peer: null as Peer | null,
@@ -26,7 +26,7 @@ export function PeerProvider({ children, roomID, client }: PeerProviderProps) {
   useEffect(() => {
     if (!peerState) {
       const createPeer = async () => {
-        const peer = await room.createPeer(roomID, client.clientID);
+        const peer = await clientSDK.createPeer(roomID, client.clientID);
         setPeerState(peer);
       };
 
