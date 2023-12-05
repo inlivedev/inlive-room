@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ClientType } from '@/_shared/types/client';
-import { room } from '@/_shared/utils/sdk';
+import { clientSDK } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 const ClientContext = createContext({
@@ -90,7 +90,7 @@ export function ClientProvider({
 
       try {
         peer.disconnect();
-        const response = await room.leaveRoom(roomID, clientID, false);
+        const response = await clientSDK.leaveRoom(roomID, clientID, false);
 
         if (response.code >= 300) {
           console.error('Failed to end the call');
