@@ -13,32 +13,34 @@ export default function ConferenceActionsBar({
 }: {
   isModerator: boolean;
 }) {
-  const [isTouchScreen, setIsTouchScreen] = useState(false);
+  const [isTouchScreen, setIsTouchScreen] = useState(true);
 
   useEffect(() => {
     setIsTouchScreen(hasTouchScreen());
   }, []);
 
   return (
-    <div className="flex h-full w-full items-center justify-center gap-4 border-t border-neutral-700 px-4 py-1.5 md:py-2.5 lg:gap-6">
-      <div className="flex h-full flex-col justify-center">
-        <ButtonMicrophone />
-      </div>
-      <div className="flex h-full flex-col justify-center">
-        <ButtonCamera />
-      </div>
-      <div
-        className={`h-full flex-col justify-center ${
-          !isTouchScreen ? 'flex' : 'hidden'
-        }`}
-      >
-        <ButtonScreenShare />
-      </div>
-      <div className="flex h-full flex-col justify-center">
-        <ButtonChat />
-      </div>
-      <div className="flex h-full flex-col justify-center">
-        <ButtonLeave isModerator={isModerator} />
+    <div className="fixed bottom-0 left-0 z-20 h-20 w-full bg-zinc-900">
+      <div className="flex h-full w-full items-center justify-center gap-4 border-t border-neutral-700 px-4 py-1.5 md:py-2.5 lg:gap-6">
+        <div className="flex h-full flex-col justify-center">
+          <ButtonMicrophone />
+        </div>
+        <div className="flex h-full flex-col justify-center">
+          <ButtonCamera />
+        </div>
+        <div
+          className={`h-full flex-col justify-center ${
+            isTouchScreen ? 'hidden' : 'flex'
+          }`}
+        >
+          <ButtonScreenShare />
+        </div>
+        <div className="flex h-full flex-col justify-center">
+          <ButtonChat />
+        </div>
+        <div className="flex h-full flex-col justify-center">
+          <ButtonLeave isModerator={isModerator} />
+        </div>
       </div>
     </div>
   );
