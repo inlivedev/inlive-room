@@ -1,5 +1,9 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
-import { Participant, Room, RoomService } from '@/(server)/_features/room/service';
+import {
+  Participant,
+  Room,
+  RoomService,
+} from '@/(server)/_features/room/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 
 export interface iRoomService {
@@ -27,6 +31,13 @@ const createRoomRoutesHandler = () => {
 
     createRoomHandler = async (token: string) => {
       const response = await getCurrentAuthenticated(token);
+
+      if (!response.data.id) {
+        throw new Error(
+          'Unable to create room because the user is not authenticated'
+        );
+      }
+
       return this.roomService.createRoom(response.data.id);
     };
 
