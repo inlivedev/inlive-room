@@ -46,7 +46,7 @@ export default function View({ roomID, client, isModerator }: ViewProps) {
                 <ChatProvider>
                   <EventContainer />
                   <ChatDrawerMenu />
-                  <MetadataProvider>
+                  <MetadataProvider roomID={roomID}>
                     {isConferenceActive ? (
                       <Conference isModerator={isModerator} />
                     ) : (
