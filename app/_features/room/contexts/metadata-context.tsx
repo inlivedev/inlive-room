@@ -47,32 +47,52 @@ export function MetadataProvider({
 
     clientSDK.on(
       RoomEvent.STREAM_AVAILABLE,
-      ({ stream }: { stream: ParticipantStream }) => {
-        if (stream.source === 'screen' && stream.origin === 'local') {
-          const screens = peer.getAllStreams().filter((stream) => {
-            return stream.source === 'screen';
+      async ({ stream: availableStream }: { stream: ParticipantStream }) => {
+        if (
+          availableStream.source === 'screen' &&
+          availableStream.origin === 'local'
+        ) {
+          const streams = peer.getAllStreams();
+          const presenter = streams.find((stream) => {
+            return (
+              stream.clientId === availableStream.clientId &&
+              stream.source === 'media' &&
+              stream.origin === 'local'
+            );
           });
 
-          if (screens.length === 0) {
-            clientSDK.setMetadata(roomID, {
-              layout: 'presentation',
-            });
-          }
+          await clientSDK.setMetadata(roomID, {
+            layout: 'presentation',
+            speakers: [presenter],
+          });
         }
       }
     );
 
     clientSDK.on(
       RoomEvent.STREAM_REMOVED,
-      ({ stream }: { stream: ParticipantStream }) => {
-        if (stream.source === 'screen' && stream.origin === 'local') {
-          const screens = peer.getAllStreams().filter((stream) => {
+      ({ stream: removedStream }: { stream: ParticipantStream }) => {
+        if (
+          removedStream.source === 'screen' &&
+          removedStream.origin === 'local'
+        ) {
+          const streams = peer.getAllStreams();
+          const presenter = streams.find((stream) => {
+            return (
+              stream.clientId === removedStream.clientId &&
+              stream.source === 'media' &&
+              stream.origin === 'local'
+            );
+          });
+
+          const screen = streams.find((stream) => {
             return stream.source === 'screen';
           });
 
-          if (screens.length === 0) {
+          if (!screen) {
             clientSDK.setMetadata(roomID, {
               layout: 'speaker',
+              speakers: [presenter],
             });
           }
         }
