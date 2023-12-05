@@ -6,7 +6,7 @@ import View from '@/_features/room/components/view';
 import type { RoomType } from '@/_shared/types/room';
 import type { UserType } from '@/_shared/types/user';
 import type { ClientType } from '@/_shared/types/client';
-import { room } from '@/_shared/utils/sdk';
+import { clientSDK } from '@/_shared/utils/sdk';
 
 type PageProps = {
   params: {
@@ -46,11 +46,22 @@ export default async function Page() {
   const isModerator = roomData.createdBy === userAuth?.id;
 
   if (isModerator) {
-    await room.setMetadata(roomData.id, {
-      host: {
-        clientID: userClient.clientID,
-      },
-    });
+    const hostMetaData = await clientSDK.getMetadata(roomData.id, 'host');
+    const hostIDs = hostMetaData?.data?.host?.clientIDs;
+
+    if (Array.isArray(hostIDs)) {
+      await clientSDK.setMetadata(roomData.id, {
+        host: {
+          clientIDs: [...hostIDs, userClient.clientID],
+        },
+      });
+    } else {
+      await clientSDK.setMetadata(roomData.id, {
+        host: {
+          clientIDs: [userClient.clientID],
+        },
+      });
+    }
   }
 
   return (
