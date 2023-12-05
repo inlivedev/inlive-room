@@ -79,7 +79,7 @@ export default function ConferenceScreen({
             speakers: [...speakers, stream.clientId],
           });
         }
-      } else if (key === 'set-participant-only') {
+      } else if (key === 'set-regular-participant') {
         if (!isModerator) return;
 
         const confirmed = confirm(
@@ -125,36 +125,29 @@ export default function ConferenceScreen({
               <XFillIcon className="h-4 w-4" />
             </Button>
           )}
-        {isModerator &&
-          stream.origin === 'remote' &&
-          stream.source === 'media' && (
-            <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
-              <DropdownTrigger>
-                <Button
-                  isIconOnly
-                  size="sm"
-                  variant="light"
-                  className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
-                >
-                  <MoreIcon className="h-4 w-4" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="More options"
-                onAction={onMoreSelection}
+        {isModerator && stream.source === 'media' && (
+          <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
+            <DropdownTrigger>
+              <Button
+                isIconOnly
+                size="sm"
+                variant="light"
+                className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
               >
-                {speakers.includes(stream.clientId) ? (
-                  <DropdownItem key="set-participant-only">
-                    Set as a participant only
-                  </DropdownItem>
-                ) : (
-                  <DropdownItem key="set-speaker">
-                    Set as a speaker
-                  </DropdownItem>
-                )}
-              </DropdownMenu>
-            </Dropdown>
-          )}
+                <MoreIcon className="h-4 w-4" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
+              {speakers.includes(stream.clientId) ? (
+                <DropdownItem key="set-regular-participant">
+                  Set as a regular participant
+                </DropdownItem>
+              ) : (
+                <DropdownItem key="set-speaker">Set as a speaker</DropdownItem>
+              )}
+            </DropdownMenu>
+          </Dropdown>
+        )}
 
         <div className="flex">
           <div
