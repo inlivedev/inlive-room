@@ -1,16 +1,32 @@
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import '../styles/conference-speaker.css';
+import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 
 export default function ConferenceSpeakerLayout({
   isModerator,
-  speakers,
-  participants,
+  streams,
 }: {
   isModerator: boolean;
-  speakers: ParticipantStream[];
-  participants: ParticipantStream[];
+  streams: ParticipantStream[];
 }) {
+  const { host, speakers: speakerClientIDs } = useMetadataContext();
+
+  const speakers = streams.filter((stream) => {
+    return (
+      (host.clientIDs.includes(stream.clientId) && stream.source === 'media') ||
+      (speakerClientIDs.includes(stream.clientId) && stream.source === 'media')
+    );
+  });
+
+  const participants = streams.filter((stream) => {
+    return (
+      !host.clientIDs.includes(stream.clientId) &&
+      !speakerClientIDs.includes(stream.clientId) &&
+      stream.source === 'media'
+    );
+  });
+
   const MAX_PARTICIPANTS = 20;
   const slicedParticipants = participants.slice(0, MAX_PARTICIPANTS);
 
