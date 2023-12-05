@@ -5,24 +5,25 @@ import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 
 export default function ConferenceSpeakerLayout({
   isModerator,
-  medias,
+  streams,
 }: {
   isModerator: boolean;
-  medias: ParticipantStream[];
+  streams: ParticipantStream[];
 }) {
   const { host, speakers: speakerClientIDs } = useMetadataContext();
 
-  const speakers = medias.filter((stream) => {
+  const speakers = streams.filter((stream) => {
     return (
-      host.clientIDs.includes(stream.clientId) ||
-      speakerClientIDs.includes(stream.clientId)
+      (host.clientIDs.includes(stream.clientId) && stream.source === 'media') ||
+      (speakerClientIDs.includes(stream.clientId) && stream.source === 'media')
     );
   });
 
-  const participants = medias.filter((stream) => {
+  const participants = streams.filter((stream) => {
     return (
       !host.clientIDs.includes(stream.clientId) &&
-      !speakerClientIDs.includes(stream.clientId)
+      !speakerClientIDs.includes(stream.clientId) &&
+      stream.source === 'media'
     );
   });
 
