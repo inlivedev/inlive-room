@@ -134,7 +134,7 @@ export class RoomService implements iRoomService {
 
       for (const datachannel of this._datachannels) {
         const channelResponse = await this._sdk.createDataChannel(
-          roomID,
+          roomResp.data.roomId,
           datachannel,
           true
         );
@@ -157,7 +157,7 @@ export class RoomService implements iRoomService {
 
       try {
         const room = await this._roomRepo.addRoom({
-          id: roomID,
+          id: roomResp.data.roomId,
           createdBy: userID,
         });
         return room;
