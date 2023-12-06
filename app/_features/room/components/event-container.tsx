@@ -42,7 +42,7 @@ export default function EventContainer({
     document.addEventListener('trigger:turnon-mic', onTurnOnMic);
     document.addEventListener('trigger:turnoff-mic', onTurnOffMic);
 
-    //mute all audio on first load
+    //mute mic on first load
     document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
 
     return () => {
