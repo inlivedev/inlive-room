@@ -29,7 +29,9 @@ export default function ConferenceScreen({
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
   const { roomID } = useClientContext();
-  const { speakers } = useMetadataContext();
+  const { speakers, host } = useMetadataContext();
+
+  const isHost = host.clientIDs.includes(stream.clientId);
 
   useEffect(() => {
     const videoEl = videoRef.current;
@@ -159,10 +161,12 @@ export default function ConferenceScreen({
             className={`max-w-full truncate rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100`}
           >
             <span>
-              {isModerator && stream.origin === 'local'
-                ? 'You (Host)'
+              {isHost && stream.origin === 'local'
+                ? '(Host) You'
                 : stream.origin === 'local'
                 ? 'You'
+                : isHost
+                ? `(Host) ${stream.name}`
                 : stream.name}
             </span>
           </div>
