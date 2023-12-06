@@ -65,3 +65,7 @@
   grid-template-rows: repeat(auto-fit, minmax(80px, 100px));
   grid-auto-rows: 80px;
 }
+
+.local-video-screen video {
+  transform: scaleX(-1);
+}
