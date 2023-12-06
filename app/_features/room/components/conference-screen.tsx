@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, Key, useEffect } from 'react';
+import { useCallback, Key, useEffect, useRef } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -8,7 +8,7 @@ import {
   DropdownItem,
   Button,
 } from '@nextui-org/react';
-import { useVideoScreen } from '@/_features/room/hooks/use-video-screen';
+import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import XFillIcon from '@/_shared/components/icons/x-fill-icon';
@@ -25,7 +25,45 @@ export default function ConferenceScreen({
   stream: ParticipantStream;
   isModerator: boolean;
 }) {
-  const { videoRef } = useVideoScreen(stream);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { currentAudioOutput } = useDeviceContext();
+
+  useEffect(() => {
+    const play = async () => {
+      if (!videoRef.current) {
+        return;
+      }
+
+      if (
+        currentAudioOutput &&
+        !AudioContext.prototype.hasOwnProperty('setSinkId')
+      ) {
+        const sinkId =
+          currentAudioOutput.deviceId !== 'default'
+            ? currentAudioOutput.deviceId
+            : '';
+
+        if (
+          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          sinkId !== video.sinkId
+        ) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          await video.setSinkId(sinkId);
+        }
+      }
+
+      videoRef.current.srcObject = stream.mediaStream;
+      videoRef.current.playsInline = true;
+      videoRef.current.muted = stream.origin === 'local';
+      videoRef.current.autoplay = true;
+    };
+
+    play();
+  }, [videoRef, stream.mediaStream, stream.origin, currentAudioOutput]);
+
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
   const { roomID } = useClientContext();
