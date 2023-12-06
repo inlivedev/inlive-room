@@ -27,8 +27,8 @@ export default function ConferenceSpeakerLayout({
     );
   });
 
-  const MAX_PARTICIPANTS = 20;
-  const slicedParticipants = participants.slice(0, MAX_PARTICIPANTS);
+  const MAX_VISIBLE_PARTICIPANTS = 20;
+  const slicedParticipants = participants.slice(0, MAX_VISIBLE_PARTICIPANTS);
 
   return (
     <div className="conference-layout speaker">
@@ -56,7 +56,7 @@ export default function ConferenceSpeakerLayout({
               </div>
             );
           })}
-          {participants.length > MAX_PARTICIPANTS && (
+          {participants.length > MAX_VISIBLE_PARTICIPANTS && (
             <div className="participant-item relative">
               <div className="flex h-full w-full items-center justify-center rounded-lg bg-zinc-700/70 p-2 text-sm font-medium shadow-lg">
                 More+
