@@ -30,6 +30,7 @@ export default function ConferencePresentationLayout({
   );
 
   const latestScreen = screens.pop();
+  const MAX_VISIBLE_SPEAKERS = 8;
 
   const speakers = medias.filter((stream) => {
     return (
@@ -37,6 +38,8 @@ export default function ConferencePresentationLayout({
       (speakerClientIDs.includes(stream.clientId) && stream.source === 'media')
     );
   });
+
+  const slicedSpeakers = speakers.slice(0, MAX_VISIBLE_SPEAKERS);
 
   return (
     <div className="conference-layout presentation">
@@ -47,20 +50,25 @@ export default function ConferencePresentationLayout({
           )}
         </div>
       </div>
-      <div className="users-container">
-        <div className="speaker-container">
-          <div className="speaker-grid">
-            {speakers.map((speaker, index) => {
-              return (
-                <div key={`speaker${index}`} className="relative">
-                  <ConferenceScreen
-                    isModerator={isModerator}
-                    stream={speaker}
-                  />
-                </div>
-              );
-            })}
-          </div>
+      <div className="speaker-container">
+        <div className="speaker-grid">
+          {slicedSpeakers.map((speaker, index) => {
+            return (
+              <div
+                key={`speaker${index}`}
+                className="speaker-grid-item relative"
+              >
+                <ConferenceScreen isModerator={isModerator} stream={speaker} />
+              </div>
+            );
+          })}
+          {speakers.length > MAX_VISIBLE_SPEAKERS && (
+            <div className="speaker-grid-item relative">
+              <div className="flex h-full w-full items-center justify-center rounded-lg bg-zinc-700/70 p-2 text-sm font-medium shadow-lg">
+                More+
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

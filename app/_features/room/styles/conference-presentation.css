@@ -3,8 +3,40 @@
   height: 100%;
   padding: 1rem;
   display: grid;
-  grid-template-rows: 7fr 3fr;
+  grid-template-rows: auto 1fr;
   gap: 1rem;
+}
+
+@media only screen and (orientation: portrait) and (max-width: 1023px) {
+  .conference-layout.presentation {
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .conference-layout.presentation .presentation-container {
+    aspect-ratio: 16/9;
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .conference-layout.presentation {
+    display: grid;
+    grid-template-rows: 2fr 1fr;
+  }
+
+  .conference-layout.presentation .presentation-container {
+    aspect-ratio: auto;
+  }
+}
+
+@media only screen and (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-width: 1023px) {
+  .conference-layout.presentation {
+    grid-template-rows: 100% auto;
+  }
+
+  .conference-layout.presentation .speaker-container {
+    display: none;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -23,37 +55,13 @@
   }
 }
 
-
-.conference-layout.presentation .users-container {
+.conference-layout.presentation .speaker-grid {
+  gap: 0.5rem;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
   display: grid;
-  grid-template-rows: auto;
-}
-
-@media (min-width: 1024px) {
-  .conference-layout.presentation .users-container {
-    display: grid;
-    grid-template-rows: 3fr 7fr;
-    gap: 1rem;
-  }
-}
-
-.conference-layout.presentation .speaker-container {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .conference-layout.presentation .speaker-container {
-    display: block;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
-  }
-
-  .conference-layout.presentation .speaker-grid {
-    gap: 0.5rem;
-    height: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    grid-template-rows: repeat(auto-fit, minmax(0, 1fr));
-  }
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(80px, 100px));
+  grid-auto-rows: 80px;
 }
