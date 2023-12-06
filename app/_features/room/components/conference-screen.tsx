@@ -104,9 +104,14 @@ export default function ConferenceScreen({
     [roomID, speakers, stream.clientId, isModerator]
   );
 
+  const localVideoScreen =
+    stream.origin === 'local' && stream.source === 'media';
+
   return (
     <div
-      className={`group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg`}
+      className={`${
+        localVideoScreen ? 'local-video-screen' : ''
+      } group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg`}
     >
       {/* video screen overlay */}
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
