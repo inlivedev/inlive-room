@@ -1,5 +1,6 @@
 'use client';
-
+import * as linkify from 'linkifyjs';
+import linkifyHtml from 'linkify-html';
 import { useEffect, useCallback } from 'react';
 import {
   Button,
@@ -15,6 +16,7 @@ import { useChatContext } from '@/_features/room/contexts/chat-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useInput } from '@/_shared/hooks/use-input';
 import type { ChatType } from '@/_shared/types/chat';
+import { sanitizeHTML } from '@/(pages)/event/[eventID]/page';
 
 export default function ChatDrawerMenu() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -94,9 +96,12 @@ export default function ChatDrawerMenu() {
                     <b className="block break-words text-sm font-semibold text-rose-300">
                       {data.sender.name}
                     </b>
-                    <p className="mt-0.5 break-words text-sm text-zinc-100">
-                      {data.message}
-                    </p>
+                    <p
+                      className="mt-0.5 break-words text-sm text-zinc-100"
+                      dangerouslySetInnerHTML={{
+                        __html: linkifyHtml(sanitizeHTML(data.message)),
+                      }}
+                    ></p>
                   </div>
                 </li>
               );
@@ -112,7 +117,7 @@ export default function ChatDrawerMenu() {
               {...bindMessageInputField}
             />
             <Button
-              type="submit"
+              type="button"
               isIconOnly
               variant="flat"
               aria-label="Submit chat message"
