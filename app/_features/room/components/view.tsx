@@ -44,15 +44,16 @@ export default function View({ roomID, client, isModerator }: ViewProps) {
             <ParticipantProvider>
               <DataChannelProvider>
                 <ChatProvider>
-                  <EventContainer />
-                  <ChatDrawerMenu />
-                  <MetadataProvider roomID={roomID}>
-                    {isConferenceActive ? (
-                      <Conference isModerator={isModerator} />
-                    ) : (
-                      <Lobby roomID={roomID} />
-                    )}
-                  </MetadataProvider>
+                  <EventContainer>
+                    <ChatDrawerMenu />
+                    <MetadataProvider roomID={roomID}>
+                      {isConferenceActive ? (
+                        <Conference isModerator={isModerator} />
+                      ) : (
+                        <Lobby roomID={roomID} />
+                      )}
+                    </MetadataProvider>
+                  </EventContainer>
                 </ChatProvider>
               </DataChannelProvider>
             </ParticipantProvider>

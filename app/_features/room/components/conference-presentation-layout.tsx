@@ -11,35 +11,25 @@ export default function ConferencePresentationLayout({
   streams: ParticipantStream[];
 }) {
   const { host, speakers: speakerClientIDs } = useMetadataContext();
-
-  const { medias, screens } = streams.reduce(
-    (accumulator, currentValue) => {
-      if (currentValue.source === 'screen') {
-        return {
-          ...accumulator,
-          screens: [...accumulator.screens, currentValue],
-        };
-      } else {
-        return {
-          ...accumulator,
-          medias: [...accumulator.medias, currentValue],
-        };
-      }
-    },
-    { medias: [] as ParticipantStream[], screens: [] as ParticipantStream[] }
-  );
-
-  const latestScreen = screens.pop();
   const MAX_VISIBLE_SPEAKERS = 8;
 
-  const speakers = medias.filter((stream) => {
+  const speakers = streams.filter((stream) => {
     return (
       (host.clientIDs.includes(stream.clientId) && stream.source === 'media') ||
       (speakerClientIDs.includes(stream.clientId) && stream.source === 'media')
     );
   });
 
-  const slicedSpeakers = speakers.slice(0, MAX_VISIBLE_SPEAKERS);
+  const screens = streams.filter((stream) => {
+    return stream.source === 'screen';
+  });
+
+  const latestScreen = screens.pop();
+
+  const slicedSpeakers = [
+    ...screens,
+    ...speakers.slice(0, MAX_VISIBLE_SPEAKERS - screens.length),
+  ];
 
   return (
     <div className="conference-layout presentation">
