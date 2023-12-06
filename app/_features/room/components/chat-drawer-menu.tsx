@@ -16,7 +16,6 @@ import { useChatContext } from '@/_features/room/contexts/chat-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useInput } from '@/_shared/hooks/use-input';
 import type { ChatType } from '@/_shared/types/chat';
-import { sanitizeHTML } from '@/(pages)/event/[eventID]/page';
 
 export default function ChatDrawerMenu() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -99,7 +98,10 @@ export default function ChatDrawerMenu() {
                     <p
                       className="mt-0.5 break-words text-sm text-zinc-100"
                       dangerouslySetInnerHTML={{
-                        __html: linkifyHtml(sanitizeHTML(data.message)),
+                        __html: linkifyHtml(sanitizeHTML(data.message), {
+                          attributes: { target: '_blank' },
+                          className: 'text-blue-600	',
+                        }),
                       }}
                     ></p>
                   </div>
@@ -130,4 +132,25 @@ export default function ChatDrawerMenu() {
       </ModalContent>
     </Modal>
   );
+}
+
+function sanitizeHTML(htmlString: string) {
+  let sanitizedString = '';
+  let insideTag = false;
+
+  for (let i = 0; i < htmlString.length; i++) {
+    if (htmlString[i] === '<') {
+      insideTag = true;
+    } else if (htmlString[i] === '>') {
+      insideTag = false;
+    } else if (!insideTag) {
+      if (htmlString[i] === '\n') {
+        sanitizedString += ' ';
+      } else {
+        sanitizedString += htmlString[i];
+      }
+    }
+  }
+
+  return sanitizedString.trim();
 }

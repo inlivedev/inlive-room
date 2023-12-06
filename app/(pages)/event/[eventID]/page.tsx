@@ -33,7 +33,7 @@ const extractSrcImage = (htmlString: string) => {
   return src;
 };
 
-export function sanitizeHTML(htmlString: string) {
+function sanitizeHTML(htmlString: string) {
   let sanitizedString = '';
   let insideTag = false;
 
