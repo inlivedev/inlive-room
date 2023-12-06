@@ -21,7 +21,6 @@ export const useMetadataContext = () => {
 
 export function MetadataProvider({
   children,
-  roomID,
 }: {
   roomID: string;
   children: React.ReactNode;
@@ -48,22 +47,10 @@ export function MetadataProvider({
     clientSDK.on(
       RoomEvent.STREAM_AVAILABLE,
       async ({ stream: availableStream }: { stream: ParticipantStream }) => {
-        if (
-          availableStream.source === 'screen' &&
-          availableStream.origin === 'local'
-        ) {
-          const streams = peer.getAllStreams();
-          const presenter = streams.find((stream) => {
-            return (
-              stream.clientId === availableStream.clientId &&
-              stream.source === 'media' &&
-              stream.origin === 'local'
-            );
-          });
-
-          await clientSDK.setMetadata(roomID, {
+        if (availableStream.source === 'screen') {
+          setMetadataState({
+            ...metadataState,
             layout: 'presentation',
-            speakers: [presenter],
           });
         }
       }
@@ -71,34 +58,24 @@ export function MetadataProvider({
 
     clientSDK.on(
       RoomEvent.STREAM_REMOVED,
-      ({ stream: removedStream }: { stream: ParticipantStream }) => {
-        if (
-          removedStream.source === 'screen' &&
-          removedStream.origin === 'local'
-        ) {
+      async ({ stream: removedStream }: { stream: ParticipantStream }) => {
+        if (removedStream.source === 'screen') {
           const streams = peer.getAllStreams();
-          const presenter = streams.find((stream) => {
-            return (
-              stream.clientId === removedStream.clientId &&
-              stream.source === 'media' &&
-              stream.origin === 'local'
-            );
-          });
 
           const screen = streams.find((stream) => {
             return stream.source === 'screen';
           });
 
           if (!screen) {
-            clientSDK.setMetadata(roomID, {
+            setMetadataState({
+              ...metadataState,
               layout: 'speaker',
-              speakers: [presenter],
             });
           }
         }
       }
     );
-  }, [roomID, peer]);
+  }, [metadataState, peer]);
 
   return (
     <MetadataContext.Provider value={metadataState}>
