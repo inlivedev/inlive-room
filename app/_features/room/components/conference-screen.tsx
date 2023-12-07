@@ -110,11 +110,7 @@ export default function ConferenceScreen({
           'Are you sure you want to set this participant as a speaker?'
         );
 
-        const foundSpeaker = speakers.find(
-          (speaker) => speaker === stream.clientId
-        );
-
-        if (confirmed && !foundSpeaker) {
+        if (confirmed) {
           await clientSDK.setMetadata(roomID, {
             speakers: [...speakers, stream.clientId],
           });
