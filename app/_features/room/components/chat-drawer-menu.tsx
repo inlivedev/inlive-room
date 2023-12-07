@@ -119,7 +119,7 @@ export default function ChatDrawerMenu() {
               {...bindMessageInputField}
             />
             <Button
-              type="button"
+              type="submit"
               isIconOnly
               variant="flat"
               aria-label="Submit chat message"
