@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import '../styles/conference-presentation.css';
@@ -13,23 +14,31 @@ export default function ConferencePresentationLayout({
   const { host, speakers: speakerClientIDs } = useMetadataContext();
   const MAX_VISIBLE_SPEAKERS = 8;
 
-  const speakers = streams.filter((stream) => {
-    return (
-      (host.clientIDs.includes(stream.clientId) && stream.source === 'media') ||
-      (speakerClientIDs.includes(stream.clientId) && stream.source === 'media')
-    );
-  });
+  const speakers = useMemo(() => {
+    return streams.filter((stream) => {
+      return (
+        (host.clientIDs.includes(stream.clientId) &&
+          stream.source === 'media') ||
+        (speakerClientIDs.includes(stream.clientId) &&
+          stream.source === 'media')
+      );
+    });
+  }, [streams, host, speakerClientIDs]);
 
-  const screens = streams.filter((stream) => {
-    return stream.source === 'screen';
-  });
+  const screens = useMemo(() => {
+    return streams.filter((stream) => {
+      return stream.source === 'screen';
+    });
+  }, [streams]);
 
   const latestScreen = screens.pop();
 
-  const slicedSpeakers = [
-    ...screens,
-    ...speakers.slice(0, MAX_VISIBLE_SPEAKERS - screens.length),
-  ];
+  const slicedSpeakers = useMemo(() => {
+    return [
+      ...screens,
+      ...speakers.slice(0, MAX_VISIBLE_SPEAKERS - screens.length),
+    ];
+  }, [screens, speakers]);
 
   return (
     <div className="conference-layout presentation">

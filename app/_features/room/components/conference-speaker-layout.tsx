@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import '../styles/conference-speaker.css';
@@ -12,20 +13,26 @@ export default function ConferenceSpeakerLayout({
 }) {
   const { host, speakers: speakerClientIDs } = useMetadataContext();
 
-  const speakers = streams.filter((stream) => {
-    return (
-      (host.clientIDs.includes(stream.clientId) && stream.source === 'media') ||
-      (speakerClientIDs.includes(stream.clientId) && stream.source === 'media')
-    );
-  });
+  const speakers = useMemo(() => {
+    return streams.filter((stream) => {
+      return (
+        (host.clientIDs.includes(stream.clientId) &&
+          stream.source === 'media') ||
+        (speakerClientIDs.includes(stream.clientId) &&
+          stream.source === 'media')
+      );
+    });
+  }, [streams, host, speakerClientIDs]);
 
-  const participants = streams.filter((stream) => {
-    return (
-      !host.clientIDs.includes(stream.clientId) &&
-      !speakerClientIDs.includes(stream.clientId) &&
-      stream.source === 'media'
-    );
-  });
+  const participants = useMemo(() => {
+    return streams.filter((stream) => {
+      return (
+        !host.clientIDs.includes(stream.clientId) &&
+        !speakerClientIDs.includes(stream.clientId) &&
+        stream.source === 'media'
+      );
+    });
+  }, [streams, host, speakerClientIDs]);
 
   const MAX_VISIBLE_PARTICIPANTS = 20;
   const slicedParticipants = participants.slice(0, MAX_VISIBLE_PARTICIPANTS);
