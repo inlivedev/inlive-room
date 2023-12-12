@@ -115,7 +115,7 @@ export class RoomService implements iRoomService {
     };
   }
 
-  async createRoom(userID: number): Promise<Room> {
+  async createRoom(userID: number, type: 'event' | 'meeting'): Promise<Room> {
     let retries = 0;
     const maxRetries = 3;
 

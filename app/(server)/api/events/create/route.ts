@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const eventRoom = await roomService.createRoom(response.data.id);
+    const eventRoom = await roomService.createRoom(response.data.id, 'event');
 
     const Event: typeof insertEvent = {
       name: eventName,
