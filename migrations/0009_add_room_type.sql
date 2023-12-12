@@ -1,6 +1,8 @@
-ALTER TABLE "rooms" ADD COLUMN "meta" json;
+ALTER TABLE "rooms" ADD COLUMN "meta" jsonb;
 
-ALTER TABLE "ROOMS" SET meta = '{"type":"meeting"}'::json WHERE meta IS NULL;
+UPDATE "rooms" 
+SET meta = '{"type":"meeting"}'::jsonb 
+WHERE meta IS NULL;
 
 DO $$ 
 DECLARE 
