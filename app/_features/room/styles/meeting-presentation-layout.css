@@ -81,6 +81,5 @@
 @media only screen and (min-width: 1024px) {
   .meeting-presentation-layout .participant-grid {
     grid-template-columns: minmax(0, 200px) !important;
-    /* grid-template-rows: repeat(auto-fit, minmax(auto, 200px)); */
   }
 }
