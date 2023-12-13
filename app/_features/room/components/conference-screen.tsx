@@ -203,6 +203,9 @@ export default function ConferenceScreen({
       <video
         className="absolute left-0 top-0 h-full w-full rounded-lg object-center"
         ref={videoRef}
+        style={{
+          transform: localVideoScreen ? 'scaleX(-1)' : 'scaleX(1)',
+        }}
       ></video>
     </div>
   );
