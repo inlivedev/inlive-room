@@ -21,7 +21,7 @@ export default function MeetingGalleryLayout({
   const maxColumns = Math.ceil(Math.sqrt(visibleParticipants.length));
 
   return (
-    <div className="flex h-full w-full flex-col justify-center p-4">
+    <div className="meeting-gallery-layout flex h-full w-full flex-col justify-center p-4">
       <div className="participant-container">
         <div
           className={`participant-grid grid gap-2 sm:gap-3`}
