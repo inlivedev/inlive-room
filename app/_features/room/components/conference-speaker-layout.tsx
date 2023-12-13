@@ -5,34 +5,31 @@ import '../styles/conference-speaker.css';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 
 export default function ConferenceSpeakerLayout({
-  isModerator,
   streams,
 }: {
-  isModerator: boolean;
   streams: ParticipantStream[];
 }) {
-  const { host, speakers: speakerClientIDs } = useMetadataContext();
+  const { moderatorIDs, speakers: speakerClientIDs } = useMetadataContext();
 
   const speakers = useMemo(() => {
     return streams.filter((stream) => {
       return (
-        (host.clientIDs.includes(stream.clientId) &&
-          stream.source === 'media') ||
+        (moderatorIDs.includes(stream.clientId) && stream.source === 'media') ||
         (speakerClientIDs.includes(stream.clientId) &&
           stream.source === 'media')
       );
     });
-  }, [streams, host, speakerClientIDs]);
+  }, [streams, moderatorIDs, speakerClientIDs]);
 
   const participants = useMemo(() => {
     return streams.filter((stream) => {
       return (
-        !host.clientIDs.includes(stream.clientId) &&
+        !moderatorIDs.includes(stream.clientId) &&
         !speakerClientIDs.includes(stream.clientId) &&
         stream.source === 'media'
       );
     });
-  }, [streams, host, speakerClientIDs]);
+  }, [streams, moderatorIDs, speakerClientIDs]);
 
   const MAX_VISIBLE_PARTICIPANTS = 20;
   const slicedParticipants = participants.slice(0, MAX_VISIBLE_PARTICIPANTS);
@@ -43,7 +40,7 @@ export default function ConferenceSpeakerLayout({
         {speakers.map((speaker, index) => {
           return (
             <div key={`speaker${index}`} className="relative">
-              <ConferenceScreen stream={speaker} isModerator={isModerator} />
+              <ConferenceScreen stream={speaker} />
             </div>
           );
         })}
@@ -56,10 +53,7 @@ export default function ConferenceSpeakerLayout({
                 key={`participant${index}`}
                 className="participant-item relative"
               >
-                <ConferenceScreen
-                  stream={participant}
-                  isModerator={isModerator}
-                />
+                <ConferenceScreen stream={participant} />
               </div>
             );
           })}

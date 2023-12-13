@@ -5,25 +5,22 @@ import '../styles/conference-presentation.css';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 
 export default function ConferencePresentationLayout({
-  isModerator,
   streams,
 }: {
-  isModerator: boolean;
   streams: ParticipantStream[];
 }) {
-  const { host, speakers: speakerClientIDs } = useMetadataContext();
+  const { moderatorIDs, speakers: speakerClientIDs } = useMetadataContext();
   const MAX_VISIBLE_SPEAKERS = 8;
 
   const speakers = useMemo(() => {
     return streams.filter((stream) => {
       return (
-        (host.clientIDs.includes(stream.clientId) &&
-          stream.source === 'media') ||
+        (moderatorIDs.includes(stream.clientId) && stream.source === 'media') ||
         (speakerClientIDs.includes(stream.clientId) &&
           stream.source === 'media')
       );
     });
-  }, [streams, host, speakerClientIDs]);
+  }, [streams, moderatorIDs, speakerClientIDs]);
 
   const screens = useMemo(() => {
     return streams.filter((stream) => {
@@ -44,9 +41,7 @@ export default function ConferencePresentationLayout({
     <div className="conference-layout presentation">
       <div className="presentation-container">
         <div className="relative h-full w-full">
-          {latestScreen && (
-            <ConferenceScreen isModerator={isModerator} stream={latestScreen} />
-          )}
+          {latestScreen && <ConferenceScreen stream={latestScreen} />}
         </div>
       </div>
       <div className="speaker-container">
@@ -57,7 +52,7 @@ export default function ConferencePresentationLayout({
                 key={`speaker${index}`}
                 className="speaker-grid-item relative"
               >
-                <ConferenceScreen isModerator={isModerator} stream={speaker} />
+                <ConferenceScreen stream={speaker} />
               </div>
             );
           })}
