@@ -1,0 +1,30 @@
+.participant-container {
+  aspect-ratio: 1/1;
+}
+
+@media (min-width: 576px) {
+  .participant-container {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+}
+
+.participant-grid {
+  height: 100%;
+}
+
+.participant-item {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  vertical-align: middle;
+  align-self: center;
+  border-radius: 10px;
+}
+
+@media (min-width: 576px) {
+  .participant-item {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+}
