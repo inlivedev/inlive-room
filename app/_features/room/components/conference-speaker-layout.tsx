@@ -37,9 +37,9 @@ export default function ConferenceSpeakerLayout({
   return (
     <div className="conference-layout speaker">
       <div className="speaker-container">
-        {speakers.map((speaker, index) => {
+        {speakers.map((speaker) => {
           return (
-            <div key={`speaker${index}`} className="relative">
+            <div key={`speaker-${speaker.id}`} className="relative">
               <ConferenceScreen stream={speaker} />
             </div>
           );
@@ -47,10 +47,10 @@ export default function ConferenceSpeakerLayout({
       </div>
       <div className="participant-container">
         <div className="participant-grid">
-          {slicedParticipants.map((participant, index) => {
+          {slicedParticipants.map((participant) => {
             return (
               <div
-                key={`participant${index}`}
+                key={`participant-${participant.id}`}
                 className="participant-item relative"
               >
                 <ConferenceScreen stream={participant} />

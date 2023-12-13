@@ -29,9 +29,12 @@ export default function MeetingGalleryLayout({
             gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))`,
           }}
         >
-          {visibleParticipants.map((stream, index) => {
+          {visibleParticipants.map((stream) => {
             return (
-              <div className="participant-item" key={`stream${index}`}>
+              <div
+                className="participant-item"
+                key={`visible-stream-${stream.id}`}
+              >
                 <ConferenceScreen stream={stream} />
               </div>
             );
@@ -41,10 +44,10 @@ export default function MeetingGalleryLayout({
               <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-zinc-800 p-2 text-xs font-medium shadow-lg sm:text-sm">
                 More <span className="hidden sm:inline">+</span>
               </div>
-              {hiddenParticipants.map((stream, index) => {
+              {hiddenParticipants.map((stream) => {
                 return (
                   <ConferenceScreenHidden
-                    key={`hidden-screen-${index}`}
+                    key={`hidden-screen-${stream.id}`}
                     stream={stream}
                   />
                 );

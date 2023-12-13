@@ -46,10 +46,10 @@ export default function ConferencePresentationLayout({
       </div>
       <div className="speaker-container">
         <div className="speaker-grid">
-          {slicedSpeakers.map((speaker, index) => {
+          {slicedSpeakers.map((speaker) => {
             return (
               <div
-                key={`speaker${index}`}
+                key={`speaker-${speaker.id}`}
                 className="speaker-grid-item relative"
               >
                 <ConferenceScreen stream={speaker} />

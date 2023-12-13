@@ -59,17 +59,20 @@ export default function MeetingPresentationLayout({
             gridTemplateColumns: `repeat(${maxColumns}, minmax(auto, 180px))`,
           }}
         >
-          {visibleStreams.map((stream, index) => {
+          {visibleStreams.map((stream) => {
             return (
-              <div className="participant-item" key={`visible-stream-${index}`}>
+              <div
+                className="participant-item"
+                key={`visible-stream-${stream.id}`}
+              >
                 <ConferenceScreen stream={stream} />
               </div>
             );
           })}
-          {hiddenStreams.map((stream, index) => {
+          {hiddenStreams.map((stream) => {
             return (
               <ConferenceScreenHidden
-                key={`hidden-screen-${index}`}
+                key={`hidden-screen-${stream.id}`}
                 stream={stream}
               />
             );
