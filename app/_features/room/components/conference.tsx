@@ -28,7 +28,7 @@ const MeetingRoomLayout = () => {
   const { layout } = useMetadataContext();
 
   if (layout.current === 'presentation') {
-    return <MeetingPresentationLayout />;
+    return <MeetingPresentationLayout streams={streams} />;
   }
 
   if (streams.length === 2 && layout.current === 'gallery') {
