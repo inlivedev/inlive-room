@@ -40,7 +40,7 @@ export default function ConferenceScreenHidden({
       }
 
       audioRef.current.srcObject = stream.mediaStream;
-      audioRef.current.muted = false;
+      audioRef.current.muted = stream.origin === 'local';
       audioRef.current.autoplay = true;
     };
 
