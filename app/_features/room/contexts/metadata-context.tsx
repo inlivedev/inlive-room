@@ -6,10 +6,13 @@ import { type ParticipantStream } from '@/_features/room/contexts/participant-co
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 const defaultData = {
-  host: {
-    clientIDs: [] as string[],
+  isModerator: false as boolean,
+  moderatorIDs: [] as string[],
+  roomType: 'meeting' as string,
+  layout: {
+    current: 'gallery' as string,
+    previous: '' as string,
   },
-  layout: 'speaker' as 'speaker' | 'presentation',
   speakers: [] as string[],
 };
 
@@ -21,12 +24,19 @@ export const useMetadataContext = () => {
 
 export function MetadataProvider({
   children,
+  roomID,
+  roomType,
 }: {
-  roomID: string;
   children: React.ReactNode;
+  roomID: string;
+  roomType: string;
 }) {
-  const [metadataState, setMetadataState] = useState(defaultData);
+  const [metadataState, setMetadataState] = useState({
+    ...defaultData,
+    roomType: roomType,
+  });
   const { peer } = usePeerContext();
+  const defaultLayout = roomType === 'event' ? 'speaker' : 'gallery';
 
   useEffect(() => {
     clientSDK.on(RoomEvent.META_CHANGED, (event: any) => {
@@ -47,10 +57,15 @@ export function MetadataProvider({
     clientSDK.on(
       RoomEvent.STREAM_AVAILABLE,
       async ({ stream: availableStream }: { stream: ParticipantStream }) => {
-        if (availableStream.source === 'screen') {
-          setMetadataState({
-            ...metadataState,
-            layout: 'presentation',
+        if (
+          availableStream.source === 'screen' &&
+          availableStream.origin === 'local'
+        ) {
+          await clientSDK.setMetadata(roomID, {
+            layout: {
+              previous: metadataState.layout.current,
+              current: 'presentation',
+            },
           });
         }
       }
@@ -59,7 +74,10 @@ export function MetadataProvider({
     clientSDK.on(
       RoomEvent.STREAM_REMOVED,
       async ({ stream: removedStream }: { stream: ParticipantStream }) => {
-        if (removedStream.source === 'screen') {
+        if (
+          removedStream.source === 'screen' &&
+          removedStream.origin === 'local'
+        ) {
           const streams = peer.getAllStreams();
 
           const screen = streams.find((stream) => {
@@ -67,15 +85,19 @@ export function MetadataProvider({
           });
 
           if (!screen) {
-            setMetadataState({
-              ...metadataState,
-              layout: 'speaker',
+            await clientSDK.setMetadata(roomID, {
+              layout: {
+                previous: metadataState.layout.current,
+                current: metadataState.layout.previous.length
+                  ? metadataState.layout.previous
+                  : defaultLayout,
+              },
             });
           }
         }
       }
     );
-  }, [metadataState, peer]);
+  }, [metadataState, peer, defaultLayout, roomID]);
 
   return (
     <MetadataContext.Provider value={metadataState}>
