@@ -1,3 +1,13 @@
+.meeting-gallery-layout {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
 .meeting-gallery-layout .participant-container {
   aspect-ratio: 1/1;
 }
