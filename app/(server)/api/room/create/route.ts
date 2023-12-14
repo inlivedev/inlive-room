@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 401 }
     );
-    return;
   }
 
   try {
@@ -45,7 +44,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const meetingRoom = roomService.createRoom(response.data.id, body.type);
+    const meetingRoom = await roomService.createRoom(
+      response.data.id,
+      body.type
+    );
 
     return NextResponse.json(
       {

@@ -223,7 +223,7 @@
         },
         "meta": {
           "name": "meta",
-          "type": "json",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         }
