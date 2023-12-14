@@ -63,7 +63,10 @@ export function MetadataProvider({
           availableStream.source === 'screen' &&
           availableStream.origin === 'local'
         ) {
-          if (metadataState.previousLayout !== metadataState.currentLayout) {
+          if (
+            metadataState.previousLayout !== metadataState.currentLayout &&
+            metadataState.currentLayout !== 'presentation'
+          ) {
             await clientSDK.setMetadata(roomID, {
               previousLayout: metadataState.currentLayout,
             });
