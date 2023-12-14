@@ -24,16 +24,19 @@ export function MetadataProvider({
   children,
   roomID,
   roomType,
+  isModerator,
 }: {
   children: React.ReactNode;
   roomID: string;
   roomType: string;
+  isModerator: boolean;
 }) {
   const defaultLayout = roomType === 'event' ? 'speaker' : 'gallery';
 
   const [metadataState, setMetadataState] = useState<typeof defaultData>({
     ...defaultData,
     roomType: roomType,
+    isModerator: isModerator,
     previousLayout: defaultLayout,
     currentLayout: defaultLayout,
   });

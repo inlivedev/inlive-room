@@ -65,7 +65,8 @@ export default function ConferenceScreen({
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
   const { roomID } = useClientContext();
-  const { speakers, moderatorIDs, isModerator } = useMetadataContext();
+  const { speakers, moderatorIDs, isModerator, roomType } =
+    useMetadataContext();
 
   const isHost = moderatorIDs.includes(stream.clientId);
 
@@ -160,7 +161,7 @@ export default function ConferenceScreen({
               <XFillIcon className="h-4 w-4" />
             </Button>
           )}
-        {isModerator && stream.source === 'media' && (
+        {isModerator && stream.source === 'media' && roomType === 'event' && (
           <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
             <DropdownTrigger>
               <Button
