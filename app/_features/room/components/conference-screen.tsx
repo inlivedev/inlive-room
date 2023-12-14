@@ -20,10 +20,8 @@ import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 
 export default function ConferenceScreen({
   stream,
-  isModerator,
 }: {
   stream: ParticipantStream;
-  isModerator: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { currentAudioOutput } = useDeviceContext();
@@ -47,11 +45,11 @@ export default function ConferenceScreen({
           HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          sinkId !== video.sinkId
+          sinkId !== videoRef.current.sinkId
         ) {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          await video.setSinkId(sinkId);
+          await videoRef.current.setSinkId(sinkId);
         }
       }
 
@@ -67,9 +65,10 @@ export default function ConferenceScreen({
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
   const { roomID } = useClientContext();
-  const { speakers, host } = useMetadataContext();
+  const { speakers, moderatorIDs, isModerator, roomType } =
+    useMetadataContext();
 
-  const isHost = host.clientIDs.includes(stream.clientId);
+  const isHost = moderatorIDs.includes(stream.clientId);
 
   useEffect(() => {
     const videoEl = videoRef.current;
@@ -162,7 +161,7 @@ export default function ConferenceScreen({
               <XFillIcon className="h-4 w-4" />
             </Button>
           )}
-        {isModerator && stream.source === 'media' && (
+        {isModerator && stream.source === 'media' && roomType === 'event' && (
           <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
             <DropdownTrigger>
               <Button
@@ -205,6 +204,9 @@ export default function ConferenceScreen({
       <video
         className="absolute left-0 top-0 h-full w-full rounded-lg object-center"
         ref={videoRef}
+        style={{
+          transform: localVideoScreen ? 'scaleX(-1)' : 'scaleX(1)',
+        }}
       ></video>
     </div>
   );

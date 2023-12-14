@@ -13,12 +13,14 @@ import HangUpIcon from '@/_shared/components/icons/hang-up-icon';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
+import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
-export default function ButtonLeave({ isModerator }: { isModerator: boolean }) {
+export default function ButtonLeave() {
   const { clientID } = useClientContext();
   const { datachannels } = useDataChannelContext();
   const { streams } = useParticipantContext();
+  const { isModerator } = useMetadataContext();
 
   const handleLeaveRoom = () => {
     document.dispatchEvent(

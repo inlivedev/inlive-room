@@ -15,6 +15,7 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          cache: 'no-cache',
         });
 
       const data = response.data || {};

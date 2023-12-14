@@ -1,37 +1,54 @@
+'use client';
+
 import { Button, CircularProgress } from '@nextui-org/react';
 import { useEffect, useState } from 'react';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
-import { usePeerContext } from '../contexts/peer-context';
-import ConferenceSpeakerLayout from './conference-speaker-layout';
-import ConferencePresentationLayout from './conference-presentation-layout';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
+import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import MeetingOneOnOneLayout from './meeting-one-on-one-layout';
+import MeetingGalleryLayout from './meeting-gallery-layout';
+import MeetingPresentationLayout from './meeting-presentation-layout';
+import WebinarSpeakerLayout from './conference-speaker-layout';
+import WebinarPresentationLayout from './conference-presentation-layout';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 
-export default function Conference({ isModerator }: { isModerator: boolean }) {
+const WebinarRoomLayout = () => {
   const { streams } = useParticipantContext();
-  const { layout } = useMetadataContext();
+  const { currentLayout } = useMetadataContext();
 
+  if (currentLayout === 'presentation') {
+    return <WebinarPresentationLayout streams={streams} />;
+  }
+
+  return <WebinarSpeakerLayout streams={streams} />;
+};
+
+const MeetingRoomLayout = () => {
+  const { streams } = useParticipantContext();
+  const { currentLayout } = useMetadataContext();
+
+  if (currentLayout === 'presentation') {
+    return <MeetingPresentationLayout streams={streams} />;
+  }
+
+  if (streams.length === 2 && currentLayout === 'gallery') {
+    return <MeetingOneOnOneLayout streams={streams} />;
+  }
+
+  return <MeetingGalleryLayout streams={streams} />;
+};
+
+export default function Conference({ roomType }: { roomType: string }) {
   return (
     <>
-      <ConnectionStatusOverlay></ConnectionStatusOverlay>
       <div className="viewport-height grid grid-rows-[1fr,80px] overflow-y-hidden">
         <div>
-          {layout === 'speaker' ? (
-            <ConferenceSpeakerLayout
-              isModerator={isModerator}
-              streams={streams}
-            />
-          ) : layout === 'presentation' ? (
-            <ConferencePresentationLayout
-              isModerator={isModerator}
-              streams={streams}
-            />
-          ) : null}
+          {roomType === 'event' ? <WebinarRoomLayout /> : <MeetingRoomLayout />}
         </div>
         <div>
-          <ConferenceActionsBar isModerator={isModerator} />
+          <ConferenceActionsBar />
         </div>
       </div>
     </>

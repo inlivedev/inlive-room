@@ -6,10 +6,11 @@ import { type ParticipantStream } from '@/_features/room/contexts/participant-co
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 const defaultData = {
-  host: {
-    clientIDs: [] as string[],
-  },
-  layout: 'speaker' as 'speaker' | 'presentation',
+  isModerator: false as boolean,
+  moderatorIDs: [] as string[],
+  roomType: 'meeting' as string,
+  previousLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
+  currentLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
   speakers: [] as string[],
 };
 
@@ -21,11 +22,25 @@ export const useMetadataContext = () => {
 
 export function MetadataProvider({
   children,
+  roomID,
+  roomType,
+  isModerator,
 }: {
-  roomID: string;
   children: React.ReactNode;
+  roomID: string;
+  roomType: string;
+  isModerator: boolean;
 }) {
-  const [metadataState, setMetadataState] = useState(defaultData);
+  const defaultLayout = roomType === 'event' ? 'speaker' : 'gallery';
+
+  const [metadataState, setMetadataState] = useState<typeof defaultData>({
+    ...defaultData,
+    roomType: roomType,
+    isModerator: isModerator,
+    previousLayout: defaultLayout,
+    currentLayout: defaultLayout,
+  });
+
   const { peer } = usePeerContext();
 
   useEffect(() => {
@@ -47,10 +62,30 @@ export function MetadataProvider({
     clientSDK.on(
       RoomEvent.STREAM_AVAILABLE,
       async ({ stream: availableStream }: { stream: ParticipantStream }) => {
+        if (
+          availableStream.source === 'screen' &&
+          availableStream.origin === 'local'
+        ) {
+          if (
+            metadataState.previousLayout !== metadataState.currentLayout &&
+            metadataState.currentLayout !== 'presentation'
+          ) {
+            await clientSDK.setMetadata(roomID, {
+              previousLayout: metadataState.currentLayout,
+            });
+          }
+        }
+
         if (availableStream.source === 'screen') {
-          setMetadataState({
-            ...metadataState,
-            layout: 'presentation',
+          setMetadataState((prevData) => {
+            if (prevData.currentLayout === 'presentation') {
+              return prevData;
+            }
+
+            return {
+              ...prevData,
+              currentLayout: 'presentation',
+            };
           });
         }
       }
@@ -67,15 +102,21 @@ export function MetadataProvider({
           });
 
           if (!screen) {
-            setMetadataState({
-              ...metadataState,
-              layout: 'speaker',
+            setMetadataState((prevData) => {
+              if (prevData.currentLayout === prevData.previousLayout) {
+                return prevData;
+              }
+
+              return {
+                ...prevData,
+                currentLayout: prevData.previousLayout,
+              };
             });
           }
         }
       }
     );
-  }, [metadataState, peer]);
+  }, [metadataState, peer, defaultLayout, roomID]);
 
   return (
     <MetadataContext.Provider value={metadataState}>
