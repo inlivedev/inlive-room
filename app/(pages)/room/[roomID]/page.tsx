@@ -65,7 +65,12 @@ export default async function Page() {
 
   return (
     <AppContainer user={userAuth}>
-      <View roomID={roomData.id} client={userClient} roomType={roomType} />
+      <View
+        roomID={roomData.id}
+        client={userClient}
+        roomType={roomType}
+        isModerator={isModerator}
+      />
     </AppContainer>
   );
 }
