@@ -87,7 +87,7 @@ export default function CreateRoom() {
           >
             <DropdownTrigger>
               <Button
-                className="w-full rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
+                className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
                 isDisabled={isSubmitting}
                 aria-disabled={isSubmitting}
                 disabled={isSubmitting}
@@ -125,10 +125,10 @@ export default function CreateRoom() {
           </Dropdown>
         ) : (
           <Button
-            className="w-full rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
+            className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
             onClick={openSignInModal}
           >
-            Create a new room
+            Sign in to your account
           </Button>
         )}
       </div>
