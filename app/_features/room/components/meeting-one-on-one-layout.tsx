@@ -1,3 +1,5 @@
+'use client';
+
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 

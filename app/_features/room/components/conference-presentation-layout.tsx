@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';

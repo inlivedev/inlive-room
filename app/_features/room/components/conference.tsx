@@ -1,3 +1,5 @@
+'use client';
+
 import { Button, CircularProgress } from '@nextui-org/react';
 import { useEffect, useState } from 'react';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';

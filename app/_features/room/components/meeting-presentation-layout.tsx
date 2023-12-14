@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import '../styles/meeting-presentation-layout.css';

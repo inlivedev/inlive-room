@@ -1,3 +1,5 @@
+'use client';
+
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import '../styles/meeting-gallery-layout.css';
 import ConferenceScreen from './conference-screen';
