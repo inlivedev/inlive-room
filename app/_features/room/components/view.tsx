@@ -19,9 +19,15 @@ type ViewProps = {
   roomID: string;
   client: ClientType.ClientData;
   roomType: string;
+  isModerator: boolean;
 };
 
-export default function View({ roomID, client, roomType }: ViewProps) {
+export default function View({
+  roomID,
+  client,
+  roomType,
+  isModerator,
+}: ViewProps) {
   const { active: isConferenceActive, setActive: setActiveConference } =
     useToggle(false);
 
@@ -46,7 +52,11 @@ export default function View({ roomID, client, roomType }: ViewProps) {
                 <ChatProvider>
                   <EventContainer>
                     <ChatDrawerMenu />
-                    <MetadataProvider roomID={roomID} roomType={roomType}>
+                    <MetadataProvider
+                      roomID={roomID}
+                      roomType={roomType}
+                      isModerator={isModerator}
+                    >
                       {isConferenceActive ? (
                         <Conference roomType={roomType} />
                       ) : (
