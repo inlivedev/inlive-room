@@ -71,10 +71,16 @@ export function MetadataProvider({
         }
 
         if (availableStream.source === 'screen') {
-          setMetadataState((prevData) => ({
-            ...prevData,
-            currentLayout: 'presentation',
-          }));
+          setMetadataState((prevData) => {
+            if (prevData.currentLayout === 'presentation') {
+              return prevData;
+            }
+
+            return {
+              ...prevData,
+              currentLayout: 'presentation',
+            };
+          });
         }
       }
     );
@@ -82,17 +88,25 @@ export function MetadataProvider({
     clientSDK.on(
       RoomEvent.STREAM_REMOVED,
       async ({ stream: removedStream }: { stream: ParticipantStream }) => {
-        const streams = peer.getAllStreams();
+        if (removedStream.source === 'screen') {
+          const streams = peer.getAllStreams();
 
-        const screen = streams.find((stream) => {
-          return stream.source === 'screen';
-        });
+          const screen = streams.find((stream) => {
+            return stream.source === 'screen';
+          });
 
-        if (removedStream.source === 'screen' && !screen) {
-          setMetadataState((prevData) => ({
-            ...prevData,
-            currentLayout: prevData.previousLayout,
-          }));
+          if (!screen) {
+            setMetadataState((prevData) => {
+              if (prevData.currentLayout === prevData.previousLayout) {
+                return prevData;
+              }
+
+              return {
+                ...prevData,
+                currentLayout: prevData.previousLayout,
+              };
+            });
+          }
         }
       }
     );
