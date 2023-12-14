@@ -9,10 +9,8 @@ const defaultData = {
   isModerator: false as boolean,
   moderatorIDs: [] as string[],
   roomType: 'meeting' as string,
-  layout: {
-    current: 'gallery' as string,
-    previous: '' as string,
-  },
+  previousLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
+  currentLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
   speakers: [] as string[],
 };
 
@@ -31,12 +29,16 @@ export function MetadataProvider({
   roomID: string;
   roomType: string;
 }) {
-  const [metadataState, setMetadataState] = useState({
+  const defaultLayout = roomType === 'event' ? 'speaker' : 'gallery';
+
+  const [metadataState, setMetadataState] = useState<typeof defaultData>({
     ...defaultData,
     roomType: roomType,
+    previousLayout: defaultLayout,
+    currentLayout: defaultLayout,
   });
+
   const { peer } = usePeerContext();
-  const defaultLayout = roomType === 'event' ? 'speaker' : 'gallery';
 
   useEffect(() => {
     clientSDK.on(RoomEvent.META_CHANGED, (event: any) => {
@@ -61,12 +63,18 @@ export function MetadataProvider({
           availableStream.source === 'screen' &&
           availableStream.origin === 'local'
         ) {
-          await clientSDK.setMetadata(roomID, {
-            layout: {
-              previous: metadataState.layout.current,
-              current: 'presentation',
-            },
-          });
+          if (metadataState.previousLayout !== metadataState.currentLayout) {
+            await clientSDK.setMetadata(roomID, {
+              previousLayout: metadataState.currentLayout,
+            });
+          }
+        }
+
+        if (availableStream.source === 'screen') {
+          setMetadataState((prevData) => ({
+            ...prevData,
+            currentLayout: 'presentation',
+          }));
         }
       }
     );
@@ -74,26 +82,17 @@ export function MetadataProvider({
     clientSDK.on(
       RoomEvent.STREAM_REMOVED,
       async ({ stream: removedStream }: { stream: ParticipantStream }) => {
-        if (
-          removedStream.source === 'screen' &&
-          removedStream.origin === 'local'
-        ) {
-          const streams = peer.getAllStreams();
+        const streams = peer.getAllStreams();
 
-          const screen = streams.find((stream) => {
-            return stream.source === 'screen';
-          });
+        const screen = streams.find((stream) => {
+          return stream.source === 'screen';
+        });
 
-          if (!screen) {
-            await clientSDK.setMetadata(roomID, {
-              layout: {
-                previous: metadataState.layout.current,
-                current: metadataState.layout.previous.length
-                  ? metadataState.layout.previous
-                  : defaultLayout,
-              },
-            });
-          }
+        if (removedStream.source === 'screen' && !screen) {
+          setMetadataState((prevData) => ({
+            ...prevData,
+            currentLayout: prevData.previousLayout,
+          }));
         }
       }
     );

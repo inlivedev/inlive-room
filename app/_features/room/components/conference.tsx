@@ -16,9 +16,9 @@ import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnect
 
 const WebinarRoomLayout = () => {
   const { streams } = useParticipantContext();
-  const { layout } = useMetadataContext();
+  const { currentLayout } = useMetadataContext();
 
-  if (layout.current === 'presentation') {
+  if (currentLayout === 'presentation') {
     return <WebinarPresentationLayout streams={streams} />;
   }
 
@@ -27,13 +27,13 @@ const WebinarRoomLayout = () => {
 
 const MeetingRoomLayout = () => {
   const { streams } = useParticipantContext();
-  const { layout } = useMetadataContext();
+  const { currentLayout } = useMetadataContext();
 
-  if (layout.current === 'presentation') {
+  if (currentLayout === 'presentation') {
     return <MeetingPresentationLayout streams={streams} />;
   }
 
-  if (streams.length === 2 && layout.current === 'gallery') {
+  if (streams.length === 2 && currentLayout === 'gallery') {
     return <MeetingOneOnOneLayout streams={streams} />;
   }
 
