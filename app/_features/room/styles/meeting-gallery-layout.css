@@ -1,0 +1,40 @@
+.meeting-gallery-layout {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.meeting-gallery-layout .participant-container {
+  aspect-ratio: 1/1;
+}
+
+@media (min-width: 576px) {
+  .meeting-gallery-layout .participant-container {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+}
+
+.meeting-gallery-layout .participant-grid {
+  height: 100%;
+}
+
+.meeting-gallery-layout .participant-item {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  vertical-align: middle;
+  align-self: center;
+  border-radius: 10px;
+}
+
+@media (min-width: 576px) {
+  .meeting-gallery-layout .participant-item {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+}

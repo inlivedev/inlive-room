@@ -13,8 +13,6 @@ import {
 import type { Selection } from '@nextui-org/react';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
-import { useClientContext } from '@/_features/room/contexts/client-context';
-import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
@@ -29,13 +27,6 @@ export default function ButtonMicrophone() {
     audioOutputs,
     devices,
   } = useDeviceContext();
-
-  const { clientID } = useClientContext();
-  const { host, speakers } = useMetadataContext();
-
-  const isSpeaker = useMemo(() => {
-    return speakers.includes(clientID) || host.clientIDs.includes(clientID);
-  }, [speakers, host, clientID]);
 
   const {
     selectedDeviceKey: selectedAudioInputKey,
@@ -86,14 +77,12 @@ export default function ButtonMicrophone() {
   );
 
   const handleClick = useCallback(() => {
-    if (!isSpeaker) return;
-
     if (active) {
       document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
     } else {
       document.dispatchEvent(new CustomEvent('trigger:turnon-mic'));
     }
-  }, [active, isSpeaker]);
+  }, [active]);
 
   useEffect(() => {
     const onTurnOnMic = () => setActive();
@@ -108,15 +97,8 @@ export default function ButtonMicrophone() {
   }, [setActive, setInActive]);
 
   return (
-    <ButtonGroup
-      variant="flat"
-      isDisabled={!isSpeaker}
-      aria-disabled={!isSpeaker}
-    >
+    <ButtonGroup variant="flat">
       <Button
-        isDisabled={!isSpeaker}
-        disabled={!isSpeaker}
-        aria-disabled={!isSpeaker}
         isIconOnly
         variant="flat"
         aria-label="Toggle Microphone"

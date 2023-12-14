@@ -46,31 +46,26 @@ export default async function Page() {
   const isModerator = roomData.createdBy === userAuth?.id;
 
   if (isModerator) {
-    const hostMetaData = await clientSDK.getMetadata(roomData.id, 'host');
-    const hostIDs = hostMetaData?.data?.host?.clientIDs;
+    const moderatorMeta = await clientSDK.getMetadata(roomData.id, 'moderator');
+    const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
 
-    if (Array.isArray(hostIDs)) {
+    if (Array.isArray(moderatorIDs)) {
       await clientSDK.setMetadata(roomData.id, {
-        host: {
-          clientIDs: [...hostIDs, userClient.clientID],
-        },
+        moderatorIDs: [...moderatorIDs, userClient.clientID],
       });
     } else {
       await clientSDK.setMetadata(roomData.id, {
-        host: {
-          clientIDs: [userClient.clientID],
-        },
+        moderatorIDs: [userClient.clientID],
       });
     }
   }
 
+  // TODO: change room type dynamically based on roomData.type
+  const roomType = 'meeting';
+
   return (
     <AppContainer user={userAuth}>
-      <View
-        roomID={roomData.id}
-        client={userClient}
-        isModerator={isModerator}
-      />
+      <View roomID={roomData.id} client={userClient} roomType={roomType} />
     </AppContainer>
   );
 }
