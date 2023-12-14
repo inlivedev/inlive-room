@@ -43,7 +43,6 @@ const MeetingRoomLayout = () => {
 export default function Conference({ roomType }: { roomType: string }) {
   return (
     <>
-      <ConnectionStatusOverlay></ConnectionStatusOverlay>
       <div className="viewport-height grid grid-rows-[1fr,80px] overflow-y-hidden">
         <div>
           {roomType === 'event' ? <WebinarRoomLayout /> : <MeetingRoomLayout />}
