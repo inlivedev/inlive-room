@@ -60,8 +60,7 @@ export default async function Page() {
     }
   }
 
-  // TODO: change room type dynamically based on roomData.type
-  const roomType = 'meeting';
+  const roomType = roomData.meta.type || 'meeting';
 
   return (
     <AppContainer user={userAuth}>

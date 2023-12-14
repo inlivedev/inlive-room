@@ -10,6 +10,7 @@ export interface Room {
   id: string;
   name?: string | null;
   createdBy: number;
+  meta: { [key: string]: any };
 }
 
 export interface Participant {
