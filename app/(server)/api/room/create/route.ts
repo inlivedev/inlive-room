@@ -1,8 +1,15 @@
-import { roomRoutesHandler } from '@/(server)/_features/room/routes';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { roomService } from '../../_index';
 
-export async function POST() {
+type createRoomRequest = {
+  type: roomType;
+};
+
+type roomType = 'meeting' | 'event';
+
+export async function POST(request: NextRequest) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
@@ -14,19 +21,39 @@ export async function POST() {
       },
       { status: 401 }
     );
-    return;
   }
 
   try {
-    const createdRoom = await roomRoutesHandler.createRoomHandler(
-      requestToken.value
+    const response = await getCurrentAuthenticated(requestToken.value);
+
+    if (!response.data.id) {
+      throw new Error(
+        'Unable to create room because the user is not authenticated'
+      );
+    }
+    let body: createRoomRequest;
+    try {
+      body = (await request.json()) as createRoomRequest;
+    } catch (error) {
+      return NextResponse.json(
+        {
+          code: 400,
+          message: 'Invalid room type, please check the request body',
+        },
+        { status: 400 }
+      );
+    }
+
+    const meetingRoom = await roomService.createRoom(
+      response.data.id,
+      body.type
     );
 
     return NextResponse.json(
       {
         code: 201,
         message: 'Room Created',
-        data: createdRoom,
+        data: meetingRoom,
       },
       { status: 201 }
     );

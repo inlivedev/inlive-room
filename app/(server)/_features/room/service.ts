@@ -4,11 +4,13 @@ import * as Sentry from '@sentry/nextjs';
 
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
+import { insertRoom, selectRoom } from './schema';
 
 export interface Room {
   id: string;
   name?: string | null;
   createdBy: number;
+  meta: { [key: string]: any };
 }
 
 export interface Participant {
@@ -18,7 +20,7 @@ export interface Participant {
 }
 
 export interface iRoomRepo {
-  addRoom(room: Room): Promise<Room>;
+  addRoom(room: typeof insertRoom): Promise<typeof selectRoom>;
   getRoomById(id: string): Promise<Room | undefined>;
   updateRoomById(room: Room): Promise<Room | undefined>;
   isPersistent(): boolean;
@@ -115,7 +117,10 @@ export class RoomService implements iRoomService {
     };
   }
 
-  async createRoom(userID: number): Promise<Room> {
+  async createRoom(
+    userID: number,
+    type: 'event' | 'meeting'
+  ): Promise<typeof selectRoom> {
     let retries = 0;
     const maxRetries = 3;
 
@@ -152,6 +157,8 @@ export class RoomService implements iRoomService {
         return {
           id: roomResp.data.roomId,
           createdBy: userID,
+          meta: { type },
+          name: '',
         };
       }
 
@@ -159,7 +166,9 @@ export class RoomService implements iRoomService {
         const room = await this._roomRepo.addRoom({
           id: roomResp.data.roomId,
           createdBy: userID,
+          meta: { type },
         });
+
         return room;
       } catch (error) {
         const err = error as Error;

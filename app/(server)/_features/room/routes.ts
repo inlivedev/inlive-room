@@ -4,10 +4,9 @@ import {
   Room,
   RoomService,
 } from '@/(server)/_features/room/service';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 
 export interface iRoomService {
-  createRoom(userID: number): Promise<Room>;
+  createRoom(userID: number, type: 'event' | 'meeting'): Promise<Room>;
   joinRoom(roomId: string): Promise<Room | undefined>;
   createClient(
     roomId: string,
@@ -28,18 +27,6 @@ const createRoomRoutesHandler = () => {
     constructor(roomService: iRoomService) {
       this.roomService = roomService;
     }
-
-    createRoomHandler = async (token: string) => {
-      const response = await getCurrentAuthenticated(token);
-
-      if (!response.data.id) {
-        throw new Error(
-          'Unable to create room because the user is not authenticated'
-        );
-      }
-
-      return this.roomService.createRoom(response.data.id);
-    };
 
     joinRoomHandler = async (roomID: string) => {
       return await this.roomService.joinRoom(roomID);
@@ -67,7 +54,6 @@ const createRoomRoutesHandler = () => {
       const roomRoutesHandler = new roomHandler(roomService);
 
       return {
-        createRoomHandler: roomRoutesHandler.createRoomHandler,
         joinRoomHandler: roomRoutesHandler.joinRoomHandler,
         registerClientHandler: roomRoutesHandler.registerClientHandler,
         setClientNameHandler: roomRoutesHandler.setClientNameHandler,

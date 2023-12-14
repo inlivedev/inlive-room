@@ -4,6 +4,7 @@ import Header from '@/_shared/components/header/header';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useClientContext } from '@/_features/room/contexts/client-context';
+import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
 import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
@@ -30,6 +31,8 @@ export default function Lobby({ roomID }: LobbyProps) {
     setActive: setCopiedLinkActive,
     setInActive: setCopiedLinkInActive,
   } = useToggle(false);
+
+  const { roomType } = useMetadataContext();
 
   const handleCopy = useCallback(
     async (
@@ -187,9 +190,21 @@ export default function Lobby({ roomID }: LobbyProps) {
           <main className="flex-1 md:pt-6">
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-3 md:p-4">
               <div>
-                <b className="block text-xs font-semibold uppercase text-zinc-500">
-                  Room ID
-                </b>
+                <div className="flex items-center justify-between">
+                  <b className="block text-xs font-semibold uppercase text-zinc-500">
+                    Room ID
+                  </b>
+                  {roomType === 'event' && (
+                    <b className="rounded bg-zinc-800 px-3 py-1 text-xs font-medium  text-zinc-400">
+                      Webinar room
+                    </b>
+                  )}
+                  {roomType === 'meeting' && (
+                    <b className="rounded bg-zinc-800 px-3 py-1 text-xs font-medium  text-zinc-400">
+                      Meeting room
+                    </b>
+                  )}
+                </div>
                 <b className="block text-xl font-bold lg:text-2xl">{roomID}</b>
               </div>
               <p className="mt-3 text-sm text-zinc-400 ">

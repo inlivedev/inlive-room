@@ -1,14 +1,14 @@
 import type { Room } from '@/(server)/_features/room/service';
 import { iRoomRepo } from './service';
 import { db } from '@/(server)/_shared/database/database';
-import { rooms } from '@/(server)/_features/room/schema';
+import { insertRoom, rooms } from '@/(server)/_features/room/schema';
 import { eq } from 'drizzle-orm';
 
 const persistentData = process.env.PERSISTENT_DATA || false;
 
 export class RoomRepo implements iRoomRepo {
   // Function to create a new room
-  async addRoom(roomData: Room) {
+  async addRoom(roomData: typeof insertRoom) {
     const data = await db.insert(rooms).values(roomData).returning();
     return data[0];
   }
