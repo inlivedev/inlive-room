@@ -18,7 +18,7 @@ type LobbyProps = {
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
-export default function Lobby({ roomID }: LobbyProps) {
+export default function ConferenceLobby({ roomID }: LobbyProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     active: copiedIDActive,

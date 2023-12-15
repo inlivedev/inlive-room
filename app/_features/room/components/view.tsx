@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ConferenceLobby from '@/_features/room/components/lobby';
+import ConferenceLobby from '@/_features/room/components/conference-lobby';
 import ConferenceExit from '@/_features/room/components/conference-exit';
 import { ClientProvider } from '@/_features/room/contexts/client-context';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
