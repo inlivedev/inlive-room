@@ -96,7 +96,13 @@ export function ClientProvider({
           console.error('Failed to end the call');
         }
 
-        window.location.href = '/';
+        document.dispatchEvent(
+          new CustomEvent('set:conference-view', {
+            detail: {
+              view: 'exit',
+            },
+          })
+        );
       } catch (error) {
         console.error(error);
       }

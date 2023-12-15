@@ -163,7 +163,13 @@ export default function Lobby({ roomID }: LobbyProps) {
           })
         );
 
-        document.dispatchEvent(new CustomEvent('open:conference-component'));
+        document.dispatchEvent(
+          new CustomEvent('set:conference-view', {
+            detail: {
+              view: 'conference',
+            },
+          })
+        );
 
         Mixpanel.track('Join room', {
           roomID: roomID,
