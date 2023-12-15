@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import Lobby from '@/_features/room/components/lobby';
+import { useState, useEffect } from 'react';
+import ConferenceLobby from '@/_features/room/components/conference-lobby';
+import ConferenceExit from '@/_features/room/components/conference-exit';
 import { ClientProvider } from '@/_features/room/contexts/client-context';
 import { PeerProvider } from '@/_features/room/contexts/peer-context';
 import { DeviceProvider } from '@/_features/room/contexts/device-context';
@@ -12,7 +13,6 @@ import { MetadataProvider } from '@/_features/room/contexts/metadata-context';
 import EventContainer from '@/_features/room/components/event-container';
 import Conference from '@/_features/room/components/conference';
 import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
-import { useToggle } from '@/_shared/hooks/use-toggle';
 import type { ClientType } from '@/_shared/types/client';
 
 type ViewProps = {
@@ -28,19 +28,24 @@ export default function View({
   roomType,
   isModerator,
 }: ViewProps) {
-  const { active: isConferenceActive, setActive: setActiveConference } =
-    useToggle(false);
+  const [activeView, setActiveView] = useState<string>('lobby');
 
   useEffect(() => {
-    document.addEventListener('open:conference-component', setActiveConference);
+    const setView = ((event: CustomEvent) => {
+      const detail = event.detail || {};
+      const view = detail.view;
+
+      if (typeof view === 'string') {
+        setActiveView(view);
+      }
+    }) as EventListener;
+
+    document.addEventListener('set:conference-view', setView);
 
     return () => {
-      document.removeEventListener(
-        'open:conference-component',
-        setActiveConference
-      );
+      document.removeEventListener('set:conference-view', setView);
     };
-  }, [setActiveConference]);
+  }, []);
 
   return (
     <div className="bg-zinc-900 text-zinc-200">
@@ -57,10 +62,12 @@ export default function View({
                       roomType={roomType}
                       isModerator={isModerator}
                     >
-                      {isConferenceActive ? (
+                      {activeView === 'exit' ? (
+                        <ConferenceExit />
+                      ) : activeView === 'conference' ? (
                         <Conference roomType={roomType} />
                       ) : (
-                        <Lobby roomID={roomID} />
+                        <ConferenceLobby roomID={roomID} />
                       )}
                     </MetadataProvider>
                   </EventContainer>
