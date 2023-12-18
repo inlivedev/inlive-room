@@ -72,6 +72,13 @@ steps:
       terraform init --upgrade
       terraform apply -auto-approve -var 'room_image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$SHORT_SHA'
 
+  - name: node:18.16.1
+    entrypoint: npm
+    args:
+      - run
+      - migrate
+    secretEnv: ['DB_HOST','DB_NAME','DB_PASS','DB_USER']
+
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$SHORT_SHA
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:latest
