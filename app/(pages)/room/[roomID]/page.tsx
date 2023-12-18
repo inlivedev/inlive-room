@@ -65,7 +65,7 @@ export default async function Page({ searchParams }: PageProps) {
     }
   }
 
-  const roomType = roomData.meta.type || 'meeting';
+  const roomType = roomData.meta ? roomData.meta.type : 'meeting' || 'meeting';
 
   return (
     <AppContainer user={userAuth}>
