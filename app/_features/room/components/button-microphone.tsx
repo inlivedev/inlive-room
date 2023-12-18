@@ -108,7 +108,7 @@ export default function ButtonMicrophone() {
         {active ? (
           <MicrophoneOnIcon width={20} height={20} />
         ) : (
-          <MicrophoneOffIcon width={20} height={20} />
+          <MicrophoneOffIcon width={20} height={20} className="text-red-500" />
         )}
       </Button>
       {audioInputs.length > 0 || audioOutputs.length > 0 ? (

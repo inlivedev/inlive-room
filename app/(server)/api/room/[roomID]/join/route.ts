@@ -2,6 +2,8 @@ import { roomRoutesHandler } from '@/(server)/_features/room/routes';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   _: Request,
   { params }: { params: { roomID: string } }

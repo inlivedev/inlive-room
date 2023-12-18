@@ -1,9 +1,12 @@
 import { RoomRepo } from '@/(server)/_features/room/repository';
-import { Participant, Room, service } from '@/(server)/_features/room/service';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import {
+  Participant,
+  Room,
+  RoomService,
+} from '@/(server)/_features/room/service';
 
 export interface iRoomService {
-  createRoom(userID: number): Promise<Room>;
+  createRoom(userID: number, type: 'event' | 'meeting'): Promise<Room>;
   joinRoom(roomId: string): Promise<Room | undefined>;
   createClient(
     roomId: string,
@@ -24,11 +27,6 @@ const createRoomRoutesHandler = () => {
     constructor(roomService: iRoomService) {
       this.roomService = roomService;
     }
-
-    createRoomHandler = async (token: string) => {
-      const response = await getCurrentAuthenticated(token);
-      return this.roomService.createRoom(response.data.id);
-    };
 
     joinRoomHandler = async (roomID: string) => {
       return await this.roomService.joinRoom(roomID);
@@ -56,7 +54,6 @@ const createRoomRoutesHandler = () => {
       const roomRoutesHandler = new roomHandler(roomService);
 
       return {
-        createRoomHandler: roomRoutesHandler.createRoomHandler,
         joinRoomHandler: roomRoutesHandler.joinRoomHandler,
         registerClientHandler: roomRoutesHandler.registerClientHandler,
         setClientNameHandler: roomRoutesHandler.setClientNameHandler,
@@ -66,5 +63,5 @@ const createRoomRoutesHandler = () => {
 };
 
 export const roomRoutesHandler = createRoomRoutesHandler().createInstance(
-  new service(new RoomRepo())
+  new RoomService(new RoomRepo())
 );

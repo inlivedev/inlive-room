@@ -1,17 +1,24 @@
 @tailwind base;
 @tailwind components;
 
-/* To ensure the minimum height of body is 100% screen height */
 html, body {
-  min-height: calc(var(--vh, 1vh) * 100);
+  min-height: 100vh; /*older device*/
+  min-height: 100dvh;
 }
 
 .min-viewport-height {
-  min-height: calc(var(--vh, 1vh) * 100);
+  min-height: 100vh; /*older device*/
+  min-height: 100dvh;
 }
 
 .viewport-height {
-  height: calc(var(--vh, 1vh) * 100);
+  height: 100vh; /*older device*/
+  height: 100dvh;
+}
+
+.prose img:first-child {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @tailwind utilities;

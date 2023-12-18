@@ -77,7 +77,7 @@ export default function ButtonCamera() {
         {active ? (
           <CameraOnIcon width={20} height={20} />
         ) : (
-          <CameraOffIcon width={20} height={20} />
+          <CameraOffIcon width={20} height={20} className="text-red-500" />
         )}
       </Button>
       {videoInputs.length > 0 ? (

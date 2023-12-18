@@ -6,6 +6,7 @@ import View from '@/_features/room/components/view';
 import type { RoomType } from '@/_shared/types/room';
 import type { UserType } from '@/_shared/types/user';
 import type { ClientType } from '@/_shared/types/client';
+import { clientSDK } from '@/_shared/utils/sdk';
 
 type PageProps = {
   params: {
@@ -42,9 +43,33 @@ export default async function Page() {
     notFound();
   }
 
+  const isModerator = roomData.createdBy === userAuth?.id;
+
+  if (isModerator) {
+    const moderatorMeta = await clientSDK.getMetadata(roomData.id, 'moderator');
+    const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
+
+    if (Array.isArray(moderatorIDs)) {
+      await clientSDK.setMetadata(roomData.id, {
+        moderatorIDs: [...moderatorIDs, userClient.clientID],
+      });
+    } else {
+      await clientSDK.setMetadata(roomData.id, {
+        moderatorIDs: [userClient.clientID],
+      });
+    }
+  }
+
+  const roomType = roomData.meta.type || 'meeting';
+
   return (
     <AppContainer user={userAuth}>
-      <View roomID={roomData.id} client={userClient} />
+      <View
+        roomID={roomData.id}
+        client={userClient}
+        roomType={roomType}
+        isModerator={isModerator}
+      />
     </AppContainer>
   );
 }

@@ -3,7 +3,7 @@ import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { useToggle } from '@/_shared/hooks/use-toggle';
-import { room } from '@/_shared/utils/sdk';
+import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 
 export const useScreenShare = () => {
   const { peer } = usePeerContext();
@@ -11,7 +11,7 @@ export const useScreenShare = () => {
   const { active, setActive, setInActive } = useToggle(false);
 
   useEffect(() => {
-    room.on(room.event.STREAM_AVAILABLE, (data) => {
+    clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
       if (
         data?.stream?.origin !== 'local' ||
         data?.stream?.source !== 'screen'
@@ -22,7 +22,7 @@ export const useScreenShare = () => {
       setActive();
     });
 
-    room.on(room.event.STREAM_REMOVED, (data) => {
+    clientSDK.on(RoomEvent.STREAM_REMOVED, (data) => {
       if (
         data?.stream?.origin !== 'local' ||
         data?.stream?.source !== 'screen'

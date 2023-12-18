@@ -1,5 +1,6 @@
 'use client';
-
+import * as linkify from 'linkifyjs';
+import linkifyHtml from 'linkify-html';
 import { useEffect, useCallback } from 'react';
 import {
   Button,
@@ -94,9 +95,15 @@ export default function ChatDrawerMenu() {
                     <b className="block break-words text-sm font-semibold text-rose-300">
                       {data.sender.name}
                     </b>
-                    <p className="mt-0.5 break-words text-sm text-zinc-100">
-                      {data.message}
-                    </p>
+                    <p
+                      className="mt-0.5 break-words text-sm text-zinc-100"
+                      dangerouslySetInnerHTML={{
+                        __html: linkifyHtml(sanitizeHTML(data.message), {
+                          attributes: { target: '_blank' },
+                          className: 'text-blue-600	',
+                        }),
+                      }}
+                    ></p>
                   </div>
                 </li>
               );
@@ -125,4 +132,25 @@ export default function ChatDrawerMenu() {
       </ModalContent>
     </Modal>
   );
+}
+
+function sanitizeHTML(htmlString: string) {
+  let sanitizedString = '';
+  let insideTag = false;
+
+  for (let i = 0; i < htmlString.length; i++) {
+    if (htmlString[i] === '<') {
+      insideTag = true;
+    } else if (htmlString[i] === '>') {
+      insideTag = false;
+    } else if (!insideTag) {
+      if (htmlString[i] === '\n') {
+        sanitizedString += ' ';
+      } else {
+        sanitizedString += htmlString[i];
+      }
+    }
+  }
+
+  return sanitizedString.trim();
 }

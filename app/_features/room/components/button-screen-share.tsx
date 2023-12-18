@@ -13,6 +13,7 @@ export default function ButtonScreenShare() {
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
     event.preventDefault();
+
     try {
       if (screenCaptureActive) {
         stopScreenCapture();

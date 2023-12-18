@@ -1,12 +1,17 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
 
-export default function EventContainer() {
+export default function EventContainer({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { peer } = usePeerContext();
   const { streams } = useParticipantContext();
+  const didMount = useRef(false);
 
   useEffect(() => {
     if (!peer) return;
@@ -38,6 +43,12 @@ export default function EventContainer() {
     document.addEventListener('trigger:turnon-mic', onTurnOnMic);
     document.addEventListener('trigger:turnoff-mic', onTurnOffMic);
 
+    if (!didMount.current) {
+      //mute mic on first mount
+      document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
+      didMount.current = true;
+    }
+
     return () => {
       document.removeEventListener('trigger:turnon-camera', onTurnOnCamera);
       document.removeEventListener('trigger:turnoff-camera', onTurnOffCamera);
@@ -65,5 +76,5 @@ export default function EventContainer() {
     };
   }, [peer]);
 
-  return <></>;
+  return <>{children}</>;
 }

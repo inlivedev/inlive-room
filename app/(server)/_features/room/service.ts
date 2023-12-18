@@ -1,12 +1,16 @@
 import { iRoomService } from './routes';
-import { room } from '@/_shared/utils/sdk';
-import Sqids from 'sqids';
+
 import * as Sentry from '@sentry/nextjs';
+
+import { generateID } from '@/(server)/_shared/utils/generateid';
+import { serverSDK } from '@/(server)/_shared/utils/sdk';
+import { insertRoom, selectRoom } from './schema';
 
 export interface Room {
   id: string;
   name?: string | null;
   createdBy: number;
+  meta: { [key: string]: any };
 }
 
 export interface Participant {
@@ -16,18 +20,20 @@ export interface Participant {
 }
 
 export interface iRoomRepo {
-  addRoom(room: Room): Promise<Room>;
+  addRoom(room: typeof insertRoom): Promise<typeof selectRoom>;
   getRoomById(id: string): Promise<Room | undefined>;
   updateRoomById(room: Room): Promise<Room | undefined>;
   isPersistent(): boolean;
 }
 
-export class service implements iRoomService {
+export class RoomService implements iRoomService {
   _roomRepo: iRoomRepo;
-  _sdk = room;
+  _sdk = serverSDK;
+  _datachannels: string[];
 
   constructor(roomRepo: iRoomRepo) {
     this._roomRepo = roomRepo;
+    this._datachannels = ['chat', 'moderator'];
   }
 
   async createClient(
@@ -111,108 +117,134 @@ export class service implements iRoomService {
     };
   }
 
-  async createRoom(userID: number): Promise<Room> {
-    while (true) {
+  async createRoom(
+    userID: number,
+    type: 'event' | 'meeting'
+  ): Promise<typeof selectRoom> {
+    let retries = 0;
+    const maxRetries = 3;
+
+    while (retries < maxRetries) {
       const roomID = generateID();
-      const RoomResp = await this._sdk.createRoom('', roomID);
-      if (RoomResp.code == 409) continue;
-      if (RoomResp.code > 299)
-        throw new Error('Error during creating room, please try again later');
+      const roomResp = await this._sdk.createRoom('', roomID);
 
-      const ChannelResp = await this._sdk.createDataChannel(
-        roomID,
-        'chat',
-        true
-      );
-
-      if (!ChannelResp.ok) {
-        Sentry.captureException(
-          new Error(`Room ${roomID} : failed to create chat data channel`)
-        );
+      if (roomResp.code == 409) {
+        retries++;
+        continue;
       }
 
-      if (!this._roomRepo.isPersistent())
+      if (roomResp.code > 299) {
+        throw new Error('Error during creating room, please try again later');
+      }
+
+      for (const datachannel of this._datachannels) {
+        const channelResponse = await this._sdk.createDataChannel(
+          roomResp.data.roomId,
+          datachannel,
+          true
+        );
+
+        if (!channelResponse.ok) {
+          Sentry.captureException(
+            new Error(
+              `Room ${roomID} : failed to create ${datachannel} data channel`
+            )
+          );
+        }
+      }
+
+      if (!this._roomRepo.isPersistent()) {
         return {
-          id: RoomResp.data.roomId,
+          id: roomResp.data.roomId,
           createdBy: userID,
+          meta: { type },
+          name: '',
         };
+      }
 
       try {
         const room = await this._roomRepo.addRoom({
-          id: roomID,
+          id: roomResp.data.roomId,
           createdBy: userID,
+          meta: { type },
         });
+
         return room;
       } catch (error) {
         const err = error as Error;
-        if (err.message.includes('duplicate key')) continue;
-        else throw err;
+        if (err.message.includes('duplicate key')) {
+          retries++;
+          continue;
+        } else {
+          throw err;
+        }
       }
     }
+
+    // Error for logging
+    Sentry.captureException(
+      new Error('failed to create meeting room : too many retires')
+    );
+
+    // Error message given to user
+    throw new Error(
+      'Failed to create a unique room ID, please try again later'
+    );
   }
 
-  async joinRoom(roomId: string): Promise<Room | undefined> {
+  async joinRoom(roomId: string) {
     if (!this._roomRepo.isPersistent()) {
+      let room;
+
       const remoteRoom = await this._sdk.getRoom(roomId);
       if (remoteRoom.ok) {
-        const room: Room = {
+        room = {
           id: remoteRoom.data.roomId,
           name: remoteRoom.data.roomName,
           createdBy: 0,
-        };
-
-        return room;
+        } as Room;
       }
 
-      throw new Error('Room not exists');
+      return room;
     }
 
-    const room = await this._roomRepo.getRoomById(roomId);
+    const roomPromise = this._roomRepo.getRoomById(roomId);
+    const remoteRoomPromise = this._sdk.getRoom(roomId);
 
-    if (!room) {
-      throw new Error('Room not exists');
-    }
+    const [room, remoteRoom] = await Promise.all([
+      roomPromise,
+      remoteRoomPromise,
+    ]);
 
-    const remoteRoom = await this._sdk.getRoom(room.id);
-
-    if (remoteRoom.code > 299) {
+    if (room && room.id && remoteRoom.code === 404) {
       const newRemoteRoom = await this._sdk.createRoom('', room.id);
-      if (newRemoteRoom.code > 299) {
-        if (newRemoteRoom.code == 409) throw new Error(newRemoteRoom.message);
+
+      if (!newRemoteRoom.ok) {
+        Sentry.captureException(
+          new Error(
+            `failed to create room, got ${newRemoteRoom.code} response code from the SDK`
+          )
+        );
         throw new Error(
           'Error occured during accessing room data, please try again later'
         );
       }
 
-      const ChannelResp = await this._sdk.createDataChannel(
-        room.id,
-        'chat',
-        true
-      );
-
-      if (!ChannelResp.ok) {
-        Sentry.captureException(
-          new Error(`Room ${room.id} : failed to create chat data channel`)
+      for (const datachannel of this._datachannels) {
+        const channelResponse = await this._sdk.createDataChannel(
+          room.id,
+          datachannel,
+          true
         );
+
+        if (!channelResponse.ok) {
+          Sentry.captureException(
+            new Error(`Room ${room.id} : failed to create chat data channel`)
+          );
+        }
       }
     }
 
     return room;
   }
 }
-
-const generateRandomNumber = (): number => {
-  return Math.floor(Math.random() * 10);
-};
-
-const generateID = (): string => {
-  const sqids = new Sqids();
-  const numArray = [
-    generateRandomNumber(),
-    generateRandomNumber(),
-    generateRandomNumber(),
-    generateRandomNumber(),
-    generateRandomNumber(),
-  ];
-  return sqids.encode(numArray);
-};
