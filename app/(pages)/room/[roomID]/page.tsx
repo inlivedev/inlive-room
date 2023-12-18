@@ -46,7 +46,10 @@ export default async function Page() {
   const isModerator = roomData.createdBy === userAuth?.id;
 
   if (isModerator) {
-    const moderatorMeta = await clientSDK.getMetadata(roomData.id, 'moderator');
+    const moderatorMeta = await clientSDK.getMetadata(
+      roomData.id,
+      'moderatorIDs'
+    );
     const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
 
     if (Array.isArray(moderatorIDs)) {
