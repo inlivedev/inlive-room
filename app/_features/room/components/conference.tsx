@@ -13,6 +13,7 @@ import WebinarSpeakerLayout from './conference-speaker-layout';
 import WebinarPresentationLayout from './conference-presentation-layout';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
+import DebugModal from './debug-modal';
 
 const WebinarRoomLayout = () => {
   const { streams } = useParticipantContext();
@@ -44,6 +45,7 @@ export default function Conference({ roomType }: { roomType: string }) {
   return (
     <>
       <ConnectionStatusOverlay></ConnectionStatusOverlay>
+      <DebugModal />
       <div className="viewport-height grid grid-rows-[1fr,80px] overflow-y-hidden">
         <div>
           {roomType === 'event' ? <WebinarRoomLayout /> : <MeetingRoomLayout />}
