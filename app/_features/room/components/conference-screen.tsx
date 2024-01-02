@@ -136,7 +136,7 @@ export default function ConferenceScreen({
       'disable:debug-webrtc-stats',
       disableDebugWebrtcStats
     );
-    document.addEventListener('trigger:rtc-stats', onRTCStats);
+    document.addEventListener('send:rtc-stats', onRTCStats);
 
     return () => {
       document.removeEventListener(
@@ -147,7 +147,7 @@ export default function ConferenceScreen({
         'disable:debug-webrtc-stats',
         disableDebugWebrtcStats
       );
-      document.removeEventListener('trigger:rtc-stats', onRTCStats);
+      document.removeEventListener('send:rtc-stats', onRTCStats);
     };
   }, [peer, stream]);
 
