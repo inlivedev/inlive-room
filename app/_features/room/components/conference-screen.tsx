@@ -218,7 +218,7 @@ export default function ConferenceScreen({
     >
       {/* stats debug overlay */}
       {showStats ? (
-        <div className="absolute z-20 h-full w-full overflow-hidden p-2">
+        <div className="absolute z-20 h-full w-full p-2">
           {stream.origin === 'local' ? (
             <div className="inline-block w-auto rounded-md bg-zinc-600/80 p-2">
               <div className="flex flex-col gap-1">
