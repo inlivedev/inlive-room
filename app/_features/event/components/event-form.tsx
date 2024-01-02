@@ -33,17 +33,26 @@ export default function EventForm() {
   const comingSoonEvent = 'open:feature-coming-soon-modal';
   const [startTime, setStartTime] = useState({
     hour: `${currentHour}`,
-    minute: `${today.getMinutes()}`,
+    minute: `${today.getMinutes().toString().padStart(2, '0')}`,
   });
   const [endTime, setEndTime] = useState({
     hour: `${currentHour + 1}`,
-    minute: `${today.getMinutes()}`,
+    minute: `${today.getMinutes().toString().padStart(2, '0')}`,
   });
   const [eventName, setEventName] = useState('');
   const [eventDescription, setEventDescription] = useState('');
   const { navigateTo } = useNavigate();
 
   const [minRows, setMinRows] = useState(window.innerWidth < 768 ? 3 : 12);
+
+  useEffect(() => {
+    if (startTime.hour > endTime.hour) {
+      setEndTime({
+        hour: `${startTime.hour}`,
+        minute: `${startTime.minute}`,
+      });
+    }
+  }, [startTime.hour, startTime.minute, endTime.hour]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -58,6 +67,8 @@ export default function EventForm() {
 
   const createEvent = useCallback(
     async (endpoint: string) => {
+      const finalEndpoint = `/api/events/${endpoint}`;
+
       const eventStartTime = new Date(
         date.setHours(parseInt(startTime.hour), parseInt(startTime.minute), 0)
       );
@@ -75,16 +86,19 @@ export default function EventForm() {
 
       console.log(data);
 
-      const respEvent = await InternalApiFetcher.post(endpoint, {
+      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
         body: data,
       });
 
-      if (respEvent.status === 200) {
+      if (respEvent.ok) {
+        console.log(respEvent.data);
         const redirectPath = new URL(
-          `/event/${respEvent.data.slug}}`,
+          `/event/${respEvent.data.slug}`,
           window.location.origin
         ).href;
         navigateTo(redirectPath);
+      } else {
+        console.log(respEvent.message);
       }
     },
     [
@@ -101,14 +115,10 @@ export default function EventForm() {
   );
 
   const onDraft = useCallback(() => {
-    console.log('dispatch coming soon event');
     document.dispatchEvent(new CustomEvent(comingSoonEvent));
   }, []);
 
-  const onPublish = useCallback(
-    () => createEvent('/api/event/create'),
-    [createEvent]
-  );
+  const onPublish = useCallback(() => createEvent('create'), [createEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -143,10 +153,16 @@ export default function EventForm() {
               </h1>
             </div>
             <div className="collapse flex h-0 w-full flex-wrap gap-2 sm:visible sm:h-fit sm:w-fit">
-              <Button className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit">
+              <Button
+                onPress={onDraft}
+                className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
+              >
                 Save as draft
               </Button>
-              <Button className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit">
+              <Button
+                onPress={onPublish}
+                className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+              >
                 Publish
               </Button>
             </div>
@@ -189,7 +205,7 @@ export default function EventForm() {
                       new CustomEvent('open:event-date-picker-modal')
                     );
                   }}
-                  value={date.toLocaleDateString()}
+                  value={new Intl.DateTimeFormat('en-GB').format(date)}
                   onClickIcon={() => {
                     document.dispatchEvent(
                       new CustomEvent('open:event-date-picker-modal')
