@@ -10,16 +10,9 @@ const ROOM_INV_EMAIL_TEMPLATE = process.env.ROOM_INV_EMAIL_TEMPLATE || '';
 const ENABLE_MAILER = process.env.ENABLE_MAILER || false;
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
-export function isMailerEnabled(): boolean {
-  if (ENABLE_MAILER === 'true') return true;
-  return false;
+export function isMailerEnabled() {
+  return ENABLE_MAILER === 'true';
 }
-
-const mg = new Mailgun(formData);
-const mailer = mg.client({
-  key: MAILER_API_KEY,
-  username: 'api',
-});
 
 export async function SendEventInvitationEmail(
   firstName: string,
@@ -27,6 +20,12 @@ export async function SendEventInvitationEmail(
   address: string,
   event: typeof selectEvent
 ) {
+  const mg = new Mailgun(formData);
+  const mailer = mg.client({
+    key: MAILER_API_KEY,
+    username: 'api',
+  });
+
   const eventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
     timeZone: 'Asia/Jakarta',
