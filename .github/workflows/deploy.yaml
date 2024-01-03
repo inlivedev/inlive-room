@@ -42,4 +42,4 @@ jobs:
       env:
         KUBE_CONFIG: ${{ secrets.MICROK8S }}å
       with: 
-        args: set image deployment/hub -n inlive room=asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
+        args: set image deployment/room -n inlive room=asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
