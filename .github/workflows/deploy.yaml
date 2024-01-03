@@ -12,15 +12,18 @@ on:
             - '**.yaml'
             - '**.yml'
             - 'Dockerfile'
+env:
+    REGION: asia-southeast2
+    ZONE: asia-southeast2-a
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4 # Must come first!
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
     - name: Auth GCP Service Account
-      uses: google-github-actions/auth@v0
+      uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
         cleanup_credentials: false
