@@ -1,6 +1,10 @@
 // TODO : Add ability to Observe the ICE Connection & Connection Signal / Bandwidth
 
-import { RoomEvent, clientSDK } from '@/_shared/utils/sdk';
+import {
+  ChannelClosureReasons,
+  RoomEvent,
+  clientSDK,
+} from '@/_shared/utils/sdk';
 import { useContext, useEffect, useState, createContext } from 'react';
 
 const ConnectionContext = createContext({
@@ -25,7 +29,10 @@ export function ConnectionProvider({
     });
 
     clientSDK.on(RoomEvent.CHANNEL_CLOSED, ({ reason }: { reason: string }) => {
-      if (reason === 'notfound' || reason === 'unknown') {
+      if (
+        reason === ChannelClosureReasons.NOT_FOUND ||
+        reason === ChannelClosureReasons.UNKNOWN
+      ) {
         setConnectionState(false);
       }
     });
