@@ -18,6 +18,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4 
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    - run: npm install
+    - run: npm create:env
+      env:
+        NEXT_PUBLIC_APP_ENV: production
+        NEXT_PUBLIC_APP_ORIGIN: https://room.inlive.app
+        NEXT_PUBLIC_INLIVE_HUB_ORIGIN: https://hub.inlive.app
+        NEXT_PUBLIC_INLIVE_HUB_VERSION: v1
+        NEXT_PUBLIC_INLIVE_API_ORIGIN: https://api.inlive.app
+        NEXT_PUBLIC_INLIVE_API_VERSION: v1
+        NEXT_PUBLIC_MIXPANEL_TOKEN: ${{secrets.PUBLIC_MIXPANEL_TOKEN}}
+        NEXT_PUBLIC_SENTRY_DSN: ${{secrets.PUBLIC_SENTRY_DSN}}
+        PERSISTENT_DATA: true
+        ENABLE_MAILER: true
+        ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
+        INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
     - uses: google-github-actions/auth@v1
@@ -36,7 +55,6 @@ jobs:
         docker tag inlive-room:latest asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
         docker push asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:latest
         docker push asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
-
     - name: Run kubectl to update room app
       uses: actions-hub/kubectl@master
       env:
