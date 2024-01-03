@@ -23,7 +23,7 @@ jobs:
         node-version: 18
         cache: 'npm'
     - run: npm install
-    - run: npm create:env
+    - run: npm run create:env
       env:
         NEXT_PUBLIC_APP_ENV: production
         NEXT_PUBLIC_APP_ORIGIN: https://room.inlive.app
