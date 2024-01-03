@@ -56,22 +56,24 @@ export default function View({
             <ParticipantProvider>
               <DataChannelProvider>
                 <ChatProvider>
-                  <EventContainer>
-                    <ChatDrawerMenu />
-                    <MetadataProvider
-                      roomID={roomID}
-                      roomType={roomType}
-                      isModerator={isModerator}
-                    >
-                      {activeView === 'exit' ? (
-                        <ConferenceExit />
-                      ) : activeView === 'conference' ? (
-                        <Conference roomType={roomType} />
-                      ) : (
-                        <ConferenceLobby roomID={roomID} />
-                      )}
-                    </MetadataProvider>
-                  </EventContainer>
+                  <ConnectionProvider>
+                    <EventContainer>
+                      <ChatDrawerMenu />
+                      <MetadataProvider
+                        roomID={roomID}
+                        roomType={roomType}
+                        isModerator={isModerator}
+                      >
+                        {activeView === 'exit' ? (
+                          <ConferenceExit />
+                        ) : activeView === 'conference' ? (
+                          <Conference roomType={roomType} />
+                        ) : (
+                          <ConferenceLobby roomID={roomID} />
+                        )}
+                      </MetadataProvider>
+                    </EventContainer>
+                  </ConnectionProvider>
                 </ChatProvider>
               </DataChannelProvider>
             </ParticipantProvider>

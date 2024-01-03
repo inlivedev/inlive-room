@@ -19,8 +19,6 @@ export default function ReconncectModal() {
   useEffect(() => {
     if (!sseConnection) {
       onOpen();
-      console.log('Reconnect Open');
-      console.log(isOpen);
     }
   });
 
@@ -36,17 +34,20 @@ export default function ReconncectModal() {
       isDismissable={false}
       hideCloseButton={true}
     >
-      <ModalContent>
-        <ModalHeader></ModalHeader>
+      <ModalContent className="ring-1 ring-zinc-800">
+        <ModalHeader>Disconnected</ModalHeader>
         <ModalBody>
           <div>
-            <h1> you have been disconnected</h1>
+            <p>
+              it's looks like that you've been disconnected from the meeting
+              room
+            </p>
           </div>
         </ModalBody>
         <ModalFooter>
           <Button
             onClick={_onClick}
-            className="bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500"
+            className="rounded bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500"
             aria-label="reconnect to this meeting room"
           >
             Reconnect

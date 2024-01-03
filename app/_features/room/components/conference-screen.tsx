@@ -17,6 +17,7 @@ import { clientSDK } from '@/_shared/utils/sdk';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
+import ReconncectModal from './reconnect-modal';
 
 export default function ConferenceScreen({
   stream,
@@ -144,6 +145,7 @@ export default function ConferenceScreen({
         localVideoScreen ? 'local-video-screen' : ''
       } group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg`}
     >
+      <ReconncectModal></ReconncectModal>
       {/* video screen overlay */}
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
         {isModerator &&

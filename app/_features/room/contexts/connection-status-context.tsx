@@ -1,6 +1,6 @@
 // TODO : Add ability to Observe the ICE Connection & Connection Signal / Bandwidth
 
-import { room } from '@/_shared/utils/sdk';
+import { RoomEvent, clientSDK } from '@/_shared/utils/sdk';
 import { useContext, useEffect, useState, createContext } from 'react';
 
 const ConnectionContext = createContext({
@@ -19,17 +19,15 @@ export function ConnectionProvider({
   const [connectionState, setConnectionState] = useState(true);
 
   useEffect(() => {
-    room.on(room.event.CHANNEL_OPENED, () => {
+    clientSDK.on(RoomEvent.CHANNEL_OPENED, () => {
       console.log('success subscribe to event endpoint');
       setConnectionState(true);
     });
 
-    room.on(room.event.CHANNEL_CLOSED, ({ reason }) => {
-      if (typeof reason != 'string')
-        console.log('failed to handle channel closed, reason type invalid');
-      if (reason === 'notfound') {
+    clientSDK.on(RoomEvent.CHANNEL_CLOSED, ({ reason }: { reason: string }) => {
+      console.log('Channel closed', reason);
+      if (reason === 'notfound' || reason === 'unknown') {
         setConnectionState(false);
-        console.log('event endpoint removed');
       }
     });
   }, []);
