@@ -12,20 +12,20 @@ on:
             - '**.yaml'
             - '**.yml'
             - 'Dockerfile'
-env:
-    REGION: asia-southeast2
-    ZONE: asia-southeast2-a
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4 # Must come first!
+    - uses: actions/checkout@v4 
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
     - name: Auth GCP Service Account
       uses: google-github-actions/auth@v2
+      env:
+        GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
       with:
-        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+        credentials_json: ${{ env.GCLOUD_SERVICE_KEY }}
         cleanup_credentials: false
     - name: 🐋 Configure Docker for pushing
       run: gcloud auth configure-docker asia-docker.pkg.dev    
