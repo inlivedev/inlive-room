@@ -8,6 +8,7 @@ type Peer = Awaited<ReturnType<typeof clientSDK.createPeer>>;
 
 const PeerContext = createContext({
   peer: null as Peer | null,
+  debug: false,
 });
 
 export const usePeerContext = () => {
@@ -18,33 +19,121 @@ type PeerProviderProps = {
   children: React.ReactNode;
   roomID: string;
   client: ClientType.ClientData;
+  debug: boolean;
 };
 
-export function PeerProvider({ children, roomID, client }: PeerProviderProps) {
-  const [peerState, setPeerState] = useState<Peer | null>(null);
+export function PeerProvider({
+  children,
+  roomID,
+  client,
+  debug = false,
+}: PeerProviderProps) {
+  const [peer, setPeer] = useState<Peer | null>(null);
 
   useEffect(() => {
-    if (!peerState) {
+    if (!peer) {
       const createPeer = async () => {
         const peer = await clientSDK.createPeer(roomID, client.clientID);
-        setPeerState(peer);
+        setPeer(peer);
       };
 
       createPeer();
     }
 
     return () => {
-      if (peerState) {
-        peerState.disconnect();
-        setPeerState(null);
+      if (peer) {
+        peer.disconnect();
+        setPeer(null);
       }
     };
-  }, [roomID, client.clientID, peerState]);
+  }, [roomID, client.clientID, peer]);
+
+  // use effect for sending the webrtc stats
+  useEffect(() => {
+    const peerConnection = peer?.getPeerConnection();
+    if (!peer || !peerConnection) return;
+
+    const sendWebrtcStats = async () => {
+      try {
+        const stats = await peerConnection.getStats();
+
+        type RTCStatsType = {
+          videoRtcOutbound: RTCOutboundRtpStreamStats | undefined;
+          audioRtcOutbound: RTCOutboundRtpStreamStats | undefined;
+          rtcCandidatePair: RTCIceCandidatePairStats | undefined;
+          videoRtcRemoteInbound: Record<string, any> | undefined;
+          audioRtcRemoteInbound: Record<string, any> | undefined;
+          rtcInbounds: Record<string, Record<string, RTCInboundRtpStreamStats>>;
+        };
+
+        const rtcStats: RTCStatsType = {
+          videoRtcOutbound: undefined,
+          audioRtcOutbound: undefined,
+          rtcCandidatePair: undefined,
+          videoRtcRemoteInbound: undefined,
+          audioRtcRemoteInbound: undefined,
+          rtcInbounds: {},
+        };
+
+        for (const report of stats.values()) {
+          if (report.type === 'outbound-rtp') {
+            const rtcOutbound: RTCOutboundRtpStreamStats = report;
+            if (rtcOutbound.kind === 'video') {
+              rtcStats.videoRtcOutbound = rtcOutbound;
+            } else if (rtcOutbound.kind === 'audio') {
+              rtcStats.audioRtcOutbound = rtcOutbound;
+            }
+          } else if (report.type === 'candidate-pair') {
+            const rtcCandidatePair: RTCIceCandidatePairStats = report;
+
+            if (rtcCandidatePair.state === 'succeeded') {
+              rtcStats.rtcCandidatePair = rtcCandidatePair;
+            }
+          } else if (report.type === 'remote-inbound-rtp') {
+            const rtcRemoteInbound = report;
+            if (rtcRemoteInbound.kind === 'video') {
+              rtcStats.videoRtcRemoteInbound = rtcRemoteInbound;
+            } else if (rtcRemoteInbound.kind === 'audio') {
+              rtcStats.audioRtcRemoteInbound = rtcRemoteInbound;
+            }
+          } else if (report.type === 'inbound-rtp') {
+            const rtcInbound: RTCInboundRtpStreamStats = report;
+            const stream = peer.getStreamByTrackId(rtcInbound.trackIdentifier);
+
+            if (stream) {
+              rtcStats.rtcInbounds[stream.mediaStream.id] = {
+                ...rtcStats.rtcInbounds[stream.mediaStream.id],
+                [rtcInbound.trackIdentifier]: rtcInbound,
+              };
+            }
+          }
+        }
+
+        document.dispatchEvent(
+          new CustomEvent('send:rtc-stats', {
+            detail: rtcStats,
+          })
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    document.addEventListener('enable:debug-webrtc-stats', sendWebrtcStats);
+
+    return () => {
+      document.removeEventListener(
+        'enable:debug-webrtc-stats',
+        sendWebrtcStats
+      );
+    };
+  }, [peer]);
 
   return (
     <PeerContext.Provider
       value={{
-        peer: peerState,
+        peer: peer,
+        debug: debug,
       }}
     >
       {children}

@@ -1,0 +1,45 @@
+name: Deploy production
+on:
+    push:
+        branches: [ "main" ]
+        paths:
+            - '**.js'
+            - '**.ts'
+            - '**.tsx'
+            - '**.jsx'
+            - '**.json'
+            - '.env.local.example'
+            - '**.yaml'
+            - '**.yml'
+            - 'Dockerfile'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4 
+    - name: Set Short SHA
+      run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
+    - uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+    - name: 🐋 Configure Docker for pushing
+      run: gcloud auth configure-docker asia-docker.pkg.dev    
+    - name: Build image
+      run: |
+        docker asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room || true
+        docker build --platform=linux/amd64 -t inlive-room:latest\
+          --cache-from=asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:latest .
+    - name: ☁️ Deploy to GCP Artifact Registry
+      run: |
+        docker tag inlive-room:latest asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:latest
+        docker tag inlive-room:latest asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
+        docker push asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:latest
+        docker push asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
+
+    - name: Run kubectl to update room app
+      uses: actions-hub/kubectl@master
+      env:
+        KUBE_CONFIG: ${{ secrets.MICROK8S }}å
+      with: 
+        args: set image deployment/hub -n inlive room=asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}

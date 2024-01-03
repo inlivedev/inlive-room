@@ -39,8 +39,8 @@ export default function ReconncectModal() {
         <ModalBody>
           <div>
             <p>
-              it's looks like that you've been disconnected from the meeting
-              room
+              it{`'`}s looks like that you{`'`}ve been disconnected from the
+              meeting room
             </p>
           </div>
         </ModalBody>

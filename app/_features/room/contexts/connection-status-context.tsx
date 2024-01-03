@@ -25,7 +25,6 @@ export function ConnectionProvider({
     });
 
     clientSDK.on(RoomEvent.CHANNEL_CLOSED, ({ reason }: { reason: string }) => {
-      console.log('Channel closed', reason);
       if (reason === 'notfound' || reason === 'unknown') {
         setConnectionState(false);
       }

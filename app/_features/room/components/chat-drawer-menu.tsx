@@ -1,5 +1,4 @@
 'use client';
-import * as linkify from 'linkifyjs';
 import linkifyHtml from 'linkify-html';
 import { useEffect, useCallback } from 'react';
 import {

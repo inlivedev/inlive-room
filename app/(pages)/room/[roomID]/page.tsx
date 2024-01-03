@@ -12,6 +12,7 @@ type PageProps = {
   params: {
     roomID: string;
   };
+  searchParams: { debug: string | undefined };
 };
 
 export const generateMetadata = ({ params }: PageProps): Metadata => {
@@ -20,11 +21,12 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
   };
 };
 
-export default async function Page() {
+export default async function Page({ searchParams }: PageProps) {
   const headersList = headers();
   const roomDataHeader = headersList.get('room-data');
   const userAuthHeader = headersList.get('user-auth');
   const userClientHeader = headersList.get('user-client');
+  const debug = searchParams.debug === 'true';
 
   const roomData: RoomType.RoomData | null =
     typeof roomDataHeader === 'string'
@@ -46,7 +48,10 @@ export default async function Page() {
   const isModerator = roomData.createdBy === userAuth?.id;
 
   if (isModerator) {
-    const moderatorMeta = await clientSDK.getMetadata(roomData.id, 'moderator');
+    const moderatorMeta = await clientSDK.getMetadata(
+      roomData.id,
+      'moderatorIDs'
+    );
     const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
 
     if (Array.isArray(moderatorIDs)) {
@@ -60,7 +65,7 @@ export default async function Page() {
     }
   }
 
-  const roomType = roomData.meta.type || 'meeting';
+  const roomType = roomData.meta ? roomData.meta.type : 'meeting' || 'meeting';
 
   return (
     <AppContainer user={userAuth}>
@@ -69,6 +74,7 @@ export default async function Page() {
         client={userClient}
         roomType={roomType}
         isModerator={isModerator}
+        debug={debug}
       />
     </AppContainer>
   );
