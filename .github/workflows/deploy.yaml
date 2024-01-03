@@ -12,7 +12,6 @@ on:
             - '**.yaml'
             - '**.yml'
             - 'Dockerfile'
-env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
