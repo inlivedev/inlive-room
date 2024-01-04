@@ -29,10 +29,7 @@ export function ConnectionProvider({
     });
 
     clientSDK.on(RoomEvent.CHANNEL_CLOSED, ({ reason }: { reason: string }) => {
-      if (
-        reason === ChannelClosureReasons.NOT_FOUND ||
-        reason === ChannelClosureReasons.UNKNOWN
-      ) {
+      if (reason === ChannelClosureReasons.NOT_FOUND) {
         setConnectionState(false);
       }
     });
