@@ -1,4 +1,4 @@
-name: Deploy production
+name: Deploy dev
 on:
     push:
         branches: [ "main" ]
@@ -26,20 +26,19 @@ jobs:
     - run: npm run create:env
       env:
         NEXT_PUBLIC_APP_ENV: production
-        NEXT_PUBLIC_APP_ORIGIN: https://room.inlive.app
-        NEXT_PUBLIC_INLIVE_HUB_ORIGIN: https://hub.inlive.app
+        NEXT_PUBLIC_APP_ORIGIN: https://dev-room.inlive.app
+        NEXT_PUBLIC_INLIVE_HUB_ORIGIN: https://dev-hub.inlive.app
         NEXT_PUBLIC_INLIVE_HUB_VERSION: v1
         NEXT_PUBLIC_INLIVE_API_ORIGIN: https://api.inlive.app
         NEXT_PUBLIC_INLIVE_API_VERSION: v1
         NEXT_PUBLIC_MIXPANEL_TOKEN: ${{secrets.PUBLIC_MIXPANEL_TOKEN}}
         NEXT_PUBLIC_SENTRY_DSN: ${{secrets.PUBLIC_SENTRY_DSN}}
-        PERSISTENT_DATA: true
-        ENABLE_MAILER: true
+        PERSISTENT_DATA: false
+        ENABLE_MAILER: false
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
-        INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
-    - uses: google-github-actions/auth@v1
+    - uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
     - name: 🐋 Configure Docker for pushing
@@ -60,4 +59,4 @@ jobs:
       env:
         KUBE_CONFIG: ${{ secrets.MICROK8S }}å
       with: 
-        args: set image deployment/room -n inlive room=asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
+        args: set image deployment/room -n inlive-dev room=asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.SHORT_SHA }}
