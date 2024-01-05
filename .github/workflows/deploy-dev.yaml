@@ -25,7 +25,7 @@ jobs:
     - run: npm install
     - run: npm run create:env
       env:
-        NEXT_PUBLIC_APP_ENV: production
+        NEXT_PUBLIC_APP_ENV: development
         NEXT_PUBLIC_APP_ORIGIN: https://dev-room.inlive.app
         NEXT_PUBLIC_INLIVE_HUB_ORIGIN: https://dev-hub.inlive.app
         NEXT_PUBLIC_INLIVE_HUB_VERSION: v1
@@ -36,6 +36,7 @@ jobs:
         PERSISTENT_DATA: false
         ENABLE_MAILER: false
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
+        INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
     - uses: google-github-actions/auth@v2
