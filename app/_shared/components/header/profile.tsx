@@ -14,7 +14,6 @@ import * as Sentry from '@sentry/nextjs';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import type { AuthType } from '@/_shared/types/auth';
 
 export default function Profile() {
   const { user, setAuthState } = useAuthContext();
@@ -26,23 +25,21 @@ export default function Profile() {
   const onProfileSelection = useCallback(
     async (selectedKey: Key) => {
       if (selectedKey === 'signout') {
-        const signOutResponse: AuthType.SignOutResponse =
+        try {
           await InternalApiFetcher.get('/api/auth/signout');
-
-        if (!signOutResponse || !signOutResponse.ok) {
-          Sentry.captureMessage(
-            `API call error when trying to sign out. ${
-              signOutResponse?.message || ''
-            }`,
-            'error'
-          );
+          setAuthState &&
+            setAuthState((prevState) => ({
+              ...prevState,
+              user: null,
+            }));
+        } catch (error) {
+          console.error(error);
+          Sentry.captureException(error, {
+            extra: {
+              message: `Error when trying to sign out.`,
+            },
+          });
         }
-
-        setAuthState &&
-          setAuthState((prevState) => ({
-            ...prevState,
-            user: null,
-          }));
       }
     },
     [setAuthState]
