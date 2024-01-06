@@ -4,7 +4,7 @@ import {
   type NextRequest,
 } from 'next/server';
 import { cookies } from 'next/headers';
-import Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 

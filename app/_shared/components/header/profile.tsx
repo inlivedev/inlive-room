@@ -10,7 +10,7 @@ import {
   DropdownItem,
   DropdownSection,
 } from '@nextui-org/react';
-import Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';

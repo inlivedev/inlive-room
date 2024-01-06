@@ -1,4 +1,4 @@
-import Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
 import type { InliveApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 
