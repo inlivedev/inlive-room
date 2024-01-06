@@ -1,3 +1,4 @@
+import Sentry from '@sentry/nextjs';
 import type { InliveApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 
@@ -17,6 +18,13 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
           },
           cache: 'no-cache',
         });
+
+      if (!response || !response.ok) {
+        Sentry.captureMessage(
+          `API call error when trying to get current auth data`,
+          'error'
+        );
+      }
 
       const data = response.data || {};
 
@@ -56,8 +64,11 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
         }
       );
 
-      if (response.code > 299) {
-        throw new Error(`${response.code} error! ${response.message}`);
+      if (!response || !response.ok) {
+        Sentry.captureMessage(
+          `API call error when trying to authorize user. ${response.code} ${response.message}`,
+          'error'
+        );
       }
 
       return response;
@@ -77,6 +88,13 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
         await this._fetcher.post(`/auth/${provider}/authenticate`, {
           body: JSON.stringify(body),
         });
+
+      if (!response || !response.ok) {
+        Sentry.captureMessage(
+          `API call error when trying to authenticate user. ${response.code} ${response.message}`,
+          'error'
+        );
+      }
 
       const data = response.data || {};
 
