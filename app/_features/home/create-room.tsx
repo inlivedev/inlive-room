@@ -9,6 +9,7 @@ import {
   DropdownItem,
   Spinner,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import { useState } from 'react';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
@@ -31,8 +32,10 @@ export default function CreateRoom() {
         }),
       });
 
-    if (response.code > 299 || !response.data) {
-      throw new Error(response.message);
+    if (!response || !response.ok) {
+      throw new Error(
+        `Failed to create a ${type} room. ${response?.message || ''}`
+      );
     }
 
     const room = response.data;
@@ -47,21 +50,21 @@ export default function CreateRoom() {
 
   const onCreateRoomSelection = useCallback(
     async (key: Key) => {
-      if (!user || isSubmitting) return;
+      if (!user || isSubmitting || typeof key !== 'string') return;
 
       setIsSubmitting(true);
 
       try {
-        if (key === 'meeting-room') {
-          const room = await createRoom('meeting');
-          setIsSubmitting(false);
-          window.location.href = `/room/${room.id}`;
-        } else if (key === 'webinar-room') {
-          const room = await createRoom('event');
-          setIsSubmitting(false);
-          window.location.href = `/room/${room.id}`;
-        }
+        const room = await createRoom(key);
+        setIsSubmitting(false);
+        window.location.href = `/room/${room.id}`;
       } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: `API call error when trying to create ${key} room`,
+          },
+        });
+
         setIsSubmitting(false);
         alert('Failed to create a room. Please try again later! ');
         console.error(error);
@@ -110,13 +113,13 @@ export default function CreateRoom() {
             </DropdownTrigger>
             <DropdownMenu onAction={onCreateRoomSelection}>
               <DropdownItem
-                key="meeting-room"
+                key="meeting"
                 description="Suitable for personal or group meetings"
               >
                 Create a room for meeting
               </DropdownItem>
               <DropdownItem
-                key="webinar-room"
+                key="event"
                 description="Webinar room with speakers and audiences"
               >
                 Create a room for webinar
