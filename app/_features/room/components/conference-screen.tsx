@@ -8,6 +8,7 @@ import {
   DropdownItem,
   Button,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
@@ -182,9 +183,18 @@ export default function ConferenceScreen({
         );
 
         if (confirmed) {
-          await clientSDK.setMetadata(roomID, {
-            speakers: [...speakers, stream.clientId],
-          });
+          try {
+            await clientSDK.setMetadata(roomID, {
+              speakers: [...speakers, stream.clientId],
+            });
+          } catch (error) {
+            Sentry.captureException(error, {
+              extra: {
+                message: `API call error when trying to set metadata speakers`,
+              },
+            });
+            console.error(error);
+          }
         }
       } else if (key === 'set-regular-participant') {
         if (!isModerator) return;
@@ -194,13 +204,22 @@ export default function ConferenceScreen({
         );
 
         if (confirmed) {
-          const newSpeakers = speakers.filter((speaker) => {
-            return speaker !== stream.clientId;
-          });
+          try {
+            const newSpeakers = speakers.filter((speaker) => {
+              return speaker !== stream.clientId;
+            });
 
-          await clientSDK.setMetadata(roomID, {
-            speakers: newSpeakers,
-          });
+            await clientSDK.setMetadata(roomID, {
+              speakers: newSpeakers,
+            });
+          } catch (error) {
+            Sentry.captureException(error, {
+              extra: {
+                message: `API call error when trying to set metadata speakers`,
+              },
+            });
+            console.error(error);
+          }
         }
       }
     },
