@@ -66,7 +66,9 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
 
       if (!response || !response.ok) {
         Sentry.captureMessage(
-          `API call error when trying to authorize user. ${response.code} ${response.message}`,
+          `API call error when trying to authorize user. ${
+            response?.message || ''
+          }`,
           'error'
         );
       }
@@ -91,7 +93,9 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
 
       if (!response || !response.ok) {
         Sentry.captureMessage(
-          `API call error when trying to authenticate user. ${response.code} ${response.message}`,
+          `API call error when trying to authenticate user. ${
+            response?.message || ''
+          }`,
           'error'
         );
       }
