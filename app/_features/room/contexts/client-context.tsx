@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import type { ClientType } from '@/_shared/types/client';
 import { clientSDK } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
@@ -86,14 +87,14 @@ export function ClientProvider({
 
   useEffect(() => {
     const clientLeave = async (clientID: string) => {
-      if (!peer) return;
+      if (peer?.getPeerConnection()) peer.disconnect();
 
       try {
-        peer.disconnect();
         const response = await clientSDK.leaveRoom(roomID, clientID, false);
-
-        if (response.code >= 300) {
-          console.error('Failed to end the call');
+        if (!response || !response.ok) {
+          throw new Error(
+            response?.message || 'Failed to get response from the server'
+          );
         }
 
         document.dispatchEvent(
@@ -104,6 +105,11 @@ export function ClientProvider({
           })
         );
       } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: `API call error when trying to leave the room`,
+          },
+        });
         console.error(error);
       }
     };
