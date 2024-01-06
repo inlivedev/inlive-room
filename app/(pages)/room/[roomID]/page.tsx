@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import * as Sentry from '@sentry/nextjs';
 import AppContainer from '@/_shared/components/containers/app-container';
 import View from '@/_features/room/components/view';
 import type { RoomType } from '@/_shared/types/room';
@@ -52,16 +53,28 @@ export default async function Page({ searchParams }: PageProps) {
       roomData.id,
       'moderatorIDs'
     );
+
     const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
 
-    if (Array.isArray(moderatorIDs)) {
-      await clientSDK.setMetadata(roomData.id, {
-        moderatorIDs: [...moderatorIDs, userClient.clientID],
+    try {
+      if (Array.isArray(moderatorIDs)) {
+        await clientSDK.setMetadata(roomData.id, {
+          moderatorIDs: [...moderatorIDs, userClient.clientID],
+        });
+      } else {
+        await clientSDK.setMetadata(roomData.id, {
+          moderatorIDs: [userClient.clientID],
+        });
+      }
+    } catch (error) {
+      Sentry.captureException(error, {
+        extra: {
+          message: `API call error when trying to add client ID to metadata moderatorIDs`,
+          moderatorIDs: moderatorIDs,
+          clientID: userClient.clientID,
+        },
       });
-    } else {
-      await clientSDK.setMetadata(roomData.id, {
-        moderatorIDs: [userClient.clientID],
-      });
+      console.error(error);
     }
   }
 
