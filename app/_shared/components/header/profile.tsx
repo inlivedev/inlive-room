@@ -10,6 +10,7 @@ import {
   DropdownItem,
   DropdownSection,
 } from '@nextui-org/react';
+import Sentry from '@sentry/nextjs';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -28,13 +29,20 @@ export default function Profile() {
         const signOutResponse: AuthType.SignOutResponse =
           await InternalApiFetcher.get('/api/auth/signout');
 
-        if (signOutResponse.ok) {
-          setAuthState &&
-            setAuthState((prevState) => ({
-              ...prevState,
-              user: null,
-            }));
+        if (!signOutResponse || !signOutResponse.ok) {
+          Sentry.captureMessage(
+            `API call error when trying to sign out. ${
+              signOutResponse?.message || ''
+            }`,
+            'error'
+          );
         }
+
+        setAuthState &&
+          setAuthState((prevState) => ({
+            ...prevState,
+            user: null,
+          }));
       }
     },
     [setAuthState]
