@@ -1,4 +1,4 @@
-import { Room } from '@inlivedev/inlive-js-sdk/packages';
+import { Room } from '@inlivedev/inlive-js-sdk/dist/room';
 
 const inliveHubOrigin = process.env.NEXT_PUBLIC_INLIVE_HUB_ORIGIN;
 const inliveHubVersion = process.env.NEXT_PUBLIC_INLIVE_HUB_VERSION;
