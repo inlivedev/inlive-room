@@ -14,17 +14,24 @@ import {
   ModalHeader,
   Textarea,
   useDisclosure,
+  Image,
 } from '@nextui-org/react';
-import { useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import '../styles/date-picker.css';
 import { DatePickerModal } from './event-date-picker';
 import { TimePickerModal } from './event-time-picker';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
+import XFillIcon from '@/_shared/components/icons/x-fill-icon';
+import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
+import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
+import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 
 export default function EventForm() {
   const { user } = useAuthContext();
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const today = new Date(new Date().setDate(new Date().getDate() + 1));
   const currentHour = today.getHours();
   const [date, setDate] = useState(today);
@@ -44,6 +51,29 @@ export default function EventForm() {
   const { navigateTo } = useNavigate();
 
   const [minRows, setMinRows] = useState(window.innerWidth < 768 ? 3 : 12);
+
+  const handleRemoveImage = useCallback(() => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  }, []);
+
+  const handleFileSelect = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files && event.target.files[0];
+
+      if (file) {
+        setSelectedImage(file);
+
+        // Create a URL for the selected file and set it as the image preview
+        const previewURL = URL.createObjectURL(file);
+        setImagePreview(previewURL);
+
+        // Do something with the selected file, e.g., upload it to the server
+        console.log('Selected file:', file);
+      }
+    },
+    [] // Empty dependency array because the function doesn't depend on any external state or props
+  );
 
   useEffect(() => {
     if (startTime.hour > endTime.hour) {
@@ -173,6 +203,11 @@ export default function EventForm() {
             <div className="flex h-fit w-full flex-none flex-col items-start gap-6 sm:flex-1 sm:basis-1/2">
               <div className="w-full flex-none gap-4">
                 <Input
+                  variant="bordered"
+                  classNames={{
+                    inputWrapper:
+                      'border-0 bg-zinc-950 ring-1 ring-zinc-700 data-[hover=true]:bg-zinc-950 group-data-[focus=true]:bg-zinc-950 group-data-[focus=true]:ring-zinc-400 group-data-[focus-visible=true]:z-10 group-data-[focus-visible=true]:ring-1 group-data-[focus-visible=true]:ring-focus group-data-[focus-visible=true]:ring-offset-1 group-data-[focus-visible=true]:ring-zinc-400',
+                  }}
                   label="Title"
                   placeholder="Event Title"
                   labelPlacement="outside"
@@ -184,6 +219,10 @@ export default function EventForm() {
               <div className="max-h-fit w-full flex-1 gap-4">
                 <Textarea
                   className="grow"
+                  classNames={{
+                    inputWrapper:
+                      'bg-zinc-950 ring-1 ring-zinc-700 data-[hover=true]:bg-zinc-950 group-data-[focus=true]:bg-zinc-950 group-data-[focus=true]:ring-zinc-400 group-data-[focus-visible=true]:z-10 group-data-[focus-visible=true]:ring-1 group-data-[focus-visible=true]:ring-focus group-data-[focus-visible=true]:ring-offset-1 group-data-[focus-visible=true]:ring-zinc-400',
+                  }}
                   label="Description"
                   labelPlacement="outside"
                   radius="sm"
@@ -194,56 +233,111 @@ export default function EventForm() {
               </div>
             </div>
             {/* right side */}
-            <div className="flex w-full flex-wrap items-start justify-start gap-2 sm:basis-1/2 sm:flex-nowrap">
-              <div className="w-full sm:basis-1/3">
-                <FormWithIcon
-                  title="Event Date"
-                  icon={<CalendarIcon width={24} height={24}></CalendarIcon>}
-                  isReadOnly={true}
-                  onClickForm={() => {
-                    document.dispatchEvent(
-                      new CustomEvent('open:event-date-picker-modal')
-                    );
-                  }}
-                  value={new Intl.DateTimeFormat('en-GB').format(date)}
-                  onClickIcon={() => {
-                    document.dispatchEvent(
-                      new CustomEvent('open:event-date-picker-modal')
-                    );
-                  }}
-                ></FormWithIcon>
+            <div className="flex w-full flex-wrap items-start justify-start gap-2 sm:basis-1/2">
+              <div className="flex w-full sm:mt-6">
+                {imagePreview ? (
+                  <div style={{ position: 'relative' }}>
+                    <Image
+                      width={560}
+                      height={280}
+                      alt="a poster related to the event"
+                      src={imagePreview}
+                      style={{ aspectRatio: '2/1', zIndex: 1 }}
+                    ></Image>
+                    <Button
+                      className="hover:opactiy-100 mr-2  mt-2 bg-red-800 opacity-30 active:opacity-100"
+                      style={{
+                        position: 'absolute',
+                        top: '0',
+                        right: '0',
+                        zIndex: 99,
+                      }}
+                      onClick={handleRemoveImage}
+                      isIconOnly
+                    >
+                      <PhotoDeleteIcon width={24} height={24}></PhotoDeleteIcon>
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    className="flex w-full flex-1 flex-col items-center justify-center rounded-lg bg-zinc-950 outline-none ring-1 ring-zinc-700 focus:ring-zinc-400"
+                    style={{
+                      aspectRatio: '2/1',
+                    }}
+                    onClick={() => {
+                      document.getElementById('fileInput')?.click();
+                    }}
+                  >
+                    <input
+                      type="file"
+                      id="fileInput"
+                      style={{ display: 'none' }}
+                      onChange={handleFileSelect}
+                    />
+                    <PhotoUploadIcon width={56} height={56}></PhotoUploadIcon>
+                    <p className="mt-2 rounded-sm text-sm font-semibold text-zinc-400">
+                      click to add poster image
+                    </p>
+                    <p className="mt-1 text-xs">Support PNG, WEBP, JPG, JPEG</p>
+                    <p className="mt-1 text-xs">560 x 280, Aspect ratio 2:1</p>
+                  </div>
+                )}
               </div>
-              <div className="w-full sm:basis-1/3">
-                <FormWithIcon
-                  value={`${startTime.hour}:${startTime.minute}`}
-                  title="Start Time"
-                  icon={<GithubIcon width={24} height={24}></GithubIcon>}
-                  isReadOnly={true}
-                  onClickForm={() => {
-                    document.dispatchEvent(
-                      new CustomEvent('open:event-time-picker-start-modal')
-                    );
-                  }}
-                  onClickIcon={() => {
-                    document.dispatchEvent(
-                      new CustomEvent('open:event-time-picker-start-modal')
-                    );
-                  }}
-                ></FormWithIcon>
-              </div>
-              <div className="w-full sm:basis-1/3">
-                <FormWithIcon
-                  title="End Time"
-                  value={`${endTime.hour}:${endTime.minute}`}
-                  icon={<GithubIcon width={24} height={24}></GithubIcon>}
-                  isReadOnly={true}
-                  onClickForm={() => {
-                    document.dispatchEvent(new CustomEvent(setEndTimeEvent));
-                  }}
-                  onClickIcon={() => {
-                    document.dispatchEvent(new CustomEvent(setEndTimeEvent));
-                  }}
-                ></FormWithIcon>
+              <div className="flex w-full flex-wrap gap-2 sm:flex-nowrap">
+                <div className="w-full sm:basis-1/3">
+                  <FormWithIcon
+                    title="Event Date"
+                    icon={<CalendarIcon width={24} height={24}></CalendarIcon>}
+                    isReadOnly={true}
+                    onClickForm={() => {
+                      document.dispatchEvent(
+                        new CustomEvent('open:event-date-picker-modal')
+                      );
+                    }}
+                    value={new Intl.DateTimeFormat('en-GB').format(date)}
+                    onClickIcon={() => {
+                      document.dispatchEvent(
+                        new CustomEvent('open:event-date-picker-modal')
+                      );
+                    }}
+                  ></FormWithIcon>
+                </div>
+                <div className="w-full sm:basis-1/3">
+                  <FormWithIcon
+                    value={`${startTime.hour}:${startTime.minute}`}
+                    title="Start Time"
+                    icon={
+                      <ClockFillIcon width={24} height={24}></ClockFillIcon>
+                    }
+                    isReadOnly={true}
+                    onClickForm={() => {
+                      document.dispatchEvent(
+                        new CustomEvent('open:event-time-picker-start-modal')
+                      );
+                    }}
+                    onClickIcon={() => {
+                      document.dispatchEvent(
+                        new CustomEvent('open:event-time-picker-start-modal')
+                      );
+                    }}
+                  ></FormWithIcon>
+                </div>
+                <div className="w-full sm:basis-1/3">
+                  <FormWithIcon
+                    title="End Time"
+                    value={`${endTime.hour}:${endTime.minute}`}
+                    icon={
+                      <ClockFillIcon width={24} height={24}></ClockFillIcon>
+                    }
+                    isReadOnly={true}
+                    onClickForm={() => {
+                      document.dispatchEvent(new CustomEvent(setEndTimeEvent));
+                    }}
+                    onClickIcon={() => {
+                      document.dispatchEvent(new CustomEvent(setEndTimeEvent));
+                    }}
+                  ></FormWithIcon>
+                </div>
               </div>
             </div>
           </div>
