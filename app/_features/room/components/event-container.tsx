@@ -19,8 +19,6 @@ export default function EventContainer({
 
   useEffect(() => {
     if (!peer) return;
-    console.log('event container');
-    console.log('peer', peer);
 
     const onTurnOnCamera = () => {
       if (peer) peer.turnOnCamera();
