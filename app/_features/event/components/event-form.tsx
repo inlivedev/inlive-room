@@ -2,7 +2,6 @@
 
 import Header from '@/_shared/components/header/header';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
-import GithubIcon from '@/_shared/components/icons/github-icon';
 import { FormWithIcon } from '@/_shared/components/input/form-with-icon-title';
 import {
   Button,
@@ -14,24 +13,26 @@ import {
   ModalHeader,
   Textarea,
   useDisclosure,
-  Image,
+  Image as NextImage,
 } from '@nextui-org/react';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import '../styles/date-picker.css';
+import '../styles/cropper.css';
 import { DatePickerModal } from './event-date-picker';
 import { TimePickerModal } from './event-time-picker';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
-import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
+import { ImageCropperModal } from './image-cropper';
 
 export default function EventForm() {
   const { user } = useAuthContext();
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<Blob | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const today = new Date(new Date().setDate(new Date().getDate() + 1));
   const currentHour = today.getHours();
   const [date, setDate] = useState(today);
@@ -62,17 +63,16 @@ export default function EventForm() {
       const file = event.target.files && event.target.files[0];
 
       if (file) {
-        setSelectedImage(file);
+        setSelectedImage(new Blob([file], { type: file.type }));
 
         // Create a URL for the selected file and set it as the image preview
         const previewURL = URL.createObjectURL(file);
         setImagePreview(previewURL);
 
-        // Do something with the selected file, e.g., upload it to the server
-        console.log('Selected file:', file);
+        document.dispatchEvent(new CustomEvent('open:image-cropper'));
       }
     },
-    [] // Empty dependency array because the function doesn't depend on any external state or props
+    []
   );
 
   useEffect(() => {
@@ -153,6 +153,11 @@ export default function EventForm() {
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-4">
+        <ImageCropperModal
+          setImage={setSelectedImage}
+          setImagePreview={setImagePreview}
+          imagePreview={imagePreview}
+        ></ImageCropperModal>
         <ComingSoonModal event={comingSoonEvent}></ComingSoonModal>
         <TimePickerModal
           event={setStartTimeEvent}
@@ -183,6 +188,13 @@ export default function EventForm() {
               </h1>
             </div>
             <div className="collapse flex h-0 w-full flex-wrap gap-2 sm:visible sm:h-fit sm:w-fit">
+              <Button
+                onClick={() => {
+                  console.log(selectedImage);
+                }}
+              >
+                Debug Image
+              </Button>
               <Button
                 onPress={onDraft}
                 className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
@@ -237,13 +249,18 @@ export default function EventForm() {
               <div className="flex w-full sm:mt-6">
                 {imagePreview ? (
                   <div style={{ position: 'relative' }}>
-                    <Image
+                    <NextImage
                       width={560}
                       height={280}
                       alt="a poster related to the event"
                       src={imagePreview}
-                      style={{ aspectRatio: '2/1', zIndex: 1 }}
-                    ></Image>
+                      style={{
+                        aspectRatio: '2/1',
+                        zIndex: 1,
+                        objectFit: 'cover',
+                      }}
+                      // classNames={{ img: 'object-cover' }}
+                    ></NextImage>
                     <Button
                       className="hover:opactiy-100 mr-2  mt-2 bg-red-800 opacity-30 active:opacity-100"
                       style={{
@@ -273,6 +290,7 @@ export default function EventForm() {
                       id="fileInput"
                       style={{ display: 'none' }}
                       onChange={handleFileSelect}
+                      accept="image/*"
                     />
                     <PhotoUploadIcon width={56} height={56}></PhotoUploadIcon>
                     <p className="mt-2 rounded-sm text-sm font-semibold text-zinc-400">

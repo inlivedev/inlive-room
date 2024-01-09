@@ -28,6 +28,7 @@
     "next": "^13.5.4",
     "postgres": "^3.3.5",
     "react": "18.2.0",
+    "react-cropper": "^2.3.3",
     "react-datepicker": "^4.25.0",
     "react-dom": "18.2.0"
   },
