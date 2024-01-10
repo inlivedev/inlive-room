@@ -9,6 +9,7 @@ import {
   ModalBody,
   useDisclosure,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import GoogleIcon from '@/_shared/components/icons/google-icon';
@@ -51,6 +52,12 @@ export default function SignInModal() {
 
         window.location.href = response.data;
       } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: `API call error when trying to authorize with ${provider}`,
+          },
+        });
+
         setIsSubmitting(false);
         console.error(error);
         alert(
