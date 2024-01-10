@@ -20,6 +20,12 @@ type PeerProviderProps = {
   roomID: string;
   client: ClientType.ClientData;
   debug: boolean;
+  codecPreferences: string[];
+  bitrateConfig: {
+    maxBitrate: number;
+    midBitrate: number;
+    minBitrate: number;
+  };
 };
 
 export function PeerProvider({
@@ -27,13 +33,22 @@ export function PeerProvider({
   roomID,
   client,
   debug = false,
+  codecPreferences = [],
+  bitrateConfig,
 }: PeerProviderProps) {
   const [peer, setPeer] = useState<Peer | null>(null);
 
   useEffect(() => {
     if (!peer) {
       const createPeer = async () => {
-        const peer = await clientSDK.createPeer(roomID, client.clientID);
+        const peer = await clientSDK.createPeer(roomID, client.clientID, {
+          codecs: codecPreferences,
+          bitrate: {
+            maxBitrate: bitrateConfig.maxBitrate,
+            midBitrate: bitrateConfig.midBitrate,
+            minBitrate: bitrateConfig.minBitrate,
+          },
+        });
         setPeer(peer);
       };
 
@@ -46,7 +61,7 @@ export function PeerProvider({
         setPeer(null);
       }
     };
-  }, [roomID, client.clientID, peer]);
+  }, [roomID, client, peer, codecPreferences, bitrateConfig]);
 
   // use effect for sending the webrtc stats
   useEffect(() => {

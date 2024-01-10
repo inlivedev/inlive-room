@@ -6,7 +6,7 @@ import View from '@/_features/room/components/view';
 import type { RoomType } from '@/_shared/types/room';
 import type { UserType } from '@/_shared/types/user';
 import type { ClientType } from '@/_shared/types/client';
-import { clientSDK } from '@/_shared/utils/sdk';
+import { serverSDK } from '@/(server)/_shared/utils/sdk';
 
 type PageProps = {
   params: {
@@ -47,24 +47,44 @@ export default async function Page({ searchParams }: PageProps) {
 
   const isModerator = roomData.createdBy === userAuth?.id;
 
-  if (isModerator) {
-    const moderatorMeta = await clientSDK.getMetadata(
-      roomData.id,
-      'moderatorIDs'
-    );
-    const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
+  const setModeratorMetaPromise = async () => {
+    if (isModerator) {
+      const moderatorMeta = await serverSDK.getMetadata(
+        roomData.id,
+        'moderatorIDs'
+      );
+      const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
 
-    if (Array.isArray(moderatorIDs)) {
-      await clientSDK.setMetadata(roomData.id, {
-        moderatorIDs: [...moderatorIDs, userClient.clientID],
-      });
-    } else {
-      await clientSDK.setMetadata(roomData.id, {
-        moderatorIDs: [userClient.clientID],
-      });
+      if (Array.isArray(moderatorIDs)) {
+        await serverSDK.setMetadata(roomData.id, {
+          moderatorIDs: [...moderatorIDs, userClient.clientID],
+        });
+      } else {
+        await serverSDK.setMetadata(roomData.id, {
+          moderatorIDs: [userClient.clientID],
+        });
+      }
     }
-  }
+  };
 
+  const hubRoomPromise = serverSDK.getRoom(roomData.id);
+
+  const [hubRoomResponse] = await Promise.allSettled([
+    hubRoomPromise,
+    setModeratorMetaPromise(),
+  ]).then((results) => {
+    return results.map((result) => {
+      if (result.status === 'fulfilled') return result.value;
+      return null;
+    });
+  });
+
+  const codecPreferences = hubRoomResponse?.data?.codecPreferences || [];
+  const bitrateConfig = {
+    maxBitrate: hubRoomResponse?.data?.bitrates.videoHigh || 0,
+    midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
+    minBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
+  };
   const roomType = roomData.meta ? roomData.meta.type : 'meeting' || 'meeting';
 
   return (
@@ -75,6 +95,8 @@ export default async function Page({ searchParams }: PageProps) {
         roomType={roomType}
         isModerator={isModerator}
         debug={debug}
+        codecPreferences={codecPreferences}
+        bitrateConfig={bitrateConfig}
       />
     </AppContainer>
   );
