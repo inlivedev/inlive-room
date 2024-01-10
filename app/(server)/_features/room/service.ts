@@ -73,6 +73,7 @@ export class RoomService implements iRoomService {
     const clientResponse = await this._sdk.createClient(roomData.id, {
       clientId: clientID,
       clientName: clientName,
+      enableVAD: true,
     });
 
     if (clientResponse.code == 409) {
