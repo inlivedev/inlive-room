@@ -15,7 +15,13 @@ import {
   useDisclosure,
   Image as NextImage,
 } from '@nextui-org/react';
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useReducer,
+  useState,
+} from 'react';
 import '../styles/date-picker.css';
 import '../styles/cropper.css';
 import { DatePickerModal } from './event-date-picker';
@@ -26,12 +32,31 @@ import { useNavigate } from '@/_shared/hooks/use-navigate';
 import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
-import { ImageCropperModal } from './image-cropper';
+import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 
 export default function EventForm() {
   const { user } = useAuthContext();
-  const [selectedImage, setSelectedImage] = useState<Blob | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const reducer = (state: ImageState, action: ActionType): ImageState => {
+    switch (action.type) {
+      case 'ConfirmCrop':
+        return {
+          imagePreview: action.payload.preview,
+          imageBlob: action.payload.blob,
+        };
+      case 'PickFile':
+        return { imagePreview: null, imageBlob: action.payload };
+      case 'Reset':
+        return { imagePreview: null, imageBlob: null };
+      default:
+        return state;
+    }
+  };
+
+  const [imageData, updateImageData] = useReducer(reducer, {
+    imageBlob: null,
+    imagePreview: null,
+  });
 
   const today = new Date(new Date().setDate(new Date().getDate() + 1));
   const currentHour = today.getHours();
@@ -54,8 +79,7 @@ export default function EventForm() {
   const [minRows, setMinRows] = useState(window.innerWidth < 768 ? 3 : 12);
 
   const handleRemoveImage = useCallback(() => {
-    setSelectedImage(null);
-    setImagePreview(null);
+    updateImageData({ type: 'Reset' });
   }, []);
 
   const handleFileSelect = useCallback(
@@ -63,11 +87,7 @@ export default function EventForm() {
       const file = event.target.files && event.target.files[0];
 
       if (file) {
-        setSelectedImage(new Blob([file], { type: file.type }));
-
-        // Create a URL for the selected file and set it as the image preview
-        const previewURL = URL.createObjectURL(file);
-        setImagePreview(previewURL);
+        updateImageData({ type: 'PickFile', payload: file });
 
         document.dispatchEvent(new CustomEvent('open:image-cropper'));
       }
@@ -154,9 +174,8 @@ export default function EventForm() {
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-4">
         <ImageCropperModal
-          setImage={setSelectedImage}
-          setImagePreview={setImagePreview}
-          imagePreview={imagePreview}
+          imageData={imageData}
+          updateImageData={updateImageData}
         ></ImageCropperModal>
         <ComingSoonModal event={comingSoonEvent}></ComingSoonModal>
         <TimePickerModal
@@ -190,7 +209,7 @@ export default function EventForm() {
             <div className="collapse flex h-0 w-full flex-wrap gap-2 sm:visible sm:h-fit sm:w-fit">
               <Button
                 onClick={() => {
-                  console.log(selectedImage);
+                  console.log(imageData);
                 }}
               >
                 Debug Image
@@ -247,13 +266,13 @@ export default function EventForm() {
             {/* right side */}
             <div className="flex w-full flex-wrap items-start justify-start gap-2 sm:basis-1/2">
               <div className="flex w-full sm:mt-6">
-                {imagePreview ? (
+                {imageData.imagePreview ? (
                   <div style={{ position: 'relative' }}>
                     <NextImage
                       width={560}
                       height={280}
                       alt="a poster related to the event"
-                      src={imagePreview}
+                      src={imageData.imagePreview}
                       style={{
                         aspectRatio: '2/1',
                         zIndex: 1,
