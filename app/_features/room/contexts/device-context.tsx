@@ -5,6 +5,7 @@ import {
   useState,
   useCallback,
 } from 'react';
+import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 
 const defaultValue = {
   currentAudioInput: undefined as MediaDeviceInfo | undefined,
@@ -163,6 +164,15 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
       getDevices(localStream);
     }
   }, [localStream, getDevices]);
+
+  useEffect(() => {
+    clientSDK.on(RoomEvent.STREAM_AVAILABLE, ({ stream }: { stream: any }) => {
+      if (stream.source === 'media' && stream.origin === 'local') {
+        //mute mic on first mount
+        document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
+      }
+    });
+  }, []);
 
   return (
     <DeviceContext.Provider value={{ ...devicesState, setCurrentActiveDevice }}>
