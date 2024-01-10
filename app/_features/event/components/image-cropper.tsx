@@ -8,7 +8,7 @@ import {
   ModalFooter,
   Button,
 } from '@nextui-org/react';
-import { Dispatch, createRef, useCallback, useEffect, useReducer } from 'react';
+import { Dispatch, createRef, useCallback, useEffect } from 'react';
 
 export interface ImageState {
   imageBlob: Blob | null;
@@ -30,32 +30,10 @@ export function ImageCropperModal({
 }: ImageCropperModalProps) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  type candidateType =
-    | { type: 'ConfirmCropCandidate'; payload: Blob }
-    | { type: 'Cancel' };
-
-  const reduceCandidate = (state: Blob | null, action: candidateType) => {
-    switch (action.type) {
-      case 'ConfirmCropCandidate':
-        return action.payload;
-      case 'Cancel':
-        return null;
-      default:
-        return state;
-    }
-  };
-
-  const [imageCandidate, updateImageCandidate] = useReducer(
-    reduceCandidate,
-    null
-  );
-
   const cropperRef = createRef<ReactCropperElement>();
 
   const getCropData = useCallback(async () => {
     if (typeof cropperRef.current?.cropper !== 'undefined') {
-      console.log('getCropData...');
-      console.log(imageCandidate);
       if (!cropperRef.current) console.log('cropperRef.current is undefined');
 
       const getCanvasBlob = (
@@ -74,9 +52,7 @@ export function ImageCropperModal({
 
       return newBlob;
     }
-
-    console.log(imageCandidate);
-  }, [cropperRef, imageCandidate]);
+  }, [cropperRef]);
 
   const openModal = useCallback(() => {
     onOpen();
@@ -87,7 +63,6 @@ export function ImageCropperModal({
   });
 
   const onCancel = useCallback(() => {
-    updateImageCandidate({ type: 'Cancel' });
     updateImageData({ type: 'Reset' });
     onClose();
   }, [onClose, updateImageData]);
@@ -136,15 +111,6 @@ export function ImageCropperModal({
           )}
         </ModalBody>
         <ModalFooter>
-          <Button
-            className="rounded-md px-4 py-2 text-sm"
-            onClick={() => {
-              console.log(imageCandidate);
-            }}
-          >
-            Debug
-          </Button>
-
           <Button className="rounded-md px-4 py-2 text-sm" onClick={onCancel}>
             Cancel
           </Button>
