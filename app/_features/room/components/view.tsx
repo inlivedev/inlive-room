@@ -23,9 +23,9 @@ type ViewProps = {
   debug: boolean;
   codecPreferences: string[];
   bitrateConfig: {
-    maxBitrate: number;
+    highBitrate: number;
     midBitrate: number;
-    minBitrate: number;
+    lowBitrate: number;
   };
 };
 
