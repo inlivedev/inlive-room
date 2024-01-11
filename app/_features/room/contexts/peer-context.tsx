@@ -22,9 +22,9 @@ type PeerProviderProps = {
   debug: boolean;
   codecPreferences: string[];
   bitrateConfig: {
-    maxBitrate: number;
+    highBitrate: number;
     midBitrate: number;
-    minBitrate: number;
+    lowBitrate: number;
   };
 };
 
@@ -44,9 +44,9 @@ export function PeerProvider({
         const peer = await clientSDK.createPeer(roomID, client.clientID, {
           codecs: codecPreferences,
           bitrate: {
-            maxBitrate: bitrateConfig.maxBitrate,
+            highBitrate: bitrateConfig.highBitrate,
             midBitrate: bitrateConfig.midBitrate,
-            minBitrate: bitrateConfig.minBitrate,
+            lowBitrate: bitrateConfig.lowBitrate,
           },
         });
         setPeer(peer);

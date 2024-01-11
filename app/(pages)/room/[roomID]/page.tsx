@@ -93,9 +93,9 @@ export default async function Page({ searchParams }: PageProps) {
 
   const codecPreferences = hubRoomResponse?.data?.codecPreferences || [];
   const bitrateConfig = {
-    maxBitrate: hubRoomResponse?.data?.bitrates.videoHigh || 0,
+    highBitrate: hubRoomResponse?.data?.bitrates.videoHigh || 0,
     midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
-    minBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
+    lowBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
   };
   const roomType = roomData.meta ? roomData.meta.type : 'meeting' || 'meeting';
 
