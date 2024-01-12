@@ -39,8 +39,10 @@ jobs:
         docker build --platform=linux/amd64 -t inlive-room:${{ env.RELEASE_VERSION }} .
     - name: ☁️ Deploy to GCP Artifact Registry
       run: |
-        docker tag inlive-room:latest asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.RELEASE_VERSION }}
+        docker tag inlive-room:${{ env.RELEASE_VERSION }} asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.RELEASE_VERSION }}
+        docker tag inlive-room:${{ env.RELEASE_VERSION }} asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:latest
         docker push asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.RELEASE_VERSION }}
+        docker push asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:latest
     - name: Run kubectl to update room app
       uses: actions-hub/kubectl@master
       env:
