@@ -74,6 +74,12 @@ export default function CreateRoom() {
     [user, isSubmitting, createRoom]
   );
 
+  const disabledKeys = [];
+
+  if (!featureFlag?.enableWebinar) {
+    disabledKeys.push('event');
+  }
+
   return (
     <section className="max-w-xl lg:max-w-lg">
       <h2 className="text-3xl font-bold tracking-wide lg:text-4xl">
@@ -114,7 +120,7 @@ export default function CreateRoom() {
             </DropdownTrigger>
             <DropdownMenu
               onAction={onCreateRoomSelection}
-              disabledKeys={['event']}
+              disabledKeys={disabledKeys}
             >
               <DropdownItem
                 key="meeting"
