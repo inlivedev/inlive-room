@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 import { roomService } from '../../_index';
+import { featureFlag } from '@/_shared/utils/feature-flag';
 
 type createRoomRequest = {
   type: roomType;
@@ -31,16 +32,26 @@ export async function POST(request: NextRequest) {
         'Unable to create room because the user is not authenticated'
       );
     }
-    let body: createRoomRequest;
-    try {
-      body = (await request.json()) as createRoomRequest;
-    } catch (error) {
+
+    const body = (await request.json()) as createRoomRequest;
+
+    if (body.type !== 'event' && body.type !== 'meeting') {
       return NextResponse.json(
         {
           code: 400,
           message: 'Invalid room type, please check the request body',
         },
         { status: 400 }
+      );
+    }
+
+    if (body.type === 'event' && !featureFlag?.enableWebinar) {
+      return NextResponse.json(
+        {
+          code: 403,
+          message: `You don't have permission and access to create a webinar room`,
+        },
+        { status: 403 }
       );
     }
 

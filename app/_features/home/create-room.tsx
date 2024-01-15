@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import type { RoomType } from '@/_shared/types/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { featureFlag } from '@/_shared/utils/feature-flag';
 
 export default function CreateRoom() {
   const { user } = useAuthContext();
@@ -73,6 +74,12 @@ export default function CreateRoom() {
     [user, isSubmitting, createRoom]
   );
 
+  const disabledKeys = [];
+
+  if (!featureFlag?.enableWebinar) {
+    disabledKeys.push('event');
+  }
+
   return (
     <section className="max-w-xl lg:max-w-lg">
       <h2 className="text-3xl font-bold tracking-wide lg:text-4xl">
@@ -111,7 +118,10 @@ export default function CreateRoom() {
                 )}
               </Button>
             </DropdownTrigger>
-            <DropdownMenu onAction={onCreateRoomSelection}>
+            <DropdownMenu
+              onAction={onCreateRoomSelection}
+              disabledKeys={disabledKeys}
+            >
               <DropdownItem
                 key="meeting"
                 description="Suitable for personal or group meetings"
@@ -120,7 +130,12 @@ export default function CreateRoom() {
               </DropdownItem>
               <DropdownItem
                 key="event"
-                description="Webinar room with speakers and audiences"
+                description={
+                  featureFlag?.enableWebinar
+                    ? `Webinar room with speakers and audiences`
+                    : `Currently only available for early access users`
+                }
+                className={featureFlag?.enableWebinar ? '' : 'opacity-60'}
               >
                 Create a room for webinar
               </DropdownItem>
@@ -131,7 +146,7 @@ export default function CreateRoom() {
             className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
             onClick={openSignInModal}
           >
-            Sign in to your account
+            Sign in to create a room
           </Button>
         )}
       </div>
