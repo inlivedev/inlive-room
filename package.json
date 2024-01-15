@@ -16,6 +16,7 @@
     "@inlivedev/inlive-js-sdk": "^0.13.1",
     "@nextui-org/react": "^2.2.9",
     "@sentry/nextjs": "^7.70.0",
+    "compressorjs": "^1.2.1",
     "drizzle-orm": "^0.28.6",
     "form-data": "^4.0.0",
     "framer-motion": "^10.16.4",
