@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         code: 403,
-        message: `You don't have the permission and access to this endpoint`,
+        message: `You don't have permission and access to this endpoint`,
       },
       { status: 403 }
     );

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           code: 403,
-          message: `You don't have the permission and access to create a webinar room`,
+          message: `You don't have permission and access to create a webinar room`,
         },
         { status: 403 }
       );
