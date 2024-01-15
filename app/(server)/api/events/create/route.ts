@@ -3,6 +3,7 @@ import { eventService, roomService } from '../../_index';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
+import { featureFlag } from '@/_shared/utils/feature-flag';
 
 type CreateEvent = {
   name: string;
@@ -15,6 +16,16 @@ type CreateEvent = {
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
+
+  if (!featureFlag?.enableWebinar) {
+    return NextResponse.json(
+      {
+        code: 403,
+        message: `You don't have the permission and access to this endpoint`,
+      },
+      { status: 403 }
+    );
+  }
 
   if (!requestToken) {
     return NextResponse.json(

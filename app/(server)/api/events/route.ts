@@ -1,8 +1,19 @@
 import { eventRepo } from '../_index';
 import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
+import { featureFlag } from '@/_shared/utils/feature-flag';
 
 export async function GET(req: Request) {
+  if (!featureFlag?.enableWebinar) {
+    return NextResponse.json(
+      {
+        code: 403,
+        message: `You don't have the permission and access to this endpoint`,
+      },
+      { status: 403 }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get('page') ?? '0');
   const limit = parseInt(searchParams.get('limit') ?? '10');
