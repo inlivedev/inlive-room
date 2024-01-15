@@ -33,6 +33,7 @@ import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
+import Compressor from 'compressorjs';
 
 export default function EventForm() {
   const { user } = useAuthContext();
@@ -126,30 +127,46 @@ export default function EventForm() {
         date.setHours(parseInt(endTime.hour), parseInt(endTime.minute), 0)
       );
 
-      const data = JSON.stringify({
-        name: eventName,
-        startTime: eventStartTime.toISOString(),
-        endTime: eventEndTime.toISOString(),
-        description: eventDescription,
-        host: user?.name,
+      if (imageData.imageBlob === null) return;
+
+      new Compressor(imageData.imageBlob, {
+        height: 280,
+        width: 560,
+        quality: 0.8,
+        resize: 'cover',
+        mimeType: 'image/webp',
+        success: async (result) => {
+          const data = JSON.stringify({
+            name: eventName,
+            startTime: eventStartTime.toISOString(),
+            endTime: eventEndTime.toISOString(),
+            description: eventDescription,
+            host: user?.name,
+          });
+
+          const formData = new FormData();
+          formData.append('image', result, 'poster.webp');
+          formData.append('data', data);
+
+          const respEvent = await InternalApiFetcher.post(finalEndpoint, {
+            body: data,
+          });
+
+          if (respEvent.ok) {
+            console.log(respEvent.data);
+            const redirectPath = new URL(
+              `/event/${respEvent.data.slug}`,
+              window.location.origin
+            ).href;
+            navigateTo(redirectPath);
+          } else {
+            console.log(respEvent.message);
+          }
+        },
+        error(err) {
+          console.log(err.message);
+        },
       });
-
-      console.log(data);
-
-      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
-        body: data,
-      });
-
-      if (respEvent.ok) {
-        console.log(respEvent.data);
-        const redirectPath = new URL(
-          `/event/${respEvent.data.slug}`,
-          window.location.origin
-        ).href;
-        navigateTo(redirectPath);
-      } else {
-        console.log(respEvent.message);
-      }
     },
     [
       date,
@@ -157,6 +174,7 @@ export default function EventForm() {
       endTime.minute,
       eventDescription,
       eventName,
+      imageData,
       navigateTo,
       startTime.hour,
       startTime.minute,
@@ -245,6 +263,7 @@ export default function EventForm() {
                   radius="sm"
                   value={eventName}
                   onValueChange={setEventName}
+                  isRequired
                 />
               </div>
               <div className="max-h-fit w-full flex-1 gap-4">
@@ -260,6 +279,7 @@ export default function EventForm() {
                   minRows={minRows}
                   value={eventDescription}
                   onValueChange={setEventDescription}
+                  isRequired
                 ></Textarea>
               </div>
             </div>

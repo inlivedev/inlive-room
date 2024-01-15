@@ -27,15 +27,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = (await request.json()) as CreateEvent;
-    const eventName = body.name;
-    const eventStartTime = new Date(body.startTime);
+    const formData = await request.formData();
+    const eventMeta = JSON.parse(formData.get('data') as string) as CreateEvent;
+    const eventImage = formData.get('image') as File;
+    const eventName = eventMeta.name;
+    const eventStartTime = new Date(eventMeta.startTime);
     const eventEndTime =
-      body.endTime == '' || undefined
+      eventMeta.endTime == '' || undefined
         ? new Date(eventStartTime.getTime() + (60 * 60 * 1000) / 2)
-        : new Date(body.endTime);
-    const eventDesc = body.description;
-    const eventHost = body.host;
+        : new Date(eventMeta.endTime);
+    const eventDesc = eventMeta.description;
+    const eventHost = eventMeta.host;
 
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       return NextResponse.json({
