@@ -1,13 +1,13 @@
 name: Deploy production
 on:
   push:
-    tags:        
-      - '**' 
+    tags:
+      - '**'
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4 
+    - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: 18
@@ -23,6 +23,7 @@ jobs:
         NEXT_PUBLIC_INLIVE_API_VERSION: v1
         NEXT_PUBLIC_MIXPANEL_TOKEN: ${{secrets.PUBLIC_MIXPANEL_TOKEN}}
         NEXT_PUBLIC_SENTRY_DSN: ${{secrets.PUBLIC_SENTRY_DSN}}
+        NEXT_PUBLIC_ENABLE_WEBINAR: false
         PERSISTENT_DATA: true
         ENABLE_MAILER: true
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
@@ -33,7 +34,7 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
     - name: 🐋 Configure Docker for pushing
-      run: gcloud auth configure-docker asia-docker.pkg.dev    
+      run: gcloud auth configure-docker asia-docker.pkg.dev
     - name: Build image
       run: |
         docker build --platform=linux/amd64 -t inlive-room:${{ env.RELEASE_VERSION }} .
@@ -47,5 +48,5 @@ jobs:
       uses: actions-hub/kubectl@master
       env:
         KUBE_CONFIG: ${{ secrets.MICROK8S }}å
-      with: 
+      with:
         args: set image deployment/room -n inlive room=asia-docker.pkg.dev/asgard-livestream/inlive-asia/inlive-room:${{ env.RELEASE_VERSION }}
