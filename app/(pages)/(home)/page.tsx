@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Home from '@/_features/home/home';
 import { headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
-import type { UserType } from '@/_shared/types/user';
+import type { UserType } from '@/_shared/types/auth';
 
 export const metadata: Metadata = {
   title: 'inLive Room',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
-  const user: UserType.AuthUserData | null =
+  const user: UserType.AuthUserResponse | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
