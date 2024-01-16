@@ -20,11 +20,14 @@ export async function POST(request: NextRequest) {
     const response = await getCurrentAuthenticated(requestToken?.value || '');
 
     if (!response.ok || !response.data.id) {
-      return NextResponse.json({
-        code: 401,
-        ok: false,
-        message: 'Please check if token is provided in the cookie',
-      });
+      return NextResponse.json(
+        {
+          code: 401,
+          ok: false,
+          message: 'Please check if token is provided in the cookie',
+        },
+        { status: 401 }
+      );
     }
 
     const body = (await request.json()) as CreateEvent;
