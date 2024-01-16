@@ -76,7 +76,7 @@ export default function CreateRoom() {
 
   const disabledKeys = [];
 
-  if (!featureFlag?.enableWebinar) {
+  if (!featureFlag?.enableWebinar && !user?.webinarEnabled) {
     disabledKeys.push('event');
   }
 
@@ -131,11 +131,15 @@ export default function CreateRoom() {
               <DropdownItem
                 key="event"
                 description={
-                  featureFlag?.enableWebinar
-                    ? `Webinar room with speakers and audiences`
-                    : `Currently only available for early access users`
+                  !featureFlag?.enableWebinar && !user?.webinarEnabled
+                    ? `Currently only available for early access users`
+                    : `Webinar room with speakers and audiences`
                 }
-                className={featureFlag?.enableWebinar ? '' : 'opacity-60'}
+                className={
+                  !featureFlag?.enableWebinar && !user?.webinarEnabled
+                    ? 'opacity-60'
+                    : ''
+                }
               >
                 Create a room for webinar
               </DropdownItem>
