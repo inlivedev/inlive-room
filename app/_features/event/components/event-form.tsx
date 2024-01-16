@@ -35,36 +35,38 @@ import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import Compressor from 'compressorjs';
 
+const reducer = (state: ImageState, action: ActionType): ImageState => {
+  switch (action.type) {
+    case 'ConfirmCrop':
+      return {
+        imagePreview: action.payload.preview,
+        imageBlob: action.payload.blob,
+      };
+    case 'PickFile':
+      return { imagePreview: null, imageBlob: action.payload };
+    case 'Reset':
+      return { imagePreview: null, imageBlob: null };
+    default:
+      return state;
+  }
+};
+
 export default function EventForm() {
+  // Constant for event
+  const setStartTimeEvent = 'open:event-time-picker-start-modal';
+  const setEndTimeEvent = 'open:event-time-picker-end-modal';
+  const comingSoonEvent = 'open:feature-coming-soon-modal';
+  const incompleteFieldEvent = 'open:missing-field-modal';
+
+  // States
   const { user } = useAuthContext();
-
-  const reducer = (state: ImageState, action: ActionType): ImageState => {
-    switch (action.type) {
-      case 'ConfirmCrop':
-        return {
-          imagePreview: action.payload.preview,
-          imageBlob: action.payload.blob,
-        };
-      case 'PickFile':
-        return { imagePreview: null, imageBlob: action.payload };
-      case 'Reset':
-        return { imagePreview: null, imageBlob: null };
-      default:
-        return state;
-    }
-  };
-
   const [imageData, updateImageData] = useReducer(reducer, {
     imageBlob: null,
     imagePreview: null,
   });
-
   const today = new Date(new Date().setDate(new Date().getDate() + 1));
   const currentHour = today.getHours();
   const [date, setDate] = useState(today);
-  const setStartTimeEvent = 'open:event-time-picker-start-modal';
-  const setEndTimeEvent = 'open:event-time-picker-end-modal';
-  const comingSoonEvent = 'open:feature-coming-soon-modal';
   const [startTime, setStartTime] = useState({
     hour: `${currentHour}`,
     minute: `${today.getMinutes().toString().padStart(2, '0')}`,
@@ -73,11 +75,14 @@ export default function EventForm() {
     hour: `${currentHour + 1}`,
     minute: `${today.getMinutes().toString().padStart(2, '0')}`,
   });
+  const [isTitleValid, setTitleValid] = useState(false);
+  const [isDescriptionValid, setDescValid] = useState(false);
   const [eventName, setEventName] = useState('');
   const [eventDescription, setEventDescription] = useState('');
-  const { navigateTo } = useNavigate();
 
   const [minRows, setMinRows] = useState(window.innerWidth < 768 ? 3 : 12);
+
+  const { navigateTo } = useNavigate();
 
   const handleRemoveImage = useCallback(() => {
     updateImageData({ type: 'Reset' });
@@ -95,6 +100,22 @@ export default function EventForm() {
     },
     []
   );
+
+  useEffect(() => {
+    if (eventName.trim().length === 0) {
+      setTitleValid(false);
+    } else {
+      setTitleValid(true);
+    }
+  }, [eventName]);
+
+  useEffect(() => {
+    if (eventDescription.trim().length === 0) {
+      setDescValid(false);
+    } else {
+      setDescValid(true);
+    }
+  }, [eventDescription]);
 
   useEffect(() => {
     if (startTime.hour > endTime.hour) {
@@ -118,6 +139,14 @@ export default function EventForm() {
 
   const createEvent = useCallback(
     async (endpoint: string) => {
+      if (
+        eventDescription.trim().length === 0 ||
+        eventName.trim().length === 0
+      ) {
+        document.dispatchEvent(new CustomEvent(incompleteFieldEvent));
+        return;
+      }
+
       const finalEndpoint = `/api/events/${endpoint}`;
 
       const eventStartTime = new Date(
@@ -191,6 +220,8 @@ export default function EventForm() {
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-4">
+        <LoginModal loggedIn={user ? true : false}></LoginModal>
+        <MissingField event={incompleteFieldEvent}></MissingField>
         <ImageCropperModal
           imageData={imageData}
           updateImageData={updateImageData}
@@ -228,9 +259,11 @@ export default function EventForm() {
               <Button
                 onClick={() => {
                   console.log(imageData);
+                  console.log(eventDescription);
+                  console.log(eventName);
                 }}
               >
-                Debug Image
+                Debug Data
               </Button>
               <Button
                 onPress={onDraft}
@@ -264,6 +297,8 @@ export default function EventForm() {
                   value={eventName}
                   onValueChange={setEventName}
                   isRequired
+                  isInvalid={!isTitleValid}
+                  errorMessage={!isTitleValid && 'Event title is required'}
                 />
               </div>
               <div className="max-h-fit w-full flex-1 gap-4">
@@ -279,7 +314,11 @@ export default function EventForm() {
                   minRows={minRows}
                   value={eventDescription}
                   onValueChange={setEventDescription}
+                  isInvalid={!isDescriptionValid}
                   isRequired
+                  errorMessage={
+                    !isDescriptionValid && 'Event description is required'
+                  }
                 ></Textarea>
               </div>
             </div>
@@ -431,12 +470,67 @@ function ComingSoonModal({ event }: { event: string }) {
   });
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="auto">
       <ModalContent>
         <ModalHeader>Coming Soon</ModalHeader>
         <ModalBody>This feature will be added at a later update</ModalBody>
         <ModalFooter>
           <Button onClick={onClose}>Confirm</Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+}
+
+function LoginModal({ loggedIn }: { loggedIn: boolean }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { navigateTo } = useNavigate();
+
+  useEffect(() => {
+    if (!loggedIn) {
+      onOpen();
+    }
+  });
+
+  const onConfirm = useCallback(() => {
+    navigateTo('/');
+  }, [navigateTo]);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} placement="auto">
+      <ModalContent>
+        <ModalHeader>Login Required</ModalHeader>
+        <ModalBody>Please login to continue.</ModalBody>
+        <ModalFooter>
+          <Button className="w-full,flex-1" onClick={onConfirm}>
+            Confirm
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+}
+
+function MissingField({ event }: { event: string }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  useEffect(() => {
+    document.addEventListener(event, onOpen);
+  });
+
+  const onConfirm = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} placement="auto">
+      <ModalContent>
+        <ModalHeader>Incomplete Field</ModalHeader>
+        <ModalBody>Please fill in all the required fields.</ModalBody>
+        <ModalFooter>
+          <Button className="w-full,flex-1" onClick={onConfirm}>
+            Confirm
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
