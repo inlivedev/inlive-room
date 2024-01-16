@@ -2,7 +2,6 @@ import NextUIProvider from '@/_shared/providers/nextui';
 import { AuthProvider } from '@/_shared/contexts/auth';
 import type { UserType } from '@/_shared/types/auth';
 import SignInModal from '@/_shared/components/auth/sign-in-modal';
-import { featureFlag } from '@/_shared/utils/feature-flag';
 
 export default function AppContainer({
   children,
