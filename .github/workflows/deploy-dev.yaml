@@ -29,7 +29,7 @@ jobs:
         NEXT_PUBLIC_APP_ORIGIN: https://dev-room.inlive.app
         NEXT_PUBLIC_INLIVE_HUB_ORIGIN: https://dev-hub.inlive.app
         NEXT_PUBLIC_INLIVE_HUB_VERSION: v1
-        NEXT_PUBLIC_INLIVE_API_ORIGIN: https://api.inlive.app
+        NEXT_PUBLIC_INLIVE_API_ORIGIN: ${{secrets.DEV_API_ORIGIN}}
         NEXT_PUBLIC_INLIVE_API_VERSION: v1
         NEXT_PUBLIC_MIXPANEL_TOKEN: ${{secrets.PUBLIC_MIXPANEL_TOKEN}}
         NEXT_PUBLIC_SENTRY_DSN: ${{secrets.PUBLIC_SENTRY_DSN}}
