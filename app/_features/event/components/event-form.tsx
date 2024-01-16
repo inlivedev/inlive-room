@@ -156,46 +156,53 @@ export default function EventForm() {
         date.setHours(parseInt(endTime.hour), parseInt(endTime.minute), 0)
       );
 
-      if (imageData.imageBlob === null) return;
+      let imageFile: File | Blob | null = null;
 
-      new Compressor(imageData.imageBlob, {
-        height: 280,
-        width: 560,
-        quality: 0.8,
-        resize: 'cover',
-        mimeType: 'image/webp',
-        success: async (result) => {
-          const data = JSON.stringify({
-            name: eventName,
-            startTime: eventStartTime.toISOString(),
-            endTime: eventEndTime.toISOString(),
-            description: eventDescription,
-            host: user?.name,
-          });
+      if (imageData.imageBlob) {
+        new Compressor(imageData.imageBlob, {
+          height: 280,
+          width: 560,
+          quality: 0.8,
+          resize: 'cover',
+          mimeType: 'image/webp',
+          success: async (result) => {
+            imageFile = result;
+          },
+          error(err) {
+            console.log(err.message);
+          },
+        });
+      }
 
-          const formData = new FormData();
-          formData.append('image', result, 'poster.webp');
-          formData.append('data', data);
-
-          const respEvent = await InternalApiFetcher.post(finalEndpoint, {
-            body: data,
-          });
-
-          if (respEvent.ok) {
-            console.log(respEvent.data);
-            const redirectPath = new URL(
-              `/event/${respEvent.data.slug}`,
-              window.location.origin
-            ).href;
-            navigateTo(redirectPath);
-          } else {
-            console.log(respEvent.message);
-          }
-        },
-        error(err) {
-          console.log(err.message);
-        },
+      const data = JSON.stringify({
+        name: eventName,
+        startTime: eventStartTime.toISOString(),
+        endTime: eventEndTime.toISOString(),
+        description: eventDescription,
+        host: user?.name,
       });
+
+      const formData = new FormData();
+
+      if (imageFile) {
+        formData.append('image', imageFile, 'poster.webp');
+      }
+      formData.append('data', data);
+
+      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
+        body: data,
+      });
+
+      if (respEvent.ok) {
+        console.log(respEvent.data);
+        const redirectPath = new URL(
+          `/event/${respEvent.data.slug}`,
+          window.location.origin
+        ).href;
+        navigateTo(redirectPath);
+      } else {
+        console.log(respEvent.message);
+      }
     },
     [
       date,
