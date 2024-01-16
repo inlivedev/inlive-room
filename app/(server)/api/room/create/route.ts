@@ -39,16 +39,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.type === 'event') {
-      return NextResponse.json(
-        {
-          code: 403,
-          message: `You don't have permission and access to create a webinar room`,
-        },
-        { status: 403 }
-      );
-    }
-
     const meetingRoom = await roomService.createRoom(
       response.data.id,
       body.type
