@@ -3,7 +3,6 @@ import { eventService, roomService } from '../../_index';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
-import { featureFlag } from '@/_shared/utils/feature-flag';
 
 type CreateEvent = {
   name: string;
@@ -17,27 +16,17 @@ export async function POST(request: NextRequest) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
-  if (!featureFlag?.enableWebinar) {
-    return NextResponse.json(
-      {
-        code: 403,
-        message: `You don't have permission and access to this endpoint`,
-      },
-      { status: 403 }
-    );
-  }
-
-  if (!requestToken) {
-    return NextResponse.json(
-      {
-        code: 401,
-        message: 'Please check if token is provided in the cookie',
-      },
-      { status: 401 }
-    );
-  }
-
   try {
+    const response = await getCurrentAuthenticated(requestToken?.value || '');
+
+    if (!response.ok || !response.data.id) {
+      return NextResponse.json({
+        code: 401,
+        ok: false,
+        message: 'Please check if token is provided in the cookie',
+      });
+    }
+
     const body = (await request.json()) as CreateEvent;
     const eventName = body.name;
     const eventStartTime = new Date(body.startTime);
@@ -73,16 +62,6 @@ export async function POST(request: NextRequest) {
         code: 400,
         ok: false,
         message: 'Event host is not valid, please check the request body',
-      });
-    }
-
-    const response = await getCurrentAuthenticated(requestToken.value);
-
-    if (!response.ok) {
-      return NextResponse.json({
-        code: 401,
-        ok: false,
-        message: 'Please check if token is provided in the cookie',
       });
     }
 
