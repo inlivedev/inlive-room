@@ -16,7 +16,7 @@ import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
 export default function Profile() {
-  const { user, setAuthState } = useAuthContext();
+  const { user, setUser } = useAuthContext();
 
   const openSignInModal = () => {
     document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
@@ -27,11 +27,7 @@ export default function Profile() {
       if (selectedKey === 'signout') {
         try {
           await InternalApiFetcher.get('/api/auth/signout');
-          setAuthState &&
-            setAuthState((prevState) => ({
-              ...prevState,
-              user: null,
-            }));
+          setUser(null);
         } catch (error) {
           console.error(error);
           Sentry.captureException(error, {
@@ -42,7 +38,7 @@ export default function Profile() {
         }
       }
     },
-    [setAuthState]
+    [setUser]
   );
 
   return (
@@ -59,7 +55,7 @@ export default function Profile() {
               <div className="h-7 w-7 rounded-full ring-2 ring-zinc-700 ring-offset-2 ring-offset-zinc-800 lg:mr-1 lg:h-6 lg:w-6">
                 <Image
                   referrerPolicy="no-referrer"
-                  src={user.picture_url}
+                  src={user.pictureUrl}
                   alt={`Image of ${user.name}`}
                   loading="lazy"
                   width={28}
@@ -96,7 +92,7 @@ export default function Profile() {
                     <div className="h-7 w-7 rounded-full ring-2 ring-zinc-700 ring-offset-2 ring-offset-zinc-800">
                       <Image
                         referrerPolicy="no-referrer"
-                        src={user.picture_url}
+                        src={user.pictureUrl}
                         alt={`Image of ${user.name}`}
                         loading="lazy"
                         width={28}
