@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import AppContainer from '@/_shared/components/containers/app-container';
 import HTTPError from '@/_shared/components/errors/http-error';
 import { headers } from 'next/headers';
-import type { UserType } from '@/_shared/types/auth';
+import type { AuthType } from '@/_shared/types/auth';
 
 export const metadata: Metadata = {
   title: 'Room Not Found',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function NotFound() {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
-  const user: UserType.AuthUserResponse | null =
+  const user: AuthType.CurrentAuthInternalData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;

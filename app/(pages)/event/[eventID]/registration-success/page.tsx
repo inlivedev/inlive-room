@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventRegistrationSuccess from '@/_features/event/components/event-registration-success';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import type { UserType } from '@/_shared/types/auth';
+import type { AuthType } from '@/_shared/types/auth';
 import type { EventType } from '@/_shared/types/event';
 
 type PageProps = {
@@ -27,7 +27,7 @@ export default async function Page({
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
-  const userAuth: UserType.AuthUserResponse | null =
+  const userAuth: AuthType.CurrentAuthInternalData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
