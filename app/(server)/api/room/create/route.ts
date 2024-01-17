@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { roomService } from '../../_index';
 
 type createRoomRequest = {

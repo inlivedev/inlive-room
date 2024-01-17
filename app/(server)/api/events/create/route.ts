@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eventService, roomService } from '../../_index';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
 

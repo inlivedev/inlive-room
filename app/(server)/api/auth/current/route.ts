@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get('token')?.value || '';
