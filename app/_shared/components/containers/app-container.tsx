@@ -8,7 +8,7 @@ export default function AppContainer({
   user,
 }: {
   children: React.ReactNode;
-  user: AuthType.CurrentAuthInternalData | null;
+  user: AuthType.CurrentAuthData | null;
 }) {
   return (
     <>

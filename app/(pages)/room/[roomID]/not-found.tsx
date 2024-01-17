@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function NotFound() {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
-  const user: AuthType.CurrentAuthInternalData | null =
+  const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;

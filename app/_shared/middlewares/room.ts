@@ -40,7 +40,7 @@ const getClientName = (
   if (!response) return '';
 
   const userAuthHeader = response.headers.get('user-auth');
-  const user: AuthType.CurrentAuthInternalData | null =
+  const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;

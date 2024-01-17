@@ -33,7 +33,7 @@ export default async function Page({ searchParams }: PageProps) {
     typeof roomDataHeader === 'string'
       ? JSON.parse(roomDataHeader)
       : roomDataHeader;
-  const userAuth: AuthType.CurrentAuthInternalData | null =
+  const userAuth: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;

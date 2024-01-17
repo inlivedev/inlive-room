@@ -8,7 +8,7 @@ export declare namespace AuthType {
     picture_url: string;
   };
 
-  type CurrentAuthInternalData = {
+  type CurrentAuthData = {
     id: number;
     email: string;
     name: string;
@@ -47,9 +47,9 @@ export declare namespace AuthType {
     data: CurrentAuthExternalData;
   };
 
-  type CurrentAuthInternalResponse = FetcherResponse & {
+  type CurrentAuthResponse = FetcherResponse & {
     message: string;
-    data: CurrentAuthInternalData | null;
+    data: CurrentAuthData | null;
   };
 
   type SignOutResponse = FetcherResponse & {

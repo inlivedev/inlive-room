@@ -117,7 +117,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
-  const userAuth: AuthType.CurrentAuthInternalData | null =
+  const userAuth: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
