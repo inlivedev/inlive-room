@@ -36,6 +36,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!response.ok) {
+      throw new Error(`Unexpected error occurred. ${response.message || ''}}`);
+    }
+
     return NextResponse.json(response, {
       status: response.code,
     });
