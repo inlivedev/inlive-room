@@ -18,26 +18,30 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
 
     if (response) {
       const cookie = cookies().toString();
-      const clientAuthResponse: AuthType.CurrentAuthResponse =
-        await InternalApiFetcher.get('/api/auth/current', {
-          headers: {
-            cookie: cookie,
-          },
-          cache: 'no-cache',
-        }).catch((error) => {
-          Sentry.captureException(error, {
-            extra: {
-              message: 'API call error when trying to get current auth data',
+
+      try {
+        const clientAuthResponse: AuthType.CurrentAuthResponse =
+          await InternalApiFetcher.get('/api/auth/current', {
+            headers: {
+              cookie: cookie,
             },
+            cache: 'no-cache',
           });
-          console.error(error);
+
+        const currentAuth = clientAuthResponse.data
+          ? clientAuthResponse.data
+          : null;
+
+        response.headers.set('user-auth', JSON.stringify(currentAuth));
+      } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: 'API call error when trying to get current auth data',
+          },
         });
-
-      const currentAuth = clientAuthResponse.data
-        ? clientAuthResponse.data
-        : null;
-
-      response.headers.set('user-auth', JSON.stringify(currentAuth));
+        console.error(error);
+        response.headers.set('user-auth', JSON.stringify(null));
+      }
     }
 
     return response;
