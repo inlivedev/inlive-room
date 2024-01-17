@@ -18,7 +18,7 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
 
     if (response) {
       const cookie = cookies().toString();
-      const clientAuthResponse: AuthType.CurrentAuthInternalResponse =
+      const clientAuthResponse: AuthType.CurrentAuthResponse =
         await InternalApiFetcher.get('/api/auth/current', {
           headers: {
             cookie: cookie,

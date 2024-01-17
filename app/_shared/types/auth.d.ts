@@ -1,7 +1,28 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
-import type { UserType } from '@/_shared/types/user';
 
 export declare namespace AuthType {
+  type CurrentAuthExternalData = {
+    id: number;
+    email: string;
+    name: string;
+    picture_url: string;
+  };
+
+  type CurrentAuthData = {
+    id: number;
+    email: string;
+    name: string;
+    pictureUrl: string;
+  };
+
+  type CurrentAuthContext = {
+    id: number;
+    email: string;
+    name: string;
+    pictureUrl: string;
+    whitelistFeature: string[];
+  };
+
   type AuthorizeResponse = FetcherResponse & {
     message: string;
     data: string;
@@ -23,12 +44,12 @@ export declare namespace AuthType {
 
   type CurrentAuthExternalResponse = FetcherResponse & {
     message: string;
-    data: UserType.AuthUserData;
+    data: CurrentAuthExternalData;
   };
 
-  type CurrentAuthInternalResponse = FetcherResponse & {
+  type CurrentAuthResponse = FetcherResponse & {
     message: string;
-    data: UserType.AuthUserData | null;
+    data: CurrentAuthData | null;
   };
 
   type SignOutResponse = FetcherResponse & {

@@ -2,7 +2,7 @@ import type { NextFetchEvent, NextMiddleware, NextRequest } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
-import type { UserType } from '@/_shared/types/user';
+import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import { customAlphabet } from 'nanoid';
 
@@ -40,7 +40,7 @@ const getClientName = (
   if (!response) return '';
 
   const userAuthHeader = response.headers.get('user-auth');
-  const user: UserType.AuthUserData | null =
+  const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;

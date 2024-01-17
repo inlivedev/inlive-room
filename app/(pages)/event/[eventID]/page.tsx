@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventDetail from '@/_features/event/components/event-detail';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import type { UserType } from '@/_shared/types/user';
+import type { AuthType } from '@/_shared/types/auth';
 import type { EventType } from '@/_shared/types/event';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
@@ -117,7 +117,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
-  const userAuth: UserType.AuthUserData | null =
+  const userAuth: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;

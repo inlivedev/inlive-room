@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs';
 import AppContainer from '@/_shared/components/containers/app-container';
 import View from '@/_features/room/components/view';
 import type { RoomType } from '@/_shared/types/room';
-import type { UserType } from '@/_shared/types/user';
+import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 
@@ -33,7 +33,7 @@ export default async function Page({ searchParams }: PageProps) {
     typeof roomDataHeader === 'string'
       ? JSON.parse(roomDataHeader)
       : roomDataHeader;
-  const userAuth: UserType.AuthUserData | null =
+  const userAuth: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;

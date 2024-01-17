@@ -35,11 +35,8 @@ export const createAuth = (fetcher: typeof InliveApiFetcher) => {
         data: {
           email: data.email || '',
           id: data.id || 0,
-          login_type: data.login_type || 0,
           name: data.name || '',
-          picture_url: data.picture_url || '',
-          role_id: data.role_id || 0,
-          username: data.username || '',
+          pictureUrl: data.picture_url || '',
         },
       };
 
