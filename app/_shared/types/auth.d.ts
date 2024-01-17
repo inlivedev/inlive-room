@@ -20,7 +20,7 @@ export declare namespace AuthType {
     email: string;
     name: string;
     pictureUrl: string;
-    featureWhitelist: string[];
+    whitelistFeature: string[];
   };
 
   type AuthorizeResponse = FetcherResponse & {

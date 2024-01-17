@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import type { RoomType } from '@/_shared/types/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { featureFlag } from '@/_shared/utils/feature-flag';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 export default function CreateRoom() {
   const { user } = useAuthContext();
@@ -76,7 +76,10 @@ export default function CreateRoom() {
 
   const disabledKeys = [];
 
-  if (!featureFlag?.enableWebinar && !user?.webinarEnabled) {
+  if (
+    !whitelistFeature.includes('event') &&
+    !user?.whitelistFeature.includes('event')
+  ) {
     disabledKeys.push('event');
   }
 
@@ -131,12 +134,14 @@ export default function CreateRoom() {
               <DropdownItem
                 key="event"
                 description={
-                  !featureFlag?.enableWebinar && !user?.webinarEnabled
+                  !whitelistFeature.includes('event') &&
+                  !user?.whitelistFeature.includes('event')
                     ? `Currently only available for early access users`
                     : `Webinar room with speakers and audiences`
                 }
                 className={
-                  !featureFlag?.enableWebinar && !user?.webinarEnabled
+                  !whitelistFeature.includes('event') &&
+                  !user?.whitelistFeature.includes('event')
                     ? 'opacity-60'
                     : ''
                 }
