@@ -7,12 +7,12 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import type { UserType } from '@/_shared/types/auth';
+import type { AuthType } from '@/_shared/types/auth';
 
 const AuthContext = createContext({
-  user: null as UserType.AuthUserContext | null,
+  user: null as AuthType.CurrentAuthContext | null,
   setUser: (() => {}) as Dispatch<
-    SetStateAction<UserType.AuthUserContext | null>
+    SetStateAction<AuthType.CurrentAuthContext | null>
   >,
 });
 
@@ -25,11 +25,10 @@ export function AuthProvider({
   user,
 }: {
   children: React.ReactNode;
-  user: UserType.AuthUserContext | null;
+  user: AuthType.CurrentAuthContext | null;
 }) {
-  const [userState, setUserState] = useState<UserType.AuthUserContext | null>(
-    user
-  );
+  const [userState, setUserState] =
+    useState<AuthType.CurrentAuthContext | null>(user);
 
   return (
     <AuthContext.Provider value={{ user: userState, setUser: setUserState }}>
