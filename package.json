@@ -39,7 +39,7 @@
     "@types/react-dom": "^18.2.6",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
-    "autoprefixer": "^10.4.16",
+    "autoprefixer": "^10.4.17",
     "dotenv": "^16.3.1",
     "drizzle-kit": "^0.19.13",
     "eslint": "^8.44.0",
@@ -48,9 +48,9 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-tailwindcss": "^3.13.0",
     "pg": "^8.11.3",
-    "postcss": "^8.4.31",
+    "postcss": "^8.4.33",
     "prettier": "^2.8.8",
-    "tailwindcss": "^3.3.5",
+    "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3"
   }
 }
