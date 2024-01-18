@@ -84,7 +84,7 @@ export default function CreateRoom({
         console.error(error);
       }
     },
-    [user, isSubmitting, createRoom]
+    [user, isSubmitting, createRoom, setWebinarAlertActive]
   );
 
   return (
