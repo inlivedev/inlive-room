@@ -88,8 +88,8 @@ export default function CreateRoom() {
       <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
         Virtual room for your real-time collaboration
       </h2>
-      <p className="mt-4 text-base text-zinc-400 lg:text-lg">
-        Connect with anyone, anywhere. Host or join in seconds, It&apos;s that
+      <p className="mt-4 text-pretty text-base text-zinc-400 lg:text-lg">
+        Connect with anyone, anywhere. Host or join in seconds. It&apos;s that
         simple! Experience real-time messaging, video, and audio for seamless
         collaboration, all within open-source virtual rooms.
       </p>
