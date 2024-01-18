@@ -1,9 +1,11 @@
 'use client';
 import { Button } from '@nextui-org/react';
 import { useInput } from '@/_shared/hooks/use-input';
+import { useNavigate } from '@/_shared/hooks/use-navigate';
 
 export default function JoinRoom() {
   const { value: roomId, bindValue: bindField } = useInput('');
+  const { navigateTo } = useNavigate();
 
   const joinRoom = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -13,7 +15,7 @@ export default function JoinRoom() {
       return;
     }
 
-    window.location.href = `/room/${roomId}`;
+    navigateTo(`/room/${roomId}`);
   };
 
   return (
