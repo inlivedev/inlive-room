@@ -79,7 +79,6 @@ export default function EventForm() {
   const [isDescriptionValid, setDescValid] = useState(false);
   const [eventName, setEventName] = useState('');
   const [eventDescription, setEventDescription] = useState('');
-
   const [minRows, setMinRows] = useState(window.innerWidth < 768 ? 3 : 12);
 
   const { navigateTo } = useNavigate();
@@ -138,7 +137,7 @@ export default function EventForm() {
   }, []);
 
   const createEvent = useCallback(
-    async (endpoint: string) => {
+    async (isDraft: boolean) => {
       if (
         eventDescription.trim().length === 0 ||
         eventName.trim().length === 0
@@ -147,7 +146,7 @@ export default function EventForm() {
         return;
       }
 
-      const finalEndpoint = `/api/events/${endpoint}`;
+      const finalEndpoint = `/api/events/create`;
 
       const eventStartTime = new Date(
         date.setHours(parseInt(startTime.hour), parseInt(startTime.minute), 0)
@@ -180,6 +179,7 @@ export default function EventForm() {
         endTime: eventEndTime.toISOString(),
         description: eventDescription,
         host: user?.name,
+        isPublished: !isDraft,
       });
 
       const formData = new FormData();
@@ -219,10 +219,10 @@ export default function EventForm() {
   );
 
   const onDraft = useCallback(() => {
-    document.dispatchEvent(new CustomEvent(comingSoonEvent));
-  }, []);
+    createEvent(false);
+  }, [createEvent]);
 
-  const onPublish = useCallback(() => createEvent('create'), [createEvent]);
+  const onPublish = useCallback(() => createEvent(true), [createEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">

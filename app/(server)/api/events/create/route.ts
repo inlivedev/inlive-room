@@ -3,6 +3,7 @@ import { eventService, roomService } from '../../_index';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
+import { writeFileSync } from 'fs';
 
 type CreateEvent = {
   name: string;
@@ -10,6 +11,7 @@ type CreateEvent = {
   endTime: string;
   description?: string;
   host: string;
+  isPublished?: boolean;
 };
 
 export async function POST(request: NextRequest) {
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const eventMeta = JSON.parse(formData.get('data') as string) as CreateEvent;
-    const eventImage = formData.get('image') as File;
+    const eventImage = formData.get('image') as Blob;
     const eventName = eventMeta.name;
     const eventStartTime = new Date(eventMeta.startTime);
     const eventEndTime =
@@ -78,6 +80,16 @@ export async function POST(request: NextRequest) {
     }
 
     const eventRoom = await roomService.createRoom(response.data.id, 'event');
+
+    if (eventImage !== null) {
+      const eventImageBuffer = await eventImage.arrayBuffer();
+      const eventImageUint8Array = new Uint8Array(eventImageBuffer);
+
+      writeFileSync(
+        `$${process.env.STATIC_PATH}/images/event/${eventRoom.id}/poster.png`,
+        eventImageUint8Array
+      );
+    }
 
     const Event: typeof insertEvent = {
       name: eventName,
