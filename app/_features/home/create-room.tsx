@@ -74,15 +74,6 @@ export default function CreateRoom() {
     [user, isSubmitting, createRoom]
   );
 
-  const disabledKeys = [];
-
-  if (
-    !whitelistFeature.includes('event') &&
-    !user?.whitelistFeature.includes('event')
-  ) {
-    disabledKeys.push('event');
-  }
-
   return (
     <section className="md:max-w-lg">
       <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
@@ -122,32 +113,18 @@ export default function CreateRoom() {
                 )}
               </Button>
             </DropdownTrigger>
-            <DropdownMenu
-              onAction={onCreateRoomSelection}
-              disabledKeys={disabledKeys}
-            >
+            <DropdownMenu onAction={onCreateRoomSelection}>
               <DropdownItem
                 key="meeting"
-                description="Suitable for personal or group meetings"
+                description="Personal or group meetings"
               >
-                Create a room for meeting
+                Meeting
               </DropdownItem>
               <DropdownItem
                 key="event"
-                description={
-                  !whitelistFeature.includes('event') &&
-                  !user?.whitelistFeature.includes('event')
-                    ? `Currently only available for early access users`
-                    : `Webinar room with speakers and audiences`
-                }
-                className={
-                  !whitelistFeature.includes('event') &&
-                  !user?.whitelistFeature.includes('event')
-                    ? 'opacity-60'
-                    : ''
-                }
+                description="Host sessions with large audiences"
               >
-                Create a room for webinar
+                Webinar
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
