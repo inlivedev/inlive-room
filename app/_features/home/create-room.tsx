@@ -113,18 +113,39 @@ export default function CreateRoom() {
                 )}
               </Button>
             </DropdownTrigger>
-            <DropdownMenu onAction={onCreateRoomSelection}>
+            <DropdownMenu
+              disallowEmptySelection
+              aria-label="Create a room menu"
+              onAction={onCreateRoomSelection}
+            >
               <DropdownItem
                 key="meeting"
-                description="Personal or group meetings"
+                classNames={{
+                  wrapper: 'group',
+                }}
               >
-                Meeting
+                <div className="text-sm font-medium text-zinc-200">
+                  <span className="inline-block">Meeting</span>
+                </div>
+                <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
+                  Personal or group meetings
+                </div>
               </DropdownItem>
               <DropdownItem
                 key="event"
-                description="Host sessions with large audiences"
+                classNames={{
+                  wrapper: 'group',
+                }}
               >
-                Webinar
+                <div className="flex justify-between text-sm font-medium text-zinc-200">
+                  <span className="inline-block">Webinar</span>
+                  <span className="inline-flex items-center rounded-sm border border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
+                    Limited Beta
+                  </span>
+                </div>
+                <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
+                  Host sessions with large audiences
+                </div>
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -133,7 +154,7 @@ export default function CreateRoom() {
             className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
             onClick={openSignInModal}
           >
-            Sign in to create a room
+            Sign in to try inLive Room
           </Button>
         )}
       </div>
