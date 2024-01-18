@@ -8,12 +8,12 @@ export default function View() {
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
         <Header logoText="inLive Room" logoHref="/" />
-        <main className="mx-auto flex flex-1 flex-col justify-center">
-          <div className="flex w-full flex-col gap-20 lg:flex-row">
+        <main className="flex flex-1 flex-col justify-center">
+          <div className="flex w-full flex-col gap-20 md:flex-row md:gap-10 lg:gap-20">
             <div>
               <CreateRoom />
             </div>
-            <div className="flex-1">
+            <div className="mx-auto w-full max-w-[400px] md:max-w-[360px] lg:max-w-[400px]">
               <JoinRoom />
             </div>
           </div>
