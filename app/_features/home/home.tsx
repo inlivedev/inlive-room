@@ -21,25 +21,27 @@ const WebinarBetaAlert = () => {
 
 export default function View() {
   return (
-    <div className="min-viewport-height mx-auto flex h-full w-full max-w-5xl flex-1 flex-col bg-zinc-900 px-4 text-zinc-200">
-      <Header logoText="inLive Room" logoHref="/" />
-      <main className="flex flex-1 flex-col justify-center">
-        <div className="flex w-full flex-col gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
-          <div>
-            <CreateRoom />
-            <div className="mt-10 block md:hidden">
-              <WebinarBetaAlert />
+    <div className="bg-zinc-900 text-zinc-200">
+      <div className="min-viewport-height mx-auto flex h-full w-full max-w-5xl flex-1 flex-col  px-4">
+        <Header logoText="inLive Room" logoHref="/" />
+        <main className="flex flex-1 flex-col justify-center">
+          <div className="flex w-full flex-col gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
+            <div>
+              <CreateRoom />
+              <div className="mt-10 block md:hidden">
+                <WebinarBetaAlert />
+              </div>
+            </div>
+            <div className="mx-auto w-full max-w-[400px] md:max-w-[360px] lg:max-w-[400px]">
+              <JoinRoom />
             </div>
           </div>
-          <div className="mx-auto w-full max-w-[400px] md:max-w-[360px] lg:max-w-[400px]">
-            <JoinRoom />
+          <div className="hidden md:block">
+            <WebinarBetaAlert />
           </div>
-        </div>
-        <div className="hidden md:block">
-          <WebinarBetaAlert />
-        </div>
-      </main>
-      <Footer />
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 }
