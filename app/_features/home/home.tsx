@@ -5,6 +5,7 @@ import JoinRoom from '@/_features/home/join-room';
 import Footer from '@/_shared/components/footer/footer';
 import { whitelistFeature } from '@/_shared/utils/flag';
 import { useAuthContext } from '@/_shared/contexts/auth';
+import { useToggle } from '@/_shared/hooks/use-toggle';
 
 const WebinarBetaAlert = () => {
   return (
@@ -24,6 +25,8 @@ const WebinarBetaAlert = () => {
 
 export default function View() {
   const { user } = useAuthContext();
+  const { active: webinarAlertActive, setActive: setWebinarAlertActive } =
+    useToggle(false);
 
   return (
     <div className="bg-zinc-900 text-zinc-200">
@@ -32,9 +35,10 @@ export default function View() {
         <main className="flex flex-1 flex-col justify-center">
           <div className="flex w-full flex-col gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
             <div>
-              <CreateRoom />
+              <CreateRoom setWebinarAlertActive={setWebinarAlertActive} />
               {!whitelistFeature.includes('event') &&
-              !user?.whitelistFeature.includes('event') ? (
+              !user?.whitelistFeature.includes('event') &&
+              webinarAlertActive ? (
                 <div className="mt-10 block md:hidden">
                   <WebinarBetaAlert />
                 </div>
@@ -45,7 +49,8 @@ export default function View() {
             </div>
           </div>
           {!whitelistFeature.includes('event') &&
-          !user?.whitelistFeature.includes('event') ? (
+          !user?.whitelistFeature.includes('event') &&
+          webinarAlertActive ? (
             <div className="hidden md:block">
               <WebinarBetaAlert />
             </div>

@@ -17,7 +17,11 @@ import type { RoomType } from '@/_shared/types/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { whitelistFeature } from '@/_shared/utils/flag';
 
-export default function CreateRoom() {
+export default function CreateRoom({
+  setWebinarAlertActive,
+}: {
+  setWebinarAlertActive: () => void;
+}) {
   const { user } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,6 +56,15 @@ export default function CreateRoom() {
   const onCreateRoomSelection = useCallback(
     async (key: Key) => {
       if (!user || isSubmitting || typeof key !== 'string') return;
+
+      if (
+        key === 'event' &&
+        !whitelistFeature.includes('event') &&
+        !user?.whitelistFeature.includes('event')
+      ) {
+        setWebinarAlertActive();
+        return;
+      }
 
       setIsSubmitting(true);
 
