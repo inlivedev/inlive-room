@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { roomService } from '../../_index';
 
 type createRoomRequest = {
@@ -13,28 +13,23 @@ export async function POST(request: NextRequest) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
-  if (!requestToken) {
-    return NextResponse.json(
-      {
-        code: 401,
-        message: 'Please check if token is provided in the cookie',
-      },
-      { status: 401 }
-    );
-  }
-
   try {
-    const response = await getCurrentAuthenticated(requestToken.value);
+    const response = await getCurrentAuthenticated(requestToken?.value || '');
 
-    if (!response.data.id) {
-      throw new Error(
-        'Unable to create room because the user is not authenticated'
+    if (!response.ok || !response.data.id) {
+      return NextResponse.json(
+        {
+          code: 401,
+          ok: false,
+          message: 'Please check if token is provided in the cookie',
+        },
+        { status: 401 }
       );
     }
-    let body: createRoomRequest;
-    try {
-      body = (await request.json()) as createRoomRequest;
-    } catch (error) {
+
+    const body = (await request.json()) as createRoomRequest;
+
+    if (body.type !== 'event' && body.type !== 'meeting') {
       return NextResponse.json(
         {
           code: 400,

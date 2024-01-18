@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
@@ -70,9 +71,18 @@ export function MetadataProvider({
             metadataState.previousLayout !== metadataState.currentLayout &&
             metadataState.currentLayout !== 'presentation'
           ) {
-            await clientSDK.setMetadata(roomID, {
-              previousLayout: metadataState.currentLayout,
-            });
+            try {
+              await clientSDK.setMetadata(roomID, {
+                previousLayout: metadataState.currentLayout,
+              });
+            } catch (error) {
+              Sentry.captureException(error, {
+                extra: {
+                  message: `API call error when trying to set metadata previousLayout`,
+                },
+              });
+              console.error(error);
+            }
           }
         }
 

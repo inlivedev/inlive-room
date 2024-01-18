@@ -20,6 +20,13 @@ type ViewProps = {
   client: ClientType.ClientData;
   roomType: string;
   isModerator: boolean;
+  debug: boolean;
+  codecPreferences: string[];
+  bitrateConfig: {
+    highBitrate: number;
+    midBitrate: number;
+    lowBitrate: number;
+  };
 };
 
 export default function View({
@@ -27,6 +34,9 @@ export default function View({
   client,
   roomType,
   isModerator,
+  debug,
+  codecPreferences,
+  bitrateConfig,
 }: ViewProps) {
   const [activeView, setActiveView] = useState<string>('lobby');
 
@@ -49,7 +59,13 @@ export default function View({
 
   return (
     <div className="bg-zinc-900 text-zinc-200">
-      <PeerProvider roomID={roomID} client={client}>
+      <PeerProvider
+        roomID={roomID}
+        client={client}
+        debug={debug}
+        codecPreferences={codecPreferences}
+        bitrateConfig={bitrateConfig}
+      >
         <ClientProvider roomID={roomID} client={client}>
           <DeviceProvider>
             <ParticipantProvider>

@@ -9,11 +9,13 @@ import {
   DropdownItem,
   Spinner,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import { useState } from 'react';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import type { RoomType } from '@/_shared/types/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 export default function CreateRoom() {
   const { user } = useAuthContext();
@@ -31,8 +33,10 @@ export default function CreateRoom() {
         }),
       });
 
-    if (response.code > 299 || !response.data) {
-      throw new Error(response.message);
+    if (!response || !response.ok) {
+      throw new Error(
+        `Failed to create a ${type} room. ${response?.message || ''}`
+      );
     }
 
     const room = response.data;
@@ -47,21 +51,21 @@ export default function CreateRoom() {
 
   const onCreateRoomSelection = useCallback(
     async (key: Key) => {
-      if (!user || isSubmitting) return;
+      if (!user || isSubmitting || typeof key !== 'string') return;
 
       setIsSubmitting(true);
 
       try {
-        if (key === 'meeting-room') {
-          const room = await createRoom('meeting');
-          setIsSubmitting(false);
-          window.location.href = `/room/${room.id}`;
-        } else if (key === 'webinar-room') {
-          const room = await createRoom('event');
-          setIsSubmitting(false);
-          window.location.href = `/room/${room.id}`;
-        }
+        const room = await createRoom(key);
+        setIsSubmitting(false);
+        window.location.href = `/room/${room.id}`;
       } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: `API call error when trying to create ${key} room`,
+          },
+        });
+
         setIsSubmitting(false);
         alert('Failed to create a room. Please try again later! ');
         console.error(error);
@@ -69,6 +73,15 @@ export default function CreateRoom() {
     },
     [user, isSubmitting, createRoom]
   );
+
+  const disabledKeys = [];
+
+  if (
+    !whitelistFeature.includes('event') &&
+    !user?.whitelistFeature.includes('event')
+  ) {
+    disabledKeys.push('event');
+  }
 
   return (
     <section className="max-w-xl lg:max-w-lg">
@@ -108,16 +121,30 @@ export default function CreateRoom() {
                 )}
               </Button>
             </DropdownTrigger>
-            <DropdownMenu onAction={onCreateRoomSelection}>
+            <DropdownMenu
+              onAction={onCreateRoomSelection}
+              disabledKeys={disabledKeys}
+            >
               <DropdownItem
-                key="meeting-room"
+                key="meeting"
                 description="Suitable for personal or group meetings"
               >
                 Create a room for meeting
               </DropdownItem>
               <DropdownItem
-                key="webinar-room"
-                description="Webinar room with speakers and audiences"
+                key="event"
+                description={
+                  !whitelistFeature.includes('event') &&
+                  !user?.whitelistFeature.includes('event')
+                    ? `Currently only available for early access users`
+                    : `Webinar room with speakers and audiences`
+                }
+                className={
+                  !whitelistFeature.includes('event') &&
+                  !user?.whitelistFeature.includes('event')
+                    ? 'opacity-60'
+                    : ''
+                }
               >
                 Create a room for webinar
               </DropdownItem>
@@ -128,7 +155,7 @@ export default function CreateRoom() {
             className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
             onClick={openSignInModal}
           >
-            Sign in to your account
+            Sign in to create a room
           </Button>
         )}
       </div>

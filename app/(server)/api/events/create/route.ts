@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eventService, roomService } from '../../_index';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
 import { writeFileSync } from 'fs';
@@ -18,15 +18,19 @@ export async function POST(request: NextRequest) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
-  if (!requestToken) {
-    return NextResponse.json(
-      {
-        code: 401,
-        message: 'Please check if token is provided in the cookie',
-      },
-      { status: 401 }
-    );
-  }
+  try {
+    const response = await getCurrentAuthenticated(requestToken?.value || '');
+
+    if (!response.ok || !response.data.id) {
+      return NextResponse.json(
+        {
+          code: 401,
+          ok: false,
+          message: 'Please check if token is provided in the cookie',
+        },
+        { status: 401 }
+      );
+    }
 
   try {
     const formData = await request.formData();
@@ -66,16 +70,6 @@ export async function POST(request: NextRequest) {
         code: 400,
         ok: false,
         message: 'Event host is not valid, please check the request body',
-      });
-    }
-
-    const response = await getCurrentAuthenticated(requestToken.value);
-
-    if (!response.ok) {
-      return NextResponse.json({
-        code: 401,
-        ok: false,
-        message: 'Please check if token is provided in the cookie',
       });
     }
 

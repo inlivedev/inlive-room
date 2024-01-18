@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { eventRepo, eventService } from '../../_index';
 import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { insertEvent } from '@/(server)/_features/event/schema';
 
