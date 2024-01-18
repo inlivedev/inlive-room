@@ -37,24 +37,24 @@ export default function View() {
             <div>
               <CreateRoom setWebinarAlertActive={setWebinarAlertActive} />
               {!whitelistFeature.includes('event') &&
-              !user?.whitelistFeature.includes('event') &&
-              webinarAlertActive ? (
-                <div className="mt-10 block md:hidden">
-                  <WebinarBetaAlert />
-                </div>
-              ) : null}
+                !user?.whitelistFeature.includes('event') &&
+                webinarAlertActive && (
+                  <div className="mt-10 block md:hidden">
+                    <WebinarBetaAlert />
+                  </div>
+                )}
             </div>
             <div className="mx-auto w-full max-w-[400px] md:max-w-[360px] lg:max-w-[400px]">
               <JoinRoom />
             </div>
           </div>
           {!whitelistFeature.includes('event') &&
-          !user?.whitelistFeature.includes('event') &&
-          webinarAlertActive ? (
-            <div className="hidden md:block">
-              <WebinarBetaAlert />
-            </div>
-          ) : null}
+            !user?.whitelistFeature.includes('event') &&
+            webinarAlertActive && (
+              <div className="hidden md:block">
+                <WebinarBetaAlert />
+              </div>
+            )}
         </main>
         <Footer />
       </div>
