@@ -15,4 +15,7 @@ export const users = pgTable('users', {
 });
 
 export type User = InferSelectModel<typeof users>;
-export type InsertUser = InferInsertModel<typeof users>;
+export type InsertUser = Omit<
+  InferInsertModel<typeof users>,
+  'id' | 'createdAt'
+>;
