@@ -20,19 +20,19 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
       const requestToken = cookies().get('token');
 
       try {
-        const clientAuthResponse: AuthType.CurrentAuthResponse =
-          await InternalApiFetcher.get('/api/auth/current', {
+        const user: AuthType.CurrentAuthResponse = await InternalApiFetcher.get(
+          '/api/auth/current',
+          {
             headers: {
-              Authorization: `Bearer ${requestToken?.value || ''}`
+              Authorization: `Bearer ${requestToken?.value || ''}`,
             },
             cache: 'no-cache',
-          });
+          }
+        );
 
-        const currentAuth = clientAuthResponse.data
-          ? clientAuthResponse.data
-          : null;
+        const userData = user.data ? user.data : null;
 
-        response.headers.set('user-auth', JSON.stringify(currentAuth));
+        response.headers.set('user-auth', JSON.stringify(userData));
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
