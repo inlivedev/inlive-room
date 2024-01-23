@@ -9,12 +9,12 @@ export async function GET(request: NextRequest) {
     const token = request.headers.get('authorization') || '';
 
     const authResponse: AuthType.CurrentAuthExternalResponse =
-    await InliveApiFetcher.get('/auth/current', {
-      headers: {
-        Authorization: token,
-      },
-      cache: 'no-cache',
-    });
+      await InliveApiFetcher.get('/auth/current', {
+        headers: {
+          Authorization: token,
+        },
+        cache: 'no-cache',
+      });
 
     if (authResponse.code === 403) {
       return NextResponse.json(
@@ -32,7 +32,9 @@ export async function GET(request: NextRequest) {
 
     if (!authResponse.ok) {
       Sentry.captureMessage(
-        `API call error when trying to get current auth data`,
+        `API call error when trying to get current auth data. ${
+          authResponse?.message || ''
+        }`,
         'error'
       );
 
@@ -55,21 +57,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      code: 200,
-      message: 'OK',
-      ok: true,
-      data: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        pictureUrl: user.pictureUrl,
-        whitelistFeature: user.whitelistFeature,
-        createdAt: user.createdAt,
+    return NextResponse.json(
+      {
+        code: 200,
+        message: 'OK',
+        ok: true,
+        data: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          pictureUrl: user.pictureUrl,
+          whitelistFeature: user.whitelistFeature,
+          createdAt: user.createdAt,
+        },
       },
-    }, {
-      status: 200,
-    });
+      {
+        status: 200,
+      }
+    );
   } catch (error: any) {
     return NextResponse.json(
       {
