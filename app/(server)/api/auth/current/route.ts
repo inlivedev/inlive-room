@@ -1,53 +1,81 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
+import * as Sentry from '@sentry/nextjs';
+import { InliveApiFetcher } from '@/_shared/utils/fetcher';
+import { userService } from '@/(server)/api/_index';
+import type { AuthType } from '@/_shared/types/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('token')?.value || '';
+    const token = request.headers.get('authorization') || '';
 
-    if (!token) {
+    const authResponse: AuthType.CurrentAuthExternalResponse =
+    await InliveApiFetcher.get('/auth/current', {
+      headers: {
+        Authorization: token,
+      },
+      cache: 'no-cache',
+    });
+
+    if (authResponse.code === 403) {
       return NextResponse.json(
         {
-          code: 401,
-          message:
-            'Unauthorized. Credential is needed to continue proceed with the request.',
+          code: 403,
+          message: 'Forbidden. Invalid credential.',
           ok: false,
           data: null,
         },
         {
-          status: 401,
+          status: 403,
         }
       );
     }
 
-    const response = await getCurrentAuthenticated(token);
+    if (!authResponse.ok) {
+      Sentry.captureMessage(
+        `API call error when trying to get current auth data`,
+        'error'
+      );
 
-    if (response.code === 403) {
+      throw new Error(authResponse.message || '');
+    }
+
+    const user = await userService.getUserByEmail(authResponse.data.email);
+
+    if (!user) {
       return NextResponse.json(
         {
-          code: response.code,
-          message: 'Forbidden. Credential is invalid',
+          code: 404,
+          message: 'The user data is not found.',
           ok: false,
           data: null,
         },
         {
-          status: response.code,
+          status: 404,
         }
       );
     }
 
-    if (!response.ok) {
-      throw new Error(`Unexpected error occurred. ${response.message || ''}}`);
-    }
-
-    return NextResponse.json(response, {
-      status: response.code,
+    return NextResponse.json({
+      code: 200,
+      message: 'OK',
+      ok: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        pictureUrl: user.pictureUrl,
+        whitelistFeature: user.whitelistFeature,
+        accountId: user.accountId,
+        createdAt: user.createdAt,
+      },
+    }, {
+      status: 200,
     });
   } catch (error: any) {
     return NextResponse.json(
       {
         code: 500,
-        message: `Server cannot retrieve the auth data. ${error.message || ''}`,
+        message: `Unexpected error on our side. API cannot retrieve the auth data.`,
         ok: false,
         data: null,
       },

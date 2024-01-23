@@ -17,13 +17,13 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
     }
 
     if (response) {
-      const cookie = cookies().toString();
+      const requestToken = cookies().get('token');
 
       try {
         const clientAuthResponse: AuthType.CurrentAuthResponse =
           await InternalApiFetcher.get('/api/auth/current', {
             headers: {
-              cookie: cookie,
+              Authorization: `Bearer ${requestToken?.value || ''}`
             },
             cache: 'no-cache',
           });
