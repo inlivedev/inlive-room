@@ -65,7 +65,6 @@ export async function GET(request: NextRequest) {
         name: user.name,
         pictureUrl: user.pictureUrl,
         whitelistFeature: user.whitelistFeature,
-        accountId: user.accountId,
         createdAt: user.createdAt,
       },
     }, {

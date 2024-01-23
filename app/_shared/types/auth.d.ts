@@ -13,6 +13,8 @@ export declare namespace AuthType {
     email: string;
     name: string;
     pictureUrl: string;
+    whitelistFeature: string[];
+    createdAt: string;
   };
 
   type CurrentAuthContext = {
