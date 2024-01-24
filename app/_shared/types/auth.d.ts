@@ -14,7 +14,7 @@ export declare namespace AuthType {
     name: string;
     pictureUrl: string;
     whitelistFeature: string[];
-    createdAt: string;
+    createdAt: string | null;
   };
 
   type CurrentAuthContext = {
