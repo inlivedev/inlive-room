@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
         {
           code: 409,
           message: `A user already exists with the same email provided.`,
+          ok: false,
+          data: null,
         },
         { status: 409 }
       );
