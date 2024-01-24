@@ -10,7 +10,7 @@ export const users = pgTable('users', {
     .array()
     .notNull()
     .default(sql`array[]::text[]`),
-  accountId: integer('account_id').notNull().unique(),
+  accountId: integer('account_id'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

@@ -4,10 +4,9 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"name" text NOT NULL,
 	"picture_url" text,
 	"whitelist_feature" text[] DEFAULT array[]::text[] NOT NULL,
-	"account_id" integer NOT NULL,
+	"account_id" integer,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "users_email_unique" UNIQUE("email"),
-	CONSTRAINT "users_account_id_unique" UNIQUE("account_id")
+	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
 ALTER TABLE "events_to_participant" DROP CONSTRAINT "events_to_participant_event_id_participant_id";--> statement-breakpoint
