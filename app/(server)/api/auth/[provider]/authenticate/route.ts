@@ -98,7 +98,12 @@ export async function GET(
 
         const userResponse: AuthType.CreateUserResponse =
           await InternalApiFetcher.post('/api/users/create', {
-            body: JSON.stringify({}),
+            body: JSON.stringify({
+              email: currentAuth.data.email,
+              name: currentAuth.data.name,
+              accountId: currentAuth.data.id,
+              pictureUrl: currentAuth.data.picture_url,
+            }),
           });
 
         if (!userResponse.ok && userResponse.code !== 409) {
