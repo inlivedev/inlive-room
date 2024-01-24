@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "577d4ad5-f30e-4e75-980a-1f13ae9b8317",
+  "id": "e7b6e815-d481-4439-972b-36bd870e23dc",
   "prevId": "bcea71ca-beb4-4abf-b426-7de9bc11eee9",
   "tables": {
     "events_to_participant": {
@@ -89,6 +89,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "end_time": {
+          "name": "end_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -102,12 +108,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "end_time": {
-          "name": "end_time",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
         },
         "description": {
           "name": "description",

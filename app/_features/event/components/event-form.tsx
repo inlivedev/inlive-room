@@ -33,7 +33,8 @@ import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
-import Compressor from 'compressorjs';
+import { selectEvent } from '@/(server)/_features/event/schema';
+import { compressImage } from '@/_shared/utils/compress-image';
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
   switch (action.type) {
@@ -51,7 +52,14 @@ const reducer = (state: ImageState, action: ActionType): ImageState => {
   }
 };
 
-export default function EventForm() {
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+const LOCAL_STORAGE_PATH = process.env.LOCAL_STORAGE_PATH;
+
+export default function EventForm({
+  data: existingEvent,
+}: {
+  data?: typeof selectEvent;
+}) {
   // Constant for event
   const setStartTimeEvent = 'open:event-time-picker-start-modal';
   const setEndTimeEvent = 'open:event-time-picker-end-modal';
@@ -125,17 +133,6 @@ export default function EventForm() {
     }
   }, [startTime.hour, startTime.minute, endTime.hour]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setMinRows(window.innerWidth < 768 ? 3 : 12);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup function to remove the event listener
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const createEvent = useCallback(
     async (isDraft: boolean) => {
       if (
@@ -158,19 +155,7 @@ export default function EventForm() {
       let imageFile: File | Blob | null = null;
 
       if (imageData.imageBlob) {
-        new Compressor(imageData.imageBlob, {
-          height: 280,
-          width: 560,
-          quality: 0.8,
-          resize: 'cover',
-          mimeType: 'image/webp',
-          success: async (result) => {
-            imageFile = result;
-          },
-          error(err) {
-            console.log(err.message);
-          },
-        });
+        imageFile = await compressImage(imageData.imageBlob, 280, 560, 0.8);
       }
 
       const data = JSON.stringify({
@@ -190,11 +175,11 @@ export default function EventForm() {
       formData.append('data', data);
 
       const respEvent = await InternalApiFetcher.post(finalEndpoint, {
-        body: data,
+        body: formData,
+        headers: undefined,
       });
 
       if (respEvent.ok) {
-        console.log(respEvent.data);
         const redirectPath = new URL(
           `/event/${respEvent.data.slug}`,
           window.location.origin
@@ -218,11 +203,19 @@ export default function EventForm() {
     ]
   );
 
-  const onDraft = useCallback(() => {
-    createEvent(false);
+  const saveAsDraft = useCallback(() => {
+    createEvent(true);
   }, [createEvent]);
 
+  const updateDraft = useCallback(() => {
+    console.log('update draft');
+  }, []);
+
   const onPublish = useCallback(() => createEvent(true), [createEvent]);
+
+  const updatePublishedEvent = useCallback(() => {
+    console.log('update published event');
+  }, []);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -262,27 +255,23 @@ export default function EventForm() {
                 Lets create your event
               </h1>
             </div>
-            <div className="collapse flex h-0 w-full flex-wrap gap-2 sm:visible sm:h-fit sm:w-fit">
+            <div className="fixed bottom-0 left-0 flex w-full gap-2 border-t border-zinc-700 bg-zinc-900 px-4 py-3 sm:relative sm:w-fit sm:border-t-0 sm:bg-transparent lg:p-0">
+              {existingEvent === undefined ||
+              existingEvent.isPublished === false ? (
+                <Button
+                  onPress={existingEvent ? updateDraft : saveAsDraft}
+                  className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
+                >
+                  {existingEvent ? 'Update Draft' : 'Save as draft'}
+                </Button>
+              ) : null}
               <Button
-                onClick={() => {
-                  console.log(imageData);
-                  console.log(eventDescription);
-                  console.log(eventName);
-                }}
-              >
-                Debug Data
-              </Button>
-              <Button
-                onPress={onDraft}
-                className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
-              >
-                Save as draft
-              </Button>
-              <Button
-                onPress={onPublish}
+                onPress={
+                  existingEvent?.isPublished ? updatePublishedEvent : onPublish
+                }
                 className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
               >
-                Publish
+                {existingEvent?.isPublished ? 'Update' : 'Publish'}
               </Button>
             </div>
           </div>
@@ -318,7 +307,6 @@ export default function EventForm() {
                   label="Description"
                   labelPlacement="outside"
                   radius="sm"
-                  minRows={minRows}
                   value={eventDescription}
                   onValueChange={setEventDescription}
                   isInvalid={!isDescriptionValid}
@@ -344,7 +332,6 @@ export default function EventForm() {
                         zIndex: 1,
                         objectFit: 'cover',
                       }}
-                      // classNames={{ img: 'object-cover' }}
                     ></NextImage>
                     <Button
                       className="hover:opactiy-100 mr-2  mt-2 bg-red-800 opacity-30 active:opacity-100"
@@ -444,20 +431,6 @@ export default function EventForm() {
               </div>
             </div>
           </div>
-        </div>
-        <div className="bottom-0 flex h-fit  flex-none gap-4 rounded-t-xl  py-6 sm:invisible sm:h-0 sm:py-0">
-          <Button
-            className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
-            onPress={onDraft}
-          >
-            Save as draft
-          </Button>
-          <Button
-            className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
-            onPress={onPublish}
-          >
-            Publish
-          </Button>
         </div>
       </div>
     </div>

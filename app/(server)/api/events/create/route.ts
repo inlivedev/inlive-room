@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { eventService, roomService } from '../../_index';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
-import { writeFileSync } from 'fs';
-
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
 type CreateEvent = {
   name: string;
   startTime: string;
@@ -14,7 +14,7 @@ type CreateEvent = {
   isPublished?: boolean;
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
@@ -32,8 +32,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-  try {
-    const formData = await request.formData();
+    const formData = await req.formData();
     const eventMeta = JSON.parse(formData.get('data') as string) as CreateEvent;
     const eventImage = formData.get('image') as Blob;
     const eventName = eventMeta.name;
@@ -75,16 +74,6 @@ export async function POST(request: NextRequest) {
 
     const eventRoom = await roomService.createRoom(response.data.id, 'event');
 
-    if (eventImage !== null) {
-      const eventImageBuffer = await eventImage.arrayBuffer();
-      const eventImageUint8Array = new Uint8Array(eventImageBuffer);
-
-      writeFileSync(
-        `$${process.env.STATIC_PATH}/images/event/${eventRoom.id}/poster.png`,
-        eventImageUint8Array
-      );
-    }
-
     const Event: typeof insertEvent = {
       name: eventName,
       startTime: eventStartTime,
@@ -97,6 +86,16 @@ export async function POST(request: NextRequest) {
     };
 
     const createdEvent = await eventService.createEvent(Event);
+
+    if (eventImage !== null) {
+      const eventImageBuffer = await eventImage.arrayBuffer();
+      const eventImageUint8Array = new Uint8Array(eventImageBuffer);
+
+      const path = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}/assets/images/event/${createdEvent.id}/poster.webp`;
+      ensureDirectoryExist(path);
+      writeFileSync(path, eventImageUint8Array);
+    }
+
     return NextResponse.json({
       code: 201,
       ok: true,
@@ -105,10 +104,22 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.log(error);
-    return NextResponse.json({
-      code: 500,
-      ok: false,
-      message: 'Something went wrong, please try again later',
-    });
+    return NextResponse.json(
+      {
+        code: 500,
+        ok: false,
+        message: 'Something went wrong, please try again later',
+      },
+      { status: 500 }
+    );
   }
+}
+
+function ensureDirectoryExist(filePath: string) {
+  const dir = dirname(filePath);
+  if (existsSync(dir)) {
+    return true;
+  }
+  ensureDirectoryExist(dir);
+  mkdirSync(dir);
 }
