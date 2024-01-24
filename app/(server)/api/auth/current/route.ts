@@ -4,6 +4,8 @@ import { InliveApiFetcher } from '@/_shared/utils/fetcher';
 import { userService } from '@/(server)/api/_index';
 import type { AuthType } from '@/_shared/types/auth';
 
+const persistentData = process.env.PERSISTENT_DATA === 'true';
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('authorization') || '';
@@ -39,6 +41,27 @@ export async function GET(request: NextRequest) {
       );
 
       throw new Error(authResponse.message || '');
+    }
+
+    if (!persistentData) {
+      return NextResponse.json(
+        {
+          code: 200,
+          message: 'OK',
+          ok: true,
+          data: {
+            id: authResponse.data.id,
+            email: authResponse.data.email,
+            name: authResponse.data.name,
+            pictureUrl: authResponse.data.picture_url,
+            whitelistFeature: [],
+            createdAt: null,
+          },
+        },
+        {
+          status: 200,
+        }
+      );
     }
 
     const user = await userService.getUserByEmail(authResponse.data.email);
