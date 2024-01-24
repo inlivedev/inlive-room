@@ -5,6 +5,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
+const persistentData = process.env.PERSISTENT_DATA === 'true';
 
 export async function GET(
   request: NextRequest,
@@ -68,53 +69,57 @@ export async function GET(
           `Authentication error. No token credential received from the server.`
         );
       } else {
-        const currentAuth: AuthType.CurrentAuthExternalResponse =
-          await InliveApiFetcher.get('/auth/current', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            cache: 'no-cache',
-          });
+        if (persistentData) {
+          const currentAuth: AuthType.CurrentAuthExternalResponse =
+            await InliveApiFetcher.get('/auth/current', {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              cache: 'no-cache',
+            });
 
-        if (currentAuth.code === 403) {
-          Sentry.captureMessage(
-            `Authentication error. Invalid token credential received from the server.`,
-            'error'
-          );
+          if (currentAuth.code === 403) {
+            Sentry.captureMessage(
+              `Authentication error. Invalid token credential received from the server.`,
+              'error'
+            );
 
-          throw new Error('Invalid token credential received from the server.');
-        }
+            throw new Error(
+              'Invalid token credential received from the server.'
+            );
+          }
 
-        if (!currentAuth.ok) {
-          Sentry.captureMessage(
-            `API call error when trying to get current auth data. ${
-              authResponse?.message || ''
-            }`,
-            'error'
-          );
+          if (!currentAuth.ok) {
+            Sentry.captureMessage(
+              `API call error when trying to get current auth data. ${
+                authResponse?.message || ''
+              }`,
+              'error'
+            );
 
-          throw new Error(authResponse.message || '');
-        }
+            throw new Error(authResponse.message || '');
+          }
 
-        const userResponse: AuthType.CreateUserResponse =
-          await InternalApiFetcher.post('/api/users/create', {
-            body: JSON.stringify({
-              email: currentAuth.data.email,
-              name: currentAuth.data.name,
-              accountId: currentAuth.data.id,
-              pictureUrl: currentAuth.data.picture_url,
-            }),
-          });
+          const userResponse: AuthType.CreateUserResponse =
+            await InternalApiFetcher.post('/api/users/create', {
+              body: JSON.stringify({
+                email: currentAuth.data.email,
+                name: currentAuth.data.name,
+                accountId: currentAuth.data.id,
+                pictureUrl: currentAuth.data.picture_url,
+              }),
+            });
 
-        if (!userResponse.ok && userResponse.code !== 409) {
-          Sentry.captureMessage(
-            `API call error when trying to create user. ${
-              userResponse?.message || ''
-            }`,
-            'error'
-          );
+          if (!userResponse.ok && userResponse.code !== 409) {
+            Sentry.captureMessage(
+              `API call error when trying to create user. ${
+                userResponse?.message || ''
+              }`,
+              'error'
+            );
 
-          throw new Error(userResponse.message || '');
+            throw new Error(userResponse.message || '');
+          }
         }
 
         const response = NextResponse.redirect(
