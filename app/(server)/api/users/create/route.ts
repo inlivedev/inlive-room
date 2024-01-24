@@ -5,11 +5,16 @@ import { userService } from '../../_index';
 export async function POST(request: NextRequest) {
   const body: InsertUser = await request.json();
 
-  if (!body.email || !body.name) {
+  if (
+    !body.email ||
+    typeof body.email !== 'string' ||
+    !body.name ||
+    typeof body.name !== 'string'
+  ) {
     return NextResponse.json(
       {
         code: 400,
-        message: 'Email and name are required.',
+        message: 'Valid email and name are required.',
         ok: false,
         data: null,
       },
@@ -35,9 +40,11 @@ export async function POST(request: NextRequest) {
     const data = {
       email: body.email,
       name: body.name,
-      accountId: body.accountId || null,
-      pictureUrl: body.pictureUrl || null,
-      whitelistFeature: body.whitelistFeature || [],
+      accountId: typeof body.accountId === 'number' ? body.accountId : null,
+      pictureUrl: typeof body.pictureUrl === 'string' ? body.pictureUrl : null,
+      whitelistFeature: Array.isArray(body.whitelistFeature)
+        ? body.whitelistFeature
+        : [],
     };
 
     const user = await userService.createUser(data);
