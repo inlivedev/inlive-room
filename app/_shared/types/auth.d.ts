@@ -44,6 +44,11 @@ export declare namespace AuthType {
     } | null;
   };
 
+  type CreateUserResponse = FetcherResponse & {
+    message: string;
+    data: CurrentAuthData | null;
+  };
+
   type CurrentAuthExternalResponse = FetcherResponse & {
     message: string;
     data: CurrentAuthExternalData;

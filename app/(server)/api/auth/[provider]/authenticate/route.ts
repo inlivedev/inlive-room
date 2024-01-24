@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
 import * as Sentry from '@sentry/nextjs';
 import { InliveApiFetcher } from '@/_shared/utils/fetcher';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
@@ -30,7 +30,21 @@ export async function GET(
           body: JSON.stringify(body),
         });
 
-      if (!authResponse || !authResponse.ok) {
+      if (authResponse.code === 400) {
+        return NextResponse.json(
+          {
+            code: 400,
+            message: 'Bad Request. Invalid authentication request.',
+            ok: false,
+            data: null,
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      if (!authResponse.ok) {
         Sentry.captureMessage(
           `API call error when trying to authenticate user. ${
             authResponse?.message || ''
@@ -43,41 +57,91 @@ export async function GET(
         );
       }
 
-      if (!authResponse.data || !authResponse.data.token) {
+      const token = authResponse?.data?.token;
+
+      if (!token) {
         Sentry.captureMessage(
-          `Authentication error. No token received from the server.`,
+          `Authentication error. No token credential received from the server.`,
           'error'
         );
         throw new Error(
-          `Authentication error. No token received from the server.`
+          `Authentication error. No token credential received from the server.`
         );
       } else {
-        const thirtyDays = 60 * 60 * 24 * 30;
+        const currentAuth: AuthType.CurrentAuthExternalResponse =
+          await InliveApiFetcher.get('/auth/current', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            cache: 'no-cache',
+          });
 
-        cookies().set({
+        if (currentAuth.code === 403) {
+          Sentry.captureMessage(
+            `Authentication error. Invalid token credential received from the server.`,
+            'error'
+          );
+
+          throw new Error('Invalid token credential received from the server.');
+        }
+
+        if (!currentAuth.ok) {
+          Sentry.captureMessage(
+            `API call error when trying to get current auth data. ${
+              authResponse?.message || ''
+            }`,
+            'error'
+          );
+
+          throw new Error(authResponse.message || '');
+        }
+
+        const userResponse: AuthType.CreateUserResponse =
+          await InternalApiFetcher.post('/api/users/create', {
+            body: JSON.stringify({}),
+          });
+
+        if (!userResponse.ok && userResponse.code !== 409) {
+          Sentry.captureMessage(
+            `API call error when trying to create user. ${
+              userResponse?.message || ''
+            }`,
+            'error'
+          );
+
+          throw new Error(userResponse.message || '');
+        }
+
+        const response = NextResponse.redirect(
+          `${APP_ORIGIN}${pathnameCookie}`,
+          {
+            status: 307,
+          }
+        );
+
+        const oneWeek = 60 * 60 * 24 * 7;
+
+        response.cookies.set({
           name: 'token',
-          value: authResponse.data.token,
+          value: token,
           path: '/',
           sameSite: 'lax',
           httpOnly: true,
-          maxAge: thirtyDays,
+          maxAge: oneWeek,
         });
 
-        return NextResponse.redirect(`${APP_ORIGIN}${pathnameCookie}`, {
-          status: 307,
-        });
+        return response;
       }
     } else {
       return NextResponse.json(
         {
-          code: 403,
-          message:
-            'Forbidden to proceed further. Incorrect authentication state.',
+          code: 400,
+          message: 'Bad Request. Invalid authentication request.',
           ok: false,
           data: null,
         },
         {
-          status: 403,
+          status: 400,
         }
       );
     }
@@ -85,7 +149,7 @@ export async function GET(
     return NextResponse.json(
       {
         code: 500,
-        message: `Authentication error. ${error.message || ''}`,
+        message: `Unexpected error on our side. ${error.message || ''}`,
         ok: false,
         data: null,
       },
