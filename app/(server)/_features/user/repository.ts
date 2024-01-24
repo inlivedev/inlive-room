@@ -3,9 +3,8 @@ import { type InsertUser, users } from '@/(server)/_features/user/schema';
 
 export class UserRepo {
   async addUser(data: InsertUser) {
-    const user = await db.insert(users).values(data).returning();
-    console.log('user', user);
-    return user[0];
+    const [user] = await db.insert(users).values(data).returning();
+    return user;
   }
 
   async getUserById(userId: number) {
