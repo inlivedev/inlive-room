@@ -4,8 +4,7 @@ import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { insertEvent } from '@/(server)/_features/event/schema';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { type AuthType } from '@/_shared/types/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 export async function GET(
   _: Request,
@@ -18,14 +17,7 @@ export async function GET(
     let userID = undefined;
 
     if (requestToken) {
-      const response: AuthType.CurrentAuthResponse =
-        await InternalApiFetcher.get('/api/auth/current', {
-          headers: {
-            Authorization: `Bearer ${requestToken?.value || ''}`,
-          },
-          cache: 'no-cache',
-        });
-
+      const response = await getCurrentAuthenticated(requestToken?.value || '');
       const user = response.data ? response.data : null;
 
       if (user) {
@@ -87,16 +79,7 @@ export async function DELETE(
     );
   }
 
-  const response: AuthType.CurrentAuthResponse = await InternalApiFetcher.get(
-    '/api/auth/current',
-    {
-      headers: {
-        Authorization: `Bearer ${requestToken?.value || ''}`,
-      },
-      cache: 'no-cache',
-    }
-  );
-
+  const response = await getCurrentAuthenticated(requestToken?.value || '');
   const user = response.data ? response.data : null;
 
   if (!user) {
@@ -164,16 +147,7 @@ export async function PUT(
     );
   }
 
-  const response: AuthType.CurrentAuthResponse = await InternalApiFetcher.get(
-    '/api/auth/current',
-    {
-      headers: {
-        Authorization: `Bearer ${requestToken?.value || ''}`,
-      },
-      cache: 'no-cache',
-    }
-  );
-
+  const response = await getCurrentAuthenticated(requestToken?.value || '');
   const user = response.data ? response.data : null;
 
   if (!user) {

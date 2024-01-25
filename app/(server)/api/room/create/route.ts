@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { roomService } from '../../_index';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { type AuthType } from '@/_shared/types/auth';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 type createRoomRequest = {
   type: roomType;
@@ -15,16 +14,7 @@ export async function POST(request: NextRequest) {
   const requestToken = cookieStore.get('token');
 
   try {
-    const response: AuthType.CurrentAuthResponse = await InternalApiFetcher.get(
-      '/api/auth/current',
-      {
-        headers: {
-          Authorization: `Bearer ${requestToken?.value || ''}`,
-        },
-        cache: 'no-cache',
-      }
-    );
-
+    const response = await getCurrentAuthenticated(requestToken?.value || '');
     const user = response.data ? response.data : null;
 
     if (!user) {
