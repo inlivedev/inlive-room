@@ -1,4 +1,3 @@
-import { UserRepo } from '@/(server)/_features/user/repository';
 import { EventRepo } from '@/(server)/_features/event/repository';
 import { insertEvent, selectEvent } from '@/(server)/_features/event/schema';
 import { IEvent, EventService } from '@/(server)/_features/event/service';
@@ -10,7 +9,6 @@ export interface iEventService {
   getEvent(slug: string): Promise<typeof selectEvent | undefined>;
 }
 
-export const userRepo = new UserRepo();
 export const eventRepo = new EventRepo();
 export const eventService = new EventService(eventRepo);
 export const roomRepo = new RoomRepo();
