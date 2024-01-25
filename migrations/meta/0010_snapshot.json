@@ -1,5 +1,5 @@
 {
-  "id": "84b89bf5-9db3-44d5-8681-368fc416d439",
+  "id": "09ff7054-4d36-4825-ac61-ee92155b0a2a",
   "prevId": "bcea71ca-beb4-4abf-b426-7de9bc11eee9",
   "version": "5",
   "dialect": "pg",
@@ -272,7 +272,7 @@
           "name": "account_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -291,6 +291,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
+          ]
+        },
+        "users_account_id_unique": {
+          "name": "users_account_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "account_id"
           ]
         }
       }

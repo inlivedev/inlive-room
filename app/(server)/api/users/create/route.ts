@@ -9,12 +9,14 @@ export async function POST(request: NextRequest) {
     !body.email ||
     typeof body.email !== 'string' ||
     !body.name ||
-    typeof body.name !== 'string'
+    typeof body.name !== 'string' ||
+    !body.accountId ||
+    typeof body.accountId !== 'number'
   ) {
     return NextResponse.json(
       {
         code: 400,
-        message: 'Valid email and name are required.',
+        message: 'Valid email, name, and account ID are required.',
         ok: false,
         data: null,
       },
@@ -42,7 +44,7 @@ export async function POST(request: NextRequest) {
     const data = {
       email: body.email,
       name: body.name,
-      accountId: typeof body.accountId === 'number' ? body.accountId : null,
+      accountId: body.accountId,
       pictureUrl: typeof body.pictureUrl === 'string' ? body.pictureUrl : null,
       whitelistFeature: Array.isArray(body.whitelistFeature)
         ? body.whitelistFeature
