@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { InliveApiFetcher } from '@/_shared/utils/fetcher';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { getUserByEmail, addUser } from '@/(server)/_features/user/repository';
 import type { AuthType } from '@/_shared/types/auth';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
@@ -100,25 +100,27 @@ export async function GET(
             throw new Error(authResponse.message || '');
           }
 
-          const userResponse: AuthType.CreateUserResponse =
-            await InternalApiFetcher.post('/api/users/create', {
-              body: JSON.stringify({
-                email: currentAuth.data.email,
-                name: currentAuth.data.name,
-                accountId: currentAuth.data.id,
-                pictureUrl: currentAuth.data.picture_url,
-              }),
+          if (
+            !currentAuth.data.email ||
+            typeof currentAuth.data.email !== 'string' ||
+            !currentAuth.data.name ||
+            typeof currentAuth.data.name !== 'string' ||
+            !currentAuth.data.id ||
+            typeof currentAuth.data.id !== 'number'
+          ) {
+            throw new Error('Valid ID, email, name are required.');
+          }
+
+          const existingUser = await getUserByEmail(currentAuth.data.email);
+
+          if (!existingUser) {
+            await addUser({
+              email: currentAuth.data.email,
+              name: currentAuth.data.name,
+              accountId: currentAuth.data.id,
+              pictureUrl: currentAuth.data.picture_url,
+              whitelistFeature: [],
             });
-
-          if (!userResponse.ok && userResponse.code !== 409) {
-            Sentry.captureMessage(
-              `API call error when trying to create user. ${
-                userResponse?.message || ''
-              }`,
-              'error'
-            );
-
-            throw new Error(userResponse.message || '');
           }
         }
 
