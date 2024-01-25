@@ -15,6 +15,7 @@ export declare namespace AuthType {
     pictureUrl: string;
     whitelistFeature: string[];
     createdAt: string | null;
+    accountId: number;
   };
 
   type CurrentAuthContext = {
