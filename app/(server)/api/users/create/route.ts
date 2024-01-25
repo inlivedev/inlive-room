@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { InsertUser } from '@/(server)/_features/user/schema';
-import { userService } from '../../_index';
+import { userRepo } from '../../_index';
 
 export async function POST(request: NextRequest) {
   const body: InsertUser = await request.json();
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const existingUser = await userService.getUserByEmail(body.email);
+    const existingUser = await userRepo.getUserByEmail(body.email);
 
     if (existingUser) {
       return NextResponse.json(
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         : [],
     };
 
-    const user = await userService.createUser(data);
+    const user = await userRepo.addUser(data);
 
     return NextResponse.json(
       {

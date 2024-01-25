@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { InliveApiFetcher } from '@/_shared/utils/fetcher';
-import { userService } from '@/(server)/api/_index';
+import { userRepo } from '@/(server)/api/_index';
 import type { AuthType } from '@/_shared/types/auth';
 
 const persistentData = process.env.PERSISTENT_DATA === 'true';
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await userService.getUserByEmail(authResponse.data.email);
+    const user = await userRepo.getUserByEmail(authResponse.data.email);
 
     if (!user) {
       return NextResponse.json(
