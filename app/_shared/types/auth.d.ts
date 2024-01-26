@@ -23,6 +23,8 @@ export declare namespace AuthType {
     email: string;
     name: string;
     pictureUrl: string;
+    accountId: number;
+    createdAt: string | null;
     whitelistFeature: string[];
   };
 
