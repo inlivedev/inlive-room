@@ -5,11 +5,12 @@
   "type": "commonjs",
   "scripts": {
     "create:env": "printenv > .env",
-    "dev": "ts-node --project tsconfig.server.json ./app/server.ts",
+    "dev:custom-server": "ts-node --project tsconfig.server.json ./app/server.ts",
+    "dev:next": "next dev",
     "build:server": "tsc --project tsconfig.server.json",
     "build:next": "next build",
     "build": "npm run build:next && npm run build:server",
-    "start": "NODE_ENV=production node dist/index.js",
+    "start": "NODE_ENV=production node dist/server.js",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "generate": "drizzle-kit generate:pg",
@@ -19,7 +20,6 @@
     "@inlivedev/inlive-js-sdk": "^0.14.1",
     "@nextui-org/react": "^2.2.9",
     "@sentry/nextjs": "^7.70.0",
-    "@types/express": "^4.17.21",
     "compressorjs": "^1.2.1",
     "drizzle-orm": "^0.28.6",
     "express": "^4.18.2",
@@ -39,6 +39,7 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@tailwindcss/typography": "^0.5.10",
     "@types/lodash-es": "^4.17.9",
     "@types/mixpanel-browser": "^2.47.1",
