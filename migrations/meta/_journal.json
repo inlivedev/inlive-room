@@ -78,6 +78,13 @@
       "when": 1706166915757,
       "tag": "0010_add_user_table",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1706498782641,
+      "tag": "0011_add_event_thumbnail.sql",
+      "breakpoints": true
     }
   ]
 }
