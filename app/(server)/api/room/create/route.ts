@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { roomService } from '../../_index';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 type createRoomRequest = {
   type: roomType;
@@ -15,8 +15,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const response = await getCurrentAuthenticated(requestToken?.value || '');
+    const user = response.data ? response.data : null;
 
-    if (!response.ok || !response.data.id) {
+    if (!user) {
       return NextResponse.json(
         {
           code: 401,
@@ -39,10 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const meetingRoom = await roomService.createRoom(
-      response.data.id,
-      body.type
-    );
+    const meetingRoom = await roomService.createRoom(user.id, body.type);
 
     return NextResponse.json(
       {

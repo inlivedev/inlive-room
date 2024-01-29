@@ -1,8 +1,8 @@
 {
+  "id": "e167c7ec-6725-46c1-b9b9-3ac442f2bd69",
+  "prevId": "bcea71ca-beb4-4abf-b426-7de9bc11eee9",
   "version": "5",
   "dialect": "pg",
-  "id": "e7b6e815-d481-4439-972b-36bd870e23dc",
-  "prevId": "bcea71ca-beb4-4abf-b426-7de9bc11eee9",
   "tables": {
     "events_to_participant": {
       "name": "events_to_participant",
@@ -51,8 +51,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "events_to_participant_event_id_participant_id": {
-          "name": "events_to_participant_event_id_participant_id",
+        "events_to_participant_event_id_participant_id_pk": {
+          "name": "events_to_participant_event_id_participant_id_pk",
           "columns": [
             "event_id",
             "participant_id"
@@ -89,12 +89,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "end_time": {
-          "name": "end_time",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -102,12 +96,11 @@
           "notNull": true,
           "default": "now()"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "end_time": {
+          "name": "end_time",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -132,19 +125,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "is_published": {
-          "name": "is_published",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "thumbnail_url": {
-          "name": "thumbnail_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -241,13 +221,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
         "meta": {
           "name": "meta",
           "type": "jsonb",
@@ -259,13 +232,82 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "picture_url": {
+          "name": "picture_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "whitelist_feature": {
+          "name": "whitelist_feature",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "array[]::text[]"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        },
+        "users_account_id_unique": {
+          "name": "users_account_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "account_id"
+          ]
+        }
+      }
     }
   },
   "enums": {},
   "schemas": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   }
 }

@@ -75,8 +75,8 @@
     {
       "idx": 10,
       "version": "5",
-      "when": 1706066346260,
-      "tag": "0010_add_event_thumbnail",
+      "when": 1706166915757,
+      "tag": "0010_add_user_table",
       "breakpoints": true
     }
   ]

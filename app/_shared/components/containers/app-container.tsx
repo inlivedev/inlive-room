@@ -21,9 +21,9 @@ export default function AppContainer({
                   email: user.email,
                   name: user.name,
                   pictureUrl: user.pictureUrl,
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  whitelistFeature: user?.whitelistFeature || [],
+                  accountId: user.accountId,
+                  createdAt: user.createdAt,
+                  whitelistFeature: user.whitelistFeature,
                 }
               : user
           }

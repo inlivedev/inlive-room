@@ -13,6 +13,9 @@ export declare namespace AuthType {
     email: string;
     name: string;
     pictureUrl: string;
+    whitelistFeature: string[];
+    createdAt: string | null;
+    accountId: number;
   };
 
   type CurrentAuthContext = {
@@ -20,6 +23,8 @@ export declare namespace AuthType {
     email: string;
     name: string;
     pictureUrl: string;
+    accountId: number;
+    createdAt: string | null;
     whitelistFeature: string[];
   };
 
@@ -40,6 +45,11 @@ export declare namespace AuthType {
     data: {
       token: string;
     } | null;
+  };
+
+  type CreateUserResponse = FetcherResponse & {
+    message: string;
+    data: CurrentAuthData | null;
   };
 
   type CurrentAuthExternalResponse = FetcherResponse & {
