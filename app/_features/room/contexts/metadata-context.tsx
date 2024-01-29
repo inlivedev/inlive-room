@@ -8,11 +8,11 @@ import { usePeerContext } from '@/_features/room/contexts/peer-context';
 
 const defaultData = {
   isModerator: false as boolean,
-  moderatorIDs: [] as string[],
+  moderatorClientIDs: [] as string[],
   roomType: 'meeting' as string,
   previousLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
   currentLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
-  speakers: [] as string[],
+  speakerClientIDs: [] as string[],
 };
 
 const MetadataContext = createContext(defaultData);

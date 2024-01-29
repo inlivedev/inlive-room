@@ -11,18 +11,19 @@ export default function ConferencePresentationLayout({
 }: {
   streams: ParticipantStream[];
 }) {
-  const { moderatorIDs, speakers: speakerClientIDs } = useMetadataContext();
+  const { moderatorClientIDs, speakerClientIDs } = useMetadataContext();
   const MAX_VISIBLE_SPEAKERS = 8;
 
   const speakers = useMemo(() => {
     return streams.filter((stream) => {
       return (
-        (moderatorIDs.includes(stream.clientId) && stream.source === 'media') ||
+        (moderatorClientIDs.includes(stream.clientId) &&
+          stream.source === 'media') ||
         (speakerClientIDs.includes(stream.clientId) &&
           stream.source === 'media')
       );
     });
-  }, [streams, moderatorIDs, speakerClientIDs]);
+  }, [streams, moderatorClientIDs, speakerClientIDs]);
 
   const screens = useMemo(() => {
     return streams.filter((stream) => {
