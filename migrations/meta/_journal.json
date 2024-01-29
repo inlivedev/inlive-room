@@ -83,7 +83,7 @@
       "idx": 11,
       "version": "5",
       "when": 1706498782641,
-      "tag": "0011_add_event_thumbnail.sql",
+      "tag": "0011_add_event_thumbnail",
       "breakpoints": true
     }
   ]
