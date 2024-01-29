@@ -27,7 +27,10 @@ export async function GET(
 
     const existingEvent = await eventService.getEvent(slug, userID);
 
-    if (existingEvent?.createdBy !== userID) {
+    if (
+      existingEvent?.createdBy !== userID &&
+      existingEvent?.isPublished === false
+    ) {
       return NextResponse.json(
         {
           code: 404,
