@@ -50,11 +50,19 @@ export default function SignInModal() {
             }),
           });
 
+        if (!response || !response.data) {
+          throw new Error(
+            `No redirect URL returned from authorization endpoint. ${
+              response.message || ''
+            }`
+          );
+        }
+
         window.location.href = response.data;
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
-            message: `API call error when trying to authorize with ${provider}`,
+            message: `API call error when trying to authorize with ${provider}.`,
           },
         });
 

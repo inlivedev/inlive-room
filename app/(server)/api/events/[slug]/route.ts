@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { eventRepo, eventService } from '../../_index';
 import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { insertEvent } from '@/(server)/_features/event/schema';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 export async function GET(
   _: Request,
@@ -17,8 +17,12 @@ export async function GET(
     let userID = undefined;
 
     if (requestToken) {
-      const response = await getCurrentAuthenticated(requestToken.value);
-      if (response.ok) userID = response.data.id;
+      const response = await getCurrentAuthenticated(requestToken?.value || '');
+      const user = response.data ? response.data : null;
+
+      if (user) {
+        userID = user.id;
+      }
     }
 
     const existingEvent = await eventService.getEvent(slug, userID);
@@ -75,9 +79,10 @@ export async function DELETE(
     );
   }
 
-  const response = await getCurrentAuthenticated(requestToken.value);
+  const response = await getCurrentAuthenticated(requestToken?.value || '');
+  const user = response.data ? response.data : null;
 
-  if (!response.ok) {
+  if (!user) {
     return NextResponse.json({
       code: 401,
       ok: false,
@@ -86,10 +91,7 @@ export async function DELETE(
   }
 
   try {
-    const deletedEvent = await eventRepo.deleteEventBySlug(
-      slug,
-      response.data.id
-    );
+    const deletedEvent = await eventRepo.deleteEventBySlug(slug, user.id);
 
     if (!deletedEvent || deletedEvent.length == 0) {
       return NextResponse.json({
@@ -145,9 +147,10 @@ export async function PUT(
     );
   }
 
-  const response = await getCurrentAuthenticated(requestToken.value);
+  const response = await getCurrentAuthenticated(requestToken?.value || '');
+  const user = response.data ? response.data : null;
 
-  if (!response.ok) {
+  if (!user) {
     return NextResponse.json({
       code: 401,
       ok: false,
@@ -158,7 +161,7 @@ export async function PUT(
   try {
     const oldEvent = await eventRepo.getEvent(slug);
 
-    if (oldEvent.createdBy !== response.data.id)
+    if (oldEvent.createdBy !== user.id)
       return NextResponse.json({
         code: 401,
         ok: false,
@@ -179,7 +182,7 @@ export async function PUT(
     };
 
     const updatedEvent = await eventRepo.updateEventBySlug(
-      response.data.id,
+      user.id,
       slug,
       newEvent
     );

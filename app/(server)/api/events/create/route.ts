@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eventService, roomService } from '../../_index';
-import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
+import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 type CreateEvent = {
   name: string;
@@ -18,8 +18,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const response = await getCurrentAuthenticated(requestToken?.value || '');
+    const user = response.data ? response.data : null;
 
-    if (!response.ok || !response.data.id) {
+    if (!user) {
       return NextResponse.json(
         {
           code: 401,
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const eventRoom = await roomService.createRoom(response.data.id, 'event');
+    const eventRoom = await roomService.createRoom(user.id, 'event');
 
     const Event: typeof insertEvent = {
       name: eventName,
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       endTime: eventEndTime,
       slug: eventName.toLowerCase().replace(/\s/g, '-'),
       description: eventDesc,
-      createdBy: response.data.id,
+      createdBy: user.id,
       roomId: eventRoom.id,
       host: eventHost,
     };
