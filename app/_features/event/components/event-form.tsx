@@ -35,6 +35,7 @@ import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import { compressImage } from '@/_shared/utils/compress-image';
+import SignInModal from '@/_shared/components/auth/sign-in-modal';
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
   switch (action.type) {
@@ -87,7 +88,6 @@ export default function EventForm({
   const [isDescriptionValid, setDescValid] = useState(false);
   const [eventName, setEventName] = useState('');
   const [eventDescription, setEventDescription] = useState('');
-  const [minRows, setMinRows] = useState(window.innerWidth < 768 ? 3 : 12);
 
   const { navigateTo } = useNavigate();
 
@@ -107,6 +107,10 @@ export default function EventForm({
     },
     []
   );
+
+  useEffect(() => {
+    if (!user) document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
+  }, [user]);
 
   useEffect(() => {
     if (eventName.trim().length === 0) {
@@ -220,7 +224,7 @@ export default function EventForm({
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-4">
-        <LoginModal loggedIn={user ? true : false}></LoginModal>
+        <SignInModal isDismisable={false} hideCloseButton={true}></SignInModal>
         <MissingField event={incompleteFieldEvent}></MissingField>
         <ImageCropperModal
           imageData={imageData}
@@ -456,35 +460,6 @@ function ComingSoonModal({ event }: { event: string }) {
         <ModalBody>This feature will be added at a later update</ModalBody>
         <ModalFooter>
           <Button onClick={onClose}>Confirm</Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  );
-}
-
-function LoginModal({ loggedIn }: { loggedIn: boolean }) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { navigateTo } = useNavigate();
-
-  useEffect(() => {
-    if (!loggedIn) {
-      onOpen();
-    }
-  });
-
-  const onConfirm = useCallback(() => {
-    navigateTo('/');
-  }, [navigateTo]);
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} placement="auto">
-      <ModalContent>
-        <ModalHeader>Login Required</ModalHeader>
-        <ModalBody>Please login to continue.</ModalBody>
-        <ModalFooter>
-          <Button className="w-full,flex-1" onClick={onConfirm}>
-            Confirm
-          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
