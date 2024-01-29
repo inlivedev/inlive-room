@@ -52,25 +52,25 @@ export default async function Page({ searchParams }: PageProps) {
     if (isModerator) {
       const moderatorMeta = await serverSDK.getMetadata(
         roomData.id,
-        'moderatorIDs'
+        'moderatorClientIDs'
       );
-      const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
+      const moderatorClientIDs = moderatorMeta?.data?.moderatorClientIDs;
 
       try {
-        if (Array.isArray(moderatorIDs)) {
+        if (Array.isArray(moderatorClientIDs)) {
           await serverSDK.setMetadata(roomData.id, {
-            moderatorIDs: [...moderatorIDs, userClient.clientID],
+            moderatorClientIDs: [...moderatorClientIDs, userClient.clientID],
           });
         } else {
           await serverSDK.setMetadata(roomData.id, {
-            moderatorIDs: [userClient.clientID],
+            moderatorClientIDs: [userClient.clientID],
           });
         }
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
-            message: `API call error when trying to add client ID to metadata moderatorIDs`,
-            moderatorIDs: moderatorIDs,
+            message: `API call error when trying to add client ID to metadata moderatorClientIDs`,
+            moderatorClientIDs: moderatorClientIDs,
             clientID: userClient.clientID,
           },
         });
