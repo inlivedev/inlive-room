@@ -162,7 +162,7 @@ export default function EventForm({
         name: eventName,
         startTime: eventStartTime.toISOString(),
         endTime: eventEndTime.toISOString(),
-        description: eventDescription,
+        description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
         host: user?.name,
         isPublished: !isDraft,
       });
