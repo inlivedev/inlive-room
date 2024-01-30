@@ -93,7 +93,7 @@ export async function POST(req: Request) {
       const eventImageBuffer = await eventImage.arrayBuffer();
       const eventImageUint8Array = new Uint8Array(eventImageBuffer);
 
-      const path = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}/assets/images/event/${createdEvent.id}/poster.webp`;
+      const path = `${process.env.ROOM_LOCAL_STORAGE_PATH}/assets/images/event/${createdEvent.id}/poster.webp`;
       ensureDirectoryExist(path);
       writeFileSync(path, eventImageUint8Array);
     }
