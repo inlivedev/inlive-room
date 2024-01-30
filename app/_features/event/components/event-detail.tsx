@@ -10,7 +10,6 @@ import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
-const LOCAL_STORAGE_PATH = process.env.LOCAL_STORAGE_PATH;
 
 type EventDetailProps = {
   id: number;
@@ -85,7 +84,7 @@ export default function EventDetail({
                   <NextImage
                     width={640}
                     height={320}
-                    src={`${APP_ORIGIN}/${LOCAL_STORAGE_PATH}/assets/images/event/${id}/poster.webp`}
+                    src={`${APP_ORIGIN}/static/assets/images/event/${id}/poster.webp`}
                     alt=""
                     style={{
                       aspectRatio: '2/1',
