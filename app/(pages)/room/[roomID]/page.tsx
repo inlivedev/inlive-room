@@ -10,15 +10,63 @@ import type { ClientType } from '@/_shared/types/client';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 
 type PageProps = {
-  params: {
-    roomID: string;
-  };
   searchParams: { debug: string | undefined };
 };
 
-export const generateMetadata = ({ params }: PageProps): Metadata => {
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+
+export const generateMetadata = (): Metadata => {
+  const headersList = headers();
+  const roomDataHeader = headersList.get('room-data');
+  const roomData: RoomType.RoomData | null =
+    typeof roomDataHeader === 'string'
+      ? JSON.parse(roomDataHeader)
+      : roomDataHeader;
+
+  let title = '404 Room Not Found - inLive Room';
+  let description = 'There is nothing to see on this page.';
+  const ogImage = `${APP_ORIGIN}/images/general-og.png`;
+
+  if (!roomData || !roomData.id) {
+    return {
+      title: title,
+      description: description,
+      openGraph: {
+        title: title,
+        description: description,
+        url: `${APP_ORIGIN}`,
+        images: [ogImage],
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: title,
+        description: description,
+        images: [ogImage],
+      },
+    };
+  }
+
+  const type = roomData.meta?.type === 'event' ? 'Webinar' : 'Meeting';
+  title = `${type} Room — inLive Room`;
+  description = `Host or join in seconds. It's that simple! Experience real-time messaging, video, and audio for seamless collaboration, all within open-source virtual rooms.`;
+
   return {
-    title: `Room - ${params.roomID}`,
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      url: `${APP_ORIGIN}`,
+      images: [ogImage],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: [ogImage],
+    },
   };
 };
 
@@ -97,7 +145,7 @@ export default async function Page({ searchParams }: PageProps) {
     midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
     lowBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
   };
-  const roomType = roomData.meta ? roomData.meta.type : 'meeting' || 'meeting';
+  const roomType = roomData.meta ? roomData.meta.type : 'meeting';
 
   return (
     <AppContainer user={userAuth}>
