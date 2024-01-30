@@ -48,13 +48,14 @@ const reducer = (state: ImageState, action: ActionType): ImageState => {
       return { imagePreview: null, imageBlob: action.payload };
     case 'Reset':
       return { imagePreview: null, imageBlob: null };
+    case 'FetchExisting':
+      return { imagePreview: action.payload.preview, imageBlob: null };
     default:
       return state;
   }
 };
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
-const LOCAL_STORAGE_PATH = process.env.LOCAL_STORAGE_PATH;
 
 export default function EventForm({
   data: existingEvent,
@@ -89,8 +90,43 @@ export default function EventForm({
   const [eventName, setEventName] = useState('');
   const [eventDescription, setEventDescription] = useState('');
 
-  const { navigateTo } = useNavigate();
+  useEffect(() => {
+    if (existingEvent) {
+      const { name, description, startTime, endTime, thumbnailUrl } =
+        existingEvent;
+      if (name) {
+        setEventName(name);
+      }
+      if (description) {
+        setEventDescription(description.replace(/<br>/g, '\n'));
+      }
+      if (startTime) {
+        const eventStartTime = new Date(startTime);
+        setDate(eventStartTime);
+        setStartTime({
+          hour: `${eventStartTime.getHours()}`,
+          minute: `${eventStartTime.getMinutes().toString().padStart(2, '0')}`,
+        });
+      }
+      if (endTime) {
+        const eventEndTime = new Date(endTime);
+        setEndTime({
+          hour: `${eventEndTime.getHours()}`,
+          minute: `${eventEndTime.getMinutes().toString().padStart(2, '0')}`,
+        });
+      }
+      if (thumbnailUrl) {
+        updateImageData({
+          type: 'FetchExisting',
+          payload: {
+            preview: `${APP_ORIGIN}/static/${thumbnailUrl}`,
+          },
+        });
+      }
+    }
+  }, [existingEvent]);
 
+  const { navigateTo } = useNavigate();
   const handleRemoveImage = useCallback(() => {
     updateImageData({ type: 'Reset' });
   }, []);
@@ -137,8 +173,8 @@ export default function EventForm({
     }
   }, [startTime.hour, startTime.minute, endTime.hour]);
 
-  const createEvent = useCallback(
-    async (isDraft: boolean) => {
+  const prepareEventData = useCallback(
+    async (isPublished: boolean, deleteImage = false) => {
       if (
         eventDescription.trim().length === 0 ||
         eventName.trim().length === 0
@@ -146,8 +182,6 @@ export default function EventForm({
         document.dispatchEvent(new CustomEvent(incompleteFieldEvent));
         return;
       }
-
-      const finalEndpoint = `/api/events/create`;
 
       const eventStartTime = new Date(
         date.setHours(parseInt(startTime.hour), parseInt(startTime.minute), 0)
@@ -162,36 +196,24 @@ export default function EventForm({
         imageFile = await compressImage(imageData.imageBlob, 280, 560, 0.8);
       }
 
-      const data = JSON.stringify({
+      const data = {
         name: eventName,
         startTime: eventStartTime.toISOString(),
         endTime: eventEndTime.toISOString(),
         description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
         host: user?.name,
-        isPublished: !isDraft,
-      });
+        isPublished: isPublished,
+        deleteImage: deleteImage,
+      };
 
       const formData = new FormData();
 
       if (imageFile) {
         formData.append('image', imageFile, 'poster.webp');
       }
-      formData.append('data', data);
+      formData.append('data', JSON.stringify(data));
 
-      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
-        body: formData,
-        headers: undefined,
-      });
-
-      if (respEvent.ok) {
-        const redirectPath = new URL(
-          `/event/${respEvent.data.slug}`,
-          window.location.origin
-        ).href;
-        navigateTo(redirectPath);
-      } else {
-        console.log(respEvent.message);
-      }
+      return formData;
     },
     [
       date,
@@ -199,27 +221,86 @@ export default function EventForm({
       endTime.minute,
       eventDescription,
       eventName,
-      imageData,
-      navigateTo,
+      imageData.imageBlob,
       startTime.hour,
       startTime.minute,
       user?.name,
     ]
   );
 
+  const updateEvent = useCallback(async () => {
+    let deleteImage = false;
+
+    if (!imageData.imagePreview) {
+      deleteImage = true;
+    }
+
+    const formData = await prepareEventData(
+      existingEvent?.isPublished || false,
+      deleteImage
+    );
+
+    const finalEndpoint = `/api/events/${existingEvent?.id}/update`;
+    const respEvent = await InternalApiFetcher.put(finalEndpoint, {
+      body: formData,
+      headers: undefined,
+    });
+
+    if (respEvent.ok) {
+      const redirectPath = new URL(
+        `/event/${respEvent.data.id}/edit`,
+        window.location.origin
+      ).href;
+      navigateTo(redirectPath);
+    }
+  }, [
+    existingEvent?.id,
+    existingEvent?.isPublished,
+    imageData.imagePreview,
+    navigateTo,
+    prepareEventData,
+  ]);
+
+  const createEvent = useCallback(
+    async (isPublished: boolean) => {
+      const finalEndpoint = `/api/events/create`;
+      const formData = await prepareEventData(isPublished);
+      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
+        body: formData,
+        headers: undefined,
+      });
+
+      if (respEvent.ok) {
+        if (isPublished)
+          navigateTo(
+            new URL(`/event/${respEvent.data.slug}`, window.location.origin)
+              .href
+          );
+        else
+          navigateTo(
+            new URL(`/event/${respEvent.data.id}/edit`, window.location.origin)
+              .href
+          );
+      } else {
+        console.log(respEvent.message);
+      }
+    },
+    [navigateTo, prepareEventData]
+  );
+
   const saveAsDraft = useCallback(() => {
-    createEvent(true);
+    createEvent(false);
   }, [createEvent]);
 
   const updateDraft = useCallback(() => {
-    console.log('update draft');
-  }, []);
+    updateEvent();
+  }, [updateEvent]);
 
   const onPublish = useCallback(() => createEvent(true), [createEvent]);
 
   const updatePublishedEvent = useCallback(() => {
-    console.log('update published event');
-  }, []);
+    updateEvent();
+  }, [updateEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -276,6 +357,13 @@ export default function EventForm({
                 className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
               >
                 {existingEvent?.isPublished ? 'Update' : 'Publish'}
+              </Button>
+              <Button
+                onClick={() => {
+                  console.log(imageData);
+                }}
+              >
+                Debug Data
               </Button>
             </div>
           </div>
