@@ -6,7 +6,7 @@ import { RoomService } from '@/(server)/_features/room/service';
 
 export interface iEventService {
   createEvent(eventData: typeof insertEvent): Promise<typeof insertEvent>;
-  getEvent(slug: string): Promise<typeof selectEvent | undefined>;
+  getEventBySlugOrID(slug: string): Promise<typeof selectEvent | undefined>;
 }
 
 export const eventRepo = new EventRepo();

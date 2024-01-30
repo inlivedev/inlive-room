@@ -17,12 +17,22 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async getEvent(slug: string): Promise<typeof selectEvent> {
+  async getEventBySlug(slug: string): Promise<typeof selectEvent | undefined> {
     const data = await db.query.events.findFirst({
       where: eq(events.slug, slug),
     });
 
-    return data as typeof selectEvent;
+    if (data) return data as typeof selectEvent;
+    else return undefined;
+  }
+
+  async getEventById(id: number): Promise<typeof selectEvent | undefined> {
+    const data = await db.query.events.findFirst({
+      where: eq(events.id, id),
+    });
+
+    if (data) return data as typeof selectEvent;
+    else return undefined;
   }
 
   async getEvents(page: number, limit: number, userId?: number) {

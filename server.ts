@@ -7,10 +7,10 @@ if (!process.env.PORT) {
   process.env.PORT = '3000';
 }
 
-if (!process.env.ROOM_LOCAL_STORAGE_PATH) {
+if (!process.env.ROOM_PERSISTANT_VOLUME_PATH) {
   if (process.env.NODE_ENV === 'production')
-    throw new Error('ROOM_LOCAL_STORAGE_PATH is not set');
-  process.env.ROOM_LOCAL_STORAGE_PATH = '/volume';
+    throw new Error('ROOM_PERSISTANT_VOLUME_PATH is not set');
+  process.env.ROOM_PERSISTANT_VOLUME_PATH = 'volume';
 }
 
 const port = parseInt(process.env.PORT, 10) || 3000;
@@ -22,12 +22,14 @@ app.prepare().then(() => {
   const server = express();
 
   server.get('/api/express/health', (req: Request, res: Response) => {
-    res.send(`hello from express server`);
+    res.send(
+      `hello from express server ${process.env.ROOM_PERSISTANT_VOLUME_PATH}`
+    );
   });
 
   server.use(
     '/static',
-    express.static(`${process.env.ROOM_LOCAL_STORAGE_PATH}`)
+    express.static(`${process.env.ROOM_PERSISTANT_VOLUME_PATH}`)
   );
 
   server.all('*', (req: Request, res: Response) => {

@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "create:env": "printenv > .env",
-    "dev:custom-server": "ts-node --project tsconfig.server.json ./app/server.ts",
+    "dev:custom-server": "ts-node --project tsconfig.server.json ./server.ts",
     "dev:next": "next dev",
     "build:server": "tsc --project tsconfig.server.json",
     "build:next": "next build",

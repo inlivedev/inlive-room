@@ -1,10 +1,12 @@
 import { iEventService } from '@/(server)/api/_index';
 import { insertEvent, selectEvent } from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
+import { isNumber } from 'lodash-es';
 
 export interface iEventRepo {
   addEvent(eventData: typeof insertEvent): Promise<typeof selectEvent>;
-  getEvent(slug: string): Promise<typeof selectEvent | undefined>;
+  getEventBySlug(slug: string): Promise<typeof selectEvent | undefined>;
+  getEventById(id: number): Promise<typeof selectEvent | undefined>;
   getEvents(
     page: number,
     limit: number,
@@ -28,8 +30,14 @@ export class EventService implements iEventService {
     return event;
   }
 
-  async getEvent(slug: string, userId?: number) {
-    const event = await this.repo.getEvent(slug);
+  async getEventBySlugOrID(slugOrId: string, userId?: number) {
+    let event: typeof selectEvent | undefined;
+
+    if (!isNaN(Number(slugOrId))) {
+      event = await this.repo.getEventById(Number(slugOrId));
+    } else {
+      event = await this.repo.getEventBySlug(slugOrId);
+    }
 
     if (!event) {
       return undefined;

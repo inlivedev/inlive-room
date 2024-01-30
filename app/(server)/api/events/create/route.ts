@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { eventService, roomService } from '../../_index';
+import { eventRepo, eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
-import { writeFileSync, existsSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
+import * as Sentry from '@sentry/nextjs';
+import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
 
 type CreateEvent = {
   name: string;
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
       data: createdEvent,
     });
   } catch (error) {
-    console.log(error);
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         code: 500,
@@ -115,13 +115,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
-
-function ensureDirectoryExist(filePath: string) {
-  const dir = dirname(filePath);
-  if (existsSync(dir)) {
-    return true;
-  }
-  ensureDirectoryExist(dir);
-  mkdirSync(dir);
 }

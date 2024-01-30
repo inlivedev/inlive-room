@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { eventRepo, eventService } from '../../_index';
 import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { insertEvent } from '@/(server)/_features/event/schema';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
+import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
+import { existsSync, unlinkSync } from 'fs';
 
 export async function GET(
-  _: Request,
-  { params }: { params: { slug: string } }
+  request: NextRequest,
+  { params }: { params: { slugOrId: string } }
 ) {
-  const slug = params.slug;
+  const slug = params.slugOrId;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
   try {
@@ -25,7 +27,18 @@ export async function GET(
       }
     }
 
-    const existingEvent = await eventService.getEvent(slug, userID);
+    const existingEvent = await eventService.getEventBySlugOrID(slug, userID);
+
+    if (existingEvent?.isPublished) {
+      return NextResponse.json(
+        {
+          code: 200,
+          message: 'Event found',
+          data: existingEvent,
+        },
+        { status: 200 }
+      );
+    }
 
     if (
       existingEvent?.createdBy !== userID &&
@@ -79,9 +92,9 @@ export async function GET(
 
 export async function DELETE(
   _: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: { slugOrId: string } }
 ) {
-  const slug = params.slug;
+  const slugOrId = params.slugOrId;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
@@ -107,7 +120,7 @@ export async function DELETE(
   }
 
   try {
-    const deletedEvent = await eventRepo.deleteEventBySlug(slug, user.id);
+    const deletedEvent = await eventRepo.deleteEventBySlug(slugOrId, user.id);
 
     if (!deletedEvent || deletedEvent.length == 0) {
       return NextResponse.json({
@@ -134,24 +147,21 @@ export async function DELETE(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: { slugOrId: string } }
 ) {
-  const slug = params.slug;
+  const slugOrId = params.slugOrId;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
   type updateEvent = {
     name?: string;
     startTime?: string;
+    endTime?: string;
     description?: string;
     host?: string;
-    endTime?: string;
+    isPublished?: boolean;
+    deleteImage?: boolean;
   };
-
-  const body = (await request.json()) as updateEvent;
-  const eventName = body.name;
-  const eventDesc = body.description;
-  const eventHost = body.host;
 
   if (!requestToken) {
     return NextResponse.json(
@@ -175,7 +185,18 @@ export async function PUT(
   }
 
   try {
-    const oldEvent = await eventRepo.getEvent(slug);
+    const oldEvent = await eventService.getEventBySlugOrID(slugOrId, user.id);
+
+    if (!oldEvent) {
+      return NextResponse.json(
+        {
+          code: 404,
+          ok: false,
+          message: 'Event not found',
+        },
+        { status: 404 }
+      );
+    }
 
     if (oldEvent.createdBy !== user.id)
       return NextResponse.json({
@@ -184,24 +205,51 @@ export async function PUT(
         message: 'You are not authorized to update this event',
       });
 
+    const formData = await request.formData();
+    const updateEventMeta = JSON.parse(
+      formData.get('data') as string
+    ) as updateEvent;
+    const eventImage = formData.get('image') as Blob;
+
     const newEvent: typeof insertEvent = {
-      name: eventName ?? oldEvent.name,
-      startTime: body.startTime ? new Date(body.startTime) : oldEvent.startTime,
-      endTime: body.endTime ? new Date(body.endTime) : oldEvent.endTime,
-      slug: eventName
-        ? eventName.toLowerCase().replace(/\s/g, '-') + '-' + generateID(8)
+      name: updateEventMeta.name ?? oldEvent.name,
+      startTime: new Date(updateEventMeta.startTime || oldEvent.startTime),
+      endTime: new Date(updateEventMeta.endTime || oldEvent.endTime),
+      slug: updateEventMeta.name
+        ? updateEventMeta.name.toLowerCase().replace(/\s/g, '-') +
+          '-' +
+          generateID(8)
         : oldEvent.slug,
-      description: eventDesc ?? oldEvent.description,
+      description: updateEventMeta.description ?? oldEvent.description,
+      host: updateEventMeta.host ?? oldEvent.host,
       createdBy: oldEvent.createdBy,
       roomId: oldEvent.roomId,
-      host: eventHost ?? oldEvent.host,
+      isPublished: updateEventMeta.isPublished,
     };
 
-    const updatedEvent = await eventRepo.updateEventBySlug(
+    if (eventImage) {
+      // update image
+      const path = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}/assets/images/event/${oldEvent.id}/poster.webp`;
+      writeFiletoLocalStorage(path, eventImage);
+      newEvent.thumbnailUrl = path;
+    }
+
+    if (updateEventMeta.deleteImage) {
+      // delete image
+      const path = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}/assets/images/event/${oldEvent.id}/poster.webp`;
+      if (existsSync(path)) {
+        unlinkSync(path);
+      }
+
+      newEvent.thumbnailUrl = null;
+    }
+
+    const updatedEvent = await eventRepo.updateEvent(
       user.id,
-      slug,
+      oldEvent.id,
       newEvent
     );
+
     if (updatedEvent.length == 0) {
       return NextResponse.json({
         code: 404,
@@ -210,17 +258,23 @@ export async function PUT(
       });
     }
 
-    return NextResponse.json({
-      code: 200,
-      ok: true,
-      message: 'Event updated successfully',
-      data: updatedEvent,
-    });
+    return NextResponse.json(
+      {
+        code: 200,
+        ok: true,
+        message: 'Event updated successfully',
+        data: updatedEvent,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    return NextResponse.json({
-      code: 500,
-      ok: false,
-      message: 'An error has occured on our side please try again later',
-    });
+    return NextResponse.json(
+      {
+        code: 500,
+        ok: false,
+        message: 'An error has occured on our side please try again later',
+      },
+      { status: 500 }
+    );
   }
 }
