@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { eventService, roomService } from '../../_index';
+import { eventRepo, eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
@@ -89,13 +89,29 @@ export async function POST(req: Request) {
 
     const createdEvent = await eventService.createEvent(Event);
 
-    if (eventImage !== null) {
+    if (eventImage) {
       const eventImageBuffer = await eventImage.arrayBuffer();
       const eventImageUint8Array = new Uint8Array(eventImageBuffer);
 
       const path = `${process.env.ROOM_LOCAL_STORAGE_PATH}/assets/images/event/${createdEvent.id}/poster.webp`;
       ensureDirectoryExist(path);
       writeFileSync(path, eventImageUint8Array);
+      createdEvent.thumbnailUrl = `/assets/images/event/${createdEvent.id}/poster.webp`;
+      const updatedEvent = eventRepo.updateEvent(
+        user.id,
+        createdEvent.id,
+        createdEvent
+      );
+
+      return NextResponse.json(
+        {
+          code: 201,
+          ok: true,
+          message: 'Event created successfully',
+          data: updatedEvent,
+        },
+        { status: 201 }
+      );
     }
 
     return NextResponse.json({
