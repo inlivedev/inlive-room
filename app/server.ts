@@ -2,11 +2,15 @@ import express, { Request, Response } from 'express';
 import next from 'next';
 
 if (!process.env.PORT) {
-  throw new Error('failed to start server : PORT is not set');
+  if (process.env.NODE_ENV === 'production')
+    throw new Error('failed to start server : PORT is not set');
+  process.env.PORT = '3000';
 }
 
 if (!process.env.ROOM_PERSISTANT_VOLUME_PATH) {
-  throw new Error('ROOM_PERSISTANT_VOLUME_PATH is not set');
+  if (process.env.NODE_ENV === 'production')
+    throw new Error('ROOM_PERSISTANT_VOLUME_PATH is not set');
+  process.env.ROOM_PERSISTANT_VOLUME_PATH = '/volume';
 }
 
 const port = parseInt(process.env.PORT, 10) || 3000;

@@ -22,9 +22,9 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 inlivegroup
 RUN adduser --system --uid 1001 inliveuser
-# COPY --from=builder --chown=inliveuser:inlivegroup /app/.next/standalone ./
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=inliveuser:inlivegroup /app/.next ./.next
+COPY --from=builder --chown=inliveuser:inlivegroup /app/.next/standalone ./
+COPY --from=builder --chown=inliveuser:inlivegroup /app/.next/static ./.next/static
 COPY --from=builder --chown=inliveuser:inlivegroup /app/node_modules ./node_modules
 COPY --from=builder --chown=inliveuser:inlivegroup /app/dist/server.js ./server.js
 
