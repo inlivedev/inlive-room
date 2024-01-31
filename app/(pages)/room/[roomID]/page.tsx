@@ -13,9 +13,7 @@ type PageProps = {
   searchParams: { debug: string | undefined };
 };
 
-const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
-
-export const generateMetadata = (): Metadata => {
+export const generateMetadata = (): Metadata | null => {
   const headersList = headers();
   const roomDataHeader = headersList.get('room-data');
   const roomData: RoomType.RoomData | null =
@@ -23,50 +21,13 @@ export const generateMetadata = (): Metadata => {
       ? JSON.parse(roomDataHeader)
       : roomDataHeader;
 
-  let title = '404 Room Not Found - inLive Room';
-  let description = 'There is nothing to see on this page.';
-  const ogImage = `${APP_ORIGIN}/images/general-og.png`;
-
-  if (!roomData || !roomData.id) {
-    return {
-      title: title,
-      description: description,
-      openGraph: {
-        title: title,
-        description: description,
-        url: `${APP_ORIGIN}`,
-        images: [ogImage],
-        type: 'website',
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: title,
-        description: description,
-        images: [ogImage],
-      },
-    };
-  }
+  if (!roomData || !roomData.id) return null;
 
   const type = roomData.meta?.type === 'event' ? 'Webinar' : 'Meeting';
-  title = `${type} Room — inLive Room`;
-  description = `Host or join in seconds. It's that simple! Experience real-time messaging, video, and audio for seamless collaboration, all within open-source virtual rooms.`;
+  const title = `${type} Room: ${roomData.id} — inLive Room`;
 
   return {
     title: title,
-    description: description,
-    openGraph: {
-      title: title,
-      description: description,
-      url: `${APP_ORIGIN}`,
-      images: [ogImage],
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: title,
-      description: description,
-      images: [ogImage],
-    },
   };
 };
 
