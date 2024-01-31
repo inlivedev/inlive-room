@@ -24,10 +24,20 @@ export const generateMetadata = (): Metadata | null => {
   if (!roomData || !roomData.id) return null;
 
   const type = roomData.meta?.type === 'event' ? 'Webinar' : 'Meeting';
-  const title = `${type} Room: ${roomData.id} — inLive Room`;
+  const description =
+    'Experience real-time messaging, video, and audio for seamless collaboration, all within inLive Room.';
 
   return {
-    title: title,
+    title: `${type} Room: ${roomData.id} — inLive Room`,
+    description: description,
+    openGraph: {
+      title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
+      description: description,
+    },
+    twitter: {
+      title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
+      description: description,
+    },
   };
 };
 
