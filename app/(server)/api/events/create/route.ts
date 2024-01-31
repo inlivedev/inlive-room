@@ -90,13 +90,10 @@ export async function POST(req: Request) {
     const createdEvent = await eventService.createEvent(Event);
 
     if (eventImage) {
-      const eventImageBuffer = await eventImage.arrayBuffer();
-      const eventImageUint8Array = new Uint8Array(eventImageBuffer);
-
       const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
       const path = `${roomStoragePath}/assets/images/event/${createdEvent.id}/poster.webp`;
-      ensureDirectoryExist(path);
-      writeFileSync(path, eventImageUint8Array);
+
+      writeFiletoLocalStorage(path, eventImage);
       createdEvent.thumbnailUrl = `/assets/images/event/${createdEvent.id}/poster.webp`;
       const updatedEvent = eventRepo.updateEvent(
         user.id,
