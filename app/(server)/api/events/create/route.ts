@@ -85,6 +85,7 @@ export async function POST(req: Request) {
       createdBy: user.id,
       roomId: eventRoom.id,
       host: eventHost,
+      isPublished: eventMeta.isPublished,
     };
 
     const createdEvent = await eventService.createEvent(Event);

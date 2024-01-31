@@ -158,7 +158,7 @@ export default function EventForm({
         startTime: eventStartTime.toISOString(),
         endTime: eventEndTime.toISOString(),
         description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
-        host: user?.name,
+        host: user?.name || '',
         isPublished: !isDraft,
       });
 
