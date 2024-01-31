@@ -59,7 +59,6 @@ export function DatePickerModal({
             onChange={(date) => {
               if (date) {
                 setSelectedDate(date);
-                console.log(setSelectedDate);
               }
             }}
             inline

@@ -34,8 +34,6 @@ export function ImageCropperModal({
 
   const getCropData = useCallback(async () => {
     if (typeof cropperRef.current?.cropper !== 'undefined') {
-      if (!cropperRef.current) console.log('cropperRef.current is undefined');
-
       const getCanvasBlob = (
         canvas: HTMLCanvasElement
       ): Promise<Blob | null> => {
@@ -76,7 +74,7 @@ export function ImageCropperModal({
           type: 'ConfirmCrop',
           payload: { blob: blob, preview: URL.createObjectURL(blob) },
         });
-      } else console.log('blob is null');
+      }
 
       onClose();
     });
