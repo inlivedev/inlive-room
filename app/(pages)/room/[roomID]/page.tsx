@@ -26,6 +26,7 @@ export const generateMetadata = (): Metadata | null => {
   const type = roomData.meta?.type === 'event' ? 'Webinar' : 'Meeting';
   const description =
     'Experience real-time messaging, video, and audio for seamless collaboration, all within inLive Room.';
+  const ogImage = '/images/general-og.png';
 
   return {
     title: `${type} Room: ${roomData.id} — inLive Room`,
@@ -33,10 +34,15 @@ export const generateMetadata = (): Metadata | null => {
     openGraph: {
       title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
       description: description,
+      url: `/room/${roomData.id}`,
+      images: [ogImage],
+      type: 'website',
     },
     twitter: {
+      card: 'summary_large_image',
       title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
       description: description,
+      images: [ogImage],
     },
   };
 };
