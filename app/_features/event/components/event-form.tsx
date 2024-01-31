@@ -203,13 +203,13 @@ export default function EventForm({
   }, [createEvent]);
 
   const updateDraft = useCallback(() => {
-    console.log('update draft');
+    // TODO: implement code to update event draft
   }, []);
 
   const onPublish = useCallback(() => createEvent(true), [createEvent]);
 
   const updatePublishedEvent = useCallback(() => {
-    console.log('update published event');
+    // TODO : implement code to update published event
   }, []);
 
   return (
