@@ -152,9 +152,11 @@ export default function CreateRoom({
               >
                 <div className="flex justify-between text-sm font-medium text-zinc-200">
                   <span className="inline-block">Webinar</span>
-                  <span className="inline-flex items-center rounded-sm border border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
-                    Limited Beta
-                  </span>
+                  {!whitelistFeature.includes('event') && (
+                    <span className="inline-flex items-center rounded-sm border border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
+                      Limited Beta
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
                   Host sessions with large audiences
