@@ -3,10 +3,10 @@
 import { useMemo } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
-import '../styles/conference-speaker.css';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
+import '../styles/webinar-speaker-layout.css';
 
-export default function ConferenceSpeakerLayout({
+export default function WebinarSpeakerLayout({
   streams,
 }: {
   streams: ParticipantStream[];
