@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import AppContainer from '@/_shared/components/containers/app-container';
 import HTTPError from '@/_shared/components/errors/http-error';
 import { headers } from 'next/headers';
 import type { AuthType } from '@/_shared/types/auth';
+
+export const metadata: Metadata = {
+  title: 'Room Not Found — inLive Room',
+  description: 'There is nothing to see on this page',
+};
 
 export default async function NotFound() {
   const headersList = headers();
