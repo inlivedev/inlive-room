@@ -23,7 +23,7 @@ import {
   useState,
 } from 'react';
 import '../styles/date-picker.css';
-import '../styles/cropper.css';
+import 'cropperjs/dist/cropper.css';
 import { DatePickerModal } from './event-date-picker';
 import { TimePickerModal } from './event-time-picker';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -35,7 +35,6 @@ import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import { compressImage } from '@/_shared/utils/compress-image';
-import SignInModal from '@/_shared/components/auth/sign-in-modal';
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
   switch (action.type) {
@@ -55,8 +54,6 @@ const reducer = (state: ImageState, action: ActionType): ImageState => {
   }
 };
 
-const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
-
 export default function EventForm({
   data: existingEvent,
 }: {
@@ -65,7 +62,6 @@ export default function EventForm({
   // Constant for event
   const setStartTimeEvent = 'open:event-time-picker-start-modal';
   const setEndTimeEvent = 'open:event-time-picker-end-modal';
-  const comingSoonEvent = 'open:feature-coming-soon-modal';
   const incompleteFieldEvent = 'open:missing-field-modal';
 
   // States
@@ -143,10 +139,6 @@ export default function EventForm({
     },
     []
   );
-
-  useEffect(() => {
-    if (!user) document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
-  }, [user]);
 
   useEffect(() => {
     if (eventName.trim().length === 0) {
@@ -305,13 +297,11 @@ export default function EventForm({
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-4">
-        <SignInModal isDismisable={false} hideCloseButton={true}></SignInModal>
         <MissingField event={incompleteFieldEvent}></MissingField>
         <ImageCropperModal
           imageData={imageData}
           updateImageData={updateImageData}
         ></ImageCropperModal>
-        <ComingSoonModal event={comingSoonEvent}></ComingSoonModal>
         <TimePickerModal
           event={setStartTimeEvent}
           hour={startTime.hour}
@@ -526,31 +516,6 @@ export default function EventForm({
         </div>
       </div>
     </div>
-  );
-}
-
-function ComingSoonModal({ event }: { event: string }) {
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-
-  const openModal = useCallback(() => {
-    console.log('open coming soon modal');
-    onOpen();
-  }, [onOpen]);
-
-  useEffect(() => {
-    document.addEventListener(event, openModal);
-  });
-
-  return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="auto">
-      <ModalContent>
-        <ModalHeader>Coming Soon</ModalHeader>
-        <ModalBody>This feature will be added at a later update</ModalBody>
-        <ModalFooter>
-          <Button onClick={onClose}>Confirm</Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
   );
 }
 
