@@ -4,9 +4,20 @@ import HTTPError from '@/_shared/components/errors/http-error';
 import { headers } from 'next/headers';
 import type { AuthType } from '@/_shared/types/auth';
 
+const title = 'Page Not Found — inLive Room';
+const description = 'There is nothing to see on this page';
+
 export const metadata: Metadata = {
-  title: 'Page Not Found — inLive Room',
-  description: 'There is nothing to see on this page',
+  title: title,
+  description: description,
+  openGraph: {
+    title: title,
+    description: description,
+  },
+  twitter: {
+    title: title,
+    description: description,
+  },
 };
 
 export default async function NotFound() {
