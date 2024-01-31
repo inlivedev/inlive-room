@@ -158,7 +158,7 @@ export default function EventForm({
         startTime: eventStartTime.toISOString(),
         endTime: eventEndTime.toISOString(),
         description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
-        host: user?.name,
+        host: user?.name || '',
         isPublished: !isDraft,
       });
 
@@ -206,7 +206,7 @@ export default function EventForm({
     // TODO: implement code to update event draft
   }, []);
 
-  const onPublish = useCallback(() => createEvent(true), [createEvent]);
+  const onPublish = useCallback(() => createEvent(false), [createEvent]);
 
   const updatePublishedEvent = useCallback(() => {
     // TODO : implement code to update published event
