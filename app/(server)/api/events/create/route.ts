@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
-import { eventRepo, eventService, roomService } from '../../_index';
+import { NextRequest, NextResponse } from 'next/server';
+import { eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import * as Sentry from '@sentry/nextjs';
 import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
@@ -40,11 +42,11 @@ export async function POST(req: Request) {
     const eventName = eventMeta.name;
     const eventStartTime = new Date(eventMeta.startTime);
     const eventEndTime =
-      eventMeta.endTime == '' || undefined
+      body.endTime == '' || undefined
         ? new Date(eventStartTime.getTime() + (60 * 60 * 1000) / 2)
-        : new Date(eventMeta.endTime);
-    const eventDesc = eventMeta.description;
-    const eventHost = eventMeta.host;
+        : new Date(body.endTime);
+    const eventDesc = body.description;
+    const eventHost = body.host;
 
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       return NextResponse.json({
@@ -85,6 +87,7 @@ export async function POST(req: Request) {
       createdBy: user.id,
       roomId: eventRoom.id,
       host: eventHost,
+      isPublished: eventMeta.isPublished,
     };
 
     const createdEvent = await eventService.createEvent(Event);
@@ -129,4 +132,13 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+function ensureDirectoryExist(filePath: string) {
+  const dir = dirname(filePath);
+  if (existsSync(dir)) {
+    return true;
+  }
+  ensureDirectoryExist(dir);
+  mkdirSync(dir);
 }

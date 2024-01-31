@@ -53,6 +53,19 @@ export async function GET(
       );
     }
 
+    if (
+      existingEvent?.createdBy !== userID &&
+      existingEvent?.isPublished === false
+    ) {
+      return NextResponse.json(
+        {
+          code: 404,
+          message: "Event doesn't exist",
+        },
+        { status: 404 }
+      );
+    }
+
     if (!existingEvent) {
       return NextResponse.json(
         {

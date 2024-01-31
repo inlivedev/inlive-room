@@ -10,15 +10,40 @@ import type { ClientType } from '@/_shared/types/client';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 
 type PageProps = {
-  params: {
-    roomID: string;
-  };
   searchParams: { debug: string | undefined };
 };
 
-export const generateMetadata = ({ params }: PageProps): Metadata => {
+export const generateMetadata = (): Metadata | null => {
+  const headersList = headers();
+  const roomDataHeader = headersList.get('room-data');
+  const roomData: RoomType.RoomData | null =
+    typeof roomDataHeader === 'string'
+      ? JSON.parse(roomDataHeader)
+      : roomDataHeader;
+
+  if (!roomData || !roomData.id) return null;
+
+  const type = roomData.meta?.type === 'event' ? 'Webinar' : 'Meeting';
+  const description =
+    'Experience real-time messaging, video, and audio for seamless collaboration, all within inLive Room.';
+  const ogImage = '/images/general-og.png';
+
   return {
-    title: `Room - ${params.roomID}`,
+    title: `${type} Room: ${roomData.id} — inLive Room`,
+    description: description,
+    openGraph: {
+      title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
+      description: description,
+      url: `/room/${roomData.id}`,
+      images: [ogImage],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
+      description: description,
+      images: [ogImage],
+    },
   };
 };
 
@@ -52,25 +77,25 @@ export default async function Page({ searchParams }: PageProps) {
     if (isModerator) {
       const moderatorMeta = await serverSDK.getMetadata(
         roomData.id,
-        'moderatorIDs'
+        'moderatorClientIDs'
       );
-      const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
+      const moderatorClientIDs = moderatorMeta?.data?.moderatorClientIDs;
 
       try {
-        if (Array.isArray(moderatorIDs)) {
+        if (Array.isArray(moderatorClientIDs)) {
           await serverSDK.setMetadata(roomData.id, {
-            moderatorIDs: [...moderatorIDs, userClient.clientID],
+            moderatorClientIDs: [...moderatorClientIDs, userClient.clientID],
           });
         } else {
           await serverSDK.setMetadata(roomData.id, {
-            moderatorIDs: [userClient.clientID],
+            moderatorClientIDs: [userClient.clientID],
           });
         }
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
-            message: `API call error when trying to add client ID to metadata moderatorIDs`,
-            moderatorIDs: moderatorIDs,
+            message: `API call error when trying to add client ID to metadata moderatorClientIDs`,
+            moderatorClientIDs: moderatorClientIDs,
             clientID: userClient.clientID,
           },
         });
@@ -97,7 +122,7 @@ export default async function Page({ searchParams }: PageProps) {
     midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
     lowBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
   };
-  const roomType = roomData.meta ? roomData.meta.type : 'meeting' || 'meeting';
+  const roomType = roomData.meta ? roomData.meta.type : 'meeting';
 
   return (
     <AppContainer user={userAuth}>

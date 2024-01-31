@@ -66,10 +66,10 @@ export default function ConferenceScreen({
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
   const { roomID } = useClientContext();
-  const { speakers, moderatorIDs, isModerator, roomType } =
+  const { speakerClientIDs, moderatorClientIDs, isModerator, roomType } =
     useMetadataContext();
 
-  const isHost = moderatorIDs.includes(stream.clientId);
+  const isHost = moderatorClientIDs.includes(stream.clientId);
   const [rtcLocalStats, setRtcLocalStats] = useState({
     videoRtcOutbound: undefined as RTCOutboundRtpStreamStats | undefined,
     audioRtcOutbound: undefined as RTCOutboundRtpStreamStats | undefined,
@@ -185,12 +185,12 @@ export default function ConferenceScreen({
         if (confirmed) {
           try {
             await clientSDK.setMetadata(roomID, {
-              speakers: [...speakers, stream.clientId],
+              speakerClientIDs: [...speakerClientIDs, stream.clientId],
             });
           } catch (error) {
             Sentry.captureException(error, {
               extra: {
-                message: `API call error when trying to set metadata speakers`,
+                message: `API call error when trying to set metadata speakerClientIDs`,
               },
             });
             console.error(error);
@@ -205,17 +205,17 @@ export default function ConferenceScreen({
 
         if (confirmed) {
           try {
-            const newSpeakers = speakers.filter((speaker) => {
+            const newSpeakerClientIDs = speakerClientIDs.filter((speaker) => {
               return speaker !== stream.clientId;
             });
 
             await clientSDK.setMetadata(roomID, {
-              speakers: newSpeakers,
+              speakerClientIDs: newSpeakerClientIDs,
             });
           } catch (error) {
             Sentry.captureException(error, {
               extra: {
-                message: `API call error when trying to set metadata speakers`,
+                message: `API call error when trying to set metadata speakerClientIDs`,
               },
             });
             console.error(error);
@@ -223,7 +223,7 @@ export default function ConferenceScreen({
         }
       }
     },
-    [roomID, speakers, stream, isModerator]
+    [roomID, speakerClientIDs, stream, isModerator]
   );
 
   const localVideoScreen =
@@ -444,7 +444,7 @@ export default function ConferenceScreen({
               </Button>
             </DropdownTrigger>
             <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
-              {speakers.includes(stream.clientId) ? (
+              {speakerClientIDs.includes(stream.clientId) ? (
                 <DropdownItem key="set-regular-participant">
                   Set as a regular participant
                 </DropdownItem>
