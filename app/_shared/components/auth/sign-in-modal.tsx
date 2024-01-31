@@ -22,7 +22,15 @@ const providers = [
   },
 ];
 
-export default function SignInModal() {
+interface SignInModalProps {
+  isDismisable?: boolean;
+  hideCloseButton?: boolean;
+}
+
+export default function SignInModal({
+  isDismisable = true,
+  hideCloseButton = false,
+}: SignInModalProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,6 +85,8 @@ export default function SignInModal() {
 
   return (
     <Modal
+      isDismissable={isDismisable}
+      hideCloseButton={hideCloseButton}
       size="sm"
       isOpen={isOpen}
       onOpenChange={onOpenChange}

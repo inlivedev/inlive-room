@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { eventService, roomService } from '../../_index';
+import { NextResponse } from 'next/server';
+import { eventRepo, eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 type CreateEvent = {
@@ -10,9 +12,10 @@ type CreateEvent = {
   endTime: string;
   description?: string;
   host: string;
+  isPublished?: boolean;
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
@@ -31,15 +34,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = (await request.json()) as CreateEvent;
-    const eventName = body.name;
-    const eventStartTime = new Date(body.startTime);
+    const formData = await req.formData();
+    const eventMeta = JSON.parse(formData.get('data') as string) as CreateEvent;
+    const eventImage = formData.get('image') as Blob;
+    const eventName = eventMeta.name;
+    const eventStartTime = new Date(eventMeta.startTime);
     const eventEndTime =
-      body.endTime == '' || undefined
+      eventMeta.endTime == '' || undefined
         ? new Date(eventStartTime.getTime() + (60 * 60 * 1000) / 2)
-        : new Date(body.endTime);
-    const eventDesc = body.description;
-    const eventHost = body.host;
+        : new Date(eventMeta.endTime);
+    const eventDesc = eventMeta.description;
+    const eventHost = eventMeta.host;
 
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       return NextResponse.json({
@@ -83,6 +88,33 @@ export async function POST(request: NextRequest) {
     };
 
     const createdEvent = await eventService.createEvent(Event);
+
+    if (eventImage) {
+      const eventImageBuffer = await eventImage.arrayBuffer();
+      const eventImageUint8Array = new Uint8Array(eventImageBuffer);
+
+      const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
+      const path = `${roomStoragePath}/assets/images/event/${createdEvent.id}/poster.webp`;
+      ensureDirectoryExist(path);
+      writeFileSync(path, eventImageUint8Array);
+      createdEvent.thumbnailUrl = `/assets/images/event/${createdEvent.id}/poster.webp`;
+      const updatedEvent = eventRepo.updateEvent(
+        user.id,
+        createdEvent.id,
+        createdEvent
+      );
+
+      return NextResponse.json(
+        {
+          code: 201,
+          ok: true,
+          message: 'Event created successfully',
+          data: updatedEvent,
+        },
+        { status: 201 }
+      );
+    }
+
     return NextResponse.json({
       code: 201,
       ok: true,
@@ -91,10 +123,22 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.log(error);
-    return NextResponse.json({
-      code: 500,
-      ok: false,
-      message: 'Something went wrong, please try again later',
-    });
+    return NextResponse.json(
+      {
+        code: 500,
+        ok: false,
+        message: 'Something went wrong, please try again later',
+      },
+      { status: 500 }
+    );
   }
+}
+
+function ensureDirectoryExist(filePath: string) {
+  const dir = dirname(filePath);
+  if (existsSync(dir)) {
+    return true;
+  }
+  ensureDirectoryExist(dir);
+  mkdirSync(dir);
 }

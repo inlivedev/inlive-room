@@ -42,3 +42,5 @@ sentry.properties
 app/(server)/api/test
 
 /.docker
+
+/dist

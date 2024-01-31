@@ -27,11 +27,27 @@ export async function GET(
 
     const existingEvent = await eventService.getEvent(slug, userID);
 
+    if (
+      existingEvent?.createdBy !== userID &&
+      existingEvent?.isPublished === false
+    ) {
+      return NextResponse.json(
+        {
+          code: 404,
+          message: "Event doesn't exist",
+        },
+        { status: 404 }
+      );
+    }
+
     if (!existingEvent) {
-      return NextResponse.json({
-        code: 404,
-        message: 'Event not found',
-      });
+      return NextResponse.json(
+        {
+          code: 404,
+          message: 'Event not found',
+        },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(

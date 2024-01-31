@@ -136,6 +136,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
   return (
     <AppContainer user={userAuth}>
       <EventDetail
+        id={eventData.id}
         title={eventData.name}
         descriptionMarkup={descriptionMarkup}
         slug={eventData.slug}

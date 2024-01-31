@@ -82,6 +82,7 @@ or you can turn shut it down from the docker dashboard
 
 **Start the local development server**
 
+
 Run `dev` script to start the local development server in http://localhost:3000
 
 ```bash
@@ -89,6 +90,9 @@ npm run dev
 # or
 yarn dev
 ```
+
+
+>ℹ️ The `dev` script run nextjs with custom-server on top of express with a limited hot reload capability to host the static files, you might only need to run the nextjs server by using `dev:next`.
 
 **Build the project**
 
