@@ -54,6 +54,8 @@ const reducer = (state: ImageState, action: ActionType): ImageState => {
   }
 };
 
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+
 export default function EventForm({
   data: existingEvent,
 }: {
@@ -280,19 +282,15 @@ export default function EventForm({
     [navigateTo, prepareEventData]
   );
 
-  const saveAsDraft = useCallback(() => {
+  const onDraft = useCallback(() => {
     createEvent(false);
   }, [createEvent]);
 
-  const updateDraft = useCallback(() => {
+  const onUpdate = useCallback(() => {
     updateEvent();
   }, [updateEvent]);
 
   const onPublish = useCallback(() => createEvent(true), [createEvent]);
-
-  const updatePublishedEvent = useCallback(() => {
-    updateEvent();
-  }, [updateEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -324,41 +322,9 @@ export default function EventForm({
 
         <div className="flex grow flex-col items-start">
           {/* Create Event Header */}
-          <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
-            <div className="w-full sm:w-fit">
-              <h1 className="text-md w-full font-semibold tracking-wide sm:w-fit lg:text-xl">
-                Lets create your event
-              </h1>
-            </div>
-            <div className="fixed bottom-0 left-0 flex w-full gap-2 border-t border-zinc-700 bg-zinc-900 px-4 py-3 sm:relative sm:w-fit sm:border-t-0 sm:bg-transparent lg:p-0">
-              {existingEvent === undefined ||
-              existingEvent.isPublished === false ? (
-                <Button
-                  onPress={existingEvent ? updateDraft : saveAsDraft}
-                  className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
-                >
-                  {existingEvent ? 'Update Draft' : 'Save as draft'}
-                </Button>
-              ) : null}
-              <Button
-                onPress={
-                  existingEvent?.isPublished ? updatePublishedEvent : onPublish
-                }
-                className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
-              >
-                {existingEvent?.isPublished ? 'Update' : 'Publish'}
-              </Button>
-              <Button
-                onClick={() => {
-                  console.log(imageData);
-                }}
-              >
-                Debug Data
-              </Button>
-            </div>
-          </div>
+          {TitleBar(existingEvent, onUpdate, onDraft, onPublish)}
           {/* column */}
-          <div className="flex w-full flex-1 flex-col flex-wrap items-start gap-4 sm:flex-row sm:flex-nowrap">
+          <div className="flex w-full flex-1 flex-col flex-wrap items-start gap-4 pb-20 sm:flex-row sm:flex-nowrap sm:pb-0">
             {/* left side */}
             <div className="flex h-fit w-full flex-none flex-col items-start gap-6 sm:flex-1 sm:basis-1/2">
               <div className="w-full flex-none gap-4">
@@ -514,6 +480,39 @@ export default function EventForm({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TitleBar(
+  existingEvent: typeof selectEvent | undefined,
+  onUpdate: () => void,
+  onDraft: () => void,
+  onPublish: () => Promise<void>
+) {
+  return (
+    <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
+      <div className="w-full sm:w-fit">
+        <h1 className="text-md w-full font-semibold tracking-wide sm:w-fit lg:text-xl">
+          {existingEvent ? "Let's edit your event" : "Let's create your event"}
+        </h1>
+      </div>
+      <div className="fixed bottom-0 left-0 z-10 flex w-full gap-2 border-t border-zinc-700 bg-zinc-900 px-4 py-3 sm:relative sm:w-fit sm:border-t-0 sm:bg-transparent lg:p-0">
+        {existingEvent === undefined || existingEvent.isPublished === false ? (
+          <Button
+            onPress={existingEvent ? onUpdate : onDraft}
+            className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
+          >
+            {existingEvent ? 'Update Draft' : 'Save as draft'}
+          </Button>
+        ) : null}
+        <Button
+          onPress={existingEvent?.isPublished ? onUpdate : onPublish}
+          className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+        >
+          {existingEvent?.isPublished ? 'Update' : 'Publish'}
+        </Button>
       </div>
     </div>
   );
