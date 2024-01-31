@@ -9,9 +9,10 @@ const inter = Inter({ subsets: ['latin'] });
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 const title = 'Virtual room for your real-time collaboration — inLive Room';
 const description = `Host or join in seconds. It's that simple! Experience real-time messaging, video, and audio for seamless collaboration, all within open-source virtual rooms.`;
-const ogImage = `${APP_ORIGIN}/images/general-og.png`;
+const ogImage = '/images/general-og.png';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(`${APP_ORIGIN || ''}`),
   title: title,
   description: description,
   openGraph: {
