@@ -1,7 +1,14 @@
+import type { Metadata } from 'next';
 import Home from '@/_features/home/home';
 import { headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import type { AuthType } from '@/_shared/types/auth';
+
+export const metadata: Metadata = {
+  openGraph: {
+    url: '/',
+  },
+};
 
 export default async function Page() {
   const headersList = headers();

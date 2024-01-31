@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: title,
     description: description,
-    url: `${APP_ORIGIN}`,
     images: [ogImage],
     type: 'website',
   },
