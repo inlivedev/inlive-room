@@ -5,7 +5,7 @@ import { headers } from 'next/headers';
 import type { AuthType } from '@/_shared/types/auth';
 
 export const metadata: Metadata = {
-  title: 'Room Not Found',
+  title: 'Room Not Found — inLive Room',
   description: 'There is nothing to see on this page',
 };
 

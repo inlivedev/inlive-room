@@ -7,8 +7,6 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import type { EventType } from '@/_shared/types/event';
 
-const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
-
 type PageProps = {
   params: {
     eventID: string;
@@ -95,18 +93,18 @@ export const generateMetadata = async ({
   )}`;
 
   return {
-    title: `Webinar — ${eventData.name}`,
+    title: `Webinar — ${eventData.name} — inLive Room`,
     description: descriptionSummary,
     openGraph: {
-      title: `Webinar — ${eventData.name}`,
+      title: `Webinar — ${eventData.name} — inLive Room`,
       description: descriptionSummary,
-      url: `${APP_ORIGIN}/event/${eventData.slug}`,
+      url: `/event/${eventData.slug}`,
       images: [imageSrc],
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Webinar — ${eventData.name}`,
+      title: `Webinar — ${eventData.name} — inLive Room`,
       description: descriptionSummary,
       images: [imageSrc],
     },
