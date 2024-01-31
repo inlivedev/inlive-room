@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@nextui-org/react';
+import { Button, Image as NextImage } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import EventRegistrationModal from '@/_features/event/components/event-registration-modal';
@@ -12,6 +12,7 @@ import CheckIcon from '@/_shared/components/icons/check-icon';
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 type EventDetailProps = {
+  id: number;
   title: string;
   descriptionMarkup: {
     __html: string | TrustedHTML;
@@ -27,6 +28,7 @@ export default function EventDetail({
   slug,
   host,
   startTime,
+  id,
 }: EventDetailProps) {
   const {
     active: copiedActive,
@@ -73,11 +75,24 @@ export default function EventDetail({
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
               {title}
             </h2>
-            <div className="mt-4">
+            <div className="my-4">
               <b className="font-medium text-zinc-100">Hosted by {host}</b>
             </div>
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
               <div className="lg:max-w-xl lg:flex-auto xl:max-w-[640px]">
+                <div className="max-w-full" style={{ position: 'relative' }}>
+                  <NextImage
+                    width={640}
+                    height={320}
+                    src={`${APP_ORIGIN}/static/assets/images/event/${id}/poster.webp`}
+                    alt=""
+                    style={{
+                      aspectRatio: '2/1',
+                      zIndex: 1,
+                      objectFit: 'cover',
+                    }}
+                  ></NextImage>
+                </div>
                 <div
                   className="prose prose-sm mt-6 max-w-none text-zinc-200 lg:prose-base prose-img:rounded-2xl prose-img:lg:rounded-3xl"
                   dangerouslySetInnerHTML={descriptionMarkup}

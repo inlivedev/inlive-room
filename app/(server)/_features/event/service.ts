@@ -19,18 +19,6 @@ export interface EventParticipant {
   createdAt: Date;
 }
 
-export interface IEvent {
-  id: number;
-  slug: string;
-  name: string;
-  startTime: Date;
-  createdAt: Date;
-  description: string | null;
-  createdBy: number;
-  roomId: string;
-  host: string;
-}
-
 export class EventService implements iEventService {
   constructor(private repo: iEventRepo) {}
 

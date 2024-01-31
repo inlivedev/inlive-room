@@ -182,6 +182,7 @@ export class RoomService implements iRoomService {
           createdBy: userID,
           meta: { type },
           name: '',
+          createdAt: new Date(),
         };
       }
 

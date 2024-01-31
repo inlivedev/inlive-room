@@ -23,11 +23,13 @@ jobs:
         NEXT_PUBLIC_INLIVE_API_VERSION: v1
         NEXT_PUBLIC_MIXPANEL_TOKEN: ${{secrets.PUBLIC_MIXPANEL_TOKEN}}
         NEXT_PUBLIC_SENTRY_DSN: ${{secrets.PUBLIC_SENTRY_DSN}}
-        NEXT_PUBLIC_ENABLE_WEBINAR: false
+        NEXT_PUBLIC_ENABLE_WEBINAR: true
         PERSISTENT_DATA: true
         ENABLE_MAILER: true
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
         INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
+        ROOM_LOCAL_STORAGE_PATH: ./volume
+        PORT: 3000
     - name: Set release version
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - uses: google-github-actions/auth@v2
