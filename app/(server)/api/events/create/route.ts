@@ -98,7 +98,7 @@ export async function POST(req: Request) {
       ensureDirectoryExist(path);
       writeFileSync(path, eventImageUint8Array);
       createdEvent.thumbnailUrl = `/assets/images/event/${createdEvent.id}/poster.webp`;
-      const updatedEvent = eventRepo.updateEvent(
+      const updatedEvent = await eventRepo.updateEvent(
         user.id,
         createdEvent.id,
         createdEvent
