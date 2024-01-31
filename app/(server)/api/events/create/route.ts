@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { eventService, roomService } from '../../_index';
+import { NextResponse } from 'next/server';
+import { eventRepo, eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
-import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import * as Sentry from '@sentry/nextjs';
@@ -42,11 +42,11 @@ export async function POST(req: Request) {
     const eventName = eventMeta.name;
     const eventStartTime = new Date(eventMeta.startTime);
     const eventEndTime =
-      body.endTime == '' || undefined
+      eventMeta.endTime == '' || undefined
         ? new Date(eventStartTime.getTime() + (60 * 60 * 1000) / 2)
-        : new Date(body.endTime);
-    const eventDesc = body.description;
-    const eventHost = body.host;
+        : new Date(eventMeta.endTime);
+    const eventDesc = eventMeta.description;
+    const eventHost = eventMeta.host;
 
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       return NextResponse.json({
