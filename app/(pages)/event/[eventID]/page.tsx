@@ -93,10 +93,10 @@ export const generateMetadata = async ({
   )}`;
 
   return {
-    title: `Webinar — ${eventData.name}`,
+    title: `Webinar — ${eventData.name} — inLive Room`,
     description: descriptionSummary,
     openGraph: {
-      title: `Webinar — ${eventData.name}`,
+      title: `Webinar — ${eventData.name} — inLive Room`,
       description: descriptionSummary,
       url: `/event/${eventData.slug}`,
       images: [imageSrc],
@@ -104,7 +104,7 @@ export const generateMetadata = async ({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Webinar — ${eventData.name}`,
+      title: `Webinar — ${eventData.name} — inLive Room`,
       description: descriptionSummary,
       images: [imageSrc],
     },
