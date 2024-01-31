@@ -38,6 +38,8 @@ jobs:
         ENABLE_MAILER: false
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
         INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
+        ROOM_LOCAL_STORAGE_PATH: ./volume
+        PORT: 3000
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
     - uses: google-github-actions/auth@v2
