@@ -31,7 +31,7 @@ export default function ConferenceTopBar() {
         <ConnectionStatusOverlay></ConnectionStatusOverlay>
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="flex items-center text-xs text-zinc-400">
+        <div className="flex items-center text-xs font-medium tabular-nums text-zinc-400">
           <span>
             <UserIcon className="h-5 w-5" />
           </span>
