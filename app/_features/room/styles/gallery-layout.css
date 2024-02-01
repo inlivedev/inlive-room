@@ -1,4 +1,4 @@
-.meeting-gallery-layout {
+.gallery-layout {
   width: 100%;
   height: 100%;
   padding: 1rem;
@@ -8,22 +8,22 @@
   gap: 1rem;
 }
 
-.meeting-gallery-layout .participant-container {
+.gallery-layout .participant-container {
   aspect-ratio: 1/1;
 }
 
 @media (min-width: 576px) {
-  .meeting-gallery-layout .participant-container {
+  .gallery-layout .participant-container {
     aspect-ratio: auto;
     height: 100%;
   }
 }
 
-.meeting-gallery-layout .participant-grid {
+.gallery-layout .participant-grid {
   height: 100%;
 }
 
-.meeting-gallery-layout .participant-item {
+.gallery-layout .participant-item {
   position: relative;
   width: 100%;
   aspect-ratio: 1/1;
@@ -33,7 +33,7 @@
 }
 
 @media (min-width: 576px) {
-  .meeting-gallery-layout .participant-item {
+  .gallery-layout .participant-item {
     aspect-ratio: auto;
     height: 100%;
   }
