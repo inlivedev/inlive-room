@@ -9,7 +9,7 @@ import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import MeetingOneOnOneLayout from './meeting-one-on-one-layout';
 import MeetingGalleryLayout from './meeting-gallery-layout';
 import MeetingPresentationLayout from './meeting-presentation-layout';
-import WebinarSpeakerLayout from './conference-speaker-layout';
+import WebinarSpeakerLayout from './webinar-speaker-layout';
 import WebinarPresentationLayout from './webinar-presentation-layout';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
