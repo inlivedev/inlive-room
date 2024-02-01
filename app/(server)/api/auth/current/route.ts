@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/nextjs';
 import { InliveApiFetcher } from '@/_shared/utils/fetcher';
 import { getUserByEmail } from '@/(server)/_features/user/repository';
 import type { AuthType } from '@/_shared/types/auth';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 const persistentData = process.env.PERSISTENT_DATA === 'true';
 
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
             email: authResponse.data.email,
             name: authResponse.data.name,
             pictureUrl: authResponse.data.picture_url,
-            whitelistFeature: [],
+            whitelistFeature: whitelistFeature,
             createdAt: null,
           },
         },
