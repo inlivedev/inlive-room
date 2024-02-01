@@ -15,8 +15,13 @@ export default function WebinarSpeakerLayout({
   const MAX_VISIBLE_PARTICIPANTS = 20;
   const { moderatorClientIDs, speakerClientIDs } = useMetadataContext();
 
-  const { speakers, participants } = useMemo(() => {
-    return streams.reduce(
+  const {
+    speakers,
+    visibleParticipants,
+    hiddenParticipants,
+    participantsMoreThanMax,
+  } = useMemo(() => {
+    const { speakers, participants } = streams.reduce(
       (accumulator, currentStream) => {
         if (
           moderatorClientIDs.includes(currentStream.clientId) ||
@@ -38,12 +43,10 @@ export default function WebinarSpeakerLayout({
         participants: [] as ParticipantStream[],
       }
     );
-  }, [streams, moderatorClientIDs, speakerClientIDs]);
 
-  const participantsMoreThanMax =
-    participants.length > MAX_VISIBLE_PARTICIPANTS;
+    const participantsMoreThanMax =
+      participants.length > MAX_VISIBLE_PARTICIPANTS;
 
-  const { visibleParticipants, hiddenParticipants } = useMemo(() => {
     const visibleParticipants = participants.slice(
       0,
       participantsMoreThanMax
@@ -57,8 +60,13 @@ export default function WebinarSpeakerLayout({
         : MAX_VISIBLE_PARTICIPANTS
     );
 
-    return { visibleParticipants, hiddenParticipants };
-  }, [participants, participantsMoreThanMax]);
+    return {
+      speakers,
+      visibleParticipants,
+      hiddenParticipants,
+      participantsMoreThanMax,
+    };
+  }, [streams, moderatorClientIDs, speakerClientIDs]);
 
   return (
     <div className="conference-layout speaker">

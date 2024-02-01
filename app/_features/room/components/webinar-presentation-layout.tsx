@@ -15,8 +15,8 @@ export default function WebinarPresentationLayout({
   const { moderatorClientIDs, speakerClientIDs } = useMetadataContext();
   const MAX_VISIBLE_PARTICIPANTS = 6;
 
-  const { speakers, participants } = useMemo(() => {
-    return streams.reduce(
+  const { spotlightScreen, visibleStreams, hiddenStreams } = useMemo(() => {
+    const { speakers, participants } = streams.reduce(
       (accumulator, currentStream) => {
         if (
           moderatorClientIDs.includes(currentStream.clientId) ||
@@ -38,10 +38,8 @@ export default function WebinarPresentationLayout({
         participants: [] as ParticipantStream[],
       }
     );
-  }, [streams, moderatorClientIDs, speakerClientIDs]);
 
-  const { speakerMedias, speakerScreens } = useMemo(() => {
-    return speakers.reduce(
+    const { speakerMedias, speakerScreens } = speakers.reduce(
       (accumulator, currentValue) => {
         if (currentValue.source === 'screen') {
           return {
@@ -60,31 +58,33 @@ export default function WebinarPresentationLayout({
         speakerMedias: [] as ParticipantStream[],
       }
     );
-  }, [speakers]);
 
-  const spotlightScreen = speakerScreens.pop();
-  const visibleSpeakerScreens = speakerScreens.slice(
-    0,
-    MAX_VISIBLE_PARTICIPANTS
-  );
-  const hiddenSpeakerScreens = speakerScreens.slice(MAX_VISIBLE_PARTICIPANTS);
+    const spotlightScreen = speakerScreens.pop();
+    const visibleSpeakerScreens = speakerScreens.slice(
+      0,
+      MAX_VISIBLE_PARTICIPANTS
+    );
+    const hiddenSpeakerScreens = speakerScreens.slice(MAX_VISIBLE_PARTICIPANTS);
 
-  const visibleSpeakers =
-    visibleSpeakerScreens.length < MAX_VISIBLE_PARTICIPANTS
-      ? speakerMedias.slice(
-          0,
-          MAX_VISIBLE_PARTICIPANTS - visibleSpeakerScreens.length
-        )
-      : [];
+    const visibleSpeakers =
+      visibleSpeakerScreens.length < MAX_VISIBLE_PARTICIPANTS
+        ? speakerMedias.slice(
+            0,
+            MAX_VISIBLE_PARTICIPANTS - visibleSpeakerScreens.length
+          )
+        : [];
 
-  const hiddenSpeakers = speakerMedias.slice(visibleSpeakers.length);
+    const hiddenSpeakers = speakerMedias.slice(visibleSpeakers.length);
 
-  const visibleStreams = [...visibleSpeakerScreens, ...visibleSpeakers];
-  const hiddenStreams = [
-    ...hiddenSpeakerScreens,
-    ...hiddenSpeakers,
-    ...participants,
-  ];
+    const visibleStreams = [...visibleSpeakerScreens, ...visibleSpeakers];
+    const hiddenStreams = [
+      ...hiddenSpeakerScreens,
+      ...hiddenSpeakers,
+      ...participants,
+    ];
+
+    return { spotlightScreen, visibleStreams, hiddenStreams };
+  }, [streams, moderatorClientIDs, speakerClientIDs]);
 
   const maxColumns = Math.ceil(Math.sqrt(visibleStreams.length));
 
