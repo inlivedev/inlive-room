@@ -75,7 +75,10 @@ function DropdownViewSelection() {
           <span>
             <GridViewIcon className="h-5 w-5" />
           </span>
-          <span className="ml-1.5">View</span>
+          <span className="ml-1.5 capitalize">
+            {currentLayout !== 'presentation' ? currentLayout : previousLayout}{' '}
+            View
+          </span>
           <span className="ml-1">
             <ChevronDownIcon className="h-3 w-3" />
           </span>
