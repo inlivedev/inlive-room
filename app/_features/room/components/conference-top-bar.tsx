@@ -71,7 +71,16 @@ function DropdownViewSelection() {
   return (
     <Dropdown className="min-w-40 ring-1 ring-zinc-800/70">
       <DropdownTrigger>
-        <Button className="h-7 min-w-0 gap-0 rounded bg-transparent px-2 text-xs font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 active:bg-zinc-700">
+        <Button
+          className={`h-7 min-w-0 gap-0 rounded bg-transparent px-2 text-xs font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 active:bg-zinc-700 ${
+            currentLayout === 'presentation'
+              ? 'cursor-not-allowed'
+              : 'cursor-auto'
+          }`}
+          isDisabled={currentLayout === 'presentation'}
+          aria-disabled={currentLayout === 'presentation'}
+          disabled={currentLayout === 'presentation'}
+        >
           <span>
             <GridViewIcon className="h-5 w-5" />
           </span>
