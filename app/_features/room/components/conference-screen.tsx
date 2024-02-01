@@ -183,48 +183,36 @@ export default function ConferenceScreen({
       if (key === 'set-speaker') {
         if (!isModerator) return;
 
-        const confirmed = confirm(
-          'Are you sure you want to set this participant as a speaker?'
-        );
-
-        if (confirmed) {
-          try {
-            await clientSDK.setMetadata(roomID, {
-              speakerClientIDs: [...speakerClientIDs, stream.clientId],
-            });
-          } catch (error) {
-            Sentry.captureException(error, {
-              extra: {
-                message: `API call error when trying to set metadata speakerClientIDs`,
-              },
-            });
-            console.error(error);
-          }
+        try {
+          await clientSDK.setMetadata(roomID, {
+            speakerClientIDs: [...speakerClientIDs, stream.clientId],
+          });
+        } catch (error) {
+          Sentry.captureException(error, {
+            extra: {
+              message: `API call error when trying to set metadata speakerClientIDs`,
+            },
+          });
+          console.error(error);
         }
       } else if (key === 'set-regular-participant') {
         if (!isModerator) return;
 
-        const confirmed = confirm(
-          'Are you sure you want to set this speaker as a regular participant?'
-        );
+        try {
+          const newSpeakerClientIDs = speakerClientIDs.filter((speaker) => {
+            return speaker !== stream.clientId;
+          });
 
-        if (confirmed) {
-          try {
-            const newSpeakerClientIDs = speakerClientIDs.filter((speaker) => {
-              return speaker !== stream.clientId;
-            });
-
-            await clientSDK.setMetadata(roomID, {
-              speakerClientIDs: newSpeakerClientIDs,
-            });
-          } catch (error) {
-            Sentry.captureException(error, {
-              extra: {
-                message: `API call error when trying to set metadata speakerClientIDs`,
-              },
-            });
-            console.error(error);
-          }
+          await clientSDK.setMetadata(roomID, {
+            speakerClientIDs: newSpeakerClientIDs,
+          });
+        } catch (error) {
+          Sentry.captureException(error, {
+            extra: {
+              message: `API call error when trying to set metadata speakerClientIDs`,
+            },
+          });
+          console.error(error);
         }
       }
     },
