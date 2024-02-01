@@ -65,7 +65,7 @@ export default function ConferenceScreen({
 
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
-  const { roomID } = useClientContext();
+  const { roomID, clientID } = useClientContext();
   const {
     speakerClientIDs,
     moderatorClientIDs,
@@ -437,6 +437,7 @@ export default function ConferenceScreen({
             </Button>
           )}
         {isModerator &&
+          clientID !== stream.clientId &&
           stream.source === 'media' &&
           roomType === 'event' &&
           currentLayout === 'speaker' && (
