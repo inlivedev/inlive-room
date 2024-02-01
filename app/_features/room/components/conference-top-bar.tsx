@@ -20,7 +20,7 @@ import { clientSDK } from '@/_shared/utils/sdk';
 import type { SVGElementPropsType } from '@/_shared/types/types';
 
 export default function ConferenceTopBar() {
-  const { roomType } = useMetadataContext();
+  const { roomType, isModerator } = useMetadataContext();
   const { streams } = useParticipantContext();
 
   const participants = streams.filter((stream) => stream.source === 'media');
@@ -37,7 +37,7 @@ export default function ConferenceTopBar() {
           </span>
           <span className="ml-1.5">{participants.length}</span>
         </div>
-        {roomType === 'event' && <DropdownViewSelection />}
+        {roomType === 'event' && isModerator && <DropdownViewSelection />}
       </div>
     </div>
   );
