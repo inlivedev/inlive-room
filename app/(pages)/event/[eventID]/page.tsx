@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventDetail from '@/_features/event/components/event-detail';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import type { EventType } from '@/_shared/types/event';
+import { getCookie } from '@/_shared/utils/get-cookie';
 
 type PageProps = {
   params: {
     eventID: string;
   };
 };
+
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 const extractSrcImage = (htmlString: string) => {
   let src = '';
@@ -85,7 +88,9 @@ export const generateMetadata = async ({
     }
   );
 
-  const imageSrc = extractSrcImage(eventData.description || '');
+  const imageSrc =
+    `${APP_ORIGIN}/static/assets/images/event/${eventData.id}/poster.webp` ||
+    extractSrcImage(eventData.description || '');
   const description = sanitizeHTML(eventData.description || '');
   const descriptionSummary = `${eventStartDate} at ${eventStartTime}, ${description.slice(
     0,
@@ -120,8 +125,14 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
+  const cookie = await getCookie('token');
+
   const { data: eventData }: EventType.DetailEventResponse =
-    await InternalApiFetcher.get(`/api/events/${eventID}`);
+    await InternalApiFetcher.get(`/api/events/${eventID}`, {
+      headers: {
+        Cookie: `token=${cookie}`,
+      },
+    });
 
   if (!eventData || !eventData.id) {
     notFound();
@@ -140,6 +151,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
         slug={eventData.slug}
         host={eventData.host}
         startTime={eventData.startTime}
+        isPublished={eventData.isPublished}
       />
     </AppContainer>
   );

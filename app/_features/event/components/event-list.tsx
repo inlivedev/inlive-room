@@ -41,7 +41,7 @@ export default function EventList() {
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
-        <Header logoText="inLive Room" logoHref="/event" needAuth={true} />
+        <Header logoText="inLive Room" logoHref="/" needAuth={true} />
         <Tabs
           key={'underlined'}
           variant={'underlined'}
