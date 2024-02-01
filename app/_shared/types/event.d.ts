@@ -1,5 +1,4 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
-import type { IEvent } from '@/(server)/_features/event/service';
 import { selectEvent } from '@/(server)/_features/event/schema';
 
 export declare namespace EventType {
@@ -22,8 +21,13 @@ export declare namespace EventType {
   type RegisterParticipantResponse = FetcherResponse & {
     message: string;
     data: {
-      event: IEvent;
+      event: typeof selectEvent;
       participant: RegisteredParticipant;
     };
+  };
+
+  type ListEventsResponse = FetcherResponse & {
+    message: string;
+    data: (typeof selectEvent)[];
   };
 }
