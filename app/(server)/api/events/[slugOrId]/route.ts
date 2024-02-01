@@ -6,7 +6,8 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import { insertEvent } from '@/(server)/_features/event/schema';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
-import { existsSync, unlinkSync } from 'fs';
+import { stat, unlink } from 'fs';
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(
   request: NextRequest,
@@ -242,19 +243,29 @@ export async function PUT(
 
     if (eventImage) {
       // update image
-      const path = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}/assets/images/event/${oldEvent.id}/poster.webp`;
-      writeFiletoLocalStorage(path, eventImage);
+      const path = `/assets/images/event/${oldEvent.id}/poster.webp`;
+      const storagePath = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}${path}`;
+      writeFiletoLocalStorage(storagePath, eventImage);
       newEvent.thumbnailUrl = path;
     }
 
     if (updateEventMeta.deleteImage) {
       // delete image
-      const path = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}/assets/images/event/${oldEvent.id}/poster.webp`;
-      if (existsSync(path)) {
-        unlinkSync(path);
-      }
+      const path = `${process.env.ROOM_LOCAL_STORAGE_PATH}/assets/images/event/${oldEvent.id}/poster.webp`;
+      stat(path, function (err) {
+        if (err) {
+          Sentry.captureException(err);
+          return;
+        }
 
-      newEvent.thumbnailUrl = null;
+        unlink(path, function (err) {
+          if (err) {
+            Sentry.captureException(err);
+            return;
+          }
+          newEvent.thumbnailUrl = undefined;
+        });
+      });
     }
 
     const updatedEvent = await eventRepo.updateEvent(
@@ -263,7 +274,7 @@ export async function PUT(
       newEvent
     );
 
-    if (updatedEvent.length == 0) {
+    if (!updatedEvent) {
       return NextResponse.json({
         code: 404,
         ok: false,

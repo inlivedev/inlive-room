@@ -81,12 +81,21 @@ export class EventRepo implements iEventRepo {
     id: number,
     event: typeof insertEvent
   ): Promise<typeof selectEvent | undefined> {
-    const data = await db
-      .update(events)
-      .set(event)
-      .where(and(eq(events.id, id), eq(events.createdBy, userId)))
-      .returning();
-    if (data.length == 0) {
+    const data = await db.transaction(async (tx) => {
+      if (!event.thumbnailUrl) {
+        await tx
+          .update(events)
+          .set({ thumbnailUrl: null })
+          .where(eq(events.id, id));
+        return await tx
+          .update(events)
+          .set(event)
+          .where(and(eq(events.id, id), eq(events.createdBy, userId)))
+          .returning();
+      }
+    });
+
+    if (!data || data.length == 0) {
       return undefined;
     }
 

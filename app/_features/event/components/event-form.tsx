@@ -234,7 +234,7 @@ export default function EventForm({
       deleteImage
     );
 
-    const finalEndpoint = `/api/events/${existingEvent?.id}/update`;
+    const finalEndpoint = `/api/events/${existingEvent?.id}`;
     const respEvent = await InternalApiFetcher.put(finalEndpoint, {
       body: formData,
       headers: undefined,
