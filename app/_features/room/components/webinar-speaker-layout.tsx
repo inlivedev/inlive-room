@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import ConferenceScreen from '@/_features/room/components/conference-screen';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
+import ConferenceScreen from '@/_features/room/components/conference-screen';
+import ConferenceScreenHidden from '@/_features/room/components/conference-screen-hidden';
 import '../styles/webinar-speaker-layout.css';
 
 export default function WebinarSpeakerLayout({
@@ -11,31 +12,53 @@ export default function WebinarSpeakerLayout({
 }: {
   streams: ParticipantStream[];
 }) {
+  const MAX_VISIBLE_PARTICIPANTS = 20;
   const { moderatorClientIDs, speakerClientIDs } = useMetadataContext();
 
-  const speakers = useMemo(() => {
-    return streams.filter((stream) => {
-      return (
-        (moderatorClientIDs.includes(stream.clientId) &&
-          stream.source === 'media') ||
-        (speakerClientIDs.includes(stream.clientId) &&
-          stream.source === 'media')
-      );
-    });
+  const { speakers, participants } = useMemo(() => {
+    return streams.reduce(
+      (accumulator, currentStream) => {
+        if (
+          moderatorClientIDs.includes(currentStream.clientId) ||
+          speakerClientIDs.includes(currentStream.clientId)
+        ) {
+          return {
+            ...accumulator,
+            speakers: [...accumulator.speakers, currentStream],
+          };
+        } else {
+          return {
+            ...accumulator,
+            participants: [...accumulator.participants, currentStream],
+          };
+        }
+      },
+      {
+        speakers: [] as ParticipantStream[],
+        participants: [] as ParticipantStream[],
+      }
+    );
   }, [streams, moderatorClientIDs, speakerClientIDs]);
 
-  const participants = useMemo(() => {
-    return streams.filter((stream) => {
-      return (
-        !moderatorClientIDs.includes(stream.clientId) &&
-        !speakerClientIDs.includes(stream.clientId) &&
-        stream.source === 'media'
-      );
-    });
-  }, [streams, moderatorClientIDs, speakerClientIDs]);
+  const participantsMoreThanMax =
+    participants.length > MAX_VISIBLE_PARTICIPANTS;
 
-  const MAX_VISIBLE_PARTICIPANTS = 20;
-  const slicedParticipants = participants.slice(0, MAX_VISIBLE_PARTICIPANTS);
+  const { visibleParticipants, hiddenParticipants } = useMemo(() => {
+    const visibleParticipants = participants.slice(
+      0,
+      participantsMoreThanMax
+        ? MAX_VISIBLE_PARTICIPANTS - 1
+        : MAX_VISIBLE_PARTICIPANTS
+    );
+
+    const hiddenParticipants = participants.slice(
+      participantsMoreThanMax
+        ? MAX_VISIBLE_PARTICIPANTS - 1
+        : MAX_VISIBLE_PARTICIPANTS
+    );
+
+    return { visibleParticipants, hiddenParticipants };
+  }, [participants, participantsMoreThanMax]);
 
   return (
     <div className="conference-layout speaker">
@@ -50,21 +73,29 @@ export default function WebinarSpeakerLayout({
       </div>
       <div className="participant-container">
         <div className="participant-grid">
-          {slicedParticipants.map((participant) => {
+          {visibleParticipants.map((stream) => {
             return (
               <div
-                key={`participant-${participant.id}`}
+                key={`visible-stream-${stream.id}`}
                 className="participant-item relative"
               >
-                <ConferenceScreen stream={participant} />
+                <ConferenceScreen stream={stream} />
               </div>
             );
           })}
-          {participants.length > MAX_VISIBLE_PARTICIPANTS && (
+          {participantsMoreThanMax && (
             <div className="participant-item relative">
               <div className="flex h-full w-full items-center justify-center rounded-lg bg-zinc-700/70 p-2 text-sm font-medium shadow-lg">
                 More+
               </div>
+              {hiddenParticipants.map((stream) => {
+                return (
+                  <ConferenceScreenHidden
+                    key={`hidden-stream-${stream.id}`}
+                    stream={stream}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
