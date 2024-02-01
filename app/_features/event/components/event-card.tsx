@@ -1,15 +1,9 @@
 import { EventType } from '@/_shared/types/event';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Code,
-  Divider,
-  Image,
-} from '@nextui-org/react';
+import { Card, CardBody, CardHeader, Divider, Image } from '@nextui-org/react';
 
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { useCallback } from 'react';
+import { StatusPublished, StatusDraft } from './event-status';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -59,7 +53,7 @@ export function EventCard({
             style={{
               aspectRatio: '2/1',
               zIndex: 1,
-              objectFit: 'cover',
+              objectFit: 'contain',
             }}
             fallbackSrc="/images/general-og.png"
             src={`${APP_ORIGIN}/static/assets/images/event/${event.id}/poster.webp`}
@@ -67,21 +61,5 @@ export function EventCard({
         </div>
       </CardBody>
     </Card>
-  );
-}
-
-function StatusPublished() {
-  return (
-    <Code className="rounded-sm bg-emerald-950 text-xs text-emerald-300 ring-1 ring-emerald-800">
-      Published
-    </Code>
-  );
-}
-
-function StatusDraft() {
-  return (
-    <Code className="rounded-sm bg-blue-950 text-xs text-blue-300 ring-1 ring-blue-800">
-      Draft
-    </Code>
   );
 }
