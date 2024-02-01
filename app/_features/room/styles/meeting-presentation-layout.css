@@ -1,7 +1,6 @@
 .meeting-presentation-layout {
   width: 100%;
   height: 100%;
-  padding: 1rem;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 1rem;

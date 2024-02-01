@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
-import '../styles/meeting-gallery-layout.css';
+import '../styles/gallery-layout.css';
 import ConferenceScreen from './conference-screen';
 import ConferenceScreenHidden from './conference-screen-hidden';
 
@@ -29,7 +29,7 @@ export default function MeetingGalleryLayout({
   const maxColumns = Math.ceil(Math.sqrt(visibleParticipants.length));
 
   return (
-    <div className="meeting-gallery-layout">
+    <div className="gallery-layout">
       <div className="participant-container">
         <div
           className={`participant-grid grid gap-2 sm:gap-3`}
