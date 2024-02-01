@@ -12,7 +12,7 @@ export default function MeetingOneOnOneLayout({
   const remoteStream = streams.find((stream) => stream.origin === 'remote');
 
   return (
-    <div className="flex h-full w-full flex-col justify-center p-4">
+    <div className="flex h-full w-full flex-col justify-center">
       <div className="relative flex h-full w-full flex-col justify-center">
         <div className="relative aspect-square sm:aspect-auto sm:h-full">
           {remoteStream && <ConferenceScreen stream={remoteStream} />}

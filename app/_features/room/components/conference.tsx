@@ -45,7 +45,7 @@ export default function Conference({ roomType }: { roomType: string }) {
     <>
       <div className="viewport-height grid grid-rows-[40px,1fr,72px] overflow-y-hidden">
         <ConferenceTopBar />
-        <div>
+        <div className="px-4 pb-4">
           {roomType === 'event' ? <WebinarRoomLayout /> : <MeetingRoomLayout />}
         </div>
         <div>
