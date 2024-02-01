@@ -37,12 +37,6 @@ function DropdownViewSelection() {
   const { previousLayout, currentLayout } = useMetadataContext();
   const { roomID } = useClientContext();
 
-  const [selectedKeys, setSelectedKeys] = useState(
-    currentLayout !== 'presentation'
-      ? new Set([currentLayout])
-      : new Set([previousLayout])
-  );
-
   const onViewSelectionChange = useCallback(
     async (selectedKey: Selection) => {
       if (!(selectedKey instanceof Set) || selectedKey.size === 0) return;
@@ -55,11 +49,14 @@ function DropdownViewSelection() {
         currentLayout: currentKey,
         previousLayout: currentLayout,
       });
-
-      setSelectedKeys(new Set([currentKey]));
     },
     [roomID, currentLayout]
   );
+
+  const selectedKeys =
+    currentLayout !== 'presentation'
+      ? new Set([currentLayout])
+      : new Set([previousLayout]);
 
   return (
     <Dropdown className="min-w-40 ring-1 ring-zinc-800/70">
