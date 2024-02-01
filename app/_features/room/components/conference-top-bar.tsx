@@ -12,6 +12,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
+import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
@@ -20,13 +21,22 @@ import type { SVGElementPropsType } from '@/_shared/types/types';
 
 export default function ConferenceTopBar() {
   const { roomType } = useMetadataContext();
+  const { streams } = useParticipantContext();
+
+  const participants = streams.filter((stream) => stream.source === 'media');
 
   return (
     <div className="flex items-center justify-between px-4">
       <div className="flex items-center">
         <ConnectionStatusOverlay></ConnectionStatusOverlay>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center text-xs text-zinc-400">
+          <span>
+            <UserIcon className="h-5 w-5" />
+          </span>
+          <span className="ml-1.5">{participants.length}</span>
+        </div>
         {roomType === 'event' && <DropdownViewSelection />}
       </div>
     </div>
@@ -124,6 +134,17 @@ function ChevronDownIcon(props: SVGElementPropsType) {
       <path
         fill="currentColor"
         d="M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 0 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06Z"
+      />
+    </svg>
+  );
+}
+
+function UserIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="currentColor"
+        d="M17.754 14a2.249 2.249 0 0 1 2.249 2.25v.918a2.75 2.75 0 0 1-.513 1.598c-1.545 2.164-4.07 3.235-7.49 3.235c-3.421 0-5.944-1.072-7.486-3.236a2.75 2.75 0 0 1-.51-1.596v-.92A2.249 2.249 0 0 1 6.251 14h11.502ZM12 2.005a5 5 0 1 1 0 10a5 5 0 0 1 0-10Z"
       />
     </svg>
   );
