@@ -89,12 +89,12 @@ export class EventRepo implements iEventRepo {
           .update(events)
           .set({ thumbnailUrl: null })
           .where(eq(events.id, id));
-        return await tx
-          .update(events)
-          .set(event)
-          .where(and(eq(events.id, id), eq(events.createdBy, userId)))
-          .returning();
       }
+      return await tx
+        .update(events)
+        .set(event)
+        .where(and(eq(events.id, id), eq(events.createdBy, userId)))
+        .returning();
     });
 
     if (!data || data.length == 0) {
