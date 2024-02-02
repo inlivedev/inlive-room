@@ -1,8 +1,8 @@
 {
+  "id": "dc0d6f1a-1ee9-471f-8da3-d7933492e97a",
+  "prevId": "e167c7ec-6725-46c1-b9b9-3ac442f2bd69",
   "version": "5",
   "dialect": "pg",
-  "id": "b48ea18a-03d5-40c8-8f65-899575f7525c",
-  "prevId": "e167c7ec-6725-46c1-b9b9-3ac442f2bd69",
   "tables": {
     "events_to_participant": {
       "name": "events_to_participant",
@@ -51,8 +51,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "events_to_participant_event_id_participant_id": {
-          "name": "events_to_participant_event_id_participant_id",
+        "events_to_participant_event_id_participant_id_pk": {
+          "name": "events_to_participant_event_id_participant_id_pk",
           "columns": [
             "event_id",
             "participant_id"
@@ -333,8 +333,8 @@
   "enums": {},
   "schemas": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   }
 }
