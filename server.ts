@@ -1,39 +1,25 @@
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import next from 'next';
 
-if (!process.env.PORT) {
-  if (process.env.NODE_ENV === 'production')
-    throw new Error('failed to start server : PORT is not set');
-  process.env.PORT = '3000';
-}
-
-if (!process.env.ROOM_LOCAL_STORAGE_PATH) {
-  if (process.env.NODE_ENV === 'production')
-    throw new Error('ROOM_LOCAL_STORAGE_PATH is not set');
-  process.env.ROOM_LOCAL_STORAGE_PATH = '/volume';
-}
-
-const port = parseInt(process.env.PORT, 10) || 3000;
+const hostname = 'localhost';
+const port = parseInt(process.env.PORT || '3000', 10);
+const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev });
-const handle = app.getRequestHandler();
+const app = next({ dev, hostname, port });
+const requestHandler = app.getRequestHandler();
 
 app.prepare().then(() => {
   const server = express();
 
-  server.get('/api/express/health', (req: Request, res: Response) => {
-    res.send(`hello from express server`);
-  });
-
-  server.use(
-    '/static',
-    express.static(`${process.env.ROOM_LOCAL_STORAGE_PATH}`)
+  server.get('/api/express/health', (req: Request, res: Response) =>
+    res.send(`ok`)
   );
 
-  server.all('*', (req: Request, res: Response) => {
-    return handle(req, res);
-  });
-  server.listen(port, () => {
-    console.log(`Runing on port ${port}, dev: ${dev}`);
-  });
+  server.use('/static', express.static(roomStoragePath));
+
+  server.all('*', (req: Request, res: Response) => requestHandler(req, res));
+
+  server.listen(port, () =>
+    console.log(`> Server listening at http://${hostname}:${port}`)
+  );
 });
