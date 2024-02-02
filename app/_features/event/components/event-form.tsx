@@ -242,7 +242,7 @@ export default function EventForm({
 
     if (respEvent.ok) {
       const redirectPath = new URL(
-        `/event/${respEvent.data.id}/edit`,
+        `/event/${respEvent.data.slug}/edit`,
         window.location.origin
       ).href;
       navigateTo(redirectPath);
@@ -272,8 +272,10 @@ export default function EventForm({
           );
         else
           navigateTo(
-            new URL(`/event/${respEvent.data.id}/edit`, window.location.origin)
-              .href
+            new URL(
+              `/event/${respEvent.data.slug}/edit`,
+              window.location.origin
+            ).href
           );
       } else {
         console.log(respEvent.message);
