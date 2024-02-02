@@ -17,7 +17,7 @@ import WarningIcon from '@/_shared/components/icons/warning-icon';
 
 export function DeleteEventModal({ slug }: { slug: string }) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { navigateTo } = useNavigate();
 
   const openModal = useCallback(() => {
@@ -61,27 +61,26 @@ export function DeleteEventModal({ slug }: { slug: string }) {
           </Button>
           <Button
             onPress={async () => {
-              setIsSubmitting(true);
+              setIsDeleting(true);
               try {
                 const response = await InternalApiFetcher.delete(
                   `/api/events/${slug}`
                 );
 
                 if (response.ok) {
-                  navigateTo(new URL('/', window.location.origin).href);
+                  navigateTo(new URL('/event', window.location.origin).href);
                 } else {
-                  throw new Error('Something went wrong');
+                  alert('Failed to delete event, please try again later');
                 }
               } catch (error) {
                 Sentry.captureException(error);
-                alert('Failed to delete event, please try again later');
               } finally {
-                setIsSubmitting(false);
+                setIsDeleting(false);
               }
             }}
             className="w-full basis-1/2 rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
           >
-            {isSubmitting ? (
+            {isDeleting ? (
               <div className="flex gap-2">
                 <Spinner
                   classNames={{
