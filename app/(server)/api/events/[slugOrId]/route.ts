@@ -9,6 +9,8 @@ import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-
 import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
 
+const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { slugOrId: string } }
@@ -244,14 +246,14 @@ export async function PUT(
     if (eventImage) {
       // update image
       const path = `/assets/images/event/${oldEvent.id}/poster.webp`;
-      const storagePath = `${process.env.ROOM_PERSISTANT_VOLUME_PATH}${path}`;
+      const storagePath = `${roomStoragePath}${path}`;
       writeFiletoLocalStorage(storagePath, eventImage);
       newEvent.thumbnailUrl = path;
     }
 
     if (updateEventMeta.deleteImage) {
       // delete image
-      const path = `${process.env.ROOM_LOCAL_STORAGE_PATH}/assets/images/event/${oldEvent.id}/poster.webp`;
+      const path = `${roomStoragePath}/assets/images/event/${oldEvent.id}/poster.webp`;
       stat(path, function (err) {
         if (err) {
           Sentry.captureException(err);
@@ -266,6 +268,8 @@ export async function PUT(
           newEvent.thumbnailUrl = undefined;
         });
       });
+    } else {
+      newEvent.thumbnailUrl = oldEvent.thumbnailUrl;
     }
 
     const updatedEvent = await eventRepo.updateEvent(
