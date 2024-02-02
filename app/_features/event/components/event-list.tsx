@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EventCard } from './event-card';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
+import { isArray } from 'lodash-es';
 import EditIcon from '@/_shared/components/icons/edit-icon';
 
 export default function EventList() {
@@ -40,10 +41,6 @@ export default function EventList() {
 
     fetchData();
   }, [user, page, limit]);
-
-  useEffect(() => {
-    console.log(listEvent);
-  }, [listEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -87,7 +84,7 @@ export default function EventList() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 gap-4 pb-20 sm:grid-cols-2 sm:pb-0 sm:pt-1">
-                {listEvent ? (
+                {listEvent && isArray(listEvent) ? (
                   listEvent.map((event) => {
                     return <EventCard key={event.id} event={event} />;
                   })
