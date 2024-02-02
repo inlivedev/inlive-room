@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get('page') ?? '0');
+  const page = parseInt(searchParams.get('page') ?? '1');
   const limit = parseInt(searchParams.get('limit') ?? '10');
   const creator = searchParams.get('created_by')?.trim();
 

@@ -36,6 +36,8 @@ export class EventRepo implements iEventRepo {
   }
 
   async getEvents(page: number, limit: number, userId?: number) {
+    page = page - 1;
+
     if (page < 0) {
       page = 0;
     }
