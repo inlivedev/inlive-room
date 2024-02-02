@@ -28,6 +28,7 @@ type EventDetailProps = {
   slug: string;
   host: string;
   isPublished?: boolean;
+  thumbnailUrl?: string | null;
 };
 
 export default function EventDetail({
@@ -36,8 +37,8 @@ export default function EventDetail({
   slug,
   host,
   startTime,
-  id,
   isPublished,
+  thumbnailUrl,
 }: EventDetailProps) {
   const {
     active: copiedActive,
@@ -72,6 +73,8 @@ export default function EventDetail({
     hour12: true,
   });
 
+  const imagePath = thumbnailUrl ? `${APP_ORIGIN}/static${thumbnailUrl}` : '';
+
   return (
     <>
       <DeleteEventModal slug={slug} />
@@ -93,7 +96,7 @@ export default function EventDetail({
                     width={640}
                     height={320}
                     fallbackSrc="/images/general-og.png"
-                    src={`${APP_ORIGIN}/static/assets/images/event/${id}/poster.webp`}
+                    src={imagePath}
                     alt=""
                     style={{
                       aspectRatio: '2/1',

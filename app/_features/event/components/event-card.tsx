@@ -20,6 +20,9 @@ export function EventCard({
     minute: '2-digit',
     hour12: true,
   });
+  const imagePath = event.thumbnailUrl
+    ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
+    : '';
 
   const onEventCard = useCallback(() => {
     navigateTo(new URL(`/event/${event.slug}`, window.location.origin).href);
@@ -56,7 +59,7 @@ export function EventCard({
               objectFit: 'contain',
             }}
             fallbackSrc="/images/general-og.png"
-            src={`${APP_ORIGIN}/static/assets/images/event/${event.id}/poster.webp`}
+            src={imagePath}
           ></Image>
         </div>
       </CardBody>

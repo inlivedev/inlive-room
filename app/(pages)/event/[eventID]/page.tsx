@@ -152,6 +152,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
         host={eventData.host}
         startTime={eventData.startTime}
         isPublished={eventData.isPublished}
+        thumbnailUrl={eventData.thumbnailUrl}
       />
     </AppContainer>
   );
