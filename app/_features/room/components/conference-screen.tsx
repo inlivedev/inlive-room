@@ -65,9 +65,14 @@ export default function ConferenceScreen({
 
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
-  const { roomID } = useClientContext();
-  const { speakerClientIDs, moderatorClientIDs, isModerator, roomType } =
-    useMetadataContext();
+  const { roomID, clientID } = useClientContext();
+  const {
+    speakerClientIDs,
+    moderatorClientIDs,
+    isModerator,
+    roomType,
+    currentLayout,
+  } = useMetadataContext();
 
   const isHost = moderatorClientIDs.includes(stream.clientId);
   const [rtcLocalStats, setRtcLocalStats] = useState({
@@ -178,48 +183,36 @@ export default function ConferenceScreen({
       if (key === 'set-speaker') {
         if (!isModerator) return;
 
-        const confirmed = confirm(
-          'Are you sure you want to set this participant as a speaker?'
-        );
-
-        if (confirmed) {
-          try {
-            await clientSDK.setMetadata(roomID, {
-              speakerClientIDs: [...speakerClientIDs, stream.clientId],
-            });
-          } catch (error) {
-            Sentry.captureException(error, {
-              extra: {
-                message: `API call error when trying to set metadata speakerClientIDs`,
-              },
-            });
-            console.error(error);
-          }
+        try {
+          await clientSDK.setMetadata(roomID, {
+            speakerClientIDs: [...speakerClientIDs, stream.clientId],
+          });
+        } catch (error) {
+          Sentry.captureException(error, {
+            extra: {
+              message: `API call error when trying to set metadata speakerClientIDs`,
+            },
+          });
+          console.error(error);
         }
       } else if (key === 'set-regular-participant') {
         if (!isModerator) return;
 
-        const confirmed = confirm(
-          'Are you sure you want to set this speaker as a regular participant?'
-        );
+        try {
+          const newSpeakerClientIDs = speakerClientIDs.filter((speaker) => {
+            return speaker !== stream.clientId;
+          });
 
-        if (confirmed) {
-          try {
-            const newSpeakerClientIDs = speakerClientIDs.filter((speaker) => {
-              return speaker !== stream.clientId;
-            });
-
-            await clientSDK.setMetadata(roomID, {
-              speakerClientIDs: newSpeakerClientIDs,
-            });
-          } catch (error) {
-            Sentry.captureException(error, {
-              extra: {
-                message: `API call error when trying to set metadata speakerClientIDs`,
-              },
-            });
-            console.error(error);
-          }
+          await clientSDK.setMetadata(roomID, {
+            speakerClientIDs: newSpeakerClientIDs,
+          });
+        } catch (error) {
+          Sentry.captureException(error, {
+            extra: {
+              message: `API call error when trying to set metadata speakerClientIDs`,
+            },
+          });
+          console.error(error);
         }
       }
     },
@@ -431,29 +424,38 @@ export default function ConferenceScreen({
               <XFillIcon className="h-4 w-4" />
             </Button>
           )}
-        {isModerator && stream.source === 'media' && roomType === 'event' && (
-          <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
-            <DropdownTrigger>
-              <Button
-                isIconOnly
-                size="sm"
-                variant="light"
-                className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
+        {isModerator &&
+          clientID !== stream.clientId &&
+          stream.source === 'media' &&
+          roomType === 'event' &&
+          currentLayout === 'speaker' && (
+            <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
+              <DropdownTrigger>
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
+                >
+                  <MoreIcon className="h-4 w-4" />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="More options"
+                onAction={onMoreSelection}
               >
-                <MoreIcon className="h-4 w-4" />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
-              {speakerClientIDs.includes(stream.clientId) ? (
-                <DropdownItem key="set-regular-participant">
-                  Set as a regular participant
-                </DropdownItem>
-              ) : (
-                <DropdownItem key="set-speaker">Set as a speaker</DropdownItem>
-              )}
-            </DropdownMenu>
-          </Dropdown>
-        )}
+                {speakerClientIDs.includes(stream.clientId) ? (
+                  <DropdownItem key="set-regular-participant">
+                    Set as a regular participant
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem key="set-speaker">
+                    Set as a speaker
+                  </DropdownItem>
+                )}
+              </DropdownMenu>
+            </Dropdown>
+          )}
 
         <div className="flex">
           <div

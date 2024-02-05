@@ -1,7 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
-import '../styles/meeting-gallery-layout.css';
+import '../styles/gallery-layout.css';
 import ConferenceScreen from './conference-screen';
 import ConferenceScreenHidden from './conference-screen-hidden';
 
@@ -12,18 +13,23 @@ export default function MeetingGalleryLayout({
 }) {
   const MAX_VISIBLE_PARTICIPANTS = 49;
   const moreThanMax = streams.length > MAX_VISIBLE_PARTICIPANTS;
-  const visibleParticipants = streams.slice(
-    0,
-    moreThanMax ? MAX_VISIBLE_PARTICIPANTS - 1 : MAX_VISIBLE_PARTICIPANTS
-  );
-  const hiddenParticipants = streams.slice(
-    moreThanMax ? MAX_VISIBLE_PARTICIPANTS - 1 : MAX_VISIBLE_PARTICIPANTS
-  );
+
+  const { visibleParticipants, hiddenParticipants } = useMemo(() => {
+    const visibleParticipants = streams.slice(
+      0,
+      moreThanMax ? MAX_VISIBLE_PARTICIPANTS - 1 : MAX_VISIBLE_PARTICIPANTS
+    );
+    const hiddenParticipants = streams.slice(
+      moreThanMax ? MAX_VISIBLE_PARTICIPANTS - 1 : MAX_VISIBLE_PARTICIPANTS
+    );
+
+    return { visibleParticipants, hiddenParticipants };
+  }, [streams, moreThanMax]);
 
   const maxColumns = Math.ceil(Math.sqrt(visibleParticipants.length));
 
   return (
-    <div className="meeting-gallery-layout">
+    <div className="gallery-layout">
       <div className="participant-container">
         <div
           className={`participant-grid grid gap-2 sm:gap-3`}

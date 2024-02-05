@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs';
 import { InliveApiFetcher } from '@/_shared/utils/fetcher';
 import { getUserByEmail } from '@/(server)/_features/user/repository';
 import type { AuthType } from '@/_shared/types/auth';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 const persistentData = process.env.PERSISTENT_DATA === 'true';
 
@@ -45,7 +46,7 @@ export const getCurrentAuthenticated = async (token: string) => {
           email: response.data.email,
           name: response.data.name,
           pictureUrl: response.data.picture_url,
-          whitelistFeature: [],
+          whitelistFeature: whitelistFeature,
           createdAt: null,
         },
       };
