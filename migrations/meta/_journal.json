@@ -85,6 +85,13 @@
       "when": 1706810732536,
       "tag": "0011_add_event_thumbnail",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1707136280216,
+      "tag": "0012_add_ invitees_table",
+      "breakpoints": true
     }
   ]
 }
