@@ -18,6 +18,8 @@ import {
 } from '@nextui-org/react';
 import {
   ChangeEvent,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useEffect,
   useReducer,
@@ -36,6 +38,8 @@ import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import { compressImage } from '@/_shared/utils/compress-image';
+import DeleteIcon from '@/_shared/components/icons/delete-icon';
+import { DeleteEventModal } from './event-delete-modal';
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
   switch (action.type) {
@@ -308,6 +312,9 @@ export default function EventForm({
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-4">
         <MissingField event={incompleteFieldEvent}></MissingField>
+        {existingEvent && (
+          <DeleteEventModal slug={existingEvent?.slug}></DeleteEventModal>
+        )}
         <ImageCropperModal
           imageData={imageData}
           updateImageData={updateImageData}
@@ -350,6 +357,7 @@ export default function EventForm({
                 <Input
                   variant="bordered"
                   classNames={{
+                    errorMessage: 'text-red-600',
                     inputWrapper:
                       'border-0 bg-zinc-950 ring-1 ring-zinc-700 data-[hover=true]:bg-zinc-950 group-data-[focus=true]:bg-zinc-950 group-data-[focus=true]:ring-zinc-400 group-data-[focus-visible=true]:z-10 group-data-[focus-visible=true]:ring-1 group-data-[focus-visible=true]:ring-focus group-data-[focus-visible=true]:ring-offset-1 group-data-[focus-visible=true]:ring-zinc-400',
                   }}
@@ -368,6 +376,7 @@ export default function EventForm({
                 <Textarea
                   className="grow"
                   classNames={{
+                    errorMessage: 'text-red-600',
                     inputWrapper:
                       'bg-zinc-950 ring-1 ring-zinc-700 data-[hover=true]:bg-zinc-950 group-data-[focus=true]:bg-zinc-950 group-data-[focus=true]:ring-zinc-400 group-data-[focus-visible=true]:z-10 group-data-[focus-visible=true]:ring-1 group-data-[focus-visible=true]:ring-focus group-data-[focus-visible=true]:ring-offset-1 group-data-[focus-visible=true]:ring-zinc-400',
                   }}
@@ -508,6 +517,7 @@ export default function EventForm({
     </div>
   );
 }
+
 function PublishSwitch(
   isPublished: boolean,
   setIsPublished: Dispatch<SetStateAction<boolean>>
