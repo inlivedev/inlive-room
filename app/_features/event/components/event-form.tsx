@@ -14,6 +14,7 @@ import {
   Textarea,
   useDisclosure,
   Image as NextImage,
+  Switch,
 } from '@nextui-org/react';
 import {
   ChangeEvent,
@@ -87,11 +88,18 @@ export default function EventForm({
   const [isDescriptionValid, setDescValid] = useState(false);
   const [eventName, setEventName] = useState('');
   const [eventDescription, setEventDescription] = useState('');
+  const [isPublished, setIsPublished] = useState(false);
 
   useEffect(() => {
     if (existingEvent) {
-      const { name, description, startTime, endTime, thumbnailUrl } =
-        existingEvent;
+      const {
+        name,
+        description,
+        startTime,
+        endTime,
+        thumbnailUrl,
+        isPublished,
+      } = existingEvent;
       if (name) {
         setEventName(name);
       }
@@ -120,6 +128,9 @@ export default function EventForm({
             preview: `${APP_ORIGIN}/static/${thumbnailUrl}`,
           },
         });
+      }
+      if (isPublished) {
+        setIsPublished(true);
       }
     }
   }, [existingEvent]);
@@ -175,7 +186,7 @@ export default function EventForm({
   }, [startTime.hour, startTime.minute, endTime.hour, endTime.minute]);
 
   const prepareEventData = useCallback(
-    async (isPublished: boolean, deleteImage = false) => {
+    async (deleteImage = false) => {
       if (
         eventDescription.trim().length === 0 ||
         eventName.trim().length === 0
@@ -223,6 +234,7 @@ export default function EventForm({
       eventDescription,
       eventName,
       imageData.imageBlob,
+      isPublished,
       startTime.hour,
       startTime.minute,
       user?.name,
@@ -236,10 +248,7 @@ export default function EventForm({
       deleteImage = true;
     }
 
-    const formData = await prepareEventData(
-      existingEvent?.isPublished || false,
-      deleteImage
-    );
+    const formData = await prepareEventData(deleteImage);
 
     const finalEndpoint = `/api/events/${existingEvent?.id}`;
     const respEvent = await InternalApiFetcher.put(finalEndpoint, {
@@ -254,13 +263,7 @@ export default function EventForm({
       ).href;
       navigateTo(redirectPath);
     }
-  }, [
-    existingEvent?.id,
-    existingEvent?.isPublished,
-    imageData.imagePreview,
-    navigateTo,
-    prepareEventData,
-  ]);
+  }, [existingEvent?.id, imageData.imagePreview, navigateTo, prepareEventData]);
 
   const createEvent = useCallback(
     async (isPublished: boolean) => {
@@ -337,6 +340,12 @@ export default function EventForm({
           <div className="flex w-full flex-1 flex-col flex-wrap items-start gap-4 pb-20 sm:flex-row sm:flex-nowrap sm:pb-0">
             {/* left side */}
             <div className="flex h-fit w-full flex-none flex-col items-start gap-6 sm:flex-1 sm:basis-1/2">
+              {existingEvent && (
+                <div className="w-full sm:hidden">
+                  {PublishSwitch(isPublished, setIsPublished)}
+                </div>
+              )}
+
               <div className="w-full flex-none gap-4">
                 <Input
                   variant="bordered"
@@ -376,8 +385,13 @@ export default function EventForm({
               </div>
             </div>
             {/* right side */}
-            <div className="flex w-full flex-wrap items-start justify-start gap-2 sm:basis-1/2">
-              <div className="flex w-full sm:mt-6">
+            <div className="flex w-full flex-wrap items-start justify-start gap-2 sm:mt-6 sm:basis-1/2">
+              {existingEvent && (
+                <div className="hidden w-full sm:flex">
+                  {PublishSwitch(isPublished, setIsPublished)}
+                </div>
+              )}
+              <div className="flex w-full">
                 {imageData.imagePreview ? (
                   <div style={{ position: 'relative' }}>
                     <NextImage
@@ -494,6 +508,21 @@ export default function EventForm({
     </div>
   );
 }
+function PublishSwitch(
+  isPublished: boolean,
+  setIsPublished: Dispatch<SetStateAction<boolean>>
+) {
+  return (
+    <div className="flex w-full items-center justify-between rounded-md bg-zinc-950 p-2 ring-1 ring-zinc-700">
+      <p>Publish Event</p>
+      <Switch
+        size="sm"
+        isSelected={isPublished}
+        onValueChange={setIsPublished}
+      ></Switch>
+    </div>
+  );
+}
 
 function TitleBar(
   existingEvent: typeof selectEvent | undefined,
@@ -509,20 +538,46 @@ function TitleBar(
         </h1>
       </div>
       <div className="fixed bottom-0 left-0 z-10 flex w-full gap-2 border-t border-zinc-700 bg-zinc-900 px-4 py-3 sm:relative sm:w-fit sm:border-t-0 sm:bg-transparent lg:p-0">
-        {existingEvent === undefined || existingEvent.isPublished === false ? (
-          <Button
-            onPress={existingEvent ? onUpdate : onDraft}
-            className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
-          >
-            {existingEvent ? 'Update Draft' : 'Save as draft'}
-          </Button>
-        ) : null}
-        <Button
-          onPress={existingEvent?.isPublished ? onUpdate : onPublish}
-          className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
-        >
-          {existingEvent?.isPublished ? 'Update' : 'Publish'}
-        </Button>
+        {existingEvent ? (
+          <div className="flex w-full gap-2">
+            <Button
+              className="tems-center flex aspect-[1/1] rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+              isIconOnly
+              onPress={() => {
+                document.dispatchEvent(
+                  new CustomEvent('open:event-delete-modal')
+                );
+              }}
+            >
+              <DeleteIcon
+                className="h-5 w-5"
+                width={20}
+                height={20}
+              ></DeleteIcon>
+            </Button>
+            <Button
+              onPress={onUpdate}
+              className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+            >
+              Update event
+            </Button>
+          </div>
+        ) : (
+          <div className="flex w-full gap-2">
+            <Button
+              onPress={onDraft}
+              className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
+            >
+              Save as draft
+            </Button>
+            <Button
+              onPress={onPublish}
+              className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+            >
+              Publish event
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
