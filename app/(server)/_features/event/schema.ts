@@ -53,7 +53,7 @@ export const eventHasParticipant = pgTable(
   {
     eventId: integer('event_id')
       .notNull()
-      .references(() => events.id),
+      .references(() => events.id, { onDelete: 'cascade' }),
     participantId: integer('participant_id')
       .notNull()
       .references(() => participant.id),
