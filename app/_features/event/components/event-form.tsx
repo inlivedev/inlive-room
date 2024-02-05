@@ -72,7 +72,7 @@ export default function EventForm({
     imageBlob: null,
     imagePreview: null,
   });
-  const today = new Date(new Date().setDate(new Date().getDate() + 1));
+  const today = new Date();
   const currentHour = today.getHours();
   const [date, setDate] = useState(today);
   const [startTime, setStartTime] = useState({
@@ -80,7 +80,7 @@ export default function EventForm({
     minute: `${today.getMinutes().toString().padStart(2, '0')}`,
   });
   const [endTime, setEndTime] = useState({
-    hour: `${currentHour + 1}`,
+    hour: `${currentHour == 23 ? 23 : currentHour + 1}`,
     minute: `${today.getMinutes().toString().padStart(2, '0')}`,
   });
   const [isTitleValid, setTitleValid] = useState(false);
@@ -165,7 +165,14 @@ export default function EventForm({
         minute: `${startTime.minute}`,
       });
     }
-  }, [startTime.hour, startTime.minute, endTime.hour]);
+
+    if (startTime.hour === endTime.hour && startTime.minute > endTime.minute) {
+      setEndTime({
+        hour: startTime.hour,
+        minute: `${parseInt(startTime.minute)}`,
+      });
+    }
+  }, [startTime.hour, startTime.minute, endTime.hour, endTime.minute]);
 
   const prepareEventData = useCallback(
     async (isPublished: boolean, deleteImage = false) => {
@@ -315,6 +322,7 @@ export default function EventForm({
           minute={endTime.minute}
           setTime={setEndTime}
           startHourLimit={parseInt(startTime.hour)}
+          startMinuteLimit={parseInt(startTime.minute)}
           title={'Set event ending time'}
         />
         <DatePickerModal startDate={date} setStartDate={setDate} />
