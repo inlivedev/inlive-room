@@ -6,11 +6,16 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { EventType } from '@/_shared/types/event';
 import NotFound from '@/not-found';
 import { getCookie } from '@/_shared/utils/get-cookie';
+import { Metadata } from 'next';
 
 type PageProps = {
   params: {
     eventID: string;
   };
+};
+
+export const metadata: Metadata = {
+  title: 'Updating Your event — inLive Room',
 };
 
 export default async function Page({ params: { eventID } }: PageProps) {
