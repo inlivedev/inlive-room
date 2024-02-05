@@ -118,7 +118,8 @@ export default function EventDetail({
                         <p className="text-sm text-zinc-500">
                           Limit participants to join: 50 people
                         </p>
-                        {isPublished ? <StatusPublished /> : <StatusDraft />}
+                        {user &&
+                          (isPublished ? <StatusPublished /> : <StatusDraft />)}
                       </div>
                       {user ? (
                         <AuthorActionButtons
@@ -181,10 +182,11 @@ function AuthorActionButtons({
     <div className="flex justify-between gap-2">
       <Button
         onClick={openDeleteEventModal}
+        className="tems-center flex aspect-[1/1] rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
         variant="flat"
-        className="tems-center flex w-fit min-w-5 rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+        isIconOnly
       >
-        <DeleteIcon className="h-5 w-5" width={20} height={20}></DeleteIcon>
+        <DeleteIcon width={20} height={20}></DeleteIcon>
       </Button>
       <div className="flex w-full gap-2">
         <Button
