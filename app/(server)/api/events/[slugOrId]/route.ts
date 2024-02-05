@@ -243,6 +243,10 @@ export async function PUT(
       isPublished: updateEventMeta.isPublished,
     };
 
+    if (newEvent.name === oldEvent.name) {
+      newEvent.slug = oldEvent.slug;
+    }
+
     if (eventImage) {
       // update image
       const path = `/assets/images/event/${oldEvent.id}/poster.webp`;
