@@ -5,6 +5,7 @@ import {
   participant,
   eventHasParticipant,
 } from '../_features/event/schema';
+import { invitees } from '@/(server)/_features/invitee/schema';
 
 // export all schema here so we can utilize using the drizzle query
 const models = {
@@ -13,6 +14,7 @@ const models = {
   events,
   eventHasParticipant,
   participant,
+  invitees,
 };
 
 export default models;

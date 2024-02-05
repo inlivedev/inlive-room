@@ -1,5 +1,5 @@
 import { serial, text, pgTable, timestamp } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { type InferSelectModel, sql } from 'drizzle-orm';
 
 export const invitees = pgTable('invitees', {
   id: serial('id').primaryKey(),
@@ -11,3 +11,5 @@ export const invitees = pgTable('invitees', {
     .default(sql`array[]::text[]`),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type Invitee = InferSelectModel<typeof invitees>;
