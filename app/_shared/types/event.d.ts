@@ -26,4 +26,9 @@ export declare namespace EventType {
       participant: RegisteredParticipant;
     };
   };
+
+  type ListEventsResponse = FetcherResponse & {
+    message: string;
+    data: (typeof selectEvent)[];
+  };
 }

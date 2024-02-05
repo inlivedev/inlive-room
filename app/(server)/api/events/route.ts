@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get('page') ?? '0');
+  const page = parseInt(searchParams.get('page') ?? '1') - 1;
   const limit = parseInt(searchParams.get('limit') ?? '10');
   const creator = searchParams.get('created_by')?.trim();
 
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     if (events.length === 0) {
       return NextResponse.json({
         status: 404,
-        body: {
+        data: {
           message: 'No events found',
         },
       });
@@ -30,9 +30,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       status: 200,
-      body: {
-        events,
-      },
+      data: events,
     });
   } catch (error) {
     Sentry.captureException(error);
