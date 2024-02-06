@@ -8,7 +8,8 @@ import {
   participant as participants,
   selectEvent,
 } from './schema';
-import { DBQueryConfig, and, eq } from 'drizzle-orm';
+import { DBQueryConfig, and, count, eq } from 'drizzle-orm';
+import { PageMeta } from '@/_shared/types/types';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: typeof insertEvent) {
@@ -48,7 +49,7 @@ export class EventRepo implements iEventRepo {
 
     const filter: DBQueryConfig = {
       limit: limit,
-      offset: page,
+      offset: page * limit,
       orderBy(fields, operators) {
         return [operators.desc(fields.createdAt)];
       },
@@ -59,9 +60,31 @@ export class EventRepo implements iEventRepo {
       filter.where = eq(events.createdBy, userId);
     }
 
-    const data = await db.query.events.findMany(filter);
+    const { data, total } = await db.transaction(async (tx) => {
+      const data = await tx.query.events.findMany(filter);
 
-    return data;
+      const metaFilter = userId ? eq(events.createdBy, userId) : undefined;
+      const totalRows = await db
+        .select({
+          total: count(),
+        })
+        .from(events)
+        .where(metaFilter);
+
+      return { data, total: totalRows[0].total };
+    });
+
+    const meta: PageMeta = {
+      current_page: page + 1,
+      total_page: Math.ceil(total / limit),
+      per_page: limit,
+      total_record: total,
+    };
+
+    return {
+      data,
+      pageMeta: meta,
+    };
   }
 
   async deleteEvent(id: number, userId: number) {

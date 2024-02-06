@@ -7,11 +7,6 @@ export interface iEventRepo {
   addEvent(eventData: typeof insertEvent): Promise<typeof selectEvent>;
   getEventBySlug(slug: string): Promise<typeof selectEvent | undefined>;
   getEventById(id: number): Promise<typeof selectEvent | undefined>;
-  getEvents(
-    page: number,
-    limit: number,
-    userId?: number
-  ): Promise<(typeof selectEvent)[]>;
 }
 
 export interface EventParticipant {
