@@ -4,7 +4,7 @@ import EventForm from '@/_features/event/components/event-form';
 import { AuthType } from '@/_shared/types/auth';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { EventType } from '@/_shared/types/event';
-import NotFound from '@/not-found';
+import { notFound } from 'next/navigation';
 import { getCookie } from '@/_shared/utils/get-cookie';
 import { Metadata } from 'next';
 
@@ -38,6 +38,10 @@ export default async function Page({ params: { eventID } }: PageProps) {
     }
   );
 
+  if (!data) {
+    return notFound();
+  }
+
   // Convert date strings to Date objects
   data.startTime = new Date(data.startTime);
   data.endTime = new Date(data.endTime);
@@ -46,7 +50,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   return (
     <AppContainer user={user}>
-      {data ? <EventForm data={data} /> : <NotFound />}
+      <EventForm data={data} />
     </AppContainer>
   );
 }
