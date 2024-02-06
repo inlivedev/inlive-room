@@ -1,10 +1,11 @@
 import { eventRepo } from '../_index';
 import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
+import { HTTPResponse } from '@/_shared/types/types';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get('page') ?? '1') - 1;
+  const page = parseInt(searchParams.get('page') ?? '1');
   const limit = parseInt(searchParams.get('limit') ?? '10');
   const creator = searchParams.get('created_by')?.trim();
 
@@ -17,9 +18,13 @@ export async function GET(req: Request) {
   }
 
   try {
-    const events = await eventRepo.getEvents(page, limit, creatorId);
+    const { data, pageMeta } = await eventRepo.getEvents(
+      page,
+      limit,
+      creatorId
+    );
 
-    if (events.length === 0) {
+    if (data.length === 0) {
       return NextResponse.json({
         status: 404,
         data: {
@@ -28,10 +33,14 @@ export async function GET(req: Request) {
       });
     }
 
-    return NextResponse.json({
-      status: 200,
-      data: events,
-    });
+    const response: HTTPResponse = {
+      code: 200,
+      data,
+      message: 'Events retrieved successfully',
+      meta: pageMeta,
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     Sentry.captureException(error);
     return NextResponse.json({
