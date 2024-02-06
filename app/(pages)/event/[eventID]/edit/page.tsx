@@ -1,11 +1,10 @@
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventForm from '@/_features/event/components/event-form';
 import { AuthType } from '@/_shared/types/auth';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { EventType } from '@/_shared/types/event';
 import { notFound } from 'next/navigation';
-import { getCookie } from '@/_shared/utils/get-cookie';
 import { Metadata } from 'next';
 
 type PageProps = {
@@ -27,7 +26,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const cookie = await getCookie('token');
+  const cookie = (await cookies().get('token')?.value) ?? '';
 
   const { data }: EventType.DetailEventResponse = await InternalApiFetcher.get(
     `/api/events/${eventID}`,

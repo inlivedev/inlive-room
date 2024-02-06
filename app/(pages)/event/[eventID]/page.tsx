@@ -6,7 +6,6 @@ import EventDetail from '@/_features/event/components/event-detail';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import type { EventType } from '@/_shared/types/event';
-import { getCookie } from '@/_shared/utils/get-cookie';
 
 type PageProps = {
   params: {
@@ -125,7 +124,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const cookie = await getCookie('token');
+  const cookie = (await cookies().get('token')?.value) ?? '';
 
   const { data: eventData }: EventType.DetailEventResponse =
     await InternalApiFetcher.get(`/api/events/${eventID}`, {
