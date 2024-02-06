@@ -93,7 +93,8 @@ export async function POST(req: Request) {
     const createdEvent = await eventService.createEvent(Event);
 
     if (eventImage) {
-      const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
+      const roomStoragePath =
+        process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
       const path = `${roomStoragePath}/assets/images/event/${createdEvent.id}/poster.webp`;
 
       writeFiletoLocalStorage(path, eventImage);
