@@ -1,7 +1,7 @@
 import { db } from '@/(server)/_shared/database/database';
 
-export const getInviteeByEmail = async (email: string) => {
-  return db.query.invitees.findFirst({
+export const getEarlyAccessInviteeByEmail = async (email: string) => {
+  return db.query.earlyAccessInvitees.findFirst({
     where(fields, operators) {
       return operators.eq(fields.email, email);
     },

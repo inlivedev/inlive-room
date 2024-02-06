@@ -1,7 +1,7 @@
 import { serial, text, pgTable, timestamp } from 'drizzle-orm/pg-core';
 import { type InferSelectModel, sql } from 'drizzle-orm';
 
-export const invitees = pgTable('invitees', {
+export const earlyAccessInvitees = pgTable('early_access_invitees', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
@@ -12,4 +12,4 @@ export const invitees = pgTable('invitees', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-export type Invitee = InferSelectModel<typeof invitees>;
+export type EarlyAccessInvitee = InferSelectModel<typeof earlyAccessInvitees>;

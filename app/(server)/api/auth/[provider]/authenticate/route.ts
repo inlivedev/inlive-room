@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { InliveApiFetcher } from '@/_shared/utils/fetcher';
 import { getUserByEmail, addUser } from '@/(server)/_features/user/repository';
-import { getInviteeByEmail } from '@/(server)/_features/invitee/repository';
+import { getEarlyAccessInviteeByEmail } from '@/(server)/_features/early-access-invitee/repository';
 import type { AuthType } from '@/_shared/types/auth';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
@@ -123,10 +123,12 @@ export async function GET(
               whitelistFeature: [] as string[],
             };
 
-            const existingInviteeUser = await getInviteeByEmail(userData.email);
+            const existingEarlyAccessInvitee =
+              await getEarlyAccessInviteeByEmail(userData.email);
 
-            if (existingInviteeUser) {
-              userData.whitelistFeature = existingInviteeUser.whitelistFeature;
+            if (existingEarlyAccessInvitee) {
+              userData.whitelistFeature =
+                existingEarlyAccessInvitee.whitelistFeature;
               await addUser(userData);
             } else {
               await addUser(userData);
