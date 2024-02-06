@@ -1,6 +1,5 @@
 import { EventType } from '@/_shared/types/event';
 import { Card, CardBody, CardHeader, Divider, Image } from '@nextui-org/react';
-import { useCallback } from 'react';
 import { StatusPublished, StatusDraft } from './event-status';
 import Link from 'next/link';
 
@@ -11,7 +10,6 @@ export function EventCard({
 }: {
   event: EventType.ListEventsResponse['data'][0];
 }) {
-  const { navigateTo } = useNavigate();
   const eventTime = new Date(event.startTime).toLocaleString('en-GB', {
     month: 'short',
     day: '2-digit',
