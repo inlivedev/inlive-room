@@ -39,7 +39,7 @@ export class EventRepo implements iEventRepo {
 
     const filter: DBQueryConfig = {
       limit: limit,
-      offset: page,
+      offset: page * limit,
       orderBy(fields, operators) {
         return [operators.desc(fields.createdAt)];
       },
