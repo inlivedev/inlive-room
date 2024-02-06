@@ -1,7 +1,5 @@
 import { EventType } from '@/_shared/types/event';
 import { Card, CardBody, CardHeader, Divider, Image } from '@nextui-org/react';
-
-import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { useCallback } from 'react';
 import { StatusPublished, StatusDraft } from './event-status';
 import Link from 'next/link';
