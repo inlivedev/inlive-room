@@ -41,12 +41,12 @@ export function DeleteEventModal({ slug }: { slug: string }) {
 
         <ModalBody>
           <div className="flex gap-2">
-            <Code className="flex w-fit items-center gap-2 rounded-sm bg-red-950 text-xs text-red-300 ring-1 ring-red-800">
+            <div className="flex w-fit items-center gap-2 rounded-sm bg-red-950 p-1 text-xs text-red-300 ring-1 ring-red-800">
               <WarningIcon height={24} width={24}></WarningIcon>
-            </Code>
-            <Code className="h-100 flex w-full items-center gap-2 rounded-sm bg-red-950 text-xs text-red-300 ring-1 ring-red-800">
+            </div>
+            <div className="flex w-full items-center gap-2 rounded-sm bg-red-950 p-1 text-xs text-red-300 ring-1 ring-red-800">
               <p className="w-full">This action cannot be undone!</p>
-            </Code>
+            </div>
           </div>
           <p className="mt-1 font-normal">
             Are you sure you want to delete this event?
