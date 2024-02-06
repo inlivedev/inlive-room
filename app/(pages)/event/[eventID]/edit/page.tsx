@@ -38,6 +38,12 @@ export default async function Page({ params: { eventID } }: PageProps) {
     }
   );
 
+  // Convert date strings to Date objects
+  data.startTime = new Date(data.startTime);
+  data.endTime = new Date(data.endTime);
+  data.createdAt = new Date(data.createdAt);
+  data.updatedAt = new Date(data.updatedAt);
+
   return (
     <AppContainer user={user}>
       {data ? <EventForm data={data} /> : <NotFound />}

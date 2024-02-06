@@ -71,73 +71,68 @@ export default function EventForm({
   const setEndTimeEvent = 'open:event-time-picker-end-modal';
   const incompleteFieldEvent = 'open:missing-field-modal';
 
+  const defaultImageDataState = existingEvent?.thumbnailUrl
+    ? {
+        imageBlob: null,
+        imagePreview: `${APP_ORIGIN}/static/${existingEvent.thumbnailUrl}`,
+      }
+    : {
+        imageBlob: null,
+        imagePreview: null,
+      };
+
   // States
   const { user } = useAuthContext();
-  const [imageData, updateImageData] = useReducer(reducer, {
-    imageBlob: null,
-    imagePreview: null,
-  });
+  const [imageData, updateImageData] = useReducer(
+    reducer,
+    defaultImageDataState
+  );
   const today = new Date();
   const currentHour = today.getHours();
   const [date, setDate] = useState(today);
-  const [startTime, setStartTime] = useState({
-    hour: `${currentHour}`,
-    minute: `${today.getMinutes().toString().padStart(2, '0')}`,
-  });
-  const [endTime, setEndTime] = useState({
-    hour: `${currentHour == 23 ? 23 : currentHour + 1}`,
-    minute: `${today.getMinutes().toString().padStart(2, '0')}`,
-  });
+  const [startTime, setStartTime] = useState(
+    existingEvent?.startTime
+      ? {
+          hour: `${existingEvent.startTime
+            .getHours()
+            .toString()
+            .padStart(2, '0')}`,
+          minute: `${existingEvent.startTime
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}`,
+        }
+      : {
+          hour: `${currentHour}`,
+          minute: `${today.getMinutes().toString().padStart(2, '0')}`,
+        }
+  );
+  const [endTime, setEndTime] = useState(
+    existingEvent?.endTime
+      ? {
+          hour: `${existingEvent.endTime
+            .getHours()
+            .toString()
+            .padStart(2, '0')}`,
+          minute: `${existingEvent.endTime
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}`,
+        }
+      : {
+          hour: `${currentHour == 23 ? 23 : currentHour + 1}`,
+          minute: `${today.getMinutes().toString().padStart(2, '0')}`,
+        }
+  );
   const [isTitleValid, setTitleValid] = useState(false);
   const [isDescriptionValid, setDescValid] = useState(false);
-  const [eventName, setEventName] = useState('');
-  const [eventDescription, setEventDescription] = useState('');
-  const [isPublished, setIsPublished] = useState(false);
-
-  useEffect(() => {
-    if (existingEvent) {
-      const {
-        name,
-        description,
-        startTime,
-        endTime,
-        thumbnailUrl,
-        isPublished,
-      } = existingEvent;
-      if (name) {
-        setEventName(name);
-      }
-      if (description) {
-        setEventDescription(description.replace(/<br>/g, '\n'));
-      }
-      if (startTime) {
-        const eventStartTime = new Date(startTime);
-        setDate(eventStartTime);
-        setStartTime({
-          hour: `${eventStartTime.getHours()}`,
-          minute: `${eventStartTime.getMinutes().toString().padStart(2, '0')}`,
-        });
-      }
-      if (endTime) {
-        const eventEndTime = new Date(endTime);
-        setEndTime({
-          hour: `${eventEndTime.getHours()}`,
-          minute: `${eventEndTime.getMinutes().toString().padStart(2, '0')}`,
-        });
-      }
-      if (thumbnailUrl) {
-        updateImageData({
-          type: 'FetchExisting',
-          payload: {
-            preview: `${APP_ORIGIN}/static/${thumbnailUrl}`,
-          },
-        });
-      }
-      if (isPublished) {
-        setIsPublished(true);
-      }
-    }
-  }, [existingEvent]);
+  const [eventName, setEventName] = useState(existingEvent?.name || '');
+  const [eventDescription, setEventDescription] = useState(
+    existingEvent?.description || ''
+  );
+  const [isPublished, setIsPublished] = useState(
+    existingEvent?.isPublished || false
+  );
 
   const { navigateTo } = useNavigate();
   const handleRemoveImage = useCallback(() => {
