@@ -1,46 +1,26 @@
 'use client';
 
 import Header from '@/_shared/components/header/header';
-import { useAuthContext } from '@/_shared/contexts/auth';
 import { EventType } from '@/_shared/types/event';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { Button, Spinner, Tab, Tabs } from '@nextui-org/react';
-
-import { useSearchParams } from 'next/navigation';
+import { Button, Link, Tab, Tabs } from '@nextui-org/react';
 import { useEffect, useState } from 'react';
 import { EventCard } from './event-card';
-import { useNavigate } from '@/_shared/hooks/use-navigate';
-import { isArray } from 'lodash-es';
 import EditIcon from '@/_shared/components/icons/edit-icon';
 
-export default function EventList() {
-  const { user } = useAuthContext();
+export default function EventList({
+  events,
+}: {
+  events: EventType.ListEventsResponse['data'];
+}) {
   const [listEvent, setListEvent] = useState<
     EventType.ListEventsResponse['data']
   >([]);
-  const searchParams = useSearchParams();
-  const { navigateTo } = useNavigate();
-  const [isCreatingEvent, setCreateEvent] = useState(false);
-
-  const page = searchParams.get('page') || 1;
-  const limit = searchParams.get('limit') || 10;
-
-  const onCreateEvent = () => {
-    setCreateEvent(true);
-    navigateTo(new URL('/event/create', window.location.href).href);
-  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const listEventsReponse: EventType.ListEventsResponse =
-        await InternalApiFetcher.get(
-          `/api/events?created_by=${user?.id}&page=${page}&limit=${limit}`
-        );
-      if (listEventsReponse.ok) setListEvent(listEventsReponse.data);
-    };
-
-    fetchData();
-  }, [user, page, limit]);
+    if (events) {
+      setListEvent(events);
+    }
+  }, [events]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -61,36 +41,23 @@ export default function EventList() {
             <div className="flex flex-col gap-y-2">
               <div className="fixed bottom-0 left-0 z-10 flex w-full justify-end gap-2 border-t border-zinc-700 bg-zinc-900 px-4 py-3 sm:relative  sm:gap-0 sm:border-t-0 sm:bg-transparent sm:p-0 lg:p-0">
                 <Button
-                  onPress={onCreateEvent}
+                  href="/event/create"
+                  as={Link}
                   className="z-10 w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
                 >
-                  {isCreatingEvent ? (
-                    <div className="flex gap-2">
-                      <Spinner
-                        classNames={{
-                          circle1: 'border-b-zinc-200',
-                          circle2: 'border-b-zinc-200',
-                          wrapper: 'w-4 h-4',
-                        }}
-                      />
-                      <span>Creating...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-unit-2 align-middle">
-                      <EditIcon height={20} width={20} />
-                      <span>Create new event</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-unit-2 align-middle">
+                    <EditIcon height={20} width={20} />
+                    Create new event
+                  </div>
                 </Button>
               </div>
+              {listEvent.length === 0 && (
+                <p className="w-full">{"You haven't created any event"}</p>
+              )}
               <div className="grid grid-cols-1 gap-4 pb-20 sm:grid-cols-2 sm:pb-0 sm:pt-1">
-                {listEvent && isArray(listEvent) ? (
-                  listEvent.map((event) => {
-                    return <EventCard key={event.id} event={event} />;
-                  })
-                ) : (
-                  <p>No event found</p>
-                )}
+                {listEvent.map((event) => {
+                  return <EventCard key={event.id} event={event} />;
+                })}
               </div>
             </div>
           </Tab>

@@ -8,7 +8,7 @@ export default function EditIcon(props: SVGElementPropsType) {
       strokeWidth="2"
       stroke="currentColor"
       fill="none"
-      stroke-linecap="round"
+      strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
     >
