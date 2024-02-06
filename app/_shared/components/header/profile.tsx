@@ -14,9 +14,11 @@ import * as Sentry from '@sentry/nextjs';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { useNavigate } from '@/_shared/hooks/use-navigate';
 
 export default function Profile() {
   const { user, setUser } = useAuthContext();
+  const { navigateTo } = useNavigate();
 
   const openSignInModal = () => {
     document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
@@ -24,21 +26,30 @@ export default function Profile() {
 
   const onProfileSelection = useCallback(
     async (selectedKey: Key) => {
-      if (selectedKey === 'signout') {
-        try {
-          await InternalApiFetcher.get('/api/auth/signout');
-          setUser(null);
-        } catch (error) {
-          console.error(error);
-          Sentry.captureException(error, {
-            extra: {
-              message: `Error when trying to sign out.`,
-            },
-          });
-        }
+      switch (selectedKey) {
+        case 'myevent':
+          navigateTo(new URL(`/event`, window.location.origin).href);
+          break;
+        case 'signout':
+          {
+            try {
+              await InternalApiFetcher.get('/api/auth/signout');
+              setUser(null);
+            } catch (error) {
+              console.error(error);
+              Sentry.captureException(error, {
+                extra: {
+                  message: `Error when trying to sign out.`,
+                },
+              });
+            }
+          }
+          break;
+        default:
+          break;
       }
     },
-    [setUser]
+    [navigateTo, setUser]
   );
 
   return (
@@ -107,6 +118,9 @@ export default function Profile() {
                     <p className="text-xs text-foreground-400">{user.email}</p>
                   </div>
                 </div>
+              </DropdownItem>
+              <DropdownItem key="myevent" textValue="myevent">
+                My Event
               </DropdownItem>
             </DropdownSection>
             <DropdownItem key="signout" textValue="signout">

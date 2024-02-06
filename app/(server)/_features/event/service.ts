@@ -5,11 +5,6 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 export interface iEventRepo {
   addEvent(eventData: typeof insertEvent): Promise<typeof selectEvent>;
   getEvent(slug: string): Promise<typeof selectEvent | undefined>;
-  getEvents(
-    page: number,
-    limit: number,
-    userId?: number
-  ): Promise<(typeof selectEvent)[]>;
 }
 
 export interface EventParticipant {
