@@ -1,11 +1,10 @@
-import { cookies, headers } from 'next/headers';
+import { headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventForm from '@/_features/event/components/event-form';
 import { AuthType } from '@/_shared/types/auth';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { EventType } from '@/_shared/types/event';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { eventService } from '@/(server)/api/_index';
 
 type PageProps = {
   params: {
@@ -26,30 +25,15 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const cookie = (await cookies().get('token')?.value) ?? '';
+  const event = await eventService.getEventBySlugOrID(eventID, user?.id);
 
-  const { data }: EventType.DetailEventResponse = await InternalApiFetcher.get(
-    `/api/events/${eventID}`,
-    {
-      headers: {
-        Cookie: `token=${cookie}`,
-      },
-    }
-  );
-
-  if (!data) {
+  if (!event) {
     return notFound();
   }
 
-  // Convert date strings to Date objects
-  data.startTime = new Date(data.startTime);
-  data.endTime = new Date(data.endTime);
-  data.createdAt = new Date(data.createdAt);
-  data.updatedAt = new Date(data.updatedAt);
-
   return (
     <AppContainer user={user}>
-      <EventForm data={data} />
+      <EventForm data={event} />
     </AppContainer>
   );
 }
