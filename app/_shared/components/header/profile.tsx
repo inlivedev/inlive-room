@@ -10,13 +10,15 @@ import {
   DropdownItem,
   DropdownSection,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import type { AuthType } from '@/_shared/types/auth';
+import { useNavigate } from '@/_shared/hooks/use-navigate';
 
 export default function Profile() {
-  const { user, setAuthState } = useAuthContext();
+  const { user, setUser } = useAuthContext();
+  const { navigateTo } = useNavigate();
 
   const openSignInModal = () => {
     document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
@@ -24,20 +26,30 @@ export default function Profile() {
 
   const onProfileSelection = useCallback(
     async (selectedKey: Key) => {
-      if (selectedKey === 'signout') {
-        const signOutResponse: AuthType.SignOutResponse =
-          await InternalApiFetcher.get('/api/auth/signout');
-
-        if (signOutResponse.ok) {
-          setAuthState &&
-            setAuthState((prevState) => ({
-              ...prevState,
-              user: null,
-            }));
-        }
+      switch (selectedKey) {
+        case 'myevent':
+          navigateTo(new URL(`/event`, window.location.origin).href);
+          break;
+        case 'signout':
+          {
+            try {
+              await InternalApiFetcher.get('/api/auth/signout');
+              setUser(null);
+            } catch (error) {
+              console.error(error);
+              Sentry.captureException(error, {
+                extra: {
+                  message: `Error when trying to sign out.`,
+                },
+              });
+            }
+          }
+          break;
+        default:
+          break;
       }
     },
-    [setAuthState]
+    [navigateTo, setUser]
   );
 
   return (
@@ -54,7 +66,7 @@ export default function Profile() {
               <div className="h-7 w-7 rounded-full ring-2 ring-zinc-700 ring-offset-2 ring-offset-zinc-800 lg:mr-1 lg:h-6 lg:w-6">
                 <Image
                   referrerPolicy="no-referrer"
-                  src={user.picture_url}
+                  src={user.pictureUrl}
                   alt={`Image of ${user.name}`}
                   loading="lazy"
                   width={28}
@@ -91,7 +103,7 @@ export default function Profile() {
                     <div className="h-7 w-7 rounded-full ring-2 ring-zinc-700 ring-offset-2 ring-offset-zinc-800">
                       <Image
                         referrerPolicy="no-referrer"
-                        src={user.picture_url}
+                        src={user.pictureUrl}
                         alt={`Image of ${user.name}`}
                         loading="lazy"
                         width={28}
@@ -106,6 +118,9 @@ export default function Profile() {
                     <p className="text-xs text-foreground-400">{user.email}</p>
                   </div>
                 </div>
+              </DropdownItem>
+              <DropdownItem key="myevent" textValue="myevent">
+                My Event
               </DropdownItem>
             </DropdownSection>
             <DropdownItem key="signout" textValue="signout">

@@ -3,7 +3,10 @@ import {
   type NextMiddleware,
   type NextRequest,
 } from 'next/server';
-import { getClientAuth } from '@/_shared/utils/get-client-auth';
+import { cookies } from 'next/headers';
+import * as Sentry from '@sentry/nextjs';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import type { AuthType } from '@/_shared/types/auth';
 
 export function withAuthMiddleware(middleware: NextMiddleware) {
   return async (request: NextRequest, event: NextFetchEvent) => {
@@ -14,14 +17,31 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
     }
 
     if (response) {
-      try {
-        const clientAuthResponse = await getClientAuth();
-        const currentAuth = clientAuthResponse.data
-          ? clientAuthResponse.data
-          : null;
+      const requestToken = cookies().get('token');
 
-        response.headers.set('user-auth', JSON.stringify(currentAuth));
-      } catch (error) {}
+      try {
+        const user: AuthType.CurrentAuthResponse = await InternalApiFetcher.get(
+          '/api/auth/current',
+          {
+            headers: {
+              Authorization: `Bearer ${requestToken?.value || ''}`,
+            },
+            cache: 'no-cache',
+          }
+        );
+
+        const userData = user.data ? user.data : null;
+
+        response.headers.set('user-auth', JSON.stringify(userData));
+      } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: 'API call error when trying to get current auth data',
+          },
+        });
+        console.error(error);
+        response.headers.set('user-auth', JSON.stringify(null));
+      }
     }
 
     return response;

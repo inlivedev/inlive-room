@@ -7,6 +7,7 @@ import {
   primaryKey,
   serial,
   jsonb,
+  boolean,
 } from 'drizzle-orm/pg-core';
 
 // Event Table
@@ -15,12 +16,15 @@ export const events = pgTable('events', {
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
   startTime: timestamp('start_time').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
   endTime: timestamp('end_time').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
   description: text('description'),
   createdBy: integer('created_by').notNull(),
   roomId: text('room_id').notNull(),
   host: text('host').notNull(),
+  isPublished: boolean('is_published').notNull().default(false),
+  thumbnailUrl: text('thumbnail_url'),
 });
 
 export const eventsRelation = relations(events, ({ many }) => ({

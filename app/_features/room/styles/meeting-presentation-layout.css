@@ -1,7 +1,6 @@
 .meeting-presentation-layout {
   width: 100%;
   height: 100%;
-  padding: 1rem;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 1rem;
@@ -40,14 +39,6 @@
     grid-template-columns: 4fr 1fr;
     grid-template-rows: auto;
     gap: 2rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .meeting-presentation-layout {
-    display: grid;
-    rid-template-columns: 4fr 1fr;
-    grid-template-rows: auto;
   }
 }
 

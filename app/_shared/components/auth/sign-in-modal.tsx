@@ -9,6 +9,7 @@ import {
   ModalBody,
   useDisclosure,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import GoogleIcon from '@/_shared/components/icons/google-icon';
@@ -21,7 +22,15 @@ const providers = [
   },
 ];
 
-export default function SignInModal() {
+interface SignInModalProps {
+  isDismisable?: boolean;
+  hideCloseButton?: boolean;
+}
+
+export default function SignInModal({
+  isDismisable = true,
+  hideCloseButton = false,
+}: SignInModalProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,8 +58,22 @@ export default function SignInModal() {
             }),
           });
 
+        if (!response || !response.data) {
+          throw new Error(
+            `No redirect URL returned from authorization endpoint. ${
+              response.message || ''
+            }`
+          );
+        }
+
         window.location.href = response.data;
       } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: `API call error when trying to authorize with ${provider}.`,
+          },
+        });
+
         setIsSubmitting(false);
         console.error(error);
         alert(
@@ -62,6 +85,8 @@ export default function SignInModal() {
 
   return (
     <Modal
+      isDismissable={isDismisable}
+      hideCloseButton={hideCloseButton}
       size="sm"
       isOpen={isOpen}
       onOpenChange={onOpenChange}

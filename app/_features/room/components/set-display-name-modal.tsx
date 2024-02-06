@@ -10,6 +10,7 @@ import {
   Spinner,
   useDisclosure,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';
 import type { ClientType } from '@/_shared/types/client';
@@ -57,24 +58,31 @@ export default function SetDisplayNameModal({ roomID }: Props) {
               }
             );
 
-          if (response.ok) {
-            const clientName = response.data.name;
-            document.dispatchEvent(
-              new CustomEvent('set:client-name', {
-                detail: {
-                  clientName: clientName,
-                },
-              })
-            );
-            onClose();
-            setClientNameInput('');
-            setIsSubmitting(false);
-          } else {
+          if (!response || !response.ok) {
             throw new Error(
-              'An error has occured on our side please try again later'
+              response?.message ||
+                'An error has occured on our side please try again later'
             );
           }
+
+          const clientName = response.data.name;
+          document.dispatchEvent(
+            new CustomEvent('set:client-name', {
+              detail: {
+                clientName: clientName,
+              },
+            })
+          );
+          onClose();
+          setClientNameInput('');
+          setIsSubmitting(false);
         } catch (error) {
+          Sentry.captureException(error, {
+            extra: {
+              message: `API call error when trying to set a client name`,
+            },
+          });
+
           setIsSubmitting(false);
           console.error(error);
 

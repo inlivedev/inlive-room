@@ -1,23 +1,49 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import * as Sentry from '@sentry/nextjs';
 import AppContainer from '@/_shared/components/containers/app-container';
 import View from '@/_features/room/components/view';
 import type { RoomType } from '@/_shared/types/room';
-import type { UserType } from '@/_shared/types/user';
+import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
-import { clientSDK } from '@/_shared/utils/sdk';
+import { serverSDK } from '@/(server)/_shared/utils/sdk';
 
 type PageProps = {
-  params: {
-    roomID: string;
-  };
   searchParams: { debug: string | undefined };
 };
 
-export const generateMetadata = ({ params }: PageProps): Metadata => {
+export const generateMetadata = (): Metadata | null => {
+  const headersList = headers();
+  const roomDataHeader = headersList.get('room-data');
+  const roomData: RoomType.RoomData | null =
+    typeof roomDataHeader === 'string'
+      ? JSON.parse(roomDataHeader)
+      : roomDataHeader;
+
+  if (!roomData || !roomData.id) return null;
+
+  const type = roomData.meta?.type === 'event' ? 'Webinar' : 'Meeting';
+  const description =
+    'Experience real-time messaging, video, and audio for seamless collaboration, all within inLive Room.';
+  const ogImage = '/images/general-og.png';
+
   return {
-    title: `Room - ${params.roomID}`,
+    title: `${type} Room: ${roomData.id} — inLive Room`,
+    description: description,
+    openGraph: {
+      title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
+      description: description,
+      url: `/room/${roomData.id}`,
+      images: [ogImage],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
+      description: description,
+      images: [ogImage],
+    },
   };
 };
 
@@ -32,7 +58,7 @@ export default async function Page({ searchParams }: PageProps) {
     typeof roomDataHeader === 'string'
       ? JSON.parse(roomDataHeader)
       : roomDataHeader;
-  const userAuth: UserType.AuthUserData | null =
+  const userAuth: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
@@ -47,25 +73,56 @@ export default async function Page({ searchParams }: PageProps) {
 
   const isModerator = roomData.createdBy === userAuth?.id;
 
-  if (isModerator) {
-    const moderatorMeta = await clientSDK.getMetadata(
-      roomData.id,
-      'moderatorIDs'
-    );
-    const moderatorIDs = moderatorMeta?.data?.moderatorIDs;
+  const setModeratorMetaPromise = async () => {
+    if (isModerator) {
+      const moderatorMeta = await serverSDK.getMetadata(
+        roomData.id,
+        'moderatorClientIDs'
+      );
+      const moderatorClientIDs = moderatorMeta?.data?.moderatorClientIDs;
 
-    if (Array.isArray(moderatorIDs)) {
-      await clientSDK.setMetadata(roomData.id, {
-        moderatorIDs: [...moderatorIDs, userClient.clientID],
-      });
-    } else {
-      await clientSDK.setMetadata(roomData.id, {
-        moderatorIDs: [userClient.clientID],
-      });
+      try {
+        if (Array.isArray(moderatorClientIDs)) {
+          await serverSDK.setMetadata(roomData.id, {
+            moderatorClientIDs: [...moderatorClientIDs, userClient.clientID],
+          });
+        } else {
+          await serverSDK.setMetadata(roomData.id, {
+            moderatorClientIDs: [userClient.clientID],
+          });
+        }
+      } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message: `API call error when trying to add client ID to metadata moderatorClientIDs`,
+            moderatorClientIDs: moderatorClientIDs,
+            clientID: userClient.clientID,
+          },
+        });
+        console.error(error);
+      }
     }
-  }
+  };
 
-  const roomType = roomData.meta ? roomData.meta.type : 'meeting' || 'meeting';
+  const hubRoomPromise = serverSDK.getRoom(roomData.id);
+
+  const [hubRoomResponse] = await Promise.allSettled([
+    hubRoomPromise,
+    setModeratorMetaPromise(),
+  ]).then((results) => {
+    return results.map((result) => {
+      if (result.status === 'fulfilled') return result.value;
+      return null;
+    });
+  });
+
+  const codecPreferences = hubRoomResponse?.data?.codecPreferences || [];
+  const bitrateConfig = {
+    highBitrate: hubRoomResponse?.data?.bitrates.videoHigh || 0,
+    midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
+    lowBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
+  };
+  const roomType = roomData.meta ? roomData.meta.type : 'meeting';
 
   return (
     <AppContainer user={userAuth}>
@@ -75,6 +132,8 @@ export default async function Page({ searchParams }: PageProps) {
         roomType={roomType}
         isModerator={isModerator}
         debug={debug}
+        codecPreferences={codecPreferences}
+        bitrateConfig={bitrateConfig}
       />
     </AppContainer>
   );

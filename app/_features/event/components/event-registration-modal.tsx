@@ -9,6 +9,7 @@ import {
   Spinner,
   useDisclosure,
 } from '@nextui-org/react';
+import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';
 import type { EventType } from '@/_shared/types/event';
@@ -88,12 +89,19 @@ export default function EventRegistrationModal({
           email: emailInput,
         };
 
-        const response: EventType.RegisterParticipantResponse =
-          await InternalApiFetcher.post(`/api/events/${slug}/register`, {
-            body: JSON.stringify(body),
-          });
+        try {
+          const response: EventType.RegisterParticipantResponse =
+            await InternalApiFetcher.post(`/api/events/${slug}/register`, {
+              body: JSON.stringify(body),
+            });
 
-        if (response.ok) {
+          if (!response || !response.ok) {
+            throw new Error(
+              response?.message ||
+                'An error has occured on our side please try again later'
+            );
+          }
+
           const participantName =
             `${response.data.participant.firstName} ${response.data.participant.lastName}`.trim();
 
@@ -108,10 +116,15 @@ export default function EventRegistrationModal({
           setEmailInput('');
           setIsSubmitting(false);
           navigateTo(redirectPath);
-        } else {
-          throw new Error(
-            'An error has occured on our side please try again later'
-          );
+        } catch (error) {
+          Sentry.captureException(error, {
+            extra: {
+              message:
+                'API call error when user tries to register to the event',
+            },
+          });
+
+          throw error;
         }
       } catch (error) {
         setIsSubmitting(false);

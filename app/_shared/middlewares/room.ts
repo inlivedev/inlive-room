@@ -1,7 +1,8 @@
 import type { NextFetchEvent, NextMiddleware, NextRequest } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
-import type { UserType } from '@/_shared/types/user';
+import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import { customAlphabet } from 'nanoid';
 
@@ -23,8 +24,12 @@ const registerClient = async (roomID: string, clientName: string) => {
 
     return client;
   } catch (error) {
+    Sentry.captureException(error, {
+      extra: {
+        message: `API call error when trying to register a client in middleware`,
+      },
+    });
     console.error(error);
-    throw error;
   }
 };
 
@@ -35,7 +40,7 @@ const getClientName = (
   if (!response) return '';
 
   const userAuthHeader = response.headers.get('user-auth');
-  const user: UserType.AuthUserData | null =
+  const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
@@ -66,13 +71,24 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
 
     if (response && splitPath[1] === 'room' && splitPath.length === 3) {
       const roomID = splitPath[2];
+      let roomData: RoomType.RoomData | null = null;
 
-      const roomResponse: RoomType.CreateJoinRoomResponse =
-        await InternalApiFetcher.get(`/api/room/${roomID}/join`, {
-          cache: 'no-cache',
+      try {
+        const roomResponse: RoomType.CreateJoinRoomResponse =
+          await InternalApiFetcher.get(`/api/room/${roomID}/join`, {
+            cache: 'no-cache',
+          });
+
+        roomData = roomResponse?.data ? roomResponse.data : null;
+      } catch (error) {
+        Sentry.captureException(error, {
+          extra: {
+            message:
+              'API call error when trying to join to the room in middleware',
+          },
         });
-
-      const roomData = roomResponse.data ? roomResponse.data : null;
+        console.error(error);
+      }
 
       let client: ClientType.ClientData = {
         clientID: '',
@@ -82,7 +98,8 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       if (roomData) {
         const clientName = getClientName(request, response);
         const newName = generateName(clientName);
-        client = await registerClient(roomID, newName);
+        const registeredClient = await registerClient(roomID, newName);
+        client = registeredClient || client;
       }
 
       response.headers.set('user-client', JSON.stringify(client));

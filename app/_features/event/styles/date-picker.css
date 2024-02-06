@@ -1,0 +1,140 @@
+.react-datepicker__header {
+    @apply flex;
+    @apply flex-wrap;
+    @apply flex-col;
+}
+
+.react-datepicker__week{
+    @apply flex;
+    @apply justify-between;
+}
+
+.react-datepicker__current-month{
+    @apply bg-red-800;
+    @apply text-center;
+    @apply h-10;
+    @apply rounded;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* .react-datepicker__month {
+    margin: .4rem;
+    text-align: center;
+  } */
+
+.react-datepicker__day-names{
+    @apply flex;
+    @apply justify-between;
+    @apply bg-zinc-800;
+    @apply p-2;
+    @apply rounded;
+    @apply mt-1;
+    @apply mb-1;
+}
+
+.react-datepicker__day--outside-month{
+    @apply text-gray-400;
+}
+
+.react-datepicker__day--disabled{
+    @apply text-gray-400;
+    @apply bg-slate-950;
+}
+
+.react-datepicker__day{
+    @apply rounded;
+    cursor: pointer;
+}
+
+.react-datepicker__day--selected{
+    @apply bg-red-800;
+    @apply rounded;
+}
+.react-datepicker__day{
+  display: inline-block;
+  line-height: 1.7rem;
+  margin: .166rem;
+  text-align: center;
+  width: 1.7rem;
+}
+
+.react-datepicker__navigation--previous {
+    @apply mr-12;
+  }
+
+.react-datepicker__navigation--next {
+    @apply ml-12;
+  }
+
+
+.react-datepicker__navigation-icon{
+    color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.react-datepicker__navigation-icon--previous{
+    background-image: url(./chevron-left.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    
+}
+
+.react-datepicker__navigation-icon--next{
+    background-image: url(./chevron-right.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.react-datepicker__navigation{
+    @apply flex-none;
+    @apply bg-zinc-700/70;
+    @apply hover:bg-zinc-600;
+    @apply active:bg-zinc-500;
+    @apply p-2.5;
+    @apply w-10;
+    @apply h-10;
+    @apply rounded;
+    @apply transition-all duration-500 ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.react-datepicker__aria-live {
+    border: 0;
+    -webkit-clip-path: circle(0);
+    clip-path: circle(0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+
+
+.react-datepicker{
+    @apply flex;
+    @apply flex-wrap;
+    @apply justify-between;
+    @apply gap-1;
+}
+
+.react-datepicker__month-container{
+    @apply flex-1;
+    @apply gap-1;
+}
+
+
+
+  .react-datepicker__triangle {
+    left: 50px;
+    position: absolute;
+}
