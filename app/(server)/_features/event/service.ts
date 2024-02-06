@@ -1,7 +1,6 @@
 import { iEventService } from '@/(server)/api/_index';
 import { insertEvent, selectEvent } from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
-import { isNumber } from 'lodash-es';
 
 export interface iEventRepo {
   addEvent(eventData: typeof insertEvent): Promise<typeof selectEvent>;
