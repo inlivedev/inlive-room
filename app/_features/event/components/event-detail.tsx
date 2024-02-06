@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Image as NextImage, Spinner } from '@nextui-org/react';
+import { Button, Image as NextImage } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import EventRegistrationModal from '@/_features/event/components/event-registration-modal';
@@ -10,11 +10,11 @@ import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
 import DeleteIcon from '@/_shared/components/icons/delete-icon';
 import { useAuthContext } from '@/_shared/contexts/auth';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { DeleteEventModal } from './event-delete-modal';
-import { useNavigate } from '@/_shared/hooks/use-navigate';
 import EditIcon from '@/_shared/components/icons/edit-icon';
 import { StatusDraft, StatusPublished } from './event-status';
+import Link from 'next/link';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -165,18 +165,9 @@ function AuthorActionButtons({
   slug: string;
   copiedActive: boolean;
 }) {
-  const [isEditing, setIsEditing] = useState(false);
-
   const openDeleteEventModal = useCallback(() => {
     document.dispatchEvent(new CustomEvent('open:event-delete-modal'));
   }, []);
-
-  const { navigateTo } = useNavigate();
-
-  const onEditEvent = useCallback(() => {
-    setIsEditing(true);
-    navigateTo(new URL(`/event/${slug}/edit`, window.location.origin).href);
-  }, [navigateTo, slug]);
 
   return (
     <div className="flex justify-between gap-2">
@@ -190,27 +181,13 @@ function AuthorActionButtons({
       </Button>
       <div className="flex w-full gap-2">
         <Button
-          onPress={onEditEvent}
+          href={`/event/${slug}/edit`}
+          as={Link}
           variant="flat"
           className="flex min-w-0 basis-1/2 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
         >
-          {isEditing ? (
-            <div className="flex gap-2">
-              <Spinner
-                classNames={{
-                  circle1: 'border-b-zinc-200',
-                  circle2: 'border-b-zinc-200',
-                  wrapper: 'w-4 h-4',
-                }}
-              />
-              <span>Editing...</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-unit-2 align-middle">
-              <EditIcon height={20} width={20} />
-              <span>Edit Event</span>
-            </div>
-          )}
+          <EditIcon height={20} width={20} />
+          Edit Event
         </Button>
         <Button
           variant="flat"
