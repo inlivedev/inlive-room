@@ -24,7 +24,6 @@ export function ConnectionProvider({
 
   useEffect(() => {
     clientSDK.on(RoomEvent.CHANNEL_OPENED, () => {
-      console.log('success subscribe to event endpoint');
       setConnectionState(true);
     });
 
@@ -35,9 +34,7 @@ export function ConnectionProvider({
     });
   }, []);
 
-  useEffect(() => {
-    console.log(connectionState);
-  }, [connectionState]);
+  useEffect(() => {}, [connectionState]);
 
   return (
     <ConnectionContext.Provider value={{ sseConnection: connectionState }}>
