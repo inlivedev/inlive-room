@@ -14,4 +14,5 @@ export type HTTPResponse = {
   data: any;
   message: string;
   meta: PageMeta;
+  ok: boolean;
 };

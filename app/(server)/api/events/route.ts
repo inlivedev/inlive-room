@@ -38,6 +38,7 @@ export async function GET(req: Request) {
       data,
       message: 'Events retrieved successfully',
       meta: pageMeta,
+      ok: true,
     };
 
     return NextResponse.json(response);
