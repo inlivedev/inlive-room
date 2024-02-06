@@ -45,7 +45,7 @@ export default async function Page({
   return (
     <AppContainer user={user}>
       {user ? (
-        <EventList events={eventResponse.data} />
+        <EventList events={eventResponse} />
       ) : (
         <HTTPError
           code={403}
