@@ -4,6 +4,7 @@ import { Card, CardBody, CardHeader, Divider, Image } from '@nextui-org/react';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { useCallback } from 'react';
 import { StatusPublished, StatusDraft } from './event-status';
+import Link from 'next/link';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -24,16 +25,13 @@ export function EventCard({
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '';
 
-  const onEventCard = useCallback(() => {
-    navigateTo(new URL(`/event/${event.slug}`, window.location.origin).href);
-  }, [navigateTo, event.slug]);
-
   return (
     <Card
+      as={Link}
+      href={`/event/${event.slug}`}
       className="z-0 items-center ring-1 ring-zinc-800"
       isPressable
       shadow="none"
-      onPress={onEventCard}
     >
       <CardHeader className="flex justify-between gap-x-2">
         {event.isPublished ? <StatusPublished /> : <StatusDraft />}
