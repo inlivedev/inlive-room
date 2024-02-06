@@ -3,7 +3,6 @@
 import Header from '@/_shared/components/header/header';
 import { EventType } from '@/_shared/types/event';
 import { Button, Link, Tab, Tabs } from '@nextui-org/react';
-import { useEffect, useState } from 'react';
 import { EventCard } from './event-card';
 import EditIcon from '@/_shared/components/icons/edit-icon';
 import ChevronLeft from '@/_shared/components/icons/chevron-left';
@@ -14,16 +13,6 @@ export default function EventList({
 }: {
   events: EventType.ListEventsResponse;
 }) {
-  const [listEvent, setListEvent] = useState<
-    EventType.ListEventsResponse['data']
-  >([]);
-
-  useEffect(() => {
-    if (events) {
-      setListEvent(events.data);
-    }
-  }, [events]);
-
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
@@ -85,11 +74,11 @@ export default function EventList({
                   </Button>
                 </div>
               </div>
-              {listEvent.length === 0 && (
+              {events.data.length === 0 && (
                 <p className="w-full">{"You haven't created any event"}</p>
               )}
               <div className="grid grid-cols-1 gap-4 pb-32 sm:grid-cols-2 sm:pb-0 sm:pt-1">
-                {listEvent.map((event) => {
+                {events.data.map((event) => {
                   return <EventCard key={event.id} event={event} />;
                 })}
               </div>
