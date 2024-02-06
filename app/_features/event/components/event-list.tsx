@@ -39,11 +39,11 @@ export default function EventList({
                       events.meta.per_page
                     }`}
                     isIconOnly
-                    className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-max"
+                    className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 "
                   >
                     <ChevronLeft width={24} height={24}></ChevronLeft>
                   </Button>
-                  <div className="flex w-full items-center justify-center">
+                  <div className="flex w-full items-center justify-center whitespace-nowrap">
                     {events.meta.current_page} of {events.meta.total_page}
                   </div>
                   <Button
@@ -55,7 +55,7 @@ export default function EventList({
                       events.meta.per_page
                     }`}
                     isIconOnly
-                    className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-max"
+                    className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 "
                   >
                     <ChevronRight width={24} height={24}></ChevronRight>
                   </Button>
