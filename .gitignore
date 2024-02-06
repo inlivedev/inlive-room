@@ -44,4 +44,4 @@ app/(server)/api/test
 /.docker
 
 /dist
-/volume
+/storage
