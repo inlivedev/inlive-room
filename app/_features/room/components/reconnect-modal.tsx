@@ -45,7 +45,7 @@ export default function ReconncectModal() {
                 height={24}
               ></PlugDisconnectedFillIcon>
             </div>
-            <div className="flex w-max items-center gap-2 rounded-sm p-1 text-sm">
+            <div className="flex items-center gap-2 rounded-sm p-1 text-sm">
               {
                 "It seems like we've lost connection to the meeting room. Please check your internet connection and try again."
               }
