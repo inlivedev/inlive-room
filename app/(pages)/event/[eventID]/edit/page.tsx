@@ -6,7 +6,6 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { eventService } from '@/(server)/api/_index';
 import HTTPError from '@/_shared/components/errors/http-error';
-import { whitelistFeature } from '@/_shared/utils/flag';
 
 type PageProps = {
   params: {
@@ -36,17 +35,6 @@ export const generateMetadata = async ({
 
   if (!event || !event.id) return null; // use not-found metadata
 
-  const eligibleForEvent =
-    whitelistFeature.includes('event') ||
-    !!user?.whitelistFeature.includes('event');
-
-  if (!eligibleForEvent) {
-    return {
-      title: `You are not eligible to see this page — inLive Room`,
-      description: 'Only early-access users can access this page.',
-    };
-  }
-
   return {
     title: `Edit ${event.name} — inLive Room`,
   };
@@ -74,21 +62,6 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   if (!event) {
     return notFound();
-  }
-
-  const eligibleForEvent =
-    whitelistFeature.includes('event') ||
-    !!user?.whitelistFeature.includes('event');
-
-  if (!eligibleForEvent) {
-    return (
-      <AppContainer user={user}>
-        <HTTPError
-          title="You are not eligible to see this page"
-          description="Only early-access users can access this page."
-        />
-      </AppContainer>
-    );
   }
 
   return (
