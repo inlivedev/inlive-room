@@ -14,8 +14,42 @@ type PageProps = {
   };
 };
 
-export const metadata: Metadata = {
-  title: 'Update your event — inLive Room',
+export const generateMetadata = async ({
+  params: { eventID },
+}: PageProps): Promise<Metadata | null> => {
+  const headersList = headers();
+  const userAuthHeader = headersList.get('user-auth');
+
+  const user: AuthType.CurrentAuthData | null =
+    typeof userAuthHeader === 'string'
+      ? JSON.parse(userAuthHeader)
+      : userAuthHeader;
+
+  if (!user || !user.id) {
+    return {
+      title: `Login Required — inLive Room`,
+      description: 'You need to be logged in to access this page',
+    };
+  }
+
+  const event = await eventService.getEventBySlugOrID(eventID, user.id);
+
+  if (!event || !event.id) return null; // use not-found metadata
+
+  const eligibleForEvent =
+    whitelistFeature.includes('event') ||
+    !!user?.whitelistFeature.includes('event');
+
+  if (!eligibleForEvent) {
+    return {
+      title: `You are not eligible to see this page — inLive Room`,
+      description: 'Only early-access users can access this page.',
+    };
+  }
+
+  return {
+    title: `Edit ${event.name} — inLive Room`,
+  };
 };
 
 export default async function Page({ params: { eventID } }: PageProps) {
@@ -27,7 +61,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  if (!user) {
+  if (!user || !user.id) {
     return (
       <HTTPError
         title="Login Required"
