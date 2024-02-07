@@ -14,6 +14,7 @@ import EventContainer from '@/_features/room/components/event-container';
 import Conference from '@/_features/room/components/conference';
 import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
 import type { ClientType } from '@/_shared/types/client';
+import { ConnectionProvider } from '../contexts/connection-status-context';
 
 type ViewProps = {
   roomID: string;
@@ -71,22 +72,24 @@ export default function View({
             <ParticipantProvider>
               <DataChannelProvider>
                 <ChatProvider>
-                  <EventContainer>
-                    <ChatDrawerMenu />
-                    <MetadataProvider
-                      roomID={roomID}
-                      roomType={roomType}
-                      isModerator={isModerator}
-                    >
-                      {activeView === 'exit' ? (
-                        <ConferenceExit />
-                      ) : activeView === 'conference' ? (
-                        <Conference roomType={roomType} />
-                      ) : (
-                        <ConferenceLobby roomID={roomID} />
-                      )}
-                    </MetadataProvider>
-                  </EventContainer>
+                  <ConnectionProvider>
+                    <EventContainer>
+                      <ChatDrawerMenu />
+                      <MetadataProvider
+                        roomID={roomID}
+                        roomType={roomType}
+                        isModerator={isModerator}
+                      >
+                        {activeView === 'exit' ? (
+                          <ConferenceExit />
+                        ) : activeView === 'conference' ? (
+                          <Conference roomType={roomType} />
+                        ) : (
+                          <ConferenceLobby roomID={roomID} />
+                        )}
+                      </MetadataProvider>
+                    </EventContainer>
+                  </ConnectionProvider>
                 </ChatProvider>
               </DataChannelProvider>
             </ParticipantProvider>

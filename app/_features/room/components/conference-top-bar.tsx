@@ -231,7 +231,7 @@ function ConnectionStatusOverlay() {
       )}
       {connectionState === 'disconnected' && (
         <div className="flex items-center">
-          <PlugDisconnectedFillIcon className="h-6 w-6 text-red-600" />
+          <PlugDisconnectedFillIcon className="h-6 w-6 text-red-600/70" />
           <span className="ml-1.5 hidden text-xs font-medium text-zinc-300 sm:inline-block">
             Disconnected
           </span>
