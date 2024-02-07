@@ -18,8 +18,8 @@ const registerClient = async (roomID: string, clientName: string) => {
     const data = response.data || {};
 
     const client: ClientType.ClientData = {
-      clientID: data.clientID,
-      clientName: data.name,
+      clientID: data.clientID || '',
+      clientName: data.name || clientName,
     };
 
     return client;

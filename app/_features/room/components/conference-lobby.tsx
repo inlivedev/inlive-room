@@ -54,7 +54,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
     []
   );
 
-  const { clientName } = useClientContext();
+  const { clientID, clientName } = useClientContext();
 
   const openUpdateClientForm = useCallback(() => {
     document.dispatchEvent(new CustomEvent('open:set-display-name-modal'));
@@ -187,6 +187,8 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
     }
   }, [videoConstraints, audioConstraints, roomID, isSubmitting]);
 
+  const isError = !clientID || !clientName;
+
   return (
     <>
       <SetDisplayNameModal roomID={roomID} />
@@ -294,9 +296,9 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                     <Button
                       className="w-full rounded-lg bg-red-700 px-4 py-2 font-semibold text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
                       onClick={openConferenceRoom}
-                      isDisabled={isSubmitting}
-                      aria-disabled={isSubmitting}
-                      disabled={isSubmitting}
+                      isDisabled={isSubmitting || isError}
+                      aria-disabled={isSubmitting || isError}
+                      disabled={isSubmitting || isError}
                     >
                       {isSubmitting ? (
                         <div className="flex gap-2">
