@@ -25,12 +25,15 @@ export async function GET(req: Request) {
     );
 
     if (data.length === 0) {
-      return NextResponse.json({
-        status: 404,
-        data: {
-          message: 'No events found',
-        },
-      });
+      const response: HTTPResponse = {
+        code: 404,
+        data: [],
+        message: 'No events found',
+        meta: pageMeta,
+        ok: true,
+      };
+
+      return NextResponse.json(response);
     }
 
     const response: HTTPResponse = {
