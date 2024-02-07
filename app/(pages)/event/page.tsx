@@ -8,7 +8,7 @@ import { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { whitelistFeature } from '@/_shared/utils/flag';
 
-export const metadata = (): Metadata => {
+export const generateMetadata = (): Metadata => {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
