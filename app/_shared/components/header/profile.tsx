@@ -32,7 +32,7 @@ export default function Profile() {
   const onProfileSelection = useCallback(
     async (selectedKey: Key) => {
       switch (selectedKey) {
-        case 'myevent':
+        case 'my-events':
           if (!eligibleForEvent) return;
 
           navigateTo(new URL(`/event`, window.location.origin).href);
@@ -62,7 +62,7 @@ export default function Profile() {
   const disabledKeys = ['profile'];
 
   if (!eligibleForEvent) {
-    disabledKeys.push('myevent');
+    disabledKeys.push('my-events');
   }
 
   return (
@@ -129,9 +129,9 @@ export default function Profile() {
                 </div>
               </DropdownItem>
             </DropdownSection>
-            <DropdownItem key="myevent" textValue="myevent">
+            <DropdownItem key="my-events" textValue="my-events">
               <div className="flex justify-between text-sm font-medium text-zinc-200">
-                <span className="inline-block">My Event</span>
+                <span className="inline-block">My Events</span>
                 {!whitelistFeature.includes('event') && (
                   <span className="inline-flex items-center rounded-sm border border-emerald-800 bg-emerald-950 px-1 text-[10px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
                     Limited Beta
