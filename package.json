@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "create:env": "printenv > .env",
-    "dev": "ts-node --project tsconfig.server.json ./app/server.ts",
+    "dev": "ts-node --project tsconfig.server.json ./server.ts",
     "dev:next": "next dev",
     "build": "next build && tsc --project tsconfig.server.json",
     "start": "NODE_ENV=production node dist/server.js",
@@ -33,12 +33,12 @@
     "postgres": "^3.3.5",
     "react": "18.2.0",
     "react-cropper": "^2.3.3",
-    "react-datepicker": "^4.25.0",
+    "react-datepicker": "6.0.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@tailwindcss/typography": "^0.5.10",
+    "@types/express": "^4.17.21",
     "@types/lodash-es": "^4.17.9",
     "@types/mixpanel-browser": "^2.47.1",
     "@types/node": "^20.3.3",

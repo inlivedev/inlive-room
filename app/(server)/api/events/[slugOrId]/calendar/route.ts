@@ -9,7 +9,7 @@ export async function GET(
 ) {
   const slug = params.slug;
   try {
-    const event = await eventService.getEvent(slug);
+    const event = await eventService.getEventBySlugOrID(slug);
     if (!event) {
       return NextResponse.json({
         code: 404,

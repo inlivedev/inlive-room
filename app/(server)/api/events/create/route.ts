@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { eventRepo, eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
 import { insertEvent } from '@/(server)/_features/event/schema';
-import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
+import * as Sentry from '@sentry/nextjs';
+import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
 
 type CreateEvent = {
   name: string;
@@ -91,13 +93,11 @@ export async function POST(req: Request) {
     const createdEvent = await eventService.createEvent(Event);
 
     if (eventImage) {
-      const eventImageBuffer = await eventImage.arrayBuffer();
-      const eventImageUint8Array = new Uint8Array(eventImageBuffer);
-
-      const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
+      const roomStoragePath =
+        process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
       const path = `${roomStoragePath}/assets/images/event/${createdEvent.id}/poster.webp`;
-      ensureDirectoryExist(path);
-      writeFileSync(path, eventImageUint8Array);
+
+      writeFiletoLocalStorage(path, eventImage);
       createdEvent.thumbnailUrl = `/assets/images/event/${createdEvent.id}/poster.webp`;
       const updatedEvent = await eventRepo.updateEvent(
         user.id,
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
       data: createdEvent,
     });
   } catch (error) {
-    console.log(error);
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         code: 500,

@@ -8,6 +8,13 @@ import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
+import DeleteIcon from '@/_shared/components/icons/delete-icon';
+import { useAuthContext } from '@/_shared/contexts/auth';
+import { useCallback } from 'react';
+import { DeleteEventModal } from './event-delete-modal';
+import EditIcon from '@/_shared/components/icons/edit-icon';
+import { StatusDraft, StatusPublished } from './event-status';
+import Link from 'next/link';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -20,6 +27,8 @@ type EventDetailProps = {
   startTime: Date;
   slug: string;
   host: string;
+  isPublished?: boolean;
+  thumbnailUrl?: string | null;
 };
 
 export default function EventDetail({
@@ -28,7 +37,8 @@ export default function EventDetail({
   slug,
   host,
   startTime,
-  id,
+  isPublished,
+  thumbnailUrl,
 }: EventDetailProps) {
   const {
     active: copiedActive,
@@ -36,9 +46,7 @@ export default function EventDetail({
     setInActive: setCopiedInActive,
   } = useToggle(false);
 
-  const openRegisterEventForm = () => {
-    document.dispatchEvent(new CustomEvent('open:event-registration-modal'));
-  };
+  const { user } = useAuthContext();
 
   const handleCopyLink = async (text = '') => {
     const success = await copyToClipboard(text);
@@ -65,8 +73,11 @@ export default function EventDetail({
     hour12: true,
   });
 
+  const imagePath = thumbnailUrl ? `${APP_ORIGIN}/static${thumbnailUrl}` : '';
+
   return (
     <>
+      <DeleteEventModal slug={slug} />
       <EventRegistrationModal title={title} slug={slug} startTime={startTime} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
@@ -84,7 +95,8 @@ export default function EventDetail({
                   <NextImage
                     width={640}
                     height={320}
-                    src={`${APP_ORIGIN}/static/assets/images/event/${id}/poster.webp`}
+                    fallbackSrc="/images/general-og.png"
+                    src={imagePath}
                     alt=""
                     style={{
                       aspectRatio: '2/1',
@@ -102,42 +114,26 @@ export default function EventDetail({
                 <div className="flex w-full flex-col gap-4 rounded-3xl p-6 lg:bg-black/25">
                   <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 py-3 lg:relative lg:border-t-0 lg:bg-transparent lg:p-0">
                     <div className="flex flex-col gap-1 lg:gap-2">
-                      <div className="lg:order-2">
+                      <div className="flex justify-between pb-2 lg:order-2">
                         <p className="text-sm text-zinc-500">
                           Limit participants to join: 50 people
                         </p>
+                        {user &&
+                          (isPublished ? <StatusPublished /> : <StatusDraft />)}
                       </div>
-                      <div className="flex gap-4">
-                        <div className="flex-auto">
-                          <Button
-                            variant="flat"
-                            className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
-                            onClick={openRegisterEventForm}
-                          >
-                            Register to Attend
-                          </Button>
-                        </div>
-                        <div>
-                          <Button
-                            variant="flat"
-                            className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                            onClick={() =>
-                              handleCopyLink(`${APP_ORIGIN}/event/${slug}`)
-                            }
-                          >
-                            <span>
-                              {copiedActive ? (
-                                <CheckIcon className="h-5 w-5" />
-                              ) : (
-                                <CopyOutlineIcon className="h-5 w-5" />
-                              )}
-                            </span>
-                            <span className="hidden lg:inline">
-                              {copiedActive ? 'Copied!' : 'Copy link'}
-                            </span>
-                          </Button>
-                        </div>
-                      </div>
+                      {user ? (
+                        <AuthorActionButtons
+                          copiedActive={copiedActive}
+                          handleCopyLink={handleCopyLink}
+                          slug={slug}
+                        />
+                      ) : (
+                        <DefaultActionButtons
+                          copiedActive={copiedActive}
+                          handleCopyLink={handleCopyLink}
+                          slug={slug}
+                        />
+                      )}{' '}
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
@@ -157,5 +153,103 @@ export default function EventDetail({
         </div>
       </div>
     </>
+  );
+}
+
+function AuthorActionButtons({
+  handleCopyLink,
+  slug,
+  copiedActive,
+}: {
+  handleCopyLink: (text?: string) => Promise<void>;
+  slug: string;
+  copiedActive: boolean;
+}) {
+  const openDeleteEventModal = useCallback(() => {
+    document.dispatchEvent(new CustomEvent('open:event-delete-modal'));
+  }, []);
+
+  return (
+    <div className="flex justify-between gap-2">
+      <Button
+        onClick={openDeleteEventModal}
+        className="tems-center flex aspect-[1/1] rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+        variant="flat"
+        isIconOnly
+      >
+        <DeleteIcon width={20} height={20}></DeleteIcon>
+      </Button>
+      <div className="flex w-full gap-2">
+        <Button
+          href={`/event/${slug}/edit`}
+          as={Link}
+          variant="flat"
+          className="flex min-w-0 basis-1/2 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+        >
+          <EditIcon height={20} width={20} />
+          Edit Event
+        </Button>
+        <Button
+          variant="flat"
+          className="w-full basis-1/2 rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+          onClick={() => handleCopyLink(`${APP_ORIGIN}/event/${slug}`)}
+        >
+          <span>
+            {copiedActive ? (
+              <CheckIcon className="h-5 w-5" />
+            ) : (
+              <CopyOutlineIcon className="h-5 w-5" />
+            )}
+          </span>
+          <span>{copiedActive ? 'Copied!' : 'Copy link'}</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function DefaultActionButtons({
+  handleCopyLink,
+  slug,
+  copiedActive,
+}: {
+  handleCopyLink: (text?: string) => Promise<void>;
+  slug: string;
+  copiedActive: boolean;
+}) {
+  const openRegisterEventForm = () => {
+    document.dispatchEvent(new CustomEvent('open:event-registration-modal'));
+  };
+
+  return (
+    <div className="flex gap-4">
+      <div className="flex-auto">
+        <Button
+          variant="flat"
+          className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+          onClick={openRegisterEventForm}
+        >
+          Register to Attend
+        </Button>
+      </div>
+      <div>
+        <Button
+          variant="flat"
+          className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+          onClick={() => handleCopyLink(`${APP_ORIGIN}/event/${slug}`)}
+        >
+          <span>
+            {copiedActive ? (
+              <CheckIcon className="h-5 w-5" />
+            ) : (
+              <CopyOutlineIcon className="h-5 w-5" />
+            )}
+          </span>
+          <span className="hidden lg:inline">
+            {copiedActive ? 'Copied!' : 'Copy link'}
+          </span>
+        </Button>
+      </div>
+    </div>
   );
 }

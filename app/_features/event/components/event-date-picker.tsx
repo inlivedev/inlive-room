@@ -19,7 +19,7 @@ export function DatePickerModal({
   startDate,
   setStartDate,
 }: DatePickerModalProps) {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(startDate);
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const openModal = useCallback(() => {
@@ -62,7 +62,7 @@ export function DatePickerModal({
               }
             }}
             inline
-            excludeDateIntervals={[{ start: new Date('0'), end: yesterday }]}
+            excludeDateIntervals={[{ start: new Date(0), end: yesterday }]}
           />
         </ModalBody>
         <ModalFooter>

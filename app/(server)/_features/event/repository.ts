@@ -18,12 +18,22 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async getEvent(slug: string): Promise<typeof selectEvent> {
+  async getEventBySlug(slug: string): Promise<typeof selectEvent | undefined> {
     const data = await db.query.events.findFirst({
       where: eq(events.slug, slug),
     });
 
-    return data as typeof selectEvent;
+    if (data) return data as typeof selectEvent;
+    else return undefined;
+  }
+
+  async getEventById(id: number): Promise<typeof selectEvent | undefined> {
+    const data = await db.query.events.findFirst({
+      where: eq(events.id, id),
+    });
+
+    if (data) return data as typeof selectEvent;
+    else return undefined;
   }
 
   async getEvents(page: number, limit: number, userId?: number) {
@@ -96,12 +106,21 @@ export class EventRepo implements iEventRepo {
     id: number,
     event: typeof insertEvent
   ): Promise<typeof selectEvent | undefined> {
-    const data = await db
-      .update(events)
-      .set(event)
-      .where(and(eq(events.id, id), eq(events.createdBy, userId)))
-      .returning();
-    if (data.length == 0) {
+    const data = await db.transaction(async (tx) => {
+      if (!event.thumbnailUrl) {
+        await tx
+          .update(events)
+          .set({ thumbnailUrl: null })
+          .where(eq(events.id, id));
+      }
+      return await tx
+        .update(events)
+        .set(event)
+        .where(and(eq(events.id, id), eq(events.createdBy, userId)))
+        .returning();
+    });
+
+    if (!data || data.length == 0) {
       return undefined;
     }
 

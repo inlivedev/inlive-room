@@ -25,7 +25,7 @@ export async function POST(
   try {
     const body = (await request.json()) as RegisterParticipant;
 
-    const existingEvent = await eventRepo.getEvent(slug);
+    const existingEvent = await eventRepo.getEventBySlug(slug);
 
     if (!existingEvent) {
       return NextResponse.json({

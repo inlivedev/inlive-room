@@ -92,6 +92,13 @@
       "when": 1707204529658,
       "tag": "0012_add_early_access_invitees_table",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1707268923915,
+      "tag": "0013_on_delete_event_cascade",
+      "breakpoints": true
     }
   ]
 }

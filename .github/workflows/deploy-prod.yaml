@@ -28,7 +28,7 @@ jobs:
         ENABLE_MAILER: true
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
         INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
-        ROOM_LOCAL_STORAGE_PATH: ./volume
+        ROOM_LOCAL_STORAGE_PATH: ./storage
         PORT: 3000
     - name: Set release version
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV

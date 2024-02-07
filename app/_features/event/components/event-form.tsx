@@ -14,9 +14,12 @@ import {
   Textarea,
   useDisclosure,
   Image as NextImage,
+  Switch,
 } from '@nextui-org/react';
 import {
   ChangeEvent,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useEffect,
   useReducer,
@@ -35,6 +38,8 @@ import { PhotoDeleteIcon } from '@/_shared/components/icons/photo-delete-icon';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import { compressImage } from '@/_shared/utils/compress-image';
+import DeleteIcon from '@/_shared/components/icons/delete-icon';
+import { DeleteEventModal } from './event-delete-modal';
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
   switch (action.type) {
@@ -47,10 +52,14 @@ const reducer = (state: ImageState, action: ActionType): ImageState => {
       return { imagePreview: null, imageBlob: action.payload };
     case 'Reset':
       return { imagePreview: null, imageBlob: null };
+    case 'FetchExisting':
+      return { imagePreview: action.payload.preview, imageBlob: null };
     default:
       return state;
   }
 };
+
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export default function EventForm({
   data: existingEvent,
@@ -62,30 +71,70 @@ export default function EventForm({
   const setEndTimeEvent = 'open:event-time-picker-end-modal';
   const incompleteFieldEvent = 'open:missing-field-modal';
 
+  const defaultImageDataState = existingEvent?.thumbnailUrl
+    ? {
+        imageBlob: null,
+        imagePreview: `${APP_ORIGIN}/static/${existingEvent.thumbnailUrl}`,
+      }
+    : {
+        imageBlob: null,
+        imagePreview: null,
+      };
+
   // States
   const { user } = useAuthContext();
-  const [imageData, updateImageData] = useReducer(reducer, {
-    imageBlob: null,
-    imagePreview: null,
-  });
-  const today = new Date(new Date().setDate(new Date().getDate() + 1));
+  const [imageData, updateImageData] = useReducer(
+    reducer,
+    defaultImageDataState
+  );
+  const today = new Date();
   const currentHour = today.getHours();
   const [date, setDate] = useState(today);
-  const [startTime, setStartTime] = useState({
-    hour: `${currentHour}`,
-    minute: `${today.getMinutes().toString().padStart(2, '0')}`,
-  });
-  const [endTime, setEndTime] = useState({
-    hour: `${currentHour + 1}`,
-    minute: `${today.getMinutes().toString().padStart(2, '0')}`,
-  });
+  const [startTime, setStartTime] = useState(
+    existingEvent?.startTime
+      ? {
+          hour: `${existingEvent.startTime
+            .getHours()
+            .toString()
+            .padStart(2, '0')}`,
+          minute: `${existingEvent.startTime
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}`,
+        }
+      : {
+          hour: `${currentHour}`,
+          minute: `${today.getMinutes().toString().padStart(2, '0')}`,
+        }
+  );
+  const [endTime, setEndTime] = useState(
+    existingEvent?.endTime
+      ? {
+          hour: `${existingEvent.endTime
+            .getHours()
+            .toString()
+            .padStart(2, '0')}`,
+          minute: `${existingEvent.endTime
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}`,
+        }
+      : {
+          hour: `${currentHour == 23 ? 23 : currentHour + 1}`,
+          minute: `${today.getMinutes().toString().padStart(2, '0')}`,
+        }
+  );
   const [isTitleValid, setTitleValid] = useState(false);
   const [isDescriptionValid, setDescValid] = useState(false);
-  const [eventName, setEventName] = useState('');
-  const [eventDescription, setEventDescription] = useState('');
+  const [eventName, setEventName] = useState(existingEvent?.name || '');
+  const [eventDescription, setEventDescription] = useState(
+    existingEvent?.description || ''
+  );
+  const [isPublished, setIsPublished] = useState(
+    existingEvent?.isPublished || false
+  );
 
   const { navigateTo } = useNavigate();
-
   const handleRemoveImage = useCallback(() => {
     updateImageData({ type: 'Reset' });
   }, []);
@@ -126,10 +175,17 @@ export default function EventForm({
         minute: `${startTime.minute}`,
       });
     }
-  }, [startTime.hour, startTime.minute, endTime.hour]);
 
-  const createEvent = useCallback(
-    async (isDraft: boolean) => {
+    if (startTime.hour === endTime.hour && startTime.minute > endTime.minute) {
+      setEndTime({
+        hour: startTime.hour,
+        minute: `${parseInt(startTime.minute)}`,
+      });
+    }
+  }, [startTime.hour, startTime.minute, endTime.hour, endTime.minute]);
+
+  const prepareEventData = useCallback(
+    async (deleteImage = false) => {
       if (
         eventDescription.trim().length === 0 ||
         eventName.trim().length === 0
@@ -137,8 +193,6 @@ export default function EventForm({
         document.dispatchEvent(new CustomEvent(incompleteFieldEvent));
         return;
       }
-
-      const finalEndpoint = `/api/events/create`;
 
       const eventStartTime = new Date(
         date.setHours(parseInt(startTime.hour), parseInt(startTime.minute), 0)
@@ -153,36 +207,24 @@ export default function EventForm({
         imageFile = await compressImage(imageData.imageBlob, 280, 560, 0.8);
       }
 
-      const data = JSON.stringify({
+      const data = {
         name: eventName,
         startTime: eventStartTime.toISOString(),
         endTime: eventEndTime.toISOString(),
         description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
-        host: user?.name || '',
-        isPublished: !isDraft,
-      });
+        host: user?.name,
+        isPublished: isPublished,
+        deleteImage: deleteImage,
+      };
 
       const formData = new FormData();
 
       if (imageFile) {
         formData.append('image', imageFile, 'poster.webp');
       }
-      formData.append('data', data);
+      formData.append('data', JSON.stringify(data));
 
-      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
-        body: formData,
-        headers: undefined,
-      });
-
-      if (respEvent.ok) {
-        const redirectPath = new URL(
-          `/event/${respEvent.data.slug}`,
-          window.location.origin
-        ).href;
-        navigateTo(redirectPath);
-      } else {
-        alert('Failed to create event, please try again later');
-      }
+      return formData;
     },
     [
       date,
@@ -190,32 +232,84 @@ export default function EventForm({
       endTime.minute,
       eventDescription,
       eventName,
-      imageData,
-      navigateTo,
+      imageData.imageBlob,
+      isPublished,
       startTime.hour,
       startTime.minute,
       user?.name,
     ]
   );
 
-  const saveAsDraft = useCallback(() => {
-    createEvent(true);
+  const updateEvent = useCallback(async () => {
+    let deleteImage = false;
+
+    if (!imageData.imagePreview) {
+      deleteImage = true;
+    }
+
+    const formData = await prepareEventData(deleteImage);
+
+    const finalEndpoint = `/api/events/${existingEvent?.id}`;
+    const respEvent = await InternalApiFetcher.put(finalEndpoint, {
+      body: formData,
+      headers: undefined,
+    });
+
+    if (respEvent.ok) {
+      const redirectPath = new URL(
+        `/event/${respEvent.data.slug}/edit`,
+        window.location.origin
+      ).href;
+      navigateTo(redirectPath);
+    }
+  }, [existingEvent?.id, imageData.imagePreview, navigateTo, prepareEventData]);
+
+  const createEvent = useCallback(
+    async (isPublished: boolean) => {
+      const finalEndpoint = `/api/events/create`;
+      const formData = await prepareEventData(isPublished);
+      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
+        body: formData,
+        headers: undefined,
+      });
+
+      if (respEvent.ok) {
+        if (isPublished)
+          navigateTo(
+            new URL(`/event/${respEvent.data.slug}`, window.location.origin)
+              .href
+          );
+        else
+          navigateTo(
+            new URL(
+              `/event/${respEvent.data.slug}/edit`,
+              window.location.origin
+            ).href
+          );
+      } else {
+        console.log(respEvent.message);
+      }
+    },
+    [navigateTo, prepareEventData]
+  );
+
+  const onDraft = useCallback(() => {
+    createEvent(false);
   }, [createEvent]);
 
-  const updateDraft = useCallback(() => {
-    // TODO: implement code to update event draft
-  }, []);
+  const onUpdate = useCallback(() => {
+    updateEvent();
+  }, [updateEvent]);
 
-  const onPublish = useCallback(() => createEvent(false), [createEvent]);
-
-  const updatePublishedEvent = useCallback(() => {
-    // TODO : implement code to update published event
-  }, []);
+  const onPublish = useCallback(() => createEvent(true), [createEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-4">
         <MissingField event={incompleteFieldEvent}></MissingField>
+        {existingEvent && (
+          <DeleteEventModal slug={existingEvent?.slug}></DeleteEventModal>
+        )}
         <ImageCropperModal
           imageData={imageData}
           updateImageData={updateImageData}
@@ -233,6 +327,7 @@ export default function EventForm({
           minute={endTime.minute}
           setTime={setEndTime}
           startHourLimit={parseInt(startTime.hour)}
+          startMinuteLimit={parseInt(startTime.minute)}
           title={'Set event ending time'}
         />
         <DatePickerModal startDate={date} setStartDate={setDate} />
@@ -242,40 +337,22 @@ export default function EventForm({
 
         <div className="flex grow flex-col items-start">
           {/* Create Event Header */}
-          <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
-            <div className="w-full sm:w-fit">
-              <h1 className="text-md w-full font-semibold tracking-wide sm:w-fit lg:text-xl">
-                Lets create your event
-              </h1>
-            </div>
-            <div className="fixed bottom-0 left-0 flex w-full gap-2 border-t border-zinc-700 bg-zinc-900 px-4 py-3 sm:relative sm:w-fit sm:border-t-0 sm:bg-transparent lg:p-0">
-              {existingEvent === undefined ||
-              existingEvent.isPublished === false ? (
-                <Button
-                  onPress={existingEvent ? updateDraft : saveAsDraft}
-                  className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
-                >
-                  {existingEvent ? 'Update Draft' : 'Save as draft'}
-                </Button>
-              ) : null}
-              <Button
-                onPress={
-                  existingEvent?.isPublished ? updatePublishedEvent : onPublish
-                }
-                className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
-              >
-                {existingEvent?.isPublished ? 'Update' : 'Publish'}
-              </Button>
-            </div>
-          </div>
+          {TitleBar(existingEvent, onUpdate, onDraft, onPublish)}
           {/* column */}
-          <div className="flex w-full flex-1 flex-col flex-wrap items-start gap-4 sm:flex-row sm:flex-nowrap">
+          <div className="flex w-full flex-1 flex-col flex-wrap items-start gap-4 pb-20 sm:flex-row sm:flex-nowrap sm:pb-0">
             {/* left side */}
             <div className="flex h-fit w-full flex-none flex-col items-start gap-6 sm:flex-1 sm:basis-1/2">
+              {existingEvent && (
+                <div className="w-full sm:hidden">
+                  {PublishSwitch(isPublished, setIsPublished)}
+                </div>
+              )}
+
               <div className="w-full flex-none gap-4">
                 <Input
                   variant="bordered"
                   classNames={{
+                    errorMessage: 'text-red-600',
                     inputWrapper:
                       'border-0 bg-zinc-950 ring-1 ring-zinc-700 data-[hover=true]:bg-zinc-950 group-data-[focus=true]:bg-zinc-950 group-data-[focus=true]:ring-zinc-400 group-data-[focus-visible=true]:z-10 group-data-[focus-visible=true]:ring-1 group-data-[focus-visible=true]:ring-focus group-data-[focus-visible=true]:ring-offset-1 group-data-[focus-visible=true]:ring-zinc-400',
                   }}
@@ -294,6 +371,7 @@ export default function EventForm({
                 <Textarea
                   className="grow"
                   classNames={{
+                    errorMessage: 'text-red-600',
                     inputWrapper:
                       'bg-zinc-950 ring-1 ring-zinc-700 data-[hover=true]:bg-zinc-950 group-data-[focus=true]:bg-zinc-950 group-data-[focus=true]:ring-zinc-400 group-data-[focus-visible=true]:z-10 group-data-[focus-visible=true]:ring-1 group-data-[focus-visible=true]:ring-focus group-data-[focus-visible=true]:ring-offset-1 group-data-[focus-visible=true]:ring-zinc-400',
                   }}
@@ -311,8 +389,13 @@ export default function EventForm({
               </div>
             </div>
             {/* right side */}
-            <div className="flex w-full flex-wrap items-start justify-start gap-2 sm:basis-1/2">
-              <div className="flex w-full sm:mt-6">
+            <div className="flex w-full flex-wrap items-start justify-start gap-2 sm:mt-6 sm:basis-1/2">
+              {existingEvent && (
+                <div className="hidden w-full sm:flex">
+                  {PublishSwitch(isPublished, setIsPublished)}
+                </div>
+              )}
+              <div className="flex w-full">
                 {imageData.imagePreview ? (
                   <div style={{ position: 'relative' }}>
                     <NextImage
@@ -425,6 +508,81 @@ export default function EventForm({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PublishSwitch(
+  isPublished: boolean,
+  setIsPublished: Dispatch<SetStateAction<boolean>>
+) {
+  return (
+    <div className="flex w-full items-center justify-between rounded-md bg-zinc-950 p-2 ring-1 ring-zinc-700">
+      <p>Publish Event</p>
+      <Switch
+        size="sm"
+        isSelected={isPublished}
+        onValueChange={setIsPublished}
+      ></Switch>
+    </div>
+  );
+}
+
+function TitleBar(
+  existingEvent: typeof selectEvent | undefined,
+  onUpdate: () => void,
+  onDraft: () => void,
+  onPublish: () => Promise<void>
+) {
+  return (
+    <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
+      <div className="w-full sm:w-fit">
+        <h1 className="text-md w-full font-semibold tracking-wide sm:w-fit lg:text-xl">
+          {existingEvent ? "Let's edit your event" : "Let's create your event"}
+        </h1>
+      </div>
+      <div className="fixed bottom-0 left-0 z-10 flex w-full gap-2 border-t border-zinc-700 bg-zinc-900 px-4 py-3 sm:relative sm:w-fit sm:border-t-0 sm:bg-transparent lg:p-0">
+        {existingEvent ? (
+          <div className="flex w-full gap-2">
+            <Button
+              className="tems-center flex aspect-[1/1] rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+              isIconOnly
+              onPress={() => {
+                document.dispatchEvent(
+                  new CustomEvent('open:event-delete-modal')
+                );
+              }}
+            >
+              <DeleteIcon
+                className="h-5 w-5"
+                width={20}
+                height={20}
+              ></DeleteIcon>
+            </Button>
+            <Button
+              onPress={onUpdate}
+              className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+            >
+              Update event
+            </Button>
+          </div>
+        ) : (
+          <div className="flex w-full gap-2">
+            <Button
+              onPress={onDraft}
+              className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
+            >
+              Save as draft
+            </Button>
+            <Button
+              onPress={onPublish}
+              className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+            >
+              Publish event
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

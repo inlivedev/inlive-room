@@ -18,7 +18,8 @@ export interface ImageState {
 export type ActionType =
   | { type: 'ConfirmCrop'; payload: { blob: Blob; preview: string } }
   | { type: 'PickFile'; payload: Blob }
-  | { type: 'Reset' };
+  | { type: 'Reset' }
+  | { type: 'FetchExisting'; payload: { preview: string } };
 interface ImageCropperModalProps {
   updateImageData: Dispatch<ActionType>;
   imageData: ImageState;
