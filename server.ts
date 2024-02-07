@@ -3,7 +3,7 @@ import next from 'next';
 
 const hostname = 'localhost';
 const port = parseInt(process.env.PORT || '3000', 10);
-const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
+const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, hostname, port });
 const requestHandler = app.getRequestHandler();

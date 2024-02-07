@@ -9,7 +9,7 @@ import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-
 import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
 
-const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './volume';
+const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
 
 export async function GET(
   request: NextRequest,
