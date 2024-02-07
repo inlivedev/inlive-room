@@ -247,14 +247,6 @@ export async function PUT(
       newEvent.slug = oldEvent.slug;
     }
 
-    if (eventImage) {
-      // update image
-      const path = `/assets/images/event/${oldEvent.id}/poster.webp`;
-      const storagePath = `${roomStoragePath}${path}`;
-      writeFiletoLocalStorage(storagePath, eventImage);
-      newEvent.thumbnailUrl = path;
-    }
-
     if (updateEventMeta.deleteImage) {
       // delete image
       const path = `${roomStoragePath}/assets/images/event/${oldEvent.id}/poster.webp`;
@@ -274,6 +266,14 @@ export async function PUT(
       });
     } else {
       newEvent.thumbnailUrl = oldEvent.thumbnailUrl;
+    }
+
+    if (eventImage) {
+      // update image
+      const path = `/assets/images/event/${oldEvent.id}/poster.webp`;
+      const storagePath = `${roomStoragePath}${path}`;
+      writeFiletoLocalStorage(storagePath, eventImage);
+      newEvent.thumbnailUrl = path;
     }
 
     const updatedEvent = await eventRepo.updateEvent(
