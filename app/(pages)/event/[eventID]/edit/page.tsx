@@ -5,6 +5,8 @@ import { AuthType } from '@/_shared/types/auth';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { eventService } from '@/(server)/api/_index';
+import HTTPError from '@/_shared/components/errors/http-error';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 type PageProps = {
   params: {
@@ -13,7 +15,7 @@ type PageProps = {
 };
 
 export const metadata: Metadata = {
-  title: 'Updating Your event — inLive Room',
+  title: 'Update your event — inLive Room',
 };
 
 export default async function Page({ params: { eventID } }: PageProps) {
@@ -25,10 +27,34 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
+  if (!user) {
+    return (
+      <HTTPError
+        title="Login Required"
+        description="You need to be logged in to access this page"
+      />
+    );
+  }
+
   const event = await eventService.getEventBySlugOrID(eventID, user?.id);
 
   if (!event) {
     return notFound();
+  }
+
+  const eligibleForEvent =
+    whitelistFeature.includes('event') ||
+    !!user?.whitelistFeature.includes('event');
+
+  if (!eligibleForEvent) {
+    return (
+      <AppContainer user={user}>
+        <HTTPError
+          title="You are not eligible to see this page"
+          description="Only early-access users can access this page."
+        />
+      </AppContainer>
+    );
   }
 
   return (
