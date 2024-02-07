@@ -3,7 +3,7 @@ import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 
 type HTTPErrorProps = {
-  code: number;
+  code?: number;
   title: string;
   description: string;
 };
@@ -19,9 +19,11 @@ export default function HTTPError({
         <Header logoText="inLive Room" logoHref="/" />
         <main className="mx-auto flex flex-1 flex-col justify-center">
           <div className="flex items-center gap-5">
-            <div>
-              <b className="block text-2xl">{code}</b>
-            </div>
+            {code && (
+              <div>
+                <b className="block text-2xl">{code}</b>
+              </div>
+            )}
             <div>
               <b className="block text-base font-medium">{title}</b>
               <p className="mt-0.5 block text-sm text-neutral-400">
