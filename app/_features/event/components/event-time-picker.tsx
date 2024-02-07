@@ -42,7 +42,9 @@ export function TimePickerModal({
   const [selectedHour, setSelectHour] = useState(new Set(['0']));
   const [selectedMinute, setSelectMinute] = useState(new Set(['0']));
   const [minuteValue, setMinuteValue] = useState<string[]>(
-    Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))
+    Array.from({ length: 60 / 15 }, (_, i) =>
+      (i * 15).toString().padStart(2, '0')
+    )
   );
 
   const selectedHourValue = useMemo(
@@ -84,13 +86,18 @@ export function TimePickerModal({
   useEffect(() => {
     if (parseInt(selectedHourValue) == startHourLimit) {
       setMinuteValue(
-        Array.from({ length: 60 - startMinuteLimit }, (_, i) =>
-          (i + startMinuteLimit).toString().padStart(2, '0')
+        Array.from(
+          { length: Math.ceil((60 - startMinuteLimit) / 15) },
+          (_, i) => (i * 15 + startMinuteLimit).toString().padStart(2, '0')
+        ).filter(
+          (num) => parseInt(num) > startMinuteLimit && parseInt(num) < 60
         )
       );
     } else {
       setMinuteValue(
-        Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))
+        Array.from({ length: 60 / 15 }, (_, i) =>
+          (i * 15).toString().padStart(2, '0')
+        )
       );
     }
   }, [selectedHourValue, startHourLimit, startMinuteLimit]);

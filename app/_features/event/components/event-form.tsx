@@ -169,18 +169,35 @@ export default function EventForm({
   }, [eventDescription]);
 
   useEffect(() => {
-    if (startTime.hour > endTime.hour) {
-      setEndTime({
-        hour: `${startTime.hour}`,
-        minute: `${startTime.minute}`,
-      });
+    if (startTime.hour === '23') {
+      if (startTime.minute === '45') {
+        setEndTime({ hour: '23', minute: '59' });
+        return;
+      }
+
+      if (startTime.minute > endTime.minute) {
+        setEndTime({
+          hour: '23',
+          minute: `${parseInt(startTime.minute) + 15}`,
+        });
+      }
     }
 
-    if (startTime.hour === endTime.hour && startTime.minute > endTime.minute) {
-      setEndTime({
-        hour: startTime.hour,
-        minute: `${parseInt(startTime.minute)}`,
-      });
+    if (startTime.hour === endTime.hour) {
+      if (startTime.minute == '45') {
+        setEndTime({
+          hour: `${parseInt(startTime.hour) + 1}`,
+          minute: '00',
+        });
+        return;
+      }
+
+      if (startTime.minute > endTime.minute) {
+        setEndTime({
+          hour: startTime.hour,
+          minute: `${parseInt(startTime.minute) + 15}`,
+        });
+      }
     }
   }, [startTime.hour, startTime.minute, endTime.hour, endTime.minute]);
 
