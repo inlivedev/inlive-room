@@ -94,7 +94,7 @@ export default function EventForm({
     existingEvent?.startTime
       ? {
           hour: existingEvent.startTime.getHours(),
-          minute: 0,
+          minute: existingEvent.startTime.getMinutes(),
         }
       : {
           hour: currentHour,
@@ -106,7 +106,7 @@ export default function EventForm({
       ? {
           hour: existingEvent.endTime.getHours(),
 
-          minute: 0,
+          minute: existingEvent.endTime.getMinutes(),
         }
       : {
           hour: currentHour == 23 ? 23 : currentHour + 1,
