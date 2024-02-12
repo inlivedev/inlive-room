@@ -30,6 +30,8 @@ jobs:
         INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
         ROOM_LOCAL_STORAGE_PATH: ./storage
         PORT: 3000
+        MAILER_API_KEY: ${{secrets.MAILER_API_KEY}}
+        MAILER_DOMAIN : mail.inlive.app
     - name: Set release version
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - uses: google-github-actions/auth@v2

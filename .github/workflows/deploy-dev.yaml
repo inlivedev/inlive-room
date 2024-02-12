@@ -40,6 +40,8 @@ jobs:
         INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
         ROOM_LOCAL_STORAGE_PATH: ./storage
         PORT: 3000
+        MAILER_API_KEY: ${{secrets.MAILER_API_KEY}}
+        MAILER_DOMAIN : mail.inlive.app
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
     - uses: google-github-actions/auth@v2
