@@ -17,7 +17,7 @@ export default function HTTPError({
     <div className="min-viewport-height bg-neutral-900 text-neutral-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4">
         <Header logoText="inLive Room" logoHref="/" />
-        <main className="mx-auto flex flex-1 flex-col justify-center">
+        <main className="mx-auto flex max-w-md flex-1 flex-col justify-center">
           <div className="flex items-center gap-5">
             {code && (
               <div>
