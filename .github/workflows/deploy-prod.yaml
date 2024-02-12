@@ -23,7 +23,7 @@ jobs:
         NEXT_PUBLIC_INLIVE_API_VERSION: v1
         NEXT_PUBLIC_MIXPANEL_TOKEN: ${{secrets.PUBLIC_MIXPANEL_TOKEN}}
         NEXT_PUBLIC_SENTRY_DSN: ${{secrets.PUBLIC_SENTRY_DSN}}
-        NEXT_PUBLIC_ENABLE_WEBINAR: true
+        NEXT_PUBLIC_ENABLE_WEBINAR: false
         PERSISTENT_DATA: true
         ENABLE_MAILER: true
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
