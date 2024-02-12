@@ -103,7 +103,7 @@ export function TimePickerModal({
   }, [isEndTime, startHour, startMinute, step]);
 
   useEffect(() => {
-    if (startHour == parseInt(selectedHourValue) && isOpen && isEndTime) {
+    if (startHour == parseInt(selectedHourValue) && isEndTime) {
       const numArray = Math.floor((60 - startMinute) / step);
       setMinuteSelection(
         Array.from(
@@ -113,6 +113,12 @@ export function TimePickerModal({
       );
     }
   }, [isEndTime, isOpen, selectedHourValue, startHour, startMinute, step]);
+
+  useEffect(() => {
+    if (startHour < parseInt(selectedHourValue) && !isEndTime) {
+      setMinuteSelection(defaultGenerateMinutes(step));
+    }
+  }, [isEndTime, selectedHourValue, startHour, step]);
 
   return (
     <Modal
