@@ -94,11 +94,11 @@ export default function EventForm({
     existingEvent?.startTime
       ? {
           hour: existingEvent.startTime.getHours(),
-          minute: existingEvent.startTime.getMinutes(),
+          minute: 0,
         }
       : {
           hour: currentHour,
-          minute: today.getMinutes(),
+          minute: 0,
         }
   );
   const [endTime, setEndTime] = useState(
@@ -106,11 +106,11 @@ export default function EventForm({
       ? {
           hour: existingEvent.endTime.getHours(),
 
-          minute: existingEvent.endTime.getMinutes(),
+          minute: 0,
         }
       : {
           hour: currentHour == 23 ? 23 : currentHour + 1,
-          minute: today.getMinutes(),
+          minute: 0,
         }
   );
   const [isTitleValid, setTitleValid] = useState(false);
@@ -333,6 +333,13 @@ export default function EventForm({
           minute={startTime.minute}
           setTime={setStartTime}
           title={'Set event starting time'}
+          startHour={
+            today.getDate() == date.getDate() &&
+            today.getMonth() == date.getMonth() &&
+            today.getFullYear() == date.getFullYear()
+              ? today.getHours()
+              : 0
+          }
           step={15}
         />
         <TimePickerModal
