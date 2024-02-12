@@ -16,16 +16,18 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 interface TimePickerModalProps {
   setTime: React.Dispatch<
     React.SetStateAction<{
-      hour: string;
-      minute: string;
+      hour: number;
+      minute: number;
     }>
   >;
-  hour: string;
-  minute: string;
+  hour: number;
+  minute: number;
   event: string;
-  startHourLimit?: number;
-  startMinuteLimit?: number;
   title: string;
+  step?: number;
+  isEndTime?: boolean;
+  startHour?: number;
+  startMinute?: number;
 }
 
 export function TimePickerModal({
@@ -33,16 +35,24 @@ export function TimePickerModal({
   minute,
   event,
   setTime,
-  startHourLimit = 0,
-  startMinuteLimit = 0,
+  step = 1,
+  isEndTime = false,
+  startHour = 0,
+  startMinute = 0,
   title,
 }: TimePickerModalProps) {
   const dropDownVariant = 'solid';
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [selectedHour, setSelectHour] = useState(new Set(['0']));
   const [selectedMinute, setSelectMinute] = useState(new Set(['0']));
-  const [minuteValue, setMinuteValue] = useState<string[]>(
-    Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))
+  const [minuteSelection, setMinuteSelection] = useState<number[]>(
+    isEndTime
+      ? defaultGenerateMinutes(step)
+      : generateEndTimeMinutes(step, startHour, startMinute, hour)
+  );
+
+  const [hourSelection, setHourSelection] = useState<number[]>(
+    Array.from({ length: 24 - startHour }, (_, a) => a + startHour)
   );
 
   const selectedHourValue = useMemo(
@@ -67,8 +77,8 @@ export function TimePickerModal({
 
   const onConfirm = useCallback(() => {
     setTime({
-      hour: selectedHourValue,
-      minute: selectedMinuteValue,
+      hour: parseInt(selectedHourValue),
+      minute: parseInt(selectedMinuteValue),
     });
     onClose();
   }, [onClose, selectedHourValue, selectedMinuteValue, setTime]);
@@ -77,23 +87,38 @@ export function TimePickerModal({
     onClose();
   }, [onClose]);
 
-  const hourValue = Array.from({ length: 24 - startHourLimit }, (_, a) =>
-    (a + startHourLimit).toString().padStart(2, '0')
-  );
-
   useEffect(() => {
-    if (parseInt(selectedHourValue) == startHourLimit) {
-      setMinuteValue(
-        Array.from({ length: 60 - startMinuteLimit }, (_, i) =>
-          (i + startMinuteLimit).toString().padStart(2, '0')
+    if (startMinute + step >= 60 && isEndTime) {
+      setHourSelection(
+        Array.from(
+          { length: 24 - (startHour + 1) },
+          (_, a) => a + (startHour + 1)
         )
       );
     } else {
-      setMinuteValue(
-        Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))
+      setHourSelection(
+        Array.from({ length: 24 - startHour }, (_, a) => a + startHour)
       );
     }
-  }, [selectedHourValue, startHourLimit, startMinuteLimit]);
+  }, [isEndTime, startHour, startMinute, step]);
+
+  useEffect(() => {
+    if (startHour == parseInt(selectedHourValue) && isEndTime) {
+      const numArray = Math.floor((60 - startMinute) / step);
+      setMinuteSelection(
+        Array.from(
+          { length: numArray },
+          (_, index) => startMinute + index * step
+        ).filter((minute) => minute > startMinute)
+      );
+    }
+  }, [isEndTime, isOpen, selectedHourValue, startHour, startMinute, step]);
+
+  useEffect(() => {
+    if (startHour < parseInt(selectedHourValue) && !isEndTime) {
+      setMinuteSelection(defaultGenerateMinutes(step));
+    }
+  }, [isEndTime, selectedHourValue, startHour, step]);
 
   return (
     <Modal
@@ -128,7 +153,7 @@ export function TimePickerModal({
                   overflowY: 'auto',
                 }}
               >
-                {hourValue.map((hour) => (
+                {hourSelection.map((hour) => (
                   <DropdownItem key={hour}>{hour}</DropdownItem>
                 ))}
               </DropdownMenu>
@@ -155,7 +180,7 @@ export function TimePickerModal({
                 selectedKeys={selectedMinute}
                 onSelectionChange={setSelectMinute as any}
               >
-                {minuteValue.map((min) => (
+                {minuteSelection.map((min) => (
                   <DropdownItem key={min}>{min}</DropdownItem>
                 ))}
               </DropdownMenu>
@@ -176,5 +201,36 @@ export function TimePickerModal({
         </ModalFooter>
       </ModalContent>
     </Modal>
+  );
+}
+
+function defaultGenerateMinutes(step: number): number[] {
+  const minutes = Array.from({ length: 60 / step }, (_, a) => a * step);
+  return minutes;
+}
+
+function generateEndTimeMinutes(
+  step: number,
+  startHour: number,
+  startMinute: number,
+  currentHour: number
+): number[] {
+  if (currentHour > startHour) {
+    startMinute = 0;
+  }
+
+  const numArray = Math.floor((60 - startMinute) / step); // Adjusted to not include the end number
+
+  // if tried to select hour that is same with start hour, minute selector should start without the first starting limit
+  if (startHour == currentHour) {
+    return Array.from(
+      { length: numArray },
+      (_, index) => startMinute + index * step
+    ).filter((minute) => minute > startMinute);
+  }
+
+  return Array.from(
+    { length: numArray },
+    (_, index) => startMinute + index * step
   );
 }
