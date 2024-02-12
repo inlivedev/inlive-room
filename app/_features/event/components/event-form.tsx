@@ -93,35 +93,24 @@ export default function EventForm({
   const [startTime, setStartTime] = useState(
     existingEvent?.startTime
       ? {
-          hour: `${existingEvent.startTime
-            .getHours()
-            .toString()
-            .padStart(2, '0')}`,
-          minute: `${existingEvent.startTime
-            .getMinutes()
-            .toString()
-            .padStart(2, '0')}`,
+          hour: existingEvent.startTime.getHours(),
+          minute: existingEvent.startTime.getMinutes(),
         }
       : {
-          hour: `${currentHour}`,
-          minute: `${today.getMinutes().toString().padStart(2, '0')}`,
+          hour: currentHour,
+          minute: today.getMinutes(),
         }
   );
   const [endTime, setEndTime] = useState(
     existingEvent?.endTime
       ? {
-          hour: `${existingEvent.endTime
-            .getHours()
-            .toString()
-            .padStart(2, '0')}`,
-          minute: `${existingEvent.endTime
-            .getMinutes()
-            .toString()
-            .padStart(2, '0')}`,
+          hour: existingEvent.endTime.getHours(),
+
+          minute: existingEvent.endTime.getMinutes(),
         }
       : {
-          hour: `${currentHour == 23 ? 23 : currentHour + 1}`,
-          minute: `${today.getMinutes().toString().padStart(2, '0')}`,
+          hour: currentHour == 23 ? 23 : currentHour + 1,
+          minute: today.getMinutes(),
         }
   );
   const [isTitleValid, setTitleValid] = useState(false);
@@ -169,25 +158,25 @@ export default function EventForm({
   }, [eventDescription]);
 
   useEffect(() => {
-    if (startTime.hour === '23') {
-      if (startTime.minute === '45') {
-        setEndTime({ hour: '23', minute: '59' });
+    if (startTime.hour === 23) {
+      if (startTime.minute === 45) {
+        setEndTime({ hour: 23, minute: 59 });
         return;
       }
 
       if (startTime.minute > endTime.minute) {
         setEndTime({
-          hour: '23',
-          minute: `${parseInt(startTime.minute) + 15}`,
+          hour: 23,
+          minute: startTime.minute + 15,
         });
       }
     }
 
     if (startTime.hour === endTime.hour) {
-      if (startTime.minute == '45') {
+      if (startTime.minute == 45) {
         setEndTime({
-          hour: `${parseInt(startTime.hour) + 1}`,
-          minute: '00',
+          hour: startTime.hour + 1,
+          minute: 0,
         });
         return;
       }
@@ -195,9 +184,16 @@ export default function EventForm({
       if (startTime.minute > endTime.minute) {
         setEndTime({
           hour: startTime.hour,
-          minute: `${parseInt(startTime.minute) + 15}`,
+          minute: startTime.minute + 15,
         });
       }
+    }
+
+    if (startTime.hour > endTime.hour) {
+      setEndTime({
+        hour: startTime.hour,
+        minute: startTime.minute + 15,
+      });
     }
   }, [startTime.hour, startTime.minute, endTime.hour, endTime.minute]);
 
@@ -212,10 +208,10 @@ export default function EventForm({
       }
 
       const eventStartTime = new Date(
-        date.setHours(parseInt(startTime.hour), parseInt(startTime.minute), 0)
+        date.setHours(startTime.hour, startTime.minute, 0)
       );
       const eventEndTime = new Date(
-        date.setHours(parseInt(endTime.hour), parseInt(endTime.minute), 0)
+        date.setHours(endTime.hour, endTime.minute, 0)
       );
 
       let imageFile: File | Blob | null = null;
@@ -337,14 +333,17 @@ export default function EventForm({
           minute={startTime.minute}
           setTime={setStartTime}
           title={'Set event starting time'}
+          step={15}
         />
         <TimePickerModal
           event={setEndTimeEvent}
           hour={endTime.hour}
           minute={endTime.minute}
           setTime={setEndTime}
-          startHourLimit={parseInt(startTime.hour)}
-          startMinuteLimit={parseInt(startTime.minute)}
+          startHour={startTime.hour}
+          startMinute={startTime.minute}
+          isEndTime={true}
+          step={15}
           title={'Set event ending time'}
         />
         <DatePickerModal startDate={date} setStartDate={setDate} />
@@ -487,7 +486,11 @@ export default function EventForm({
                 </div>
                 <div className="w-full sm:basis-1/3">
                   <FormWithIcon
-                    value={`${startTime.hour}:${startTime.minute}`}
+                    value={`${startTime.hour
+                      .toString()
+                      .padStart(2, '0')}:${startTime.minute
+                      .toString()
+                      .padStart(2, '0')}`}
                     title="Start Time"
                     icon={
                       <ClockFillIcon width={24} height={24}></ClockFillIcon>
@@ -508,7 +511,11 @@ export default function EventForm({
                 <div className="w-full sm:basis-1/3">
                   <FormWithIcon
                     title="End Time"
-                    value={`${endTime.hour}:${endTime.minute}`}
+                    value={`${endTime.hour
+                      .toString()
+                      .padStart(2, '0')}:${endTime.minute
+                      .toString()
+                      .padStart(2, '0')}`}
                     icon={
                       <ClockFillIcon width={24} height={24}></ClockFillIcon>
                     }
