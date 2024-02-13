@@ -15,24 +15,6 @@ type PageProps = {
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
-const extractSrcImage = (htmlString: string) => {
-  let src = '';
-
-  const imgStartIndex = htmlString.indexOf('<img');
-  const imgEndIndex = htmlString.indexOf('>', imgStartIndex) + 1;
-  const imgTag = htmlString.slice(imgStartIndex, imgEndIndex);
-
-  const srcIndex = imgTag.indexOf('src=');
-
-  if (srcIndex !== -1) {
-    const valueStartIndex = htmlString.indexOf('"', srcIndex) + 1;
-    const valueEndIndex = htmlString.indexOf('"', valueStartIndex);
-    src = htmlString.slice(valueStartIndex, valueEndIndex);
-  }
-
-  return src;
-};
-
 function sanitizeHTML(htmlString: string) {
   let sanitizedString = '';
   let insideTag = false;
@@ -87,14 +69,13 @@ export const generateMetadata = async ({
     }
   );
 
-  const imageSrc =
-    `${APP_ORIGIN}/static/assets/images/event/${eventData.id}/poster.webp` ||
-    extractSrcImage(eventData.description || '');
+  const imageSrc = eventData.thumbnailUrl
+    ? `${APP_ORIGIN}/static${eventData.thumbnailUrl}`
+    : '/images/webinar/og-image-inlive-room-webinar-generic-en.png';
   const description = sanitizeHTML(eventData.description || '');
-  const descriptionSummary = `${eventStartDate} at ${eventStartTime}, ${description.slice(
-    0,
-    150
-  )}`;
+  const descriptionSummary = `${eventStartDate} at ${eventStartTime}, ${
+    description.slice(0, 150) + '...'
+  }`;
 
   return {
     title: `Webinar — ${eventData.name} — inLive Room`,
