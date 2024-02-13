@@ -440,8 +440,16 @@ function VideoScreen({ stream }: { stream: ParticipantStream }) {
     stream.origin === 'local' && stream.source === 'media';
 
   useEffect(() => {
-    const play = async () => {
-      if (!videoRef.current) return;
+    let videoRefValue: HTMLVideoElement | null = null;
+
+    if (videoRef.current) {
+      videoRefValue = videoRef.current;
+    }
+
+    const play = () => videoRefValue?.play();
+
+    const init = async () => {
+      if (!videoRefValue) return;
 
       if (
         currentAudioOutput &&
@@ -464,13 +472,17 @@ function VideoScreen({ stream }: { stream: ParticipantStream }) {
         }
       }
 
-      videoRef.current.playsInline = true;
-      videoRef.current.muted = stream.origin === 'local';
-      videoRef.current.srcObject = stream.mediaStream;
-      await videoRef.current.play();
+      videoRefValue.playsInline = true;
+      videoRefValue.muted = stream.origin === 'local';
+      videoRefValue.srcObject = stream.mediaStream;
+      videoRefValue.addEventListener('loadedmetadata', play);
     };
 
-    play();
+    init();
+
+    return () => {
+      videoRefValue?.removeEventListener('loadedmetadata', play);
+    };
   }, [stream, currentAudioOutput]);
 
   useEffect(() => {
