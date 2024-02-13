@@ -177,7 +177,7 @@ function AuthorActionButtons({
         className="tems-center flex aspect-[1/1] rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
         variant="flat"
         isIconOnly
-        href="/event/[slug]/edit"
+        href={`/event/${slug}/edit`}
       >
         <EditIcon width={20} height={20}></EditIcon>
       </Button>
