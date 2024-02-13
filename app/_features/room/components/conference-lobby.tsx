@@ -307,19 +307,20 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
               </div>
             </div>
 
-            {/* Preparing Room Message */}
-            {isError && (
-              <div className="flex gap-4 rounded bg-zinc-950 p-4">
-                <Spinner size={'md'} />
-                <p className="text-sm">
-                  {`preparing room, please wait. this page is auto-refresh when ready.`}
-                </p>
-              </div>
-            )}
-
             {/* Action Buttons */}
             <div>
-              <div className="fixed bottom-0 left-0 w-full border-t border-zinc-800 bg-zinc-900 py-2.5 lg:relative lg:border-t-0">
+              <div className="fixed bottom-0 left-0 flex w-full flex-col gap-2 border-t border-zinc-800 bg-zinc-900 py-2.5 lg:relative lg:border-t-0">
+                {/* Preparing Room Message */}
+                {isError && (
+                  <div className="mx-auto w-full max-w-xl px-4 lg:px-0">
+                    <div className="flex gap-4 rounded-lg bg-zinc-950 p-4">
+                      <Spinner size={'md'} />
+                      <p className="text-sm">
+                        {`preparing room, please wait. this page is auto-refresh when ready.`}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="mx-auto w-full max-w-xl px-4 lg:px-0">
                   <Button
                     className="w-full rounded-lg bg-red-700 px-4 py-2 font-semibold text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
