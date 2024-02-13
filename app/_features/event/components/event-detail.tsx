@@ -73,7 +73,9 @@ export default function EventDetail({
     hour12: true,
   });
 
-  const imagePath = thumbnailUrl ? `${APP_ORIGIN}/static${thumbnailUrl}` : '';
+  thumbnailUrl = thumbnailUrl
+    ? `${APP_ORIGIN}/static${thumbnailUrl}`
+    : '/images/webinar/webinar-no-image-placeholder.png';
 
   return (
     <>
@@ -95,8 +97,7 @@ export default function EventDetail({
                   <NextImage
                     width={640}
                     height={320}
-                    fallbackSrc="/images/general-og.png"
-                    src={imagePath}
+                    src={thumbnailUrl}
                     alt=""
                     style={{
                       aspectRatio: '2/1',
