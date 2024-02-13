@@ -18,7 +18,6 @@ RUN NODE_ENV=production npm run build && npm prune --omit=dev
 # Stage 3
 FROM base AS runner
 WORKDIR /app
-ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 inlivegroup
 RUN adduser --system --uid 1001 inliveuser
