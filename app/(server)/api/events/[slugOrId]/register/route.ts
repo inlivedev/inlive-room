@@ -18,9 +18,9 @@ type RegisterParticipant = {
 
 export async function POST(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: { slugOrId: string } }
 ) {
-  const slug = params.slug;
+  const slug = params.slugOrId;
 
   try {
     const body = (await request.json()) as RegisterParticipant;
