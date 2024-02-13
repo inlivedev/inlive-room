@@ -25,45 +25,6 @@ export default function ConferenceScreen({
 }: {
   stream: ParticipantStream;
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const { currentAudioOutput } = useDeviceContext();
-
-  useEffect(() => {
-    const play = async () => {
-      if (!videoRef.current) {
-        return;
-      }
-
-      if (
-        currentAudioOutput &&
-        !AudioContext.prototype.hasOwnProperty('setSinkId')
-      ) {
-        const sinkId =
-          currentAudioOutput.deviceId !== 'default'
-            ? currentAudioOutput.deviceId
-            : '';
-
-        if (
-          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          sinkId !== videoRef.current.sinkId
-        ) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          await videoRef.current.setSinkId(sinkId);
-        }
-      }
-
-      videoRef.current.srcObject = stream.mediaStream;
-      videoRef.current.playsInline = true;
-      videoRef.current.muted = stream.origin === 'local';
-      videoRef.current.autoplay = true;
-    };
-
-    play();
-  }, [videoRef, stream.mediaStream, stream.origin, currentAudioOutput]);
-
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
   const { roomID, clientID } = useClientContext();
@@ -90,15 +51,6 @@ export default function ConferenceScreen({
   });
 
   const [showStats, setShowStats] = useState(false);
-
-  useEffect(() => {
-    const videoEl = videoRef.current;
-    if (videoEl && stream.origin === 'remote') peer?.observeVideo(videoEl);
-
-    return () => {
-      if (videoEl && stream.origin === 'remote') peer?.unobserveVideo(videoEl);
-    };
-  }, [peer, stream.origin, videoRef]);
 
   useEffect(() => {
     const onRTCStats = ((event: CustomEvent) => {
@@ -475,13 +427,96 @@ export default function ConferenceScreen({
           </div>
         </div>
       </div>
-      <video
-        className="absolute left-0 top-0 h-full w-full rounded-lg object-center"
-        ref={videoRef}
-        style={{
-          transform: localVideoScreen ? 'scaleX(-1)' : 'scaleX(1)',
-        }}
-      ></video>
+      <VideoScreen stream={stream} />
     </div>
+  );
+}
+
+function VideoScreen({ stream }: { stream: ParticipantStream }) {
+  const { peer } = usePeerContext();
+  const { currentAudioOutput } = useDeviceContext();
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const localVideoScreen =
+    stream.origin === 'local' && stream.source === 'media';
+
+  useEffect(() => {
+    const play = async () => {
+      if (!videoRef.current) return;
+
+      if (
+        currentAudioOutput &&
+        !AudioContext.prototype.hasOwnProperty('setSinkId')
+      ) {
+        const sinkId =
+          currentAudioOutput.deviceId !== 'default'
+            ? currentAudioOutput.deviceId
+            : '';
+
+        if (
+          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          sinkId !== video.sinkId
+        ) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          await video.setSinkId(sinkId);
+        }
+      }
+
+      videoRef.current.playsInline = true;
+      videoRef.current.muted = stream.origin === 'local';
+      videoRef.current.srcObject = stream.mediaStream;
+      await videoRef.current.play();
+    };
+
+    play();
+  }, [stream, currentAudioOutput]);
+
+  useEffect(() => {
+    let videoRefValue: HTMLVideoElement | null = null;
+
+    if (videoRef.current) {
+      videoRefValue = videoRef.current;
+    }
+
+    if (videoRefValue && stream.origin === 'remote') {
+      peer?.observeVideo(videoRefValue);
+    }
+
+    return () => {
+      if (videoRefValue && stream.origin === 'remote') {
+        peer?.unobserveVideo(videoRefValue);
+      }
+    };
+  }, [peer, stream]);
+
+  // video component cleanup
+  useEffect(() => {
+    let videoRefValue: HTMLVideoElement | null = null;
+
+    if (videoRef.current) {
+      videoRefValue = videoRef.current;
+    }
+
+    return () => {
+      if (videoRefValue instanceof HTMLVideoElement) {
+        videoRefValue.pause();
+        videoRefValue.srcObject = null;
+        videoRefValue.removeAttribute('srcObject');
+        videoRefValue.load();
+        videoRefValue = null;
+      }
+    };
+  }, []);
+
+  return (
+    <video
+      className="absolute left-0 top-0 h-full w-full rounded-lg object-center"
+      ref={videoRef}
+      style={{
+        transform: localVideoScreen ? 'scaleX(-1)' : 'scaleX(1)',
+      }}
+    ></video>
   );
 }
