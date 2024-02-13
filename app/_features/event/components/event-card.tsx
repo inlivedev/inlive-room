@@ -19,7 +19,7 @@ export function EventCard({
   });
   const imagePath = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
-    : '';
+    : '/images/webinar/webinar-no-image-placeholder.png';
 
   return (
     <Card
@@ -52,7 +52,6 @@ export function EventCard({
               zIndex: 1,
               objectFit: 'contain',
             }}
-            fallbackSrc="/images/general-og.png"
             src={imagePath}
           ></Image>
         </div>
