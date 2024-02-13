@@ -29,6 +29,7 @@ type EventDetailProps = {
   host: string;
   isPublished?: boolean;
   thumbnailUrl?: string | null;
+  createdBy: number;
 };
 
 export default function EventDetail({
@@ -39,6 +40,7 @@ export default function EventDetail({
   startTime,
   isPublished,
   thumbnailUrl,
+  createdBy,
 }: EventDetailProps) {
   const {
     active: copiedActive,
@@ -119,10 +121,10 @@ export default function EventDetail({
                         <p className="text-sm text-zinc-500">
                           Limit participants to join: 50 people
                         </p>
-                        {user &&
+                        {user?.id == createdBy &&
                           (isPublished ? <StatusPublished /> : <StatusDraft />)}
                       </div>
-                      {user ? (
+                      {user?.id == createdBy ? (
                         <AuthorActionButtons
                           copiedActive={copiedActive}
                           handleCopyLink={handleCopyLink}
