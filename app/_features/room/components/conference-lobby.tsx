@@ -307,13 +307,12 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
               </div>
             </div>
 
-            {/* Preparing Room Info */}
+            {/* Preparing Room Message */}
             {isError && (
-              <div className="flex gap-4 rounded p-4 ring-1 ring-blue-300/40">
+              <div className="flex gap-4 rounded bg-zinc-950 p-4">
                 <Spinner size={'md'} />
                 <p className="text-sm">
-                  <span className="font-bold">{`Preparing Room`}</span> <br />
-                  {`The room is being prepared. This page will refresh automatically when ready.`}
+                  {`preparing room, please wait. this page is auto-refresh when ready.`}
                 </p>
               </div>
             )}
