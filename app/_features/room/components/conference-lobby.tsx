@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Button, Spinner } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
@@ -189,13 +189,24 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
 
   const isError = !clientID || !clientName;
 
+  useEffect(() => {
+    if (isError) {
+      const timer = setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isError]);
+
   return (
     <>
       <SetDisplayNameModal roomID={roomID} />
       <div className="min-viewport-height">
-        <div className="min-viewport-height mx-auto flex w-full max-w-xl flex-col px-4">
+        <div className="min-viewport-height mx-auto flex w-full max-w-xl flex-col gap-2 px-4">
           <Header logoText="inLive Room" logoHref="/" />
-          <main className="flex-1 md:pt-6">
+          <main className="flex flex-1 flex-col gap-12 md:pt-6">
+            {/* Room Info Card */}
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-3 md:p-4">
               <div>
                 <div className="flex items-center justify-between">
@@ -261,7 +272,9 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                 </div>
               </div>
             </div>
-            <div className="mt-12">
+
+            {/* Message */}
+            <div>
               <p className="text-xs font-light text-blue-300 md:text-sm">
                 Make sure to allow access permissions to the camera and
                 microphone in the browser.
@@ -271,7 +284,9 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                 participants in this room.
               </p>
             </div>
-            <div className="mt-12">
+
+            {/* Name Display */}
+            <div>
               <div className="flex items-center gap-3">
                 <div className="flex-1 truncate">
                   <div className="block w-full text-xs font-semibold text-zinc-500">
@@ -290,32 +305,45 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                   </Button>
                 </div>
               </div>
-              <div className="mt-6 h-16">
-                <div className="fixed bottom-0 left-0 w-full border-t border-zinc-800 bg-zinc-900 py-2.5 lg:relative lg:border-t-0">
+            </div>
+
+            {/* Action Buttons */}
+            <div>
+              <div className="fixed bottom-0 left-0 flex w-full flex-col gap-2 border-t border-zinc-800 bg-zinc-900 py-2.5 lg:relative lg:border-t-0">
+                {/* Preparing Room Message */}
+                {isError && (
                   <div className="mx-auto w-full max-w-xl px-4 lg:px-0">
-                    <Button
-                      className="w-full rounded-lg bg-red-700 px-4 py-2 font-semibold text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
-                      onClick={openConferenceRoom}
-                      isDisabled={isSubmitting || isError}
-                      aria-disabled={isSubmitting || isError}
-                      disabled={isSubmitting || isError}
-                    >
-                      {isSubmitting ? (
-                        <div className="flex gap-2">
-                          <Spinner
-                            classNames={{
-                              circle1: 'border-b-zinc-200',
-                              circle2: 'border-b-zinc-200',
-                              wrapper: 'w-4 h-4',
-                            }}
-                          />
-                          <span>Joining to room...</span>
-                        </div>
-                      ) : (
-                        <span>Join to Room</span>
-                      )}
-                    </Button>
+                    <div className="flex gap-4 rounded-lg bg-zinc-950 p-4">
+                      <Spinner size={'md'} />
+                      <p className="text-sm">
+                        {`Preparing room, please wait. This page is auto-refresh when ready.`}
+                      </p>
+                    </div>
                   </div>
+                )}
+                <div className="mx-auto w-full max-w-xl px-4 lg:px-0">
+                  <Button
+                    className="w-full rounded-lg bg-red-700 px-4 py-2 font-semibold text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
+                    onClick={openConferenceRoom}
+                    isDisabled={isSubmitting || isError}
+                    aria-disabled={isSubmitting || isError}
+                    disabled={isSubmitting || isError}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex gap-2">
+                        <Spinner
+                          classNames={{
+                            circle1: 'border-b-zinc-200',
+                            circle2: 'border-b-zinc-200',
+                            wrapper: 'w-4 h-4',
+                          }}
+                        />
+                        <span>Joining to room...</span>
+                      </div>
+                    ) : (
+                      <span>Join to Room</span>
+                    )}
+                  </Button>
                 </div>
               </div>
             </div>
