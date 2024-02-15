@@ -8,13 +8,11 @@ import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
-import DeleteIcon from '@/_shared/components/icons/delete-icon';
 import { useAuthContext } from '@/_shared/contexts/auth';
-import { useCallback } from 'react';
-import { DeleteEventModal } from './event-delete-modal';
 import EditIcon from '@/_shared/components/icons/edit-icon';
 import { StatusDraft, StatusPublished } from './event-status';
 import Link from 'next/link';
+import EnterRoomIcon from '@/_shared/components/icons/enter-room-icon';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -29,6 +27,8 @@ type EventDetailProps = {
   host: string;
   isPublished?: boolean;
   thumbnailUrl?: string | null;
+  createdBy: number;
+  roomId?: string;
 };
 
 export default function EventDetail({
@@ -39,6 +39,8 @@ export default function EventDetail({
   startTime,
   isPublished,
   thumbnailUrl,
+  createdBy,
+  roomId,
 }: EventDetailProps) {
   const {
     active: copiedActive,
@@ -79,7 +81,6 @@ export default function EventDetail({
 
   return (
     <>
-      <DeleteEventModal slug={slug} />
       <EventRegistrationModal title={title} slug={slug} startTime={startTime} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
@@ -119,14 +120,15 @@ export default function EventDetail({
                         <p className="text-sm text-zinc-500">
                           Limit participants to join: 50 people
                         </p>
-                        {user &&
+                        {user?.id == createdBy &&
                           (isPublished ? <StatusPublished /> : <StatusDraft />)}
                       </div>
-                      {user ? (
+                      {user?.id == createdBy ? (
                         <AuthorActionButtons
                           copiedActive={copiedActive}
                           handleCopyLink={handleCopyLink}
                           slug={slug}
+                          roomId={roomId}
                         />
                       ) : (
                         <DefaultActionButtons
@@ -140,7 +142,7 @@ export default function EventDetail({
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                       <span>
-                        <CalendarIcon width={24} height={24} />
+                        <CalendarIcon width={20} height={20} />
                       </span>
                       <p className="text-base text-zinc-100">
                         {eventStartDate} at {eventStartTime}
@@ -161,48 +163,48 @@ function AuthorActionButtons({
   handleCopyLink,
   slug,
   copiedActive,
+  roomId,
 }: {
   handleCopyLink: (text?: string) => Promise<void>;
   slug: string;
   copiedActive: boolean;
+  roomId?: string;
 }) {
-  const openDeleteEventModal = useCallback(() => {
-    document.dispatchEvent(new CustomEvent('open:event-delete-modal'));
-  }, []);
-
   return (
     <div className="flex justify-between gap-2">
-      <Button
-        onClick={openDeleteEventModal}
-        className="tems-center flex aspect-[1/1] rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
-        variant="flat"
-        isIconOnly
-      >
-        <DeleteIcon width={20} height={20}></DeleteIcon>
-      </Button>
       <div className="flex w-full gap-2">
         <Button
-          href={`/event/${slug}/edit`}
+          href={`/room/${roomId}`}
           as={Link}
           variant="flat"
-          className="flex min-w-0 basis-1/2 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+          className="w-full rounded-md bg-red-700 p-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 lg:basis-1/2"
         >
-          <EditIcon height={20} width={20} />
-          Edit Event
+          <EnterRoomIcon width={20} height={20} strokeWidth={2} />
+          Join Webinar
         </Button>
         <Button
+          className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:basis-1/2"
           variant="flat"
-          className="w-full basis-1/2 rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
           onClick={() => handleCopyLink(`${APP_ORIGIN}/event/${slug}`)}
         >
           <span>
             {copiedActive ? (
-              <CheckIcon className="h-5 w-5" />
+              <CheckIcon width={20} height={20} />
             ) : (
-              <CopyOutlineIcon className="h-5 w-5" />
+              <CopyOutlineIcon width={20} height={20} />
             )}
           </span>
-          <span>{copiedActive ? 'Copied!' : 'Copy link'}</span>
+          <span className="hidden lg:inline">
+            {copiedActive ? 'Copied!' : 'Copy link'}
+          </span>
+        </Button>
+        <Button
+          as={Link}
+          className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+          variant="flat"
+          href={`/event/${slug}/edit`}
+        >
+          <EditIcon width={20} height={20}></EditIcon>
         </Button>
       </div>
     </div>
