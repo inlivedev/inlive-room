@@ -172,18 +172,18 @@ function AuthorActionButtons({
 }) {
   return (
     <div className="flex justify-between gap-2">
-      <Button
-        as={Link}
-        className="tems-center flex aspect-[1/1] rounded-md bg-zinc-800 py-0 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
-        variant="flat"
-        isIconOnly
-        href={`/event/${slug}/edit`}
-      >
-        <EditIcon width={20} height={20}></EditIcon>
-      </Button>
       <div className="flex w-full gap-2">
         <Button
-          className="flex min-w-0 basis-1/2 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+          href={`/room/${roomId}`}
+          as={Link}
+          variant="flat"
+          className="w-full rounded-md bg-red-700 p-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 lg:basis-1/2"
+        >
+          <EnterRoomIcon className="h-5 w-5" strokeWidth={2} />
+          Join Webinar
+        </Button>
+        <Button
+          className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:basis-1/2"
           variant="flat"
           onClick={() => handleCopyLink(`${APP_ORIGIN}/event/${slug}`)}
         >
@@ -194,16 +194,17 @@ function AuthorActionButtons({
               <CopyOutlineIcon className="h-5 w-5" />
             )}
           </span>
-          <span>{copiedActive ? 'Copied!' : 'Copy link'}</span>
+          <span className="hidden lg:inline">
+            {copiedActive ? 'Copied!' : 'Copy link'}
+          </span>
         </Button>
         <Button
-          href={`/room/${roomId}`}
           as={Link}
+          className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
           variant="flat"
-          className="w-full basis-1/2 rounded-md bg-red-700 p-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+          href={`/event/${slug}/edit`}
         >
-          <EnterRoomIcon className="h-5 w-5" strokeWidth={2} />
-          Join Webinar
+          <EditIcon width={20} height={20}></EditIcon>
         </Button>
       </div>
     </div>
