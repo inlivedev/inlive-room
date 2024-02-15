@@ -5,9 +5,9 @@ import { GenerateIcal } from '../..';
 
 export async function GET(
   _: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: { slugOrId: string } }
 ) {
-  const slug = params.slug;
+  const slug = params.slugOrId;
   try {
     const event = await eventService.getEventBySlugOrID(slug);
     if (!event) {
