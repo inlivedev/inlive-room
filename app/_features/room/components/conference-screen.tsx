@@ -464,11 +464,11 @@ function VideoScreen({ stream }: { stream: ParticipantStream }) {
           HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          sinkId !== video.sinkId
+          sinkId !== videoRefValue.sinkId
         ) {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          await video.setSinkId(sinkId);
+          await videoRefValue.setSinkId(sinkId);
         }
       }
 
