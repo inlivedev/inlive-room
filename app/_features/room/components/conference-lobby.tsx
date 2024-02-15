@@ -316,7 +316,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                     <div className="flex gap-4 rounded-lg bg-zinc-950 p-4">
                       <Spinner size={'md'} />
                       <p className="text-sm">
-                        {`preparing room, please wait. this page is auto-refresh when ready.`}
+                        {`Preparing room, please wait. This page is auto-refresh when ready.`}
                       </p>
                     </div>
                   </div>
