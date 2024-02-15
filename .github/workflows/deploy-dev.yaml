@@ -42,7 +42,6 @@ jobs:
         PORT: 3000
         MAILER_API_KEY: ${{secrets.MAILER_API_KEY}}
         MAILER_DOMAIN : mail.inlive.app
-        NODE_ENV: development
     - name: Set Short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> "$GITHUB_ENV"
     - uses: google-github-actions/auth@v2
