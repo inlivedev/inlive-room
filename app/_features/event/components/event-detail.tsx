@@ -142,7 +142,7 @@ export default function EventDetail({
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                       <span>
-                        <CalendarIcon width={24} height={24} />
+                        <CalendarIcon width={20} height={20} />
                       </span>
                       <p className="text-base text-zinc-100">
                         {eventStartDate} at {eventStartTime}
@@ -179,7 +179,7 @@ function AuthorActionButtons({
           variant="flat"
           className="w-full rounded-md bg-red-700 p-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 lg:basis-1/2"
         >
-          <EnterRoomIcon className="h-5 w-5" strokeWidth={2} />
+          <EnterRoomIcon width={20} height={20} strokeWidth={2} />
           Join Webinar
         </Button>
         <Button
@@ -189,9 +189,9 @@ function AuthorActionButtons({
         >
           <span>
             {copiedActive ? (
-              <CheckIcon className="h-5 w-5" />
+              <CheckIcon width={20} height={20} />
             ) : (
-              <CopyOutlineIcon className="h-5 w-5" />
+              <CopyOutlineIcon width={20} height={20} />
             )}
           </span>
           <span className="hidden lg:inline">
