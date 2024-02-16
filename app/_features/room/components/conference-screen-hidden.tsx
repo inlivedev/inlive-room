@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
+import type { ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 
 export default function ConferenceScreenHidden({
   stream,
 }: {
-  stream: ParticipantStream;
+  stream: ParticipantVideo;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { currentAudioOutput } = useDeviceContext();

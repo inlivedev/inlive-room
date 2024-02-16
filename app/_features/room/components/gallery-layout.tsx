@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import '../styles/gallery-layout.css';
 import ConferenceScreen from './conference-screen';
 import ConferenceScreenHidden from './conference-screen-hidden';
@@ -9,7 +9,7 @@ import ConferenceScreenHidden from './conference-screen-hidden';
 export default function MeetingGalleryLayout({
   streams,
 }: {
-  streams: ParticipantStream[];
+  streams: ParticipantVideo[];
 }) {
   const MAX_VISIBLE_PARTICIPANTS = 49;
   const moreThanMax = streams.length > MAX_VISIBLE_PARTICIPANTS;

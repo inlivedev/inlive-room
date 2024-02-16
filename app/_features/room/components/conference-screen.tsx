@@ -10,7 +10,7 @@ import {
 } from '@nextui-org/react';
 import * as Sentry from '@sentry/nextjs';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
-import type { ParticipantStream } from '@/_features/room/contexts/participant-context';
+import type { ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
@@ -23,7 +23,7 @@ import ReconncectModal from './reconnect-modal';
 export default function ConferenceScreen({
   stream,
 }: {
-  stream: ParticipantStream;
+  stream: ParticipantVideo;
 }) {
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
@@ -432,10 +432,10 @@ export default function ConferenceScreen({
   );
 }
 
-function VideoScreen({ stream }: { stream: ParticipantStream }) {
+function VideoScreen({ stream }: { stream: ParticipantVideo }) {
   const { peer } = usePeerContext();
   const { currentAudioOutput } = useDeviceContext();
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(stream.VideoElement);
   const localVideoScreen =
     stream.origin === 'local' && stream.source === 'media';
 
@@ -503,24 +503,24 @@ function VideoScreen({ stream }: { stream: ParticipantStream }) {
     };
   }, [peer, stream]);
 
-  // video component cleanup
-  useEffect(() => {
-    let videoRefValue: HTMLVideoElement | null = null;
+  //   video component cleanup
+  //   useEffect(() => {
+  //     let videoRefValue: HTMLVideoElement | null = null;
 
-    if (videoRef.current) {
-      videoRefValue = videoRef.current;
-    }
+  //     if (videoRef.current) {
+  //       videoRefValue = videoRef.current;
+  //     }
 
-    return () => {
-      if (videoRefValue instanceof HTMLVideoElement) {
-        videoRefValue.pause();
-        videoRefValue.srcObject = null;
-        videoRefValue.removeAttribute('srcObject');
-        videoRefValue.load();
-        videoRefValue = null;
-      }
-    };
-  }, []);
+  //     return () => {
+  //       if (videoRefValue instanceof HTMLVideoElement) {
+  //         videoRefValue.pause();
+  //         videoRefValue.srcObject = null;
+  //         videoRefValue.removeAttribute('srcObject');
+  //         videoRefValue.load();
+  //         videoRefValue = null;
+  //       }
+  //     };
+  //   }, []);
 
   return (
     <video

@@ -1,12 +1,12 @@
 'use client';
 
-import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 
 export default function MeetingOneOnOneLayout({
   streams,
 }: {
-  streams: ParticipantStream[];
+  streams: ParticipantVideo[];
 }) {
   const localStream = streams.find((stream) => stream.origin === 'local');
   const remoteStream = streams.find((stream) => stream.origin === 'remote');
