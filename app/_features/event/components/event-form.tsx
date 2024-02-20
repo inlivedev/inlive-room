@@ -123,9 +123,13 @@ export default function EventForm({
   const [isPublished, setIsPublished] = useState(
     existingEvent?.isPublished || false
   );
+
   const [isUpdating, setIsUpdating] = useState<
     'idle' | 'pending' | 'success' | 'error'
   >('idle');
+
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isDrafting, setIsDrafting] = useState(false);
 
   const { navigateTo } = useNavigate();
   const handleRemoveImage = useCallback(() => {
@@ -329,14 +333,24 @@ export default function EventForm({
   );
 
   const onDraft = useCallback(() => {
+    setIsDrafting(true);
     createEvent(false);
+    setTimeout(() => {
+      setIsDrafting(false);
+    }, 2000);
   }, [createEvent]);
 
   const onUpdate = useCallback(() => {
     updateEvent();
   }, [updateEvent]);
 
-  const onPublish = useCallback(() => createEvent(true), [createEvent]);
+  const onPublish = useCallback(() => {
+    setIsPublishing(true);
+    createEvent(true);
+    setTimeout(() => {
+      setIsPublishing(false);
+    }, 2000);
+  }, [createEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -382,7 +396,15 @@ export default function EventForm({
 
         <div className="flex grow flex-col items-start">
           {/* Create Event Header */}
+          {TitleBar(
+            existingEvent,
+            onUpdate,
+            onDraft,
+            onPublish,
             isUpdating,
+            isDrafting,
+            isPublishing
+          )}
           {/* column */}
           <div className="flex w-full flex-1 flex-col flex-wrap items-start gap-4 pb-20 sm:flex-row sm:flex-nowrap sm:pb-0">
             {/* left side */}
@@ -586,7 +608,10 @@ function TitleBar(
   existingEvent: typeof selectEvent | undefined,
   onUpdate: () => void,
   onDraft: () => void,
+  onPublish: () => void,
   isUpdating: 'idle' | 'pending' | 'success' | 'error',
+  isDrafting: boolean,
+  isPublishing: boolean
 ) {
   return (
     <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
@@ -677,13 +702,39 @@ function TitleBar(
               onPress={onDraft}
               className="w-full rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 sm:w-fit"
             >
-              Save as draft
+              {isDrafting ? (
+                <div className="flex gap-2">
+                  <Spinner
+                    classNames={{
+                      circle1: 'border-b-zinc-900',
+                      circle2: 'border-b-zinc-900',
+                      wrapper: 'w-4 h-4',
+                    }}
+                  />
+                  <span>Saving as draft</span>
+                </div>
+              ) : (
+                'Save as draft'
+              )}
             </Button>
             <Button
               onPress={onPublish}
               className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
             >
-              Publish event
+              {isPublishing ? (
+                <div className="flex gap-2">
+                  <Spinner
+                    classNames={{
+                      circle1: 'border-b-zinc-900',
+                      circle2: 'border-b-zinc-900',
+                      wrapper: 'w-4 h-4',
+                    }}
+                  />
+                  <span>Publishing Event</span>
+                </div>
+              ) : (
+                'Publish Event'
+              )}
             </Button>
           </div>
         )}
