@@ -15,6 +15,7 @@ import {
   useDisclosure,
   Image as NextImage,
   Switch,
+  Spinner,
 } from '@nextui-org/react';
 import {
   ChangeEvent,
@@ -122,6 +123,9 @@ export default function EventForm({
   const [isPublished, setIsPublished] = useState(
     existingEvent?.isPublished || false
   );
+  const [isUpdating, setIsUpdating] = useState<
+    'idle' | 'pending' | 'success' | 'error'
+  >('idle');
 
   const { navigateTo } = useNavigate();
   const handleRemoveImage = useCallback(() => {
@@ -260,20 +264,38 @@ export default function EventForm({
       deleteImage = true;
     }
 
+    setIsUpdating('pending');
+
     const formData = await prepareEventData(deleteImage);
 
     const finalEndpoint = `/api/events/${existingEvent?.id}`;
-    const respEvent = await InternalApiFetcher.put(finalEndpoint, {
-      body: formData,
-      headers: undefined,
-    });
 
-    if (respEvent.ok) {
-      const redirectPath = new URL(
-        `/event/${respEvent.data.slug}/edit`,
-        window.location.origin
-      ).href;
-      navigateTo(redirectPath);
+    try {
+      const respEvent = await InternalApiFetcher.put(finalEndpoint, {
+        body: formData,
+        headers: undefined,
+      });
+
+      if (respEvent.ok) {
+        setIsUpdating('success');
+
+        const redirectPath = new URL(
+          `/event/${respEvent.data.slug}/edit`,
+          window.location.origin
+        ).href;
+        navigateTo(redirectPath);
+
+        setTimeout(() => {
+          setIsUpdating('idle');
+        }, 2000);
+        return;
+      }
+    } catch {
+      setIsUpdating('error');
+
+      setTimeout(() => {
+        setIsUpdating('idle');
+      }, 2000);
     }
   }, [existingEvent?.id, imageData.imagePreview, navigateTo, prepareEventData]);
 
@@ -360,7 +382,7 @@ export default function EventForm({
 
         <div className="flex grow flex-col items-start">
           {/* Create Event Header */}
-          {TitleBar(existingEvent, onUpdate, onDraft, onPublish)}
+            isUpdating,
           {/* column */}
           <div className="flex w-full flex-1 flex-col flex-wrap items-start gap-4 pb-20 sm:flex-row sm:flex-nowrap sm:pb-0">
             {/* left side */}
@@ -564,7 +586,7 @@ function TitleBar(
   existingEvent: typeof selectEvent | undefined,
   onUpdate: () => void,
   onDraft: () => void,
-  onPublish: () => Promise<void>
+  isUpdating: 'idle' | 'pending' | 'success' | 'error',
 ) {
   return (
     <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
@@ -591,12 +613,63 @@ function TitleBar(
                 height={20}
               ></DeleteIcon>
             </Button>
-            <Button
-              onPress={onUpdate}
-              className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
-            >
-              Update event
-            </Button>
+            {(() => {
+              switch (isUpdating) {
+                case 'success':
+                  return (
+                    <div>
+                      <Button className="w-full rounded-md bg-green-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-green-600 active:bg-green-500 sm:w-fit">
+                        Success
+                      </Button>
+                    </div>
+                  );
+                case 'error':
+                case 'pending':
+                case 'idle':
+                  switch (isUpdating) {
+                    case 'pending':
+                      return (
+                        <div>
+                          <Button
+                            className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+                            isDisabled
+                            onPress={onUpdate}
+                          >
+                            <div className="flex gap-2">
+                              <Spinner
+                                classNames={{
+                                  circle1: 'border-b-zinc-900',
+                                  circle2: 'border-b-zinc-900',
+                                  wrapper: 'w-4 h-4',
+                                }}
+                              />
+                            </div>
+                            Updating...
+                          </Button>
+                        </div>
+                      );
+                    case 'error':
+                      return (
+                        <div>
+                          <Button className="w-full rounded-md bg-orange-600 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-orange-700 active:bg-orange-600 sm:w-fit">
+                            Failed,try again
+                          </Button>
+                        </div>
+                      );
+                    case 'idle':
+                      return (
+                        <div>
+                          <Button
+                            className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 sm:w-fit"
+                            onPress={onUpdate}
+                          >
+                            Update Event
+                          </Button>
+                        </div>
+                      );
+                  }
+              }
+            })()}
           </div>
         ) : (
           <div className="flex w-full gap-2">
