@@ -102,6 +102,8 @@ export function PeerProvider({
   }, [peer]);
 
   useEffect(() => {
+    if (!peer) return;
+
     clientSDK.on(RoomEvent.CHANNEL_CLOSED, ({ reason }: { reason: string }) => {
       if (reason === ChannelClosureReasons.NOT_FOUND) {
         peer?.disconnect();
