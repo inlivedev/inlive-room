@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
-import ConferenceScreenHidden from './conference-screen-hidden';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import '../styles/webinar-presentation-layout.css';
@@ -114,9 +113,10 @@ export default function WebinarPresentationLayout({
           })}
           {hiddenStreams.map((stream) => {
             return (
-              <ConferenceScreenHidden
-                key={`hidden-screen-${stream.id}`}
+              <ConferenceScreen
+                key={`hidden-stream-${stream.id}`}
                 stream={stream}
+                hidden={true}
               />
             );
           })}

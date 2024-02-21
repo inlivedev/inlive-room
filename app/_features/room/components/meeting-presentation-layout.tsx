@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import '../styles/meeting-presentation-layout.css';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
-import ConferenceScreenHidden from './conference-screen-hidden';
 
 export default function MeetingPresentationLayout({
   streams,
@@ -75,9 +74,10 @@ export default function MeetingPresentationLayout({
           })}
           {hiddenStreams.map((stream) => {
             return (
-              <ConferenceScreenHidden
-                key={`hidden-screen-${stream.id}`}
+              <ConferenceScreen
+                key={`hidden-stream-${stream.id}`}
                 stream={stream}
+                hidden={true}
               />
             );
           })}

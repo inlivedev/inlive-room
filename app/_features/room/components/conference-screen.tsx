@@ -19,7 +19,6 @@ import { useClientContext } from '@/_features/room/contexts/client-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ReconncectModal from './reconnect-modal';
-import '@/_features/room/styles/conference-screen.css';
 
 export default memo(ConferenceScreen, (prevProps, nextProps) => {
   return (
@@ -33,9 +32,11 @@ function ConferenceScreen({
   hidden = false,
 }: {
   stream: ParticipantVideo;
-  hidden: boolean;
+  hidden?: boolean;
 }) {
-  return (
+  return hidden ? (
+    <VideoScreen stream={stream} hidden={hidden} />
+  ) : (
     <OverlayScreen stream={stream}>
       <VideoScreen stream={stream} hidden={hidden} />
     </OverlayScreen>
@@ -479,7 +480,7 @@ function VideoScreen({
       videoContainerValue = videoContainerRef.current;
     }
 
-    const init = async () => {
+    const append = async () => {
       if (videoContainerValue && stream.VideoElement) {
         const localVideoScreen =
           stream.origin === 'local' && stream.source === 'media';
@@ -505,6 +506,22 @@ function VideoScreen({
           }
         }
 
+        if (hidden) {
+          stream.VideoElement.style.width = '0';
+          stream.VideoElement.style.height = '0';
+          stream.VideoElement.style.opacity = '0';
+          stream.VideoElement.style.position = 'absolute';
+          stream.VideoElement.style.right = '-99999px';
+        } else {
+          stream.VideoElement.style.width = '100%';
+          stream.VideoElement.style.height = '100%';
+          stream.VideoElement.style.opacity = '1';
+          stream.VideoElement.style.position = 'absolute';
+          stream.VideoElement.style.right = 'initial';
+          stream.VideoElement.style.borderRadius = '0.5rem';
+          stream.VideoElement.style.objectFit = 'center';
+        }
+
         stream.VideoElement.playsInline = true;
         stream.VideoElement.muted = stream.origin === 'local';
         stream.VideoElement.autoplay = true;
@@ -515,19 +532,23 @@ function VideoScreen({
       }
     };
 
-    init();
+    append();
 
     return () => {
       if (videoContainerValue && stream.VideoElement) {
         videoContainerValue.removeChild(stream.VideoElement);
       }
     };
-  }, [stream, currentAudioOutput]);
+  }, [stream, currentAudioOutput, hidden]);
 
   return (
     <div
       ref={videoContainerRef}
-      className="grid h-full w-full grid-rows-1 items-center"
+      className={`${
+        hidden
+          ? 'absolute right-[99999px] h-0 w-0 opacity-0'
+          : 'grid h-full w-full grid-rows-1 items-center'
+      }`}
     ></div>
   );
 }

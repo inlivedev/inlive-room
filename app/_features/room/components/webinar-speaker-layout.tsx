@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
-import ConferenceScreenHidden from '@/_features/room/components/conference-screen-hidden';
 import '../styles/webinar-speaker-layout.css';
 
 export default function WebinarSpeakerLayout({
@@ -98,9 +97,10 @@ export default function WebinarSpeakerLayout({
               </div>
               {hiddenParticipants.map((stream) => {
                 return (
-                  <ConferenceScreenHidden
+                  <ConferenceScreen
                     key={`hidden-stream-${stream.id}`}
                     stream={stream}
+                    hidden={true}
                   />
                 );
               })}
