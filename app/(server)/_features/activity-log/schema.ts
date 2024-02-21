@@ -1,6 +1,5 @@
 import { relations } from 'drizzle-orm';
 import {
-  PgEnumColumn,
   integer,
   jsonb,
   pgTable,
