@@ -10,29 +10,21 @@ export type ParticipantVideo = {
   readonly origin: 'local' | 'remote';
   readonly source: 'media' | 'screen';
   readonly mediaStream: MediaStream;
-  readonly VideoElement: HTMLVideoElement;
+  readonly videoElement: HTMLVideoElement;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
 };
 
-export type ParticipantStream = {
-  readonly id: string;
-  readonly clientId: string;
-  readonly name: string;
-  readonly origin: 'local' | 'remote';
-  readonly source: 'media' | 'screen';
-  readonly mediaStream: MediaStream;
-  readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
-};
+export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 
 const createParticipantVideo = (
   stream: ParticipantStream
 ): ParticipantVideo => {
   const participantVideo: ParticipantVideo = {
     ...stream,
-    VideoElement: document.createElement('video'),
+    videoElement: document.createElement('video'),
   };
 
-  participantVideo.VideoElement.srcObject = stream.mediaStream;
+  participantVideo.videoElement.srcObject = stream.mediaStream;
 
   return participantVideo;
 };

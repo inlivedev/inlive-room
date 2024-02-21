@@ -79,7 +79,6 @@ export function PeerProvider({
 
     const onConnectionStateChange = () => {
       const { connectionState } = peerConnection;
-      console.log('connectionState', connectionState);
       if (connectionState === 'connected') {
         setConnectionState('connected');
       } else if (connectionState === 'failed' || connectionState === 'closed') {
