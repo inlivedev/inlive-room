@@ -17,7 +17,7 @@ export type ParticipantVideo = {
 export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 
 const createParticipantVideo = (
-  stream: Omit<ParticipantVideo, 'videoElement'>
+  stream: ParticipantStream
 ): ParticipantVideo => {
   const participantVideo: ParticipantVideo = {
     ...stream,
