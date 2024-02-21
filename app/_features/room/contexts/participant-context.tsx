@@ -14,18 +14,10 @@ export type ParticipantVideo = {
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
 };
 
-export type ParticipantStream = {
-  readonly id: string;
-  readonly clientId: string;
-  readonly name: string;
-  readonly origin: 'local' | 'remote';
-  readonly source: 'media' | 'screen';
-  readonly mediaStream: MediaStream;
-  readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
-};
+export type ParticipantStream = Omit<ParticipantVideo, 'VideoElement'>;
 
 const createParticipantVideo = (
-  stream: ParticipantStream
+  stream: Omit<ParticipantVideo, 'VideoElement'>
 ): ParticipantVideo => {
   const participantVideo: ParticipantVideo = {
     ...stream,
