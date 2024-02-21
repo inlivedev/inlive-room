@@ -3,6 +3,17 @@ import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 
+export type ParticipantVideo = {
+  readonly id: string;
+  readonly clientId: string;
+  readonly name: string;
+  readonly origin: 'local' | 'remote';
+  readonly source: 'media' | 'screen';
+  readonly mediaStream: MediaStream;
+  readonly VideoElement: HTMLVideoElement;
+  readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
+};
+
 export type ParticipantStream = {
   readonly id: string;
   readonly clientId: string;
@@ -13,8 +24,21 @@ export type ParticipantStream = {
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
 };
 
+const createParticipantVideo = (
+  stream: ParticipantStream
+): ParticipantVideo => {
+  const participantVideo: ParticipantVideo = {
+    ...stream,
+    VideoElement: document.createElement('video'),
+  };
+
+  participantVideo.VideoElement.srcObject = stream.mediaStream;
+
+  return participantVideo;
+};
+
 const defaultValue = {
-  streams: [] as ParticipantStream[],
+  streams: [] as ParticipantVideo[],
 };
 
 const ParticipantContext = createContext(defaultValue);
@@ -30,7 +54,7 @@ export function ParticipantProvider({
 }) {
   const { clientID, clientName } = useClientContext();
   const { peer } = usePeerContext();
-  const [streams, setStreams] = useState<ParticipantStream[]>([]);
+  const [streams, setStreams] = useState<ParticipantVideo[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
@@ -51,15 +75,24 @@ export function ParticipantProvider({
   }, []);
 
   useEffect(() => {
+    clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
+      setStreams((prevState) => {
+        return [...prevState, createParticipantVideo(data.stream)];
+      });
+    });
+
+    clientSDK.on(RoomEvent.STREAM_REMOVED, (data) => {
+      setStreams((prevState) => {
+        const newStreams = prevState.filter(
+          (stream) => stream.id !== data.stream.id
+        );
+        return newStreams;
+      });
+    });
+  }, []);
+
+  useEffect(() => {
     if (peer && localStream) {
-      clientSDK.on(RoomEvent.STREAM_AVAILABLE, () => {
-        setStreams(peer.getAllStreams());
-      });
-
-      clientSDK.on(RoomEvent.STREAM_REMOVED, () => {
-        setStreams(peer.getAllStreams());
-      });
-
       peer.addStream(localStream.id, {
         clientId: clientID,
         name: clientName,

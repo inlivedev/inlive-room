@@ -54,7 +54,3 @@
     max-height: 120px;
   }
 }
-
-.local-video-screen video {
-  transform: scaleX(-1);
-}

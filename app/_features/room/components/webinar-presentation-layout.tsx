@@ -2,15 +2,14 @@
 
 import { useMemo } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
-import ConferenceScreenHidden from './conference-screen-hidden';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import '../styles/webinar-presentation-layout.css';
 
 export default function WebinarPresentationLayout({
   streams,
 }: {
-  streams: ParticipantStream[];
+  streams: ParticipantVideo[];
 }) {
   const { moderatorClientIDs, speakerClientIDs } = useMetadataContext();
   const MAX_VISIBLE_PARTICIPANTS = 6;
@@ -34,8 +33,8 @@ export default function WebinarPresentationLayout({
         }
       },
       {
-        speakers: [] as ParticipantStream[],
-        participants: [] as ParticipantStream[],
+        speakers: [] as ParticipantVideo[],
+        participants: [] as ParticipantVideo[],
       }
     );
 
@@ -54,8 +53,8 @@ export default function WebinarPresentationLayout({
         }
       },
       {
-        speakerScreens: [] as ParticipantStream[],
-        speakerMedias: [] as ParticipantStream[],
+        speakerScreens: [] as ParticipantVideo[],
+        speakerMedias: [] as ParticipantVideo[],
       }
     );
 
@@ -114,9 +113,10 @@ export default function WebinarPresentationLayout({
           })}
           {hiddenStreams.map((stream) => {
             return (
-              <ConferenceScreenHidden
-                key={`hidden-screen-${stream.id}`}
+              <ConferenceScreen
+                key={`hidden-stream-${stream.id}`}
                 stream={stream}
+                hidden={true}
               />
             );
           })}
