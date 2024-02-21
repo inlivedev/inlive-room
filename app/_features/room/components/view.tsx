@@ -42,6 +42,11 @@ export default function View({
   const [activeView, setActiveView] = useState<string>('lobby');
 
   useEffect(() => {
+    const recordLeftRoom = () => {};
+    window.addEventListener('unload', recordLeftRoom);
+  });
+
+  useEffect(() => {
     const setView = ((event: CustomEvent) => {
       const detail = event.detail || {};
       const view = detail.view;

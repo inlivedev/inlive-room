@@ -1,4 +1,4 @@
-import { roomRoutesHandler } from '@/(server)/_features/room/routes';
+import { roomService } from '@/(server)/api/_index';
 import { NextResponse, type NextRequest } from 'next/server';
 
 interface RegisterClientRequest {
@@ -22,7 +22,7 @@ export async function POST(
     return NextResponse.json({ code: 400, message: 'name is empty' });
 
   try {
-    const clientData = await roomRoutesHandler.registerClientHandler(
+    const clientData = await roomService.createClient(
       params.roomID,
       reqBody.name,
       reqBody.uid
