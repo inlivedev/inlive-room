@@ -1,3 +1,6 @@
+// TODO : Add ability to Observe the Connection Signal / Bandwidth
+
+import { useEffect } from 'react';
 import {
   useDisclosure,
   Modal,
@@ -7,26 +10,20 @@ import {
   Button,
   ModalHeader,
 } from '@nextui-org/react';
-import { useConnectionContext } from '../contexts/connection-status-context';
-import { useEffect } from 'react';
-import { usePeerContext } from '../contexts/peer-context';
+import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 
-export default function ReconncectModal() {
-  const { sseConnection } = useConnectionContext();
-  const { peer } = usePeerContext();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+export default function ReconnectModal() {
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const { connectionState } = usePeerContext();
 
   useEffect(() => {
-    if (!sseConnection) {
+    if (connectionState === 'disconnected') {
       onOpen();
+    } else if (connectionState === 'connected' && isOpen) {
+      onClose();
     }
-  });
-
-  const _onClick = async () => {
-    peer?.disconnect();
-    location.reload();
-  };
+  }, [connectionState, onOpen, isOpen, onClose]);
 
   return (
     <Modal
@@ -46,19 +43,18 @@ export default function ReconncectModal() {
               ></PlugDisconnectedFillIcon>
             </div>
             <div className="flex items-center gap-2 rounded-sm p-1 text-sm">
-              {
-                "It seems like we've lost connection to the meeting room. Please check your internet connection and try again."
-              }
+              It seems like we&apos;ve lost connection to the room. Please check
+              your internet connection and try again.
             </div>
           </div>
         </ModalBody>
         <ModalFooter>
           <Button
-            onClick={_onClick}
+            onClick={() => window.location.reload()}
             className="w-full rounded bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500 sm:w-max"
-            aria-label="reconnect to this meeting room"
+            aria-label="Reload this page"
           >
-            Reconnect
+            Reload this page
           </Button>
         </ModalFooter>
       </ModalContent>

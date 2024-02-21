@@ -18,7 +18,6 @@ import { clientSDK } from '@/_shared/utils/sdk';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import ReconncectModal from './reconnect-modal';
 
 export default memo(ConferenceScreen, (prevProps, nextProps) => {
   return (
@@ -199,7 +198,6 @@ function OverlayScreen({
 
   return (
     <div className="group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg">
-      <ReconncectModal></ReconncectModal>
       {/* stats debug overlay */}
       {showStats ? (
         <div className="absolute z-20 h-full w-full p-2">

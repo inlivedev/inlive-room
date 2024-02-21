@@ -9,13 +9,14 @@ import {
   DropdownItem,
   type Selection,
 } from '@nextui-org/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
+import ReconncectModal from '@/_features/room/components/reconnect-modal';
 import { clientSDK } from '@/_shared/utils/sdk';
 import type { SVGElementPropsType } from '@/_shared/types/types';
 
@@ -185,30 +186,11 @@ function FourGridIcon(props: SVGElementPropsType) {
 }
 
 function ConnectionStatusOverlay() {
-  const { peer } = usePeerContext();
-  const [connectionState, setConnectionState] = useState('connecting');
-
-  useEffect(() => {
-    const peerConnection = peer?.getPeerConnection();
-
-    if (!peerConnection) return;
-
-    peerConnection.addEventListener('iceconnectionstatechange', () => {
-      if (
-        peerConnection.iceConnectionState === 'connected' ||
-        peerConnection.iceConnectionState === 'completed'
-      ) {
-        setConnectionState('connected');
-      } else if (peerConnection.iceConnectionState === 'failed') {
-        setConnectionState('disconnected');
-      } else {
-        setConnectionState('connecting');
-      }
-    });
-  }, [peer]);
+  const { connectionState } = usePeerContext();
 
   return (
     <div>
+      <ReconncectModal />
       {connectionState === 'connecting' && (
         <div className="flex items-center">
           <CircularProgress
