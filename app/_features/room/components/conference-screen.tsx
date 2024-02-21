@@ -481,55 +481,53 @@ function VideoScreen({
     }
 
     const append = async () => {
-      if (videoContainerValue && stream.VideoElement) {
-        const localVideoScreen =
-          stream.origin === 'local' && stream.source === 'media';
+      const localVideoScreen =
+        stream.origin === 'local' && stream.source === 'media';
+
+      if (
+        currentAudioOutput &&
+        !AudioContext.prototype.hasOwnProperty('setSinkId')
+      ) {
+        const sinkId =
+          currentAudioOutput.deviceId !== 'default'
+            ? currentAudioOutput.deviceId
+            : '';
 
         if (
-          currentAudioOutput &&
-          !AudioContext.prototype.hasOwnProperty('setSinkId')
+          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          sinkId !== stream.VideoElement.sinkId
         ) {
-          const sinkId =
-            currentAudioOutput.deviceId !== 'default'
-              ? currentAudioOutput.deviceId
-              : '';
-
-          if (
-            HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            //@ts-ignore
-            sinkId !== stream.VideoElement.sinkId
-          ) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            //@ts-ignore
-            await stream.VideoElement.setSinkId(sinkId);
-          }
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          await stream.VideoElement.setSinkId(sinkId);
         }
-
-        if (hidden) {
-          stream.VideoElement.style.width = '0';
-          stream.VideoElement.style.height = '0';
-          stream.VideoElement.style.opacity = '0';
-          stream.VideoElement.style.position = 'absolute';
-          stream.VideoElement.style.right = '-99999px';
-        } else {
-          stream.VideoElement.style.width = '100%';
-          stream.VideoElement.style.height = '100%';
-          stream.VideoElement.style.opacity = '1';
-          stream.VideoElement.style.position = 'absolute';
-          stream.VideoElement.style.right = 'initial';
-          stream.VideoElement.style.borderRadius = '0.5rem';
-          stream.VideoElement.style.objectFit = 'center';
-        }
-
-        stream.VideoElement.playsInline = true;
-        stream.VideoElement.muted = stream.origin === 'local';
-        stream.VideoElement.autoplay = true;
-        stream.VideoElement.style.transform = localVideoScreen
-          ? 'scaleX(-1)'
-          : 'scaleX(1)';
-        videoContainerValue.appendChild(stream.VideoElement);
       }
+
+      if (hidden) {
+        stream.VideoElement.style.width = '0';
+        stream.VideoElement.style.height = '0';
+        stream.VideoElement.style.opacity = '0';
+        stream.VideoElement.style.position = 'absolute';
+        stream.VideoElement.style.right = '-99999px';
+      } else {
+        stream.VideoElement.style.width = '100%';
+        stream.VideoElement.style.height = '100%';
+        stream.VideoElement.style.opacity = '1';
+        stream.VideoElement.style.position = 'absolute';
+        stream.VideoElement.style.right = 'initial';
+        stream.VideoElement.style.borderRadius = '0.5rem';
+        stream.VideoElement.style.objectFit = 'center';
+      }
+
+      stream.VideoElement.style.transform = localVideoScreen
+        ? 'scaleX(-1)'
+        : 'scaleX(1)';
+      stream.VideoElement.playsInline = true;
+      stream.VideoElement.muted = stream.origin === 'local';
+      videoContainerValue?.appendChild(stream.VideoElement);
+      await stream.VideoElement.play();
     };
 
     append();
@@ -537,9 +535,10 @@ function VideoScreen({
     return () => {
       if (videoContainerValue && stream.VideoElement) {
         videoContainerValue.removeChild(stream.VideoElement);
+        videoContainerValue = null;
       }
     };
-  }, [stream, currentAudioOutput, hidden]);
+  }, [stream, hidden, currentAudioOutput]);
 
   return (
     <div
