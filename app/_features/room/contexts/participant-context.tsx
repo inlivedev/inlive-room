@@ -75,24 +75,24 @@ export function ParticipantProvider({
   }, []);
 
   useEffect(() => {
-    if (peer && localStream) {
-      clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
-        streams.push(createParticipantVideo(data.stream));
-        setStreams([...streams]);
-        console.log('stream added, streams count: ', streams.length);
+    clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
+      setStreams((prevState) => {
+        return [...prevState, createParticipantVideo(data.stream)];
       });
+    });
 
-      clientSDK.on(RoomEvent.STREAM_REMOVED, (data) => {
-        const index = streams.findIndex(
-          (stream) => stream.id === data.stream.id
+    clientSDK.on(RoomEvent.STREAM_REMOVED, (data) => {
+      setStreams((prevState) => {
+        const newStreams = prevState.filter(
+          (stream) => stream.id !== data.stream.id
         );
-        if (index !== -1) {
-          streams.splice(index, 1);
-        }
-        setStreams([...streams]);
-        console.log('stream removed, streams count: ', streams.length);
+        return newStreams;
       });
+    });
+  }, []);
 
+  useEffect(() => {
+    if (peer && localStream) {
       peer.addStream(localStream.id, {
         clientId: clientID,
         name: clientName,
