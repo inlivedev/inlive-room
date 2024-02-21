@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, Key, useEffect, useRef, useState } from 'react';
+import { useCallback, Key, useEffect, useRef, useState, memo } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -21,12 +21,33 @@ import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ReconncectModal from './reconnect-modal';
 import '@/_features/room/styles/conference-screen.css';
 
-export default function ConferenceScreen({
+export default memo(ConferenceScreen, (prevProps, nextProps) => {
+  return (
+    Object.is(prevProps.stream, nextProps.stream) &&
+    prevProps.hidden === nextProps.hidden
+  );
+});
+
+function ConferenceScreen({
   stream,
   hidden = false,
 }: {
   stream: ParticipantVideo;
   hidden: boolean;
+}) {
+  return (
+    <OverlayScreen stream={stream}>
+      <VideoScreen stream={stream} hidden={hidden} />
+    </OverlayScreen>
+  );
+}
+
+function OverlayScreen({
+  children,
+  stream,
+}: {
+  children: React.ReactNode;
+  stream: ParticipantVideo;
 }) {
   const { peer } = usePeerContext();
   const { datachannels } = useDataChannelContext();
@@ -423,12 +444,18 @@ export default function ConferenceScreen({
           </div>
         </div>
       </div>
-      <VideoScreen stream={stream} />
+      {children}
     </div>
   );
 }
 
-function VideoScreen({ stream }: { stream: ParticipantVideo }) {
+function VideoScreen({
+  stream,
+  hidden = false,
+}: {
+  stream: ParticipantVideo;
+  hidden: boolean;
+}) {
   const { peer } = usePeerContext();
   const { currentAudioOutput } = useDeviceContext();
   const videoContainerRef = useRef<HTMLDivElement>(null);
