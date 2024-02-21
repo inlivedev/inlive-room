@@ -11,6 +11,7 @@ import SetDisplayNameModal from '@/_features/room/components/set-display-name-mo
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
 type LobbyProps = {
   roomID: string;
@@ -116,6 +117,17 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
   const openConferenceRoom = useCallback(async () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
+
+      InternalApiFetcher.post(`/user/activity`, {
+        body: JSON.stringify({
+          name: 'JoinRoom',
+          meta: {
+            roomID: roomID,
+            clientID: clientID,
+            name: clientName,
+          },
+        }),
+      });
 
       try {
         const resumeAudioContextPromise = new Promise<null>(async (resolve) => {

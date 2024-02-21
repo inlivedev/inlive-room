@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/nextjs';
 import type { ClientType } from '@/_shared/types/client';
 import { clientSDK } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
 const ClientContext = createContext({
   roomID: '',
@@ -96,6 +97,18 @@ export function ClientProvider({
             response?.message || 'Failed to get response from the server'
           );
         }
+
+        // Record the user's activity
+        InternalApiFetcher.post(`/user/activity`, {
+          body: JSON.stringify({
+            name: 'LeftRoom',
+            meta: {
+              roomID: roomID,
+              clientID: client.clientID,
+              name: client.clientName,
+            },
+          }),
+        });
 
         document.dispatchEvent(
           new CustomEvent('set:conference-view', {

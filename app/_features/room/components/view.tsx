@@ -15,6 +15,7 @@ import Conference from '@/_features/room/components/conference';
 import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
 import type { ClientType } from '@/_shared/types/client';
 import { ConnectionProvider } from '../contexts/connection-status-context';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
 type ViewProps = {
   roomID: string;
@@ -42,7 +43,18 @@ export default function View({
   const [activeView, setActiveView] = useState<string>('lobby');
 
   useEffect(() => {
-    const recordLeftRoom = () => {};
+    const recordLeftRoom = () => {
+      InternalApiFetcher.post(`/user/activity`, {
+        body: JSON.stringify({
+          name: 'LeftRoom',
+          meta: {
+            roomID: roomID,
+            clientID: client.clientID,
+            name: client.clientName,
+          },
+        }),
+      });
+    };
     window.addEventListener('unload', recordLeftRoom);
   });
 
