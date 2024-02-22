@@ -34,7 +34,7 @@ export function ClientProvider({
 }) {
   const [clientState, setClientState] = useState<ClientType.ClientData>(client);
   const { peer } = usePeerContext();
-  const [clientJoinTime, setClientJoinTime] = useState<Date | undefined>(
+  const [clientJoinTime, setClientJoinTime] = useState<string | undefined>(
     undefined
   );
 
@@ -98,7 +98,7 @@ export function ClientProvider({
   useEffect(() => {
     const recordClientJoin = ((event: CustomEvent) => {
       const detail = event.detail || {};
-      const joinTime = new Date(detail.joinTime);
+      const joinTime = new Date(detail.joinTime).toISOString();
 
       console.log(joinTime, 'joinTime');
       console.log('detail', detail);
@@ -125,7 +125,7 @@ export function ClientProvider({
           );
         }
 
-        const clientLeaveTime = new Date();
+        const clientLeaveTime = new Date().toISOString();
 
         InternalApiFetcher.post(`/api/user/activity`, {
           body: JSON.stringify({

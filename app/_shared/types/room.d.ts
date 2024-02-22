@@ -3,6 +3,7 @@ import type { Room, Participant } from '@/(server)/_features/room/service';
 
 export declare namespace RoomType {
   type RoomData = Room;
+  type Type = 'event' | 'meeting';
 
   type CreateGetRoomResponse = FetcherResponse & {
     message: string;

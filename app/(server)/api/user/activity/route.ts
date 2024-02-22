@@ -9,6 +9,15 @@ interface createActiviyRequest {
   meta: string;
 }
 
+interface RoomDurationMeta {
+  roomID: string;
+  clientID: string;
+  clientName: string;
+  joinTime: string;
+  leaveTime: string;
+  roomType: string;
+}
+
 const activityName = ['RoomDuration'];
 
 export async function POST(request: NextRequest) {
@@ -18,6 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     const response = await getCurrentAuthenticated(requestToken?.value || '');
     const user = response.data ? response.data : null;
+    const currentTime = new Date();
 
     if (!user) {
       return NextResponse.json(
@@ -39,6 +49,25 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    if (body.name == 'RoomDuration') {
+      const RoomDurationMeta: RoomDurationMeta = JSON.parse(body.meta);
+
+      // Milliseconds accuracy
+      const duration =
+        new Date(RoomDurationMeta.leaveTime).getTime() -
+        new Date(RoomDurationMeta.joinTime).getTime();
+
+      // Adjust if time is not synchronized
+      if (
+        !isWithinTolerance(new Date(RoomDurationMeta.leaveTime), 5 * 60 * 1000)
+      ) {
+        RoomDurationMeta.leaveTime = currentTime.toISOString();
+        RoomDurationMeta.joinTime = new Date(
+          currentTime.getTime() - duration
+        ).toISOString();
+      }
     }
 
     const log = await addLog({
