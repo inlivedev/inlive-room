@@ -2,7 +2,10 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-au
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
-import { addLog } from '@/(server)/_features/activity-log/repository';
+import {
+  addLog,
+  aggregateRoomDuration,
+} from '@/(server)/_features/activity-log/repository';
 
 interface createActiviyRequest {
   name: string;
@@ -96,4 +99,44 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: NextRequest) {
+  aggregateRoomDuration(1, 'event');
+
+  const cookieStore = cookies();
+  const requestToken = cookieStore.get('token');
+
+  try {
+    const response = await getCurrentAuthenticated(requestToken?.value || '');
+    const user = response.data ? response.data : null;
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          code: 401,
+          ok: false,
+          message: 'Please check if token is provided in the cookie',
+        },
+        { status: 401 }
+      );
+    }
+  } catch (e) {
+    const error = e as Error;
+    Sentry.captureException(error);
+
+    return NextResponse.json(
+      {
+        code: 500,
+        message: `An error has occured on our side, please try again later : ${error.message}`,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+function isWithinTolerance(time: Date, tolerance: number): boolean {
+  const currentDateTime = new Date();
+  const timeDifference = Math.abs(currentDateTime.getTime() - time.getTime());
+  return timeDifference <= tolerance;
 }
