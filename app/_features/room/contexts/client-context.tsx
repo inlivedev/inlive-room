@@ -114,7 +114,7 @@ export function ClientProvider({
   }, []);
 
   useEffect(() => {
-    const clientLeave = async (clientID: string) => {
+    const clientLeave = async (clientID: string, roomType: string) => {
       if (peer?.getPeerConnection()) peer.disconnect();
 
       try {
@@ -136,6 +136,7 @@ export function ClientProvider({
               name: client.clientName,
               joinTime: clientJoinTime,
               leaveTime: clientLeaveTime,
+              roomType: roomType,
             },
           }),
         });
@@ -160,7 +161,8 @@ export function ClientProvider({
     const handleClientLeave = ((event: CustomEvent) => {
       const detail = event.detail || {};
       const clientID = detail.clientID;
-      clientLeave(clientID);
+      const roomType = detail.roomType;
+      clientLeave(clientID, roomType);
     }) as EventListener;
 
     document.addEventListener('trigger:client-leave', handleClientLeave);

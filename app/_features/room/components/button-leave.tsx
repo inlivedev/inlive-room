@@ -20,13 +20,14 @@ export default function ButtonLeave() {
   const { clientID } = useClientContext();
   const { datachannels } = useDataChannelContext();
   const { streams } = useParticipantContext();
-  const { isModerator } = useMetadataContext();
+  const { isModerator, roomType } = useMetadataContext();
 
   const handleLeaveRoom = () => {
     document.dispatchEvent(
       new CustomEvent('trigger:client-leave', {
         detail: {
           clientID: clientID,
+          roomType: roomType,
         },
       })
     );
@@ -39,6 +40,7 @@ export default function ButtonLeave() {
           new CustomEvent('trigger:client-leave', {
             detail: {
               clientID: clientID,
+              roomType: roomType,
             },
           })
         );
@@ -71,13 +73,14 @@ export default function ButtonLeave() {
             new CustomEvent('trigger:client-leave', {
               detail: {
                 clientID: clientID,
+                roomType: roomType,
               },
             })
           );
         }
       }
     },
-    [clientID, datachannels, isModerator, streams]
+    [clientID, datachannels, isModerator, roomType, streams]
   );
 
   return (
