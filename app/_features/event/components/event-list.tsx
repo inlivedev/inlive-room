@@ -9,7 +9,7 @@ import { EventCard } from './event-card';
 import EditIcon from '@/_shared/components/icons/edit-icon';
 import ChevronLeft from '@/_shared/components/icons/chevron-left';
 import ChevronRight from '@/_shared/components/icons/chevron-right';
-import type { SVGElementPropsType } from '@/_shared/types/types';
+import type { SVGElementPropsType, PageMeta } from '@/_shared/types/types';
 
 const navLinks = [
   {
@@ -19,7 +19,20 @@ const navLinks = [
   },
 ];
 
-export default function EventList({ events }: { events: EventType.Event[] }) {
+export default function EventList({
+  events,
+  pageMeta,
+  validPagination,
+}: {
+  events: EventType.Event[];
+  pageMeta: PageMeta;
+  validPagination: boolean;
+}) {
+  const currentPage = pageMeta.current_page;
+  const lastPage = pageMeta.total_page;
+  const hasNextPage = currentPage < lastPage;
+  const hasPreviousPage = currentPage > 1;
+
   return (
     <div className="bg-zinc-900">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-5xl flex-1 flex-col  px-4">
@@ -62,13 +75,74 @@ export default function EventList({ events }: { events: EventType.Event[] }) {
             </Button>
           </div>
           <div className="mt-5 pb-28 lg:pb-20">
-            {events.length ? (
+            {validPagination ? (
               <>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  {events.map((event) => {
-                    return <EventCard key={event.id} event={event} />;
-                  })}
-                </div>
+                {events.length ? (
+                  <>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      {events.map((event) => {
+                        return <EventCard key={event.id} event={event} />;
+                      })}
+                    </div>
+                    {hasPreviousPage || hasNextPage ? (
+                      <div className="mt-10 text-sm md:mt-20">
+                        <div className="flex items-center justify-center gap-6">
+                          {hasPreviousPage && (
+                            <div>
+                              <Button
+                                className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                                as={Link}
+                                href={`/event?page=${currentPage - 1}`}
+                              >
+                                <span className="flex items-center">
+                                  <ChevronLeft width={16} height={16} />
+                                </span>
+                                <span>Previous page</span>
+                              </Button>
+                            </div>
+                          )}
+                          {hasNextPage && (
+                            <div>
+                              <Button
+                                className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                                as={Link}
+                                href={`/event?page=${currentPage + 1}`}
+                              >
+                                <span>Next page</span>
+                                <span className="flex items-center">
+                                  <ChevronRight width={16} height={16} />
+                                </span>
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="flex h-60 w-full items-center justify-center rounded border border-zinc-800">
+                    <div className="text-center">
+                      <div className="flex justify-center">
+                        <EventCalendarIcon width={40} height={40} />
+                      </div>
+                      <b className="mt-3 block text-lg font-semibold">
+                        We&apos;ll keep your events here
+                      </b>
+                      <p className="mt-1.5 text-sm text-zinc-400">
+                        Come back to this page once you create your event.
+                      </p>
+                      <div className="mt-6">
+                        <Button
+                          as={Link}
+                          href="/event/create"
+                          className="h-8 min-w-0 rounded bg-red-700 px-4 py-1.5 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
+                        >
+                          Create event
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex h-60 w-full items-center justify-center rounded border border-zinc-800">
@@ -76,19 +150,19 @@ export default function EventList({ events }: { events: EventType.Event[] }) {
                   <div className="flex justify-center">
                     <EventCalendarIcon width={40} height={40} />
                   </div>
-                  <b className="mt-3 block text-lg font-semibold capitalize">
-                    We&apos;ll keep your events here
+                  <b className="mt-3 block text-lg font-semibold">
+                    Oops, no event found
                   </b>
                   <p className="mt-1.5 text-sm text-zinc-400">
-                    Come back to this page once you create your event.
+                    We couldn&apos;t find any data from your request.
                   </p>
                   <div className="mt-6">
                     <Button
                       as={Link}
-                      href="/event/create"
-                      className="h-8 min-w-0 rounded bg-red-700 px-4 py-1.5 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
+                      href="/event"
+                      className="h-8 min-w-0 rounded bg-zinc-800 px-4 py-1.5 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                     >
-                      Create event
+                      Refresh the page
                     </Button>
                   </div>
                 </div>

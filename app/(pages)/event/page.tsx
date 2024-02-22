@@ -86,10 +86,20 @@ export default async function Page({
     );
 
   const events = eventResponse.data || [];
+  const pageMeta = eventResponse.meta;
+
+  let validPagination = false;
+  if (page <= pageMeta.total_page) {
+    validPagination = true;
+  }
 
   return (
     <AppContainer user={user}>
-      <EventList events={events} />
+      <EventList
+        events={events}
+        pageMeta={pageMeta}
+        validPagination={validPagination}
+      />
     </AppContainer>
   );
 }
