@@ -28,5 +28,5 @@ export const postsRelations = relations(activitiesLog, ({ one }) => ({
   }),
 }));
 
-export type InsertEventLog = typeof activitiesLog.$inferInsert;
-export type SelectEventLog = typeof activitiesLog.$inferSelect;
+export type InsertActivityLog = typeof activitiesLog.$inferInsert;
+export type SelectActivityLog = typeof activitiesLog.$inferSelect;
