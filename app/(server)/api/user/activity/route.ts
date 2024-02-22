@@ -9,7 +9,7 @@ interface createActiviyRequest {
   meta: string;
 }
 
-const activityName = ['JoinRoom', 'LeftRoom'];
+const activityName = ['RoomDuration'];
 
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();

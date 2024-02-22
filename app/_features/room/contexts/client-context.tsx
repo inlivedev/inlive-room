@@ -7,7 +7,13 @@ import { clientSDK } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
-const ClientContext = createContext({
+type ClientProviderProps = {
+  roomID: string;
+  clientID: string;
+  clientName: string;
+};
+
+const ClientContext = createContext<ClientProviderProps>({
   roomID: '',
   clientID: '',
   clientName: '',
@@ -28,6 +34,9 @@ export function ClientProvider({
 }) {
   const [clientState, setClientState] = useState<ClientType.ClientData>(client);
   const { peer } = usePeerContext();
+  const [clientJoinTime, setClientJoinTime] = useState<Date | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const setClientName = ((event: CustomEvent) => {
@@ -87,6 +96,24 @@ export function ClientProvider({
   }, [clientState.clientID]);
 
   useEffect(() => {
+    const recordClientJoin = ((event: CustomEvent) => {
+      const detail = event.detail || {};
+      const joinTime = new Date(detail.joinTime);
+
+      console.log(joinTime, 'joinTime');
+      console.log('detail', detail);
+
+      setClientJoinTime(joinTime);
+    }) as EventListener;
+
+    document.addEventListener('trigger:client-join', recordClientJoin);
+
+    return () => {
+      document.removeEventListener('trigger:client-join', recordClientJoin);
+    };
+  }, []);
+
+  useEffect(() => {
     const clientLeave = async (clientID: string) => {
       if (peer?.getPeerConnection()) peer.disconnect();
 
@@ -98,14 +125,17 @@ export function ClientProvider({
           );
         }
 
-        // Record the user's activity
-        InternalApiFetcher.post(`/user/activity`, {
+        const clientLeaveTime = new Date();
+
+        InternalApiFetcher.post(`/api/user/activity`, {
           body: JSON.stringify({
-            name: 'LeftRoom',
+            name: 'RoomDuration',
             meta: {
               roomID: roomID,
               clientID: client.clientID,
               name: client.clientName,
+              joinTime: clientJoinTime,
+              leaveTime: clientLeaveTime,
             },
           }),
         });
@@ -138,7 +168,14 @@ export function ClientProvider({
     return () => {
       document.removeEventListener('trigger:client-leave', handleClientLeave);
     };
-  }, [clientState.clientID, peer, roomID]);
+  }, [
+    client.clientID,
+    client.clientName,
+    clientJoinTime,
+    clientState.clientID,
+    peer,
+    roomID,
+  ]);
 
   return (
     <ClientContext.Provider

@@ -11,7 +11,6 @@ import SetDisplayNameModal from '@/_features/room/components/set-display-name-mo
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
 type LobbyProps = {
   roomID: string;
@@ -118,17 +117,6 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
     if (!isSubmitting) {
       setIsSubmitting(true);
 
-      InternalApiFetcher.post(`/user/activity`, {
-        body: JSON.stringify({
-          name: 'JoinRoom',
-          meta: {
-            roomID: roomID,
-            clientID: clientID,
-            name: clientName,
-          },
-        }),
-      });
-
       try {
         const resumeAudioContextPromise = new Promise<null>(async (resolve) => {
           if (AudioOutputContext && AudioOutputContext.state === 'suspended') {
@@ -186,6 +174,12 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
         Mixpanel.track('Join room', {
           roomID: roomID,
         });
+
+        document.dispatchEvent(
+          new CustomEvent('trigger:client-join', {
+            detail: { joinTime: Date.now() },
+          })
+        );
 
         setIsSubmitting(false);
       } catch (error) {
