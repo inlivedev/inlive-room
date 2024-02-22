@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
-import { AuthType } from '@/_shared/types/auth';
+import type { AuthType } from '@/_shared/types/auth';
 import HTTPError from '@/_shared/components/errors/http-error';
 import EventList from '@/_features/event/components/event-list';
-import { EventType } from '@/_shared/types/event';
+import type { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { whitelistFeature } from '@/_shared/utils/flag';
 
@@ -85,9 +85,11 @@ export default async function Page({
       `/api/events?created_by=${user.id}&page=${page}&limit=${limit}`
     );
 
+  const events = eventResponse.data || [];
+
   return (
     <AppContainer user={user}>
-      <EventList events={eventResponse} />
+      <EventList events={events} />
     </AppContainer>
   );
 }
