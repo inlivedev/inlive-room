@@ -68,9 +68,6 @@ export default function EventList({ events }: { events: EventType.Event[] }) {
                   {events.map((event) => {
                     return <EventCard key={event.id} event={event} />;
                   })}
-                  {events.map((event) => {
-                    return <EventCard key={event.id} event={event} />;
-                  })}
                 </div>
               </>
             ) : (
