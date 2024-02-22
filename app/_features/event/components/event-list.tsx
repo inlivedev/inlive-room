@@ -35,7 +35,7 @@ export default function EventList({
 
   return (
     <div className="bg-zinc-900">
-      <div className="min-viewport-height mx-auto flex h-full w-full max-w-5xl flex-1 flex-col  px-4">
+      <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex-1">
           <nav className="border-b border-zinc-800 text-sm font-medium">
