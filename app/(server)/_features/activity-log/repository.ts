@@ -10,17 +10,26 @@ export const addLog = async (data: InsertActivityLog) => {
 export const aggregateRoomDuration = async (
   userID: number,
   roomType?: RoomType.Type
-) => {
+): Promise<number> => {
   const sqlChunks: SQL[] = [];
 
+  // Create the SQL query
+  sqlChunks.push(
+    sql`SELECT SUM(CAST(${activitiesLog.meta}->>'duration' AS numeric)) AS total_duration FROM ${activitiesLog} `
+  );
+  sqlChunks.push(sql`WHERE `);
   sqlChunks.push(sql`${activitiesLog.createdBy} = ${userID} `);
-
   if (roomType) {
-    sqlChunks.push(sql`AND ${activitiesLog.meta} ->> ${roomType}`);
+    sqlChunks.push(sql`AND ${activitiesLog.meta} ->> 'roomType' = ${roomType}`);
   }
   const finalSQL = sql.join(sqlChunks);
 
-  const res = await db.select().from(activitiesLog).where(finalSQL);
+  const res = await db.execute(finalSQL);
 
-  console.log(res);
+  try {
+    const duration = res[0].total_duration as number;
+    return duration;
+  } catch (e) {
+    return 0;
+  }
 };
