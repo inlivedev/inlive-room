@@ -30,8 +30,8 @@ export default function EventList({
 }) {
   const currentPage = pageMeta.current_page;
   const lastPage = pageMeta.total_page;
-  const hasNextPage = currentPage < lastPage;
-  const hasPreviousPage = currentPage > 1;
+  const nextPage = currentPage < lastPage ? currentPage + 1 : 0;
+  const previousPage = currentPage > 1 ? currentPage - 1 : 0;
 
   return (
     <div className="bg-zinc-900">
@@ -84,15 +84,15 @@ export default function EventList({
                         return <EventCard key={event.id} event={event} />;
                       })}
                     </div>
-                    {hasPreviousPage || hasNextPage ? (
+                    {previousPage || nextPage ? (
                       <div className="mt-10 text-sm md:mt-20">
                         <div className="flex items-center justify-center gap-6">
-                          {hasPreviousPage && (
+                          {previousPage ? (
                             <div>
                               <Button
                                 className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                                 as={Link}
-                                href={`/event?page=${currentPage - 1}`}
+                                href={`/event?page=${previousPage}`}
                               >
                                 <span className="flex items-center">
                                   <ChevronLeft width={16} height={16} />
@@ -100,13 +100,13 @@ export default function EventList({
                                 <span>Previous page</span>
                               </Button>
                             </div>
-                          )}
-                          {hasNextPage && (
+                          ) : null}
+                          {nextPage ? (
                             <div>
                               <Button
                                 className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                                 as={Link}
-                                href={`/event?page=${currentPage + 1}`}
+                                href={`/event?page=${nextPage}`}
                               >
                                 <span>Next page</span>
                                 <span className="flex items-center">
@@ -114,7 +114,7 @@ export default function EventList({
                                 </span>
                               </Button>
                             </div>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                     ) : null}
