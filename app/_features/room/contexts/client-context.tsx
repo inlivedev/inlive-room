@@ -11,12 +11,14 @@ type ClientProviderProps = {
   roomID: string;
   clientID: string;
   clientName: string;
+  roomType: string;
 };
 
 const ClientContext = createContext<ClientProviderProps>({
   roomID: '',
   clientID: '',
   clientName: '',
+  roomType: ' ',
 });
 
 export const useClientContext = () => {
@@ -27,8 +29,10 @@ export function ClientProvider({
   roomID,
   client,
   children,
+  roomType,
 }: {
   roomID: string;
+  roomType: string;
   client: ClientType.ClientData;
   children: React.ReactNode;
 }) {
@@ -114,6 +118,28 @@ export function ClientProvider({
   }, []);
 
   useEffect(() => {
+    const onBrowserClose = () => {
+      const clientLeaveTime = new Date().toISOString();
+
+      InternalApiFetcher.post(`/api/user/activity`, {
+        body: JSON.stringify({
+          name: 'RoomDuration',
+          meta: {
+            roomID: roomID,
+            clientID: client.clientID,
+            name: client.clientName,
+            joinTime: clientJoinTime,
+            leaveTime: clientLeaveTime,
+            roomType: roomType,
+          },
+        }),
+      });
+    };
+
+    window.addEventListener('beforeunload', onBrowserClose);
+  });
+
+  useEffect(() => {
     const clientLeave = async (clientID: string, roomType: string) => {
       if (peer?.getPeerConnection()) peer.disconnect();
 
@@ -185,6 +211,7 @@ export function ClientProvider({
         roomID: roomID,
         clientID: clientState.clientID,
         clientName: clientState.clientName,
+        roomType: roomType,
       }}
     >
       {children}
