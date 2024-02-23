@@ -14,7 +14,7 @@ export const activitiesLog = pgTable('activities_logs', {
   name: text('name').notNull(),
   meta: jsonb('meta').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-  createdBy: integer('created_by').notNull(),
+  createdBy: integer('created_by'),
 });
 
 export const usersRelation = relations(users, ({ many }) => ({

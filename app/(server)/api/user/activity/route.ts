@@ -2,24 +2,22 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-au
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
-import {
-  addLog,
-  aggregateRoomDuration,
-} from '@/(server)/_features/activity-log/repository';
+import { addLog } from '@/(server)/_features/activity-log/repository';
+import { z } from 'zod';
 
-interface createActiviyRequest {
-  name: string;
-  meta: string;
-}
+const ActivityRequest = z.object({
+  name: z.string(),
+  meta: z.any(),
+});
 
-interface RoomDurationMeta {
-  roomID: string;
-  clientID: string;
-  clientName: string;
-  joinTime: string;
-  leaveTime: string;
-  roomType: string;
-}
+const RoomDurationMeta = z.object({
+  roomID: z.string(),
+  clientID: z.string(),
+  name: z.string().optional(),
+  joinTime: z.string().datetime({ offset: true }),
+  leaveTime: z.string().datetime({ offset: true }),
+  roomType: z.enum(['meeting', 'event']),
+});
 
 const activityName = ['RoomDuration'];
 
@@ -42,9 +40,10 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-    const body = (await request.json()) as createActiviyRequest;
 
-    if (!activityName.includes(body.name)) {
+    const activity = ActivityRequest.parse(await request.json());
+
+    if (!activityName.includes(activity.name)) {
       return NextResponse.json(
         {
           code: 400,
@@ -54,28 +53,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.name == 'RoomDuration') {
-      const RoomDurationMeta: RoomDurationMeta = JSON.parse(body.meta);
+    console.log(activity.meta);
+
+    if (activity.name == 'RoomDuration') {
+      const meta = RoomDurationMeta.parse(activity.meta);
 
       // Milliseconds accuracy
       const duration =
-        new Date(RoomDurationMeta.leaveTime).getTime() -
-        new Date(RoomDurationMeta.joinTime).getTime();
+        new Date(meta.leaveTime).getTime() - new Date(meta.joinTime).getTime();
 
       // Adjust if time is not synchronized
-      if (
-        !isWithinTolerance(new Date(RoomDurationMeta.leaveTime), 5 * 60 * 1000)
-      ) {
-        RoomDurationMeta.leaveTime = currentTime.toISOString();
-        RoomDurationMeta.joinTime = new Date(
+      if (!isWithinTolerance(new Date(meta.leaveTime), 5 * 60 * 1000)) {
+        meta.leaveTime = currentTime.toISOString();
+        meta.joinTime = new Date(
           currentTime.getTime() - duration
         ).toISOString();
       }
     }
 
     const log = await addLog({
-      name: body.name,
-      meta: body.meta,
+      name: activity.name,
+      meta: activity.meta,
       createdBy: user.id,
     });
 
@@ -94,41 +92,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         code: 500,
-        message: `An error has occured on our side, please try again later : ${error.message}`,
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: NextRequest) {
-  aggregateRoomDuration(1, 'event');
-
-  const cookieStore = cookies();
-  const requestToken = cookieStore.get('token');
-
-  try {
-    const response = await getCurrentAuthenticated(requestToken?.value || '');
-    const user = response.data ? response.data : null;
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          code: 401,
-          ok: false,
-          message: 'Please check if token is provided in the cookie',
-        },
-        { status: 401 }
-      );
-    }
-  } catch (e) {
-    const error = e as Error;
-    Sentry.captureException(error);
-
-    return NextResponse.json(
-      {
-        code: 500,
-        message: `An error has occured on our side, please try again later : ${error.message}`,
+        message: error.message,
       },
       { status: 500 }
     );

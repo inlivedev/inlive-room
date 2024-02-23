@@ -7,6 +7,12 @@ export const addLog = async (data: InsertActivityLog) => {
   return db.insert(activitiesLog).values(data).returning();
 };
 
+/**
+ *
+ * @param userID
+ * @param roomType
+ * @returns number of duration in milliseconds
+ */
 export const aggregateRoomDuration = async (
   userID: number,
   roomType?: RoomType.Type
