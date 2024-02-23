@@ -1,13 +1,13 @@
 export function StatusPublished() {
   return (
-    <div className="rounded-sm bg-emerald-950 p-1 text-xs text-emerald-300 ring-1 ring-emerald-800">
+    <div className="inline-flex items-center rounded-sm bg-emerald-950 px-2 py-0.5 text-xs font-medium tracking-[0.275px] text-emerald-300 outline outline-emerald-800">
       Published
     </div>
   );
 }
 export function StatusDraft() {
   return (
-    <div className="rounded-sm bg-blue-950 p-1 text-xs text-blue-300 ring-1 ring-blue-800">
+    <div className="inline-flex items-center rounded-sm bg-blue-950 px-2 py-0.5 text-xs font-medium tracking-[0.275px] text-blue-300 outline outline-blue-800">
       Draft
     </div>
   );
