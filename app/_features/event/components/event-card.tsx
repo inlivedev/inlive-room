@@ -20,7 +20,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
   return (
     <Link
       href={`/event/${event.slug}`}
-      className="rounded-3xl border border-zinc-800 p-5"
+      className="rounded-3xl border border-zinc-800 p-5 hover:bg-zinc-800/50 active:bg-zinc-800"
     >
       <div className="flex items-center gap-3 border-b border-zinc-800 pb-5">
         {event.isPublished ? <StatusPublished /> : <StatusDraft />}
