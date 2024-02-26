@@ -2,13 +2,20 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ClientType } from '@/_shared/types/client';
-import { clientSDK } from '@/_shared/utils/sdk';
+import {
+  ChannelClosureReasons,
+  RoomEvent,
+  clientSDK,
+} from '@/_shared/utils/sdk';
 
 type Peer = Awaited<ReturnType<typeof clientSDK.createPeer>>;
+
+type ConnectionState = 'connecting' | 'connected' | 'disconnected';
 
 const PeerContext = createContext({
   peer: null as Peer | null,
   debug: false,
+  connectionState: '' as ConnectionState,
 });
 
 export const usePeerContext = () => {
@@ -37,6 +44,8 @@ export function PeerProvider({
   bitrateConfig,
 }: PeerProviderProps) {
   const [peer, setPeer] = useState<Peer | null>(null);
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>('connecting');
 
   useEffect(() => {
     if (!peer) {
@@ -62,6 +71,46 @@ export function PeerProvider({
       }
     };
   }, [roomID, client, peer, codecPreferences, bitrateConfig]);
+
+  useEffect(() => {
+    const peerConnection = peer?.getPeerConnection();
+
+    if (!peerConnection) return;
+
+    const onConnectionStateChange = () => {
+      const { connectionState } = peerConnection;
+      if (connectionState === 'connected') {
+        setConnectionState('connected');
+      } else if (connectionState === 'failed' || connectionState === 'closed') {
+        setConnectionState('disconnected');
+      } else {
+        setConnectionState('connecting');
+      }
+    };
+
+    peerConnection.addEventListener(
+      'connectionstatechange',
+      onConnectionStateChange
+    );
+
+    return () => {
+      peerConnection?.removeEventListener(
+        'connectionstatechange',
+        onConnectionStateChange
+      );
+    };
+  }, [peer]);
+
+  useEffect(() => {
+    if (!peer) return;
+
+    clientSDK.on(RoomEvent.CHANNEL_CLOSED, ({ reason }: { reason: string }) => {
+      if (reason === ChannelClosureReasons.NOT_FOUND) {
+        peer?.disconnect();
+        setConnectionState('disconnected');
+      }
+    });
+  }, [peer]);
 
   // use effect for sending the webrtc stats
   useEffect(() => {
@@ -149,6 +198,7 @@ export function PeerProvider({
       value={{
         peer: peer,
         debug: debug,
+        connectionState: connectionState,
       }}
     >
       {children}

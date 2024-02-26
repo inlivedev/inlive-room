@@ -1,16 +1,15 @@
 'use client';
 
 import { useMemo } from 'react';
-import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
-import ConferenceScreenHidden from '@/_features/room/components/conference-screen-hidden';
 import '../styles/webinar-speaker-layout.css';
 
 export default function WebinarSpeakerLayout({
   streams,
 }: {
-  streams: ParticipantStream[];
+  streams: ParticipantVideo[];
 }) {
   const MAX_VISIBLE_PARTICIPANTS = 20;
   const { moderatorClientIDs, speakerClientIDs } = useMetadataContext();
@@ -39,8 +38,8 @@ export default function WebinarSpeakerLayout({
         }
       },
       {
-        speakers: [] as ParticipantStream[],
-        participants: [] as ParticipantStream[],
+        speakers: [] as ParticipantVideo[],
+        participants: [] as ParticipantVideo[],
       }
     );
 
@@ -98,9 +97,10 @@ export default function WebinarSpeakerLayout({
               </div>
               {hiddenParticipants.map((stream) => {
                 return (
-                  <ConferenceScreenHidden
+                  <ConferenceScreen
                     key={`hidden-stream-${stream.id}`}
                     stream={stream}
+                    hidden={true}
                   />
                 );
               })}

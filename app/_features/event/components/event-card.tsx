@@ -1,15 +1,11 @@
-import { EventType } from '@/_shared/types/event';
-import { Card, CardBody, CardHeader, Divider, Image } from '@nextui-org/react';
+import type { EventType } from '@/_shared/types/event';
 import { StatusPublished, StatusDraft } from './event-status';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
-export function EventCard({
-  event,
-}: {
-  event: EventType.ListEventsResponse['data'][0];
-}) {
+export function EventCard({ event }: { event: EventType.Event }) {
   const eventTime = new Date(event.startTime).toLocaleString('en-GB', {
     month: 'short',
     day: '2-digit',
@@ -22,40 +18,41 @@ export function EventCard({
     : '/images/webinar/webinar-no-image-placeholder.png';
 
   return (
-    <Card
-      as={Link}
+    <Link
       href={`/event/${event.slug}`}
-      className="z-0 items-center ring-1 ring-zinc-800"
-      isPressable
-      shadow="none"
+      className="rounded-3xl border border-zinc-800 p-5 hover:bg-zinc-800/50 active:bg-zinc-800"
     >
-      <CardHeader className="flex justify-between gap-x-2">
+      <div className="flex items-center gap-3 border-b border-zinc-800 pb-5">
         {event.isPublished ? <StatusPublished /> : <StatusDraft />}
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs font-medium tracking-[0.275px] text-zinc-500">
           Free • No participants limit • Join without register
         </p>
-      </CardHeader>
-      <Divider className="w-[calc(100%-1.5em)]" />
-      <CardBody className="flex flex-row justify-between gap-2">
-        <div className="text-ballance flex basis-1/2 flex-col justify-between">
-          <h2 className="text-ballance font-bold">{event.name}</h2>
-          <p className="text-xs text-zinc-500">{eventTime}</p>
-        </div>
-        <div>
+      </div>
+      <div className="mt-5 flex flex-col gap-5 sm:flex-row md:flex-col lg:flex-row">
+        <div className="max-w-none flex-1 sm:order-2 sm:max-w-60 md:order-1 md:max-w-none lg:order-2 lg:max-w-60">
           <Image
-            className="rounded-sm "
-            height={120}
-            width={240}
-            alt="a poster related to the event"
-            style={{
-              aspectRatio: '2/1',
-              zIndex: 1,
-              objectFit: 'contain',
-            }}
+            referrerPolicy="no-referrer"
             src={imagePath}
-          ></Image>
+            alt={`Thumbnail image of ${event.name}`}
+            loading="lazy"
+            width={240}
+            height={120}
+            style={{ objectFit: 'cover' }}
+            className="w-full rounded"
+            unoptimized
+          />
         </div>
-      </CardBody>
-    </Card>
+        <div className="flex flex-1 flex-col justify-between sm:order-1 md:order-2 lg:order-1">
+          <h3 className="line-clamp-3 text-lg font-medium text-zinc-300">
+            {event.name}
+          </h3>
+          <div className="mt-4">
+            <span className="text-sm font-medium text-zinc-500">
+              {eventTime}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }

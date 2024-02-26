@@ -3,9 +3,11 @@ import { selectEvent } from '@/(server)/_features/event/schema';
 import { PageMeta } from './types';
 
 export declare namespace EventType {
+  type Event = typeof selectEvent;
+
   type DetailEventResponse = FetcherResponse & {
     message: string;
-    data: typeof selectEvent;
+    data: Event;
   };
 
   type RegisteredParticipant = FetcherResponse & {
@@ -22,14 +24,14 @@ export declare namespace EventType {
   type RegisterParticipantResponse = FetcherResponse & {
     message: string;
     data: {
-      event: typeof selectEvent;
+      event: Event;
       participant: RegisteredParticipant;
     };
   };
 
   type ListEventsResponse = FetcherResponse & {
     message: string;
-    data: (typeof selectEvent)[];
+    data: Event[];
     meta: PageMeta;
   };
 }
