@@ -17,6 +17,7 @@ const RoomDurationMeta = z.object({
   joinTime: z.string().datetime({ offset: true }),
   leaveTime: z.string().datetime({ offset: true }),
   roomType: z.enum(['meeting', 'event']),
+  duration: z.number().optional(),
 });
 
 const activityName = ['RoomDuration'];
@@ -53,19 +54,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(activity.meta);
+    let meta: any;
 
     if (activity.name == 'RoomDuration') {
-      const meta = RoomDurationMeta.parse(activity.meta);
+      const parsedMeta = RoomDurationMeta.parse(activity.meta);
+      meta = parsedMeta;
 
       // Milliseconds accuracy
       const duration =
-        new Date(meta.leaveTime).getTime() - new Date(meta.joinTime).getTime();
+        new Date(parsedMeta.leaveTime).getTime() -
+        new Date(parsedMeta.joinTime).getTime();
+
+      parsedMeta.duration = duration;
 
       // Adjust if time is not synchronized
-      if (!isWithinTolerance(new Date(meta.leaveTime), 5 * 60 * 1000)) {
-        meta.leaveTime = currentTime.toISOString();
-        meta.joinTime = new Date(
+      if (!isWithinTolerance(new Date(parsedMeta.leaveTime), 5 * 60 * 1000)) {
+        parsedMeta.leaveTime = currentTime.toISOString();
+        parsedMeta.joinTime = new Date(
           currentTime.getTime() - duration
         ).toISOString();
       }
@@ -73,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     const log = await addLog({
       name: activity.name,
-      meta: activity.meta,
+      meta: meta,
       createdBy: user.id,
     });
 
