@@ -50,3 +50,14 @@ export const countJoinedUser = async (roomID: string) => {
 
   return res[0];
 };
+
+export const countJoinedGuest = async (roomID: string) => {
+  const res = await db
+    .select({ value: count() })
+    .from(activitiesLog)
+    .where(
+      sql`${activitiesLog.meta} ->> 'roomID' = ${roomID} AND ${activitiesLog.createdBy} IS NULL`
+    );
+
+  return res[0];
+};
