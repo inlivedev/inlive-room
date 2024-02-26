@@ -30,7 +30,7 @@ export default function CreateRoom({
   };
 
   const createRoom = useCallback(async (type: string) => {
-    const response: RoomType.CreateJoinRoomResponse =
+    const response: RoomType.CreateGetRoomResponse =
       await InternalApiFetcher.post('/api/room/create', {
         body: JSON.stringify({
           type: type,

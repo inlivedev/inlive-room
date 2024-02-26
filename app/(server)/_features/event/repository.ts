@@ -8,7 +8,7 @@ import {
   participant as participants,
   selectEvent,
 } from './schema';
-import { DBQueryConfig, and, count, eq } from 'drizzle-orm';
+import { DBQueryConfig, and, count, eq, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 
 export class EventRepo implements iEventRepo {
@@ -166,5 +166,16 @@ export class EventRepo implements iEventRepo {
     });
 
     return res;
+  }
+
+  async countRegistiree(eventID: number) {
+    const res = await db
+      .select({
+        value: count(),
+      })
+      .from(eventHasParticipant)
+      .where(eq(eventHasParticipant.eventId, eventID));
+
+    return res[0];
   }
 }

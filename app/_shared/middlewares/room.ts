@@ -74,8 +74,8 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       let roomData: RoomType.RoomData | null = null;
 
       try {
-        const roomResponse: RoomType.CreateJoinRoomResponse =
-          await InternalApiFetcher.get(`/api/room/${roomID}/join`, {
+        const roomResponse: RoomType.CreateGetRoomResponse =
+          await InternalApiFetcher.get(`/api/room/${roomID}`, {
             cache: 'no-cache',
           });
 

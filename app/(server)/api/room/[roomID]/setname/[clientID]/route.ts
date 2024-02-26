@@ -1,5 +1,4 @@
-import { roomRoutesHandler } from '@/(server)/_features/room/routes';
-
+import { roomService } from '@/(server)/api/_index';
 import { NextRequest, NextResponse } from 'next/server';
 
 type SetClientName = {
@@ -32,7 +31,7 @@ export async function PUT(
       });
     }
 
-    const setNameResponse = await roomRoutesHandler.setClientNameHandler(
+    const setNameResponse = await roomService.setClientName(
       params.roomID,
       params.clientID,
       clientName

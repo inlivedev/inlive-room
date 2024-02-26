@@ -1,16 +1,19 @@
-import { roomRoutesHandler } from '@/(server)/_features/room/routes';
+import { roomService } from '@/(server)/api/_index';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Join endpoints to check if room exist in database, and check if room is created in remote
+ */
 export async function GET(
   _: Request,
   { params }: { params: { roomID: string } }
 ) {
   const roomID = params.roomID;
   try {
-    const existingRoom = await roomRoutesHandler.joinRoomHandler(roomID);
+    const existingRoom = await roomService.joinRoom(roomID);
 
     if (!existingRoom) {
       return NextResponse.json({

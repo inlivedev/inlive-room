@@ -4,7 +4,12 @@ import type { Room, Participant } from '@/(server)/_features/room/service';
 export declare namespace RoomType {
   type RoomData = Room;
 
-  type CreateJoinRoomResponse = FetcherResponse & {
+  enum Type {
+    Meeting = 'meeting',
+    Event = 'event',
+  }
+
+  type CreateGetRoomResponse = FetcherResponse & {
     message: string;
     data: Room;
   };

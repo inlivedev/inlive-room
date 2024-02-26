@@ -175,6 +175,12 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
           roomID: roomID,
         });
 
+        document.dispatchEvent(
+          new CustomEvent('trigger:client-join', {
+            detail: { joinTime: Date.now() },
+          })
+        );
+
         setIsSubmitting(false);
       } catch (error) {
         setIsSubmitting(false);

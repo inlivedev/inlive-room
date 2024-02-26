@@ -1,15 +1,25 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import type { ClientType } from '@/_shared/types/client';
 import { clientSDK } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { UserType } from '@/_shared/types/user';
 
-const ClientContext = createContext({
+type ClientProviderProps = {
+  roomID: string;
+  clientID: string;
+  clientName: string;
+  roomType: string;
+};
+
+const ClientContext = createContext<ClientProviderProps>({
   roomID: '',
   clientID: '',
   clientName: '',
+  roomType: ' ',
 });
 
 export const useClientContext = () => {
@@ -20,13 +30,19 @@ export function ClientProvider({
   roomID,
   client,
   children,
+  roomType,
 }: {
   roomID: string;
+  roomType: string;
   client: ClientType.ClientData;
   children: React.ReactNode;
 }) {
   const [clientState, setClientState] = useState<ClientType.ClientData>(client);
   const { peer } = usePeerContext();
+  const [clientJoinTime, setClientJoinTime] = useState<string | undefined>(
+    undefined
+  );
+  const isActivityRecordedRef = useRef(false);
 
   useEffect(() => {
     const setClientName = ((event: CustomEvent) => {
@@ -86,7 +102,51 @@ export function ClientProvider({
   }, [clientState.clientID]);
 
   useEffect(() => {
-    const clientLeave = async (clientID: string) => {
+    const recordClientJoin = ((event: CustomEvent) => {
+      const detail = event.detail || {};
+      const joinTime = new Date(detail.joinTime).toISOString();
+
+      setClientJoinTime(joinTime);
+    }) as EventListener;
+
+    document.addEventListener('trigger:client-join', recordClientJoin);
+
+    return () => {
+      document.removeEventListener('trigger:client-join', recordClientJoin);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onBrowserClose = () => {
+      const clientLeaveTime = new Date().toISOString();
+
+      if (!isActivityRecordedRef.current && clientJoinTime) {
+        const data = JSON.stringify({
+          name: 'RoomDuration',
+          meta: {
+            roomID: roomID,
+            clientID: client.clientID,
+            name: client.clientName,
+            joinTime: clientJoinTime,
+            leaveTime: clientLeaveTime,
+            roomType: roomType,
+            trigger: 'beforeunload',
+          },
+        });
+
+        navigator.sendBeacon(`/api/user/activity`, data);
+      }
+    };
+
+    window.addEventListener('beforeunload', onBrowserClose);
+
+    return () => {
+      window.removeEventListener('beforeunload', onBrowserClose);
+    };
+  }, [client.clientID, client.clientName, clientJoinTime, roomID, roomType]);
+
+  useEffect(() => {
+    const clientLeave = async (clientID: string, roomType: string) => {
       if (peer?.getPeerConnection()) peer.disconnect();
 
       try {
@@ -95,6 +155,30 @@ export function ClientProvider({
           throw new Error(
             response?.message || 'Failed to get response from the server'
           );
+        }
+
+        const clientLeaveTime = new Date().toISOString();
+
+        const resp: UserType.SendActivityResp = await InternalApiFetcher.post(
+          `/api/user/activity`,
+          {
+            body: JSON.stringify({
+              name: 'RoomDuration',
+              meta: {
+                roomID: roomID,
+                clientID: client.clientID,
+                name: client.clientName,
+                joinTime: clientJoinTime,
+                leaveTime: clientLeaveTime,
+                roomType: roomType,
+                trigger: 'leave-button',
+              },
+            }),
+          }
+        );
+
+        if (resp.ok) {
+          isActivityRecordedRef.current = true;
         }
 
         document.dispatchEvent(
@@ -117,7 +201,8 @@ export function ClientProvider({
     const handleClientLeave = ((event: CustomEvent) => {
       const detail = event.detail || {};
       const clientID = detail.clientID;
-      clientLeave(clientID);
+      const roomType = detail.roomType;
+      clientLeave(clientID, roomType);
     }) as EventListener;
 
     document.addEventListener('trigger:client-leave', handleClientLeave);
@@ -125,7 +210,14 @@ export function ClientProvider({
     return () => {
       document.removeEventListener('trigger:client-leave', handleClientLeave);
     };
-  }, [clientState.clientID, peer, roomID]);
+  }, [
+    client.clientID,
+    client.clientName,
+    clientJoinTime,
+    clientState.clientID,
+    peer,
+    roomID,
+  ]);
 
   return (
     <ClientContext.Provider
@@ -133,6 +225,7 @@ export function ClientProvider({
         roomID: roomID,
         clientID: clientState.clientID,
         clientName: clientState.clientName,
+        roomType: roomType,
       }}
     >
       {children}

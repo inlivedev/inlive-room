@@ -66,7 +66,7 @@ export default function View({
         codecPreferences={codecPreferences}
         bitrateConfig={bitrateConfig}
       >
-        <ClientProvider roomID={roomID} client={client}>
+        <ClientProvider roomID={roomID} client={client} roomType={roomType}>
           <DeviceProvider>
             <ParticipantProvider>
               <DataChannelProvider>
