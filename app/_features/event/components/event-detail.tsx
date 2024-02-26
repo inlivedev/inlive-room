@@ -86,6 +86,10 @@ export default function EventDetail({
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
           <Header logoText="inLive Event" logoHref="/event" needAuth={true} />
           <main className="mb-28 flex flex-1 flex-col">
+            <div className="mb-1">
+              {user?.id == createdBy &&
+                (isPublished ? <StatusPublished /> : <StatusDraft />)}
+            </div>
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
               {title}
             </h2>
@@ -116,13 +120,6 @@ export default function EventDetail({
                 <div className="flex w-full flex-col gap-4 rounded-3xl p-6 lg:bg-black/25">
                   <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 py-3 lg:relative lg:border-t-0 lg:bg-transparent lg:p-0">
                     <div className="flex flex-col gap-1 lg:gap-2">
-                      <div className="flex justify-between pb-2 lg:order-2">
-                        <p className="text-sm text-zinc-500">
-                          Limit participants to join: 50 people
-                        </p>
-                        {user?.id == createdBy &&
-                          (isPublished ? <StatusPublished /> : <StatusDraft />)}
-                      </div>
                       {user?.id == createdBy ? (
                         <AuthorActionButtons
                           copiedActive={copiedActive}

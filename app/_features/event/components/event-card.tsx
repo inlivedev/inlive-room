@@ -25,7 +25,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
       <div className="flex items-center gap-3 border-b border-zinc-800 pb-5">
         {event.isPublished ? <StatusPublished /> : <StatusDraft />}
         <p className="text-xs font-medium tracking-[0.275px] text-zinc-500">
-          Free • No participants limit • Join without register
+          Free • Join without register
         </p>
       </div>
       <div className="mt-5 flex flex-col gap-5 sm:flex-row md:flex-col lg:flex-row">
