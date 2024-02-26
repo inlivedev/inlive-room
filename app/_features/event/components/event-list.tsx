@@ -17,10 +17,6 @@ const navLinks = [
     title: 'My Events',
     href: '/event',
   },
-  {
-    title: 'Past Events',
-    href: '/past-events',
-  },
 ];
 
 export default function EventList({
