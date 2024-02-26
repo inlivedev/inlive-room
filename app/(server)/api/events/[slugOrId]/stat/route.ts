@@ -75,8 +75,8 @@ export async function GET(
         registered_users: countRegistirees || 0,
         joined_users: countUser || 0,
         joined_guests: countGuest || 0,
-        percentage_joined: percentageJoined || 0,
-        percentage_guest: percentageGuest || 0,
+        percentage_joined: percentageJoined.toFixed(2) || 0,
+        percentage_guest: percentageGuest.toFixed(2) || 0,
       },
     });
   } catch (error) {
