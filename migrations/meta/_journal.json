@@ -99,6 +99,13 @@
       "when": 1707268923915,
       "tag": "0013_on_delete_event_cascade",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1708906066378,
+      "tag": "0014_create_activity_table",
+      "breakpoints": true
     }
   ]
 }
