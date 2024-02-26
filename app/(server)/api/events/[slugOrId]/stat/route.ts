@@ -60,8 +60,6 @@ export async function GET(
       );
     }
 
-    console.log('event', existingEvent);
-
     const countRegistirees = (
       await eventRepo.countRegistiree(existingEvent?.id)
     ).value;
@@ -74,11 +72,11 @@ export async function GET(
     return NextResponse.json({
       code: 200,
       data: {
-        registered_users: countRegistirees,
-        joined_users: countUser,
-        joined_guests: countGuest,
-        percentage_joined: percentageJoined,
-        percentage_guest: percentageGuest,
+        registered_users: countRegistirees || 0,
+        joined_users: countUser || 0,
+        joined_guests: countGuest || 0,
+        percentage_joined: percentageJoined || 0,
+        percentage_guest: percentageGuest || 0,
       },
     });
   } catch (error) {
