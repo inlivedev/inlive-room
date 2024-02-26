@@ -39,8 +39,15 @@ function sanitizeHTML(htmlString: string) {
 export const generateMetadata = async ({
   params: { eventID },
 }: PageProps): Promise<Metadata> => {
+  const cookie = (await cookies().get('token')?.value) ?? '';
+
   const { data: eventData }: EventType.DetailEventResponse =
-    await InternalApiFetcher.get(`/api/events/${eventID}`);
+    await InternalApiFetcher.get(`/api/events/${eventID}`, {
+      headers: {
+        Cookie: `token=${cookie}`,
+      },
+      cache: 'no-cache',
+    });
 
   if (!eventData || !eventData.id) {
     return {
@@ -49,33 +56,11 @@ export const generateMetadata = async ({
     };
   }
 
-  const eventStartDate = new Date(eventData.startTime).toLocaleDateString(
-    'en-GB',
-    {
-      timeZone: 'Asia/Jakarta',
-      month: 'long',
-      day: '2-digit',
-      year: 'numeric',
-    }
-  );
-
-  const eventStartTime = new Date(eventData.startTime).toLocaleTimeString(
-    'en-GB',
-    {
-      timeZone: 'Asia/Jakarta',
-      minute: '2-digit',
-      hour: '2-digit',
-      hour12: true,
-    }
-  );
-
   const imageSrc = eventData.thumbnailUrl
     ? `${APP_ORIGIN}/static${eventData.thumbnailUrl}`
     : '/images/webinar/og-image-inlive-room-webinar-generic-en.png';
   const description = sanitizeHTML(eventData.description || '');
-  const descriptionSummary = `${eventStartDate} at ${eventStartTime}, ${
-    description.slice(0, 150) + '...'
-  }`;
+  const descriptionSummary = `${description.slice(0, 150) + '...'}`;
 
   return {
     title: `Webinar — ${eventData.name} — inLive Room`,
@@ -112,6 +97,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
       headers: {
         Cookie: `token=${cookie}`,
       },
+      cache: 'no-cache',
     });
 
   if (!eventData || !eventData.id) {
