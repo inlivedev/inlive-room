@@ -31,17 +31,6 @@ export async function POST(request: NextRequest) {
     const user = response.data ? response.data : null;
     const currentTime = new Date();
 
-    if (!user) {
-      return NextResponse.json(
-        {
-          code: 401,
-          ok: false,
-          message: 'Please check if token is provided in the cookie',
-        },
-        { status: 401 }
-      );
-    }
-
     const activity = ActivityRequest.parse(await request.json());
 
     if (!activityName.includes(activity.name)) {
@@ -79,7 +68,7 @@ export async function POST(request: NextRequest) {
     const log = await addLog({
       name: activity.name,
       meta: meta,
-      createdBy: user.id,
+      createdBy: user ? user.id : null,
     });
 
     return NextResponse.json(
