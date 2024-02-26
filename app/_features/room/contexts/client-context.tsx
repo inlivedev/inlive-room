@@ -6,6 +6,7 @@ import type { ClientType } from '@/_shared/types/client';
 import { clientSDK } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { UserType } from '@/_shared/types/user';
 
 type ClientProviderProps = {
   roomID: string;
@@ -41,6 +42,7 @@ export function ClientProvider({
   const [clientJoinTime, setClientJoinTime] = useState<string | undefined>(
     undefined
   );
+  const [isActivityRecorded, setIsActivityRecorded] = useState(false);
 
   useEffect(() => {
     const setClientName = ((event: CustomEvent) => {
@@ -121,6 +123,8 @@ export function ClientProvider({
     const onBrowserClose = () => {
       const clientLeaveTime = new Date().toISOString();
 
+      if (isActivityRecorded) return;
+
       InternalApiFetcher.post(`/api/user/activity`, {
         body: JSON.stringify({
           name: 'RoomDuration',
@@ -153,19 +157,26 @@ export function ClientProvider({
 
         const clientLeaveTime = new Date().toISOString();
 
-        InternalApiFetcher.post(`/api/user/activity`, {
-          body: JSON.stringify({
-            name: 'RoomDuration',
-            meta: {
-              roomID: roomID,
-              clientID: client.clientID,
-              name: client.clientName,
-              joinTime: clientJoinTime,
-              leaveTime: clientLeaveTime,
-              roomType: roomType,
-            },
-          }),
-        });
+        const resp: UserType.SendActivityResp = await InternalApiFetcher.post(
+          `/api/user/activity`,
+          {
+            body: JSON.stringify({
+              name: 'RoomDuration',
+              meta: {
+                roomID: roomID,
+                clientID: client.clientID,
+                name: client.clientName,
+                joinTime: clientJoinTime,
+                leaveTime: clientLeaveTime,
+                roomType: roomType,
+              },
+            }),
+          }
+        );
+
+        if (resp.ok) {
+          setIsActivityRecorded(true);
+        }
 
         document.dispatchEvent(
           new CustomEvent('set:conference-view', {

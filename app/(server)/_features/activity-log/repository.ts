@@ -4,7 +4,9 @@ import { RoomType } from '@/_shared/types/room';
 import { count, countDistinct, sql, type SQL } from 'drizzle-orm';
 
 export const addLog = async (data: InsertActivityLog) => {
-  return db.insert(activitiesLog).values(data).returning();
+  const res = await db.insert(activitiesLog).values(data).returning();
+
+  return res[0];
 };
 
 /**
