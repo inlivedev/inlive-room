@@ -1,7 +1,7 @@
 import { db } from '@/(server)/_shared/database/database';
 import { activitiesLog, type InsertActivityLog } from './schema';
 import { RoomType } from '@/_shared/types/room';
-import { sql, type SQL } from 'drizzle-orm';
+import { count, countDistinct, sql, type SQL } from 'drizzle-orm';
 
 export const addLog = async (data: InsertActivityLog) => {
   return db.insert(activitiesLog).values(data).returning();
@@ -38,4 +38,15 @@ export const aggregateRoomDuration = async (
   } catch (e) {
     return 0;
   }
+};
+
+export const countJoinedUser = async (roomID: string) => {
+  const res = await db
+    .select({ value: countDistinct(activitiesLog.createdBy) })
+    .from(activitiesLog)
+    .where(
+      sql`${activitiesLog.meta} ->> 'roomID' = ${roomID} AND ${activitiesLog.createdBy} IS NOT NULL`
+    );
+
+  return res[0];
 };
