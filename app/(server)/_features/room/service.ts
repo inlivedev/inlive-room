@@ -1,4 +1,3 @@
-import { iRoomService } from './routes';
 import * as Sentry from '@sentry/nextjs';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
@@ -24,7 +23,7 @@ export interface iRoomRepo {
   isPersistent(): boolean;
 }
 
-export class RoomService implements iRoomService {
+export class RoomService {
   _roomRepo: iRoomRepo;
   _sdk = serverSDK;
   _datachannels: string[];
