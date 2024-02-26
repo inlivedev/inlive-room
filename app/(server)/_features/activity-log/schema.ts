@@ -1,13 +1,7 @@
 import { relations } from 'drizzle-orm';
-import {
-  integer,
-  jsonb,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-} from 'drizzle-orm/pg-core';
+import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { users } from '../user/schema';
+import jsonb from '@/(server)/_shared/database/custom-type';
 
 export const activitiesLog = pgTable('activities_logs', {
   id: serial('id').primaryKey().notNull(),
