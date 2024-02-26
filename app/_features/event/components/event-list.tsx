@@ -6,6 +6,7 @@ import { EventType } from '@/_shared/types/event';
 import Link from 'next/link';
 import { Button } from '@nextui-org/react';
 import { EventCard } from './event-card';
+import TabNavigation from '@/_features/event/components/tab-navigation';
 import EditIcon from '@/_shared/components/icons/edit-icon';
 import ChevronLeft from '@/_shared/components/icons/chevron-left';
 import ChevronRight from '@/_shared/components/icons/chevron-right';
@@ -15,7 +16,10 @@ const navLinks = [
   {
     title: 'My Events',
     href: '/event',
-    active: true,
+  },
+  {
+    title: 'Past Events',
+    href: '/past-events',
   },
 ];
 
@@ -38,30 +42,7 @@ export default function EventList({
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex-1">
-          <nav className="border-b border-zinc-800 text-sm font-medium">
-            <ul className="flex items-center">
-              {navLinks.map((link) => {
-                return (
-                  <li
-                    key={link.href}
-                    className={`relative py-2 ${
-                      link.active
-                        ? 'after:absolute after:bottom-0 after:left-1/2 after:inline-block after:h-[2px] after:w-3/4 after:-translate-x-1/2 after:bg-white'
-                        : ''
-                    }`}
-                  >
-                    <Button
-                      as={Link}
-                      href={link.href}
-                      className="h-8 w-full min-w-0 items-center rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700"
-                    >
-                      {link.title}
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          <TabNavigation navLinks={navLinks} />
           <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:mt-5 lg:border-t-0 lg:p-0 lg:text-right">
             <Button
               as={Link}
