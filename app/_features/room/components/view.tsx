@@ -43,22 +43,6 @@ export default function View({
   const [activeView, setActiveView] = useState<string>('lobby');
 
   useEffect(() => {
-    const recordLeftRoom = () => {
-      InternalApiFetcher.post(`/user/activity`, {
-        body: JSON.stringify({
-          name: 'LeftRoom',
-          meta: {
-            roomID: roomID,
-            clientID: client.clientID,
-            name: client.clientName,
-          },
-        }),
-      });
-    };
-    window.addEventListener('beforeunload', recordLeftRoom);
-  });
-
-  useEffect(() => {
     const setView = ((event: CustomEvent) => {
       const detail = event.detail || {};
       const view = detail.view;
