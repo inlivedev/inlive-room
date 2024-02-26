@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import type { ClientType } from '@/_shared/types/client';
 import { clientSDK } from '@/_shared/utils/sdk';
@@ -42,7 +42,7 @@ export function ClientProvider({
   const [clientJoinTime, setClientJoinTime] = useState<string | undefined>(
     undefined
   );
-  const [isActivityRecorded, setIsActivityRecorded] = useState(false);
+  const isActivityRecordedRef = useRef(false);
 
   useEffect(() => {
     const setClientName = ((event: CustomEvent) => {
@@ -106,9 +106,6 @@ export function ClientProvider({
       const detail = event.detail || {};
       const joinTime = new Date(detail.joinTime).toISOString();
 
-      console.log(joinTime, 'joinTime');
-      console.log('detail', detail);
-
       setClientJoinTime(joinTime);
     }) as EventListener;
 
@@ -123,10 +120,8 @@ export function ClientProvider({
     const onBrowserClose = () => {
       const clientLeaveTime = new Date().toISOString();
 
-      if (isActivityRecorded) return;
-
-      InternalApiFetcher.post(`/api/user/activity`, {
-        body: JSON.stringify({
+      if (!isActivityRecordedRef.current && clientJoinTime) {
+        const data = JSON.stringify({
           name: 'RoomDuration',
           meta: {
             roomID: roomID,
@@ -135,13 +130,20 @@ export function ClientProvider({
             joinTime: clientJoinTime,
             leaveTime: clientLeaveTime,
             roomType: roomType,
+            trigger: 'beforeunload',
           },
-        }),
-      });
+        });
+
+        navigator.sendBeacon(`/api/user/activity`, data);
+      }
     };
 
     window.addEventListener('beforeunload', onBrowserClose);
-  });
+
+    return () => {
+      window.removeEventListener('beforeunload', onBrowserClose);
+    };
+  }, [client.clientID, client.clientName, clientJoinTime, roomID, roomType]);
 
   useEffect(() => {
     const clientLeave = async (clientID: string, roomType: string) => {
@@ -169,13 +171,14 @@ export function ClientProvider({
                 joinTime: clientJoinTime,
                 leaveTime: clientLeaveTime,
                 roomType: roomType,
+                trigger: 'leave-button',
               },
             }),
           }
         );
 
         if (resp.ok) {
-          setIsActivityRecorded(true);
+          isActivityRecordedRef.current = true;
         }
 
         document.dispatchEvent(

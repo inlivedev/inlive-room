@@ -18,6 +18,7 @@ const RoomDurationMeta = z.object({
   leaveTime: z.string().datetime({ offset: true }),
   roomType: z.enum(['meeting', 'event']),
   duration: z.number().optional(),
+  trigger: z.enum(['beforeunload', 'leave-button']),
 });
 
 const activityName = ['RoomDuration'];
