@@ -79,7 +79,6 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.log(error);
     const response = {
       code: 500,
       message: 'an error has occured on our side please try again later',
