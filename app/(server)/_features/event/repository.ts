@@ -8,7 +8,7 @@ import {
   participant as participants,
   selectEvent,
 } from './schema';
-import { DBQueryConfig, and, count, eq, sql } from 'drizzle-orm';
+import { DBQueryConfig, SQL, and, count, eq, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 
 export class EventRepo implements iEventRepo {
@@ -36,7 +36,14 @@ export class EventRepo implements iEventRepo {
     else return undefined;
   }
 
-  async getEvents(page: number, limit: number, userId?: number) {
+  async getEvents(
+    page: number,
+    limit: number,
+    userId?: number,
+    isAfter?: Date,
+    isBefore?: Date,
+    isPublished?: boolean
+  ) {
     page = page - 1;
 
     if (page < 0) {
@@ -56,20 +63,46 @@ export class EventRepo implements iEventRepo {
       columns: { roomId: false },
     };
 
+    const whereQuery: SQL[] = [];
+
     if (userId) {
-      filter.where = eq(events.createdBy, userId);
+      whereQuery.push(sql`${events.createdBy} = ${userId}`);
     }
 
-    const { data, total } = await db.transaction(async (tx) => {
-      const data = await tx.query.events.findMany(filter);
+    if (isAfter && isBefore) {
+      whereQuery.push(
+        sql`${
+          events.startTime
+        } BETWEEN ${isAfter.toISOString()} AND ${isBefore.toISOString()}`
+      );
+    } else {
+      if (isAfter) {
+        whereQuery.push(sql`${events.startTime} >= ${isAfter.toISOString()}`);
+      }
 
-      const metaFilter = userId ? eq(events.createdBy, userId) : undefined;
+      if (isBefore) {
+        whereQuery.push(sql`${events.startTime} <= ${isBefore.toISOString()}`);
+      }
+    }
+
+    if (isPublished !== undefined) {
+      whereQuery.push(sql`${events.isPublished} = ${isPublished}`);
+    }
+
+    const whereFilter = sql.join(whereQuery, sql` AND `);
+
+    const { data, total } = await db.transaction(async (tx) => {
+      const data = await tx.query.events.findMany({
+        ...filter,
+        where: whereFilter,
+      });
+
       const totalRows = await db
         .select({
           total: count(),
         })
         .from(events)
-        .where(metaFilter);
+        .where(whereFilter);
 
       return { data, total: totalRows[0].total };
     });
