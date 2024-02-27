@@ -89,7 +89,7 @@ export default function EventForm({
   );
   const today = new Date();
   const currentHour = today.getHours();
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(existingEvent?.startTime || today);
   const [startTime, setStartTime] = useState(
     existingEvent?.startTime
       ? {
