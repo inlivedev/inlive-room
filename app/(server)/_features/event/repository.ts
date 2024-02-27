@@ -12,27 +12,27 @@ import { DBQueryConfig, SQL, and, count, eq, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 
 export class EventRepo implements iEventRepo {
-  async addEvent(event: typeof insertEvent) {
+  async addEvent(event: insertEvent) {
     const data = await db.insert(events).values(event).returning();
 
     return data[0];
   }
 
-  async getEventBySlug(slug: string): Promise<typeof selectEvent | undefined> {
+  async getEventBySlug(slug: string): Promise<selectEvent | undefined> {
     const data = await db.query.events.findFirst({
       where: eq(events.slug, slug),
     });
 
-    if (data) return data as typeof selectEvent;
+    if (data) return data as selectEvent;
     else return undefined;
   }
 
-  async getEventById(id: number): Promise<typeof selectEvent | undefined> {
+  async getEventById(id: number): Promise<selectEvent | undefined> {
     const data = await db.query.events.findFirst({
       where: eq(events.id, id),
     });
 
-    if (data) return data as typeof selectEvent;
+    if (data) return data as selectEvent;
     else return undefined;
   }
 
@@ -137,8 +137,8 @@ export class EventRepo implements iEventRepo {
   async updateEvent(
     userId: number,
     id: number,
-    event: typeof insertEvent
-  ): Promise<typeof selectEvent | undefined> {
+    event: insertEvent
+  ): Promise<selectEvent | undefined> {
     const data = await db.transaction(async (tx) => {
       if (!event.thumbnailUrl) {
         await tx
@@ -163,7 +163,7 @@ export class EventRepo implements iEventRepo {
   async updateEventBySlug(
     userId: number,
     slug: string,
-    event: typeof insertEvent
+    event: insertEvent
   ) {
     return await db
       .update(events)

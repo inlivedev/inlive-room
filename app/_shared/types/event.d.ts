@@ -3,11 +3,21 @@ import { selectEvent } from '@/(server)/_features/event/schema';
 import { PageMeta } from './types';
 
 export declare namespace EventType {
-  type Event = typeof selectEvent;
+  type Event = selectEvent;
 
   type DetailEventResponse = FetcherResponse & {
     message: string;
     data: Event;
+  };
+
+  type Stat = FetcherResponse & {
+    data: {
+      registeredUsers: number;
+      joinedUsers: number;
+      joinedGuests: number;
+      percentageJoined: string;
+      percentageGuest: string;
+    };
   };
 
   type RegisteredParticipant = FetcherResponse & {

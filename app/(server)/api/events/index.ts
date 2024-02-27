@@ -3,7 +3,7 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
-export function GenerateIcal(event: typeof selectEvent, timezone: string) {
+export function GenerateIcal(event: selectEvent, timezone: string) {
   const { eventDate, eventTime, DTSTAMP, DTSTART, DTEND } = generateDateTime(
     event,
     timezone
@@ -57,7 +57,7 @@ END:VEVENT
 END:VCALENDAR`;
 }
 
-function generateDateTime(event: typeof selectEvent, timezone: string) {
+function generateDateTime(event: selectEvent, timezone: string) {
   const eventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
     timeZone: timezone,
