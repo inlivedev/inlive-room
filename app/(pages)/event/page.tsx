@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import type { AuthType } from '@/_shared/types/auth';
 import HTTPError from '@/_shared/components/errors/http-error';
@@ -80,10 +80,14 @@ export default async function Page({
   const page = searchParams['page'] ? parseInt(searchParams['page']) : 1;
   const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 10;
 
+  const token = cookies().get('token')?.value ?? '';
+
   const eventResponse: EventType.ListEventsResponse =
-    await InternalApiFetcher.get(
-      `/api/events?created_by=${user.id}&page=${page}&limit=${limit}`
-    );
+    await InternalApiFetcher.get(`/api/events?page=${page}&limit=${limit}`, {
+      headers: {
+        Cookie: `token=${token}`,
+      },
+    });
 
   const events = eventResponse.data || [];
   const pageMeta = eventResponse.meta;

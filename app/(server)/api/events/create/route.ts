@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { eventRepo, eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
-import { insertEvent } from '@/(server)/_features/event/schema';
+import { events, insertEvent } from '@/(server)/_features/event/schema';
 import { existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
@@ -47,6 +47,11 @@ export async function POST(req: Request) {
         : new Date(eventMeta.endTime);
     const eventDesc = eventMeta.description;
     const eventHost = eventMeta.host;
+
+    eventStartTime.setUTCSeconds(0);
+    eventStartTime.setUTCMilliseconds(0);
+    eventEndTime.setUTCSeconds(0);
+    eventEndTime.setUTCMilliseconds(0);
 
     if (typeof eventName !== 'string' || eventName.trim().length === 0) {
       return NextResponse.json({
