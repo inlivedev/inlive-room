@@ -277,44 +277,44 @@ export default function EventForm({
     }
   }, [existingEvent?.id, imageData.imagePreview, navigateTo, prepareEventData]);
 
-  const createEvent = useCallback(
-    async (isPublished: boolean) => {
-      const finalEndpoint = `/api/events/create`;
-      const formData = await prepareEventData(isPublished);
-      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
-        body: formData,
-        headers: undefined,
-      });
+  const createEvent = useCallback(async () => {
+    const finalEndpoint = `/api/events/create`;
+    const formData = await prepareEventData();
+    const respEvent = await InternalApiFetcher.post(finalEndpoint, {
+      body: formData,
+      headers: undefined,
+    });
 
-      if (respEvent.ok) {
-        if (isPublished)
-          navigateTo(
-            new URL(`/event/${respEvent.data.slug}`, window.location.origin)
-              .href
-          );
-        else
-          navigateTo(
-            new URL(
-              `/event/${respEvent.data.slug}/edit`,
-              window.location.origin
-            ).href
-          );
-      } else {
-        console.log(respEvent.message);
-      }
-    },
-    [navigateTo, prepareEventData]
-  );
+    if (respEvent.ok) {
+      // Navigate to the event page if publishing
+      if (isPublished)
+        navigateTo(
+          new URL(`/event/${respEvent.data.slug}`, window.location.origin).href
+        );
+      // navigate to event form if drafting
+      else
+        navigateTo(
+          new URL(`/event/${respEvent.data.slug}/edit`, window.location.origin)
+            .href
+        );
+    } else {
+      console.log(respEvent.message);
+    }
+  }, [isPublished, navigateTo, prepareEventData]);
 
   const onDraft = useCallback(() => {
-    createEvent(false);
+    setIsPublished(false);
+    createEvent();
   }, [createEvent]);
 
   const onUpdate = useCallback(() => {
     updateEvent();
   }, [updateEvent]);
 
-  const onPublish = useCallback(() => createEvent(true), [createEvent]);
+  const onPublish = useCallback(() => {
+    setIsPublished(true);
+    createEvent();
+  }, [createEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -564,7 +564,7 @@ function TitleBar(
   existingEvent: typeof selectEvent | undefined,
   onUpdate: () => void,
   onDraft: () => void,
-  onPublish: () => Promise<void>
+  onPublish: () => void
 ) {
   return (
     <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
