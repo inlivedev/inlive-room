@@ -32,7 +32,12 @@ export async function GET(req: Request) {
     }
 
     if (isPublished) {
-      isPublishedParsed = z.boolean().parse(isPublished);
+      isPublishedParsed = z
+        .string()
+        .toLowerCase()
+        .transform((x) => x === 'true')
+        .pipe(z.boolean())
+        .parse(isPublished);
     }
 
     const getUserResp = await getCurrentAuthenticated(
