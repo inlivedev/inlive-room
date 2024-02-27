@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eventRepo, eventService } from '@/(server)/api/_index';
-import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import {
@@ -72,26 +71,18 @@ export async function GET(
     return NextResponse.json({
       code: 200,
       data: {
-        registered_users: countRegistirees || 0,
-        joined_users: countUser || 0,
-        joined_guests: countGuest || 0,
-        percentage_joined: percentageJoined.toFixed(2) || 0,
-        percentage_guest: percentageGuest.toFixed(2) || 0,
+        registeredUsers: countRegistirees || 0,
+        joinedUsers: countUser || 0,
+        joinedGuests: countGuest || 0,
+        percentageJoined: percentageJoined.toFixed(2) || 0,
+        percentageGuest: percentageGuest.toFixed(2) || 0,
       },
     });
   } catch (error) {
-    if (!isError(error)) {
-      const response = {
-        code: 500,
-        message: 'an error has occured on our side please try again later',
-      };
-
-      return NextResponse.json(response, { status: 500 });
-    }
-
+    console.log(error);
     const response = {
       code: 500,
-      message: error.message,
+      message: 'an error has occured on our side please try again later',
     };
 
     return NextResponse.json(response, { status: 500 });
