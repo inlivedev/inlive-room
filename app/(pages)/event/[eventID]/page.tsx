@@ -105,7 +105,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const cookie = (await cookies().get('token')?.value) ?? '';
+  const cookie = cookies().get('token')?.value ?? '';
 
   const { data: eventData }: EventType.DetailEventResponse =
     await InternalApiFetcher.get(`/api/events/${eventID}`, {
