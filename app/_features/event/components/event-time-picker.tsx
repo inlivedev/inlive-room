@@ -95,12 +95,19 @@ export function TimePickerModal({
           (_, a) => a + (startHour + 1)
         )
       );
+      setMinuteSelection(defaultGenerateMinutes(step));
     } else {
       setHourSelection(
         Array.from({ length: 24 - startHour }, (_, a) => a + startHour)
       );
+
+      if (isEndTime) {
+        setMinuteSelection(
+          generateEndTimeMinutes(step, startHour, startMinute, hour)
+        );
+      }
     }
-  }, [isEndTime, startHour, startMinute, step]);
+  }, [hour, isEndTime, startHour, startMinute, step]);
 
   useEffect(() => {
     if (startHour == parseInt(selectedHourValue) && isEndTime) {
@@ -142,6 +149,24 @@ export function TimePickerModal({
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
+                onAction={useCallback(
+                  (key: React.Key) => {
+                    if (Number(key) > startHour && isEndTime) {
+                      setMinuteSelection(defaultGenerateMinutes(step));
+                    }
+                    if (Number(key) == startHour && isEndTime) {
+                      setMinuteSelection(
+                        generateEndTimeMinutes(
+                          step,
+                          startHour,
+                          startMinute,
+                          Number(key)
+                        )
+                      );
+                    }
+                  },
+                  [isEndTime, startHour, startMinute, step]
+                )}
                 aria-label="Hour Dropdown"
                 variant={dropDownVariant}
                 disallowEmptySelection
@@ -204,11 +229,13 @@ export function TimePickerModal({
   );
 }
 
+// Generate minutes for the time picker (0 - 59)
 function defaultGenerateMinutes(step: number): number[] {
   const minutes = Array.from({ length: 60 / step }, (_, a) => a * step);
   return minutes;
 }
 
+// Generate minutes for end time picker
 function generateEndTimeMinutes(
   step: number,
   startHour: number,

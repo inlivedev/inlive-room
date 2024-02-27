@@ -89,7 +89,7 @@ export default function EventForm({
   );
   const today = new Date();
   const currentHour = today.getHours();
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(existingEvent?.startTime || today);
   const [startTime, setStartTime] = useState(
     existingEvent?.startTime
       ? {
@@ -181,7 +181,7 @@ export default function EventForm({
         return;
       }
 
-      if (startTime.minute > endTime.minute) {
+      if (startTime.minute >= endTime.minute) {
         setEndTime({
           hour: startTime.hour,
           minute: startTime.minute + 15,
@@ -198,7 +198,7 @@ export default function EventForm({
   }, [startTime.hour, startTime.minute, endTime.hour, endTime.minute]);
 
   const prepareEventData = useCallback(
-    async (deleteImage = false) => {
+    async (deleteImage = false, publish?: boolean) => {
       if (
         eventDescription.trim().length === 0 ||
         eventName.trim().length === 0
@@ -226,7 +226,7 @@ export default function EventForm({
         endTime: eventEndTime.toISOString(),
         description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
         host: user?.name,
-        isPublished: isPublished,
+        isPublished: publish || isPublished,
         deleteImage: deleteImage,
       };
 
@@ -265,6 +265,7 @@ export default function EventForm({
     const finalEndpoint = `/api/events/${existingEvent?.id}`;
     const respEvent = await InternalApiFetcher.put(finalEndpoint, {
       body: formData,
+      // must set headers to undefined, so the content-type will be set properly automatically
       headers: undefined,
     });
 
@@ -274,24 +275,28 @@ export default function EventForm({
         window.location.origin
       ).href;
       navigateTo(redirectPath);
+    } else {
+      alert('Failed to update event, please try again later');
     }
   }, [existingEvent?.id, imageData.imagePreview, navigateTo, prepareEventData]);
 
   const createEvent = useCallback(
-    async (isPublished: boolean) => {
+    async (publish: boolean) => {
       const finalEndpoint = `/api/events/create`;
-      const formData = await prepareEventData(isPublished);
+      const formData = await prepareEventData(false, publish);
       const respEvent = await InternalApiFetcher.post(finalEndpoint, {
         body: formData,
         headers: undefined,
       });
 
       if (respEvent.ok) {
-        if (isPublished)
+        // Navigate to the event page if publishing
+        if (publish)
           navigateTo(
             new URL(`/event/${respEvent.data.slug}`, window.location.origin)
               .href
           );
+        // navigate to event form if drafting
         else
           navigateTo(
             new URL(
@@ -300,7 +305,7 @@ export default function EventForm({
             ).href
           );
       } else {
-        console.log(respEvent.message);
+        alert('Failed to create event, please try again later');
       }
     },
     [navigateTo, prepareEventData]
@@ -314,7 +319,9 @@ export default function EventForm({
     updateEvent();
   }, [updateEvent]);
 
-  const onPublish = useCallback(() => createEvent(true), [createEvent]);
+  const onPublish = useCallback(() => {
+    createEvent(true);
+  }, [createEvent]);
 
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
@@ -564,7 +571,7 @@ function TitleBar(
   existingEvent: typeof selectEvent | undefined,
   onUpdate: () => void,
   onDraft: () => void,
-  onPublish: () => Promise<void>
+  onPublish: () => void
 ) {
   return (
     <div className="flex h-fit w-full justify-between gap-0 pb-6 sm:gap-4">
