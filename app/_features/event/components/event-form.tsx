@@ -181,7 +181,7 @@ export default function EventForm({
         return;
       }
 
-      if (startTime.minute > endTime.minute) {
+      if (startTime.minute >= endTime.minute) {
         setEndTime({
           hour: startTime.hour,
           minute: startTime.minute + 15,
