@@ -198,7 +198,7 @@ export default function EventForm({
   }, [startTime.hour, startTime.minute, endTime.hour, endTime.minute]);
 
   const prepareEventData = useCallback(
-    async (deleteImage = false) => {
+    async (deleteImage = false, publish?: boolean) => {
       if (
         eventDescription.trim().length === 0 ||
         eventName.trim().length === 0
@@ -226,7 +226,7 @@ export default function EventForm({
         endTime: eventEndTime.toISOString(),
         description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
         host: user?.name,
-        isPublished: isPublished,
+        isPublished: publish || isPublished,
         deleteImage: deleteImage,
       };
 
@@ -265,6 +265,7 @@ export default function EventForm({
     const finalEndpoint = `/api/events/${existingEvent?.id}`;
     const respEvent = await InternalApiFetcher.put(finalEndpoint, {
       body: formData,
+      // must set headers to undefined, so the content-type will be set properly automatically
       headers: undefined,
     });
 
@@ -274,37 +275,44 @@ export default function EventForm({
         window.location.origin
       ).href;
       navigateTo(redirectPath);
+    } else {
+      alert('Failed to update event, please try again later');
     }
   }, [existingEvent?.id, imageData.imagePreview, navigateTo, prepareEventData]);
 
-  const createEvent = useCallback(async () => {
-    const finalEndpoint = `/api/events/create`;
-    const formData = await prepareEventData();
-    const respEvent = await InternalApiFetcher.post(finalEndpoint, {
-      body: formData,
-      headers: undefined,
-    });
+  const createEvent = useCallback(
+    async (publish: boolean) => {
+      const finalEndpoint = `/api/events/create`;
+      const formData = await prepareEventData(false, publish);
+      const respEvent = await InternalApiFetcher.post(finalEndpoint, {
+        body: formData,
+        headers: undefined,
+      });
 
-    if (respEvent.ok) {
-      // Navigate to the event page if publishing
-      if (isPublished)
-        navigateTo(
-          new URL(`/event/${respEvent.data.slug}`, window.location.origin).href
-        );
-      // navigate to event form if drafting
-      else
-        navigateTo(
-          new URL(`/event/${respEvent.data.slug}/edit`, window.location.origin)
-            .href
-        );
-    } else {
-      console.log(respEvent.message);
-    }
-  }, [isPublished, navigateTo, prepareEventData]);
+      if (respEvent.ok) {
+        // Navigate to the event page if publishing
+        if (publish)
+          navigateTo(
+            new URL(`/event/${respEvent.data.slug}`, window.location.origin)
+              .href
+          );
+        // navigate to event form if drafting
+        else
+          navigateTo(
+            new URL(
+              `/event/${respEvent.data.slug}/edit`,
+              window.location.origin
+            ).href
+          );
+      } else {
+        alert('Failed to create event, please try again later');
+      }
+    },
+    [navigateTo, prepareEventData]
+  );
 
   const onDraft = useCallback(() => {
-    setIsPublished(false);
-    createEvent();
+    createEvent(false);
   }, [createEvent]);
 
   const onUpdate = useCallback(() => {
@@ -312,8 +320,7 @@ export default function EventForm({
   }, [updateEvent]);
 
   const onPublish = useCallback(() => {
-    setIsPublished(true);
-    createEvent();
+    createEvent(true);
   }, [createEvent]);
 
   return (
