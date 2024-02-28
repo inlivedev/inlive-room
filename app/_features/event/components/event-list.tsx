@@ -63,13 +63,16 @@ export default function EventList({
                     </div>
                     {previousPage || nextPage ? (
                       <div className="mt-10 text-sm md:mt-20">
+                        <p className="pb-4 text-center text-sm font-medium text-zinc-500">
+                          Page {currentPage} of {lastPage}
+                        </p>
                         <div className="flex items-center justify-center gap-6">
                           {previousPage ? (
                             <div>
                               <Button
                                 className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                                 as={Link}
-                                href={`/event?page=${previousPage}`}
+                                href={`/event?page=${previousPage}&limit=${pageMeta.per_page}`}
                               >
                                 <span className="flex items-center">
                                   <ChevronLeft width={16} height={16} />
@@ -83,7 +86,7 @@ export default function EventList({
                               <Button
                                 className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                                 as={Link}
-                                href={`/event?page=${nextPage}`}
+                                href={`/event?page=${nextPage}&limit=${pageMeta.per_page}`}
                               >
                                 <span>Next page</span>
                                 <span className="flex items-center">

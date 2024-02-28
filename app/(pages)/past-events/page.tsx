@@ -4,9 +4,11 @@ import AppContainer from '@/_shared/components/containers/app-container';
 import type { AuthType } from '@/_shared/types/auth';
 import HTTPError from '@/_shared/components/errors/http-error';
 import { whitelistFeature } from '@/_shared/utils/flag';
-import PastEvents from '@/_features/event/components/past-events';
+import PastEvents from '@/_features/event/components/event-stat-list';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { EventType } from '@/_shared/types/event';
+
+export const dynamic = 'force-dynamic';
 
 export const generateMetadata = (): Metadata => {
   const headersList = headers();
@@ -78,7 +80,7 @@ export default async function Page({
   }
 
   const page = searchParams['page'] ? parseInt(searchParams['page']) : 1;
-  const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 10;
+  const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 5;
   const token = cookies().get('token')?.value ?? '';
   const today = new Date();
 
@@ -87,7 +89,7 @@ export default async function Page({
 
   const eventResponse: EventType.ListEventsResponse =
     await InternalApiFetcher.get(
-      `/api/events?page=${page}&limit=${limit}&is_before${today.toISOString()}&is_published=true`,
+      `/api/events?page=${page}&limit=${limit}&is_before=${today.toISOString()}&is_published=true`,
       {
         headers: {
           Cookie: `token=${token}`,
@@ -95,26 +97,12 @@ export default async function Page({
       }
     );
 
-  const eventStats = await getEventStats(eventResponse.data, token);
+  const events = eventResponse.data || [];
+  const meta = eventResponse.meta;
 
   return (
     <AppContainer user={user}>
-      <PastEvents events={eventResponse.data} eventsStat={eventStats} />
+      <PastEvents events={events} meta={meta} />
     </AppContainer>
   );
 }
-
-const getEventStats = async (events: EventType.Event[], token: string) => {
-  const stats = await Promise.all(
-    events.map(async (event) => {
-      const eventStat: EventType.Stat = await InternalApiFetcher.get(
-        `/api/events/${event.id}/stat`,
-        { headers: { Cookie: `token=${token}` } }
-      );
-
-      return eventStat;
-    })
-  );
-
-  return stats;
-};
