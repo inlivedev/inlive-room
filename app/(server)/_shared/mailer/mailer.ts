@@ -18,7 +18,7 @@ export async function SendEventInvitationEmail(
   firstName: string,
   lastName: string,
   address: string,
-  event: typeof selectEvent
+  event: selectEvent
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({

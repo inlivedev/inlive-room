@@ -1,10 +1,14 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import type { AuthType } from '@/_shared/types/auth';
 import HTTPError from '@/_shared/components/errors/http-error';
 import { whitelistFeature } from '@/_shared/utils/flag';
-import PastEvents from '@/_features/event/components/past-events';
+import PastEvents from '@/_features/event/components/event-stat-list';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { EventType } from '@/_shared/types/event';
+
+export const dynamic = 'force-dynamic';
 
 export const generateMetadata = (): Metadata => {
   const headersList = headers();
@@ -38,7 +42,11 @@ export const generateMetadata = (): Metadata => {
   };
 };
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
@@ -71,9 +79,30 @@ export default async function Page() {
     );
   }
 
+  const page = searchParams['page'] ? parseInt(searchParams['page']) : 1;
+  const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 5;
+  const token = cookies().get('token')?.value ?? '';
+  const today = new Date();
+
+  today.setUTCMilliseconds(0);
+  today.setUTCSeconds(0);
+
+  const eventResponse: EventType.ListEventsResponse =
+    await InternalApiFetcher.get(
+      `/api/events?page=${page}&limit=${limit}&is_before=${today.toISOString()}&is_published=true`,
+      {
+        headers: {
+          Cookie: `token=${token}`,
+        },
+      }
+    );
+
+  const events = eventResponse.data || [];
+  const meta = eventResponse.meta;
+
   return (
     <AppContainer user={user}>
-      <PastEvents />
+      <PastEvents events={events} meta={meta} />
     </AppContainer>
   );
 }

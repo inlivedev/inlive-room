@@ -214,7 +214,7 @@ export async function PUT(
     ) as updateEvent;
     const eventImage = formData.get('image') as Blob;
 
-    const newEvent: typeof insertEvent = {
+    const newEvent: insertEvent = {
       name: updateEventMeta.name ?? oldEvent.name,
       startTime: new Date(updateEventMeta.startTime || oldEvent.startTime),
       endTime: new Date(updateEventMeta.endTime || oldEvent.endTime),

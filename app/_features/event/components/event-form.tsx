@@ -64,7 +64,7 @@ const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 export default function EventForm({
   data: existingEvent,
 }: {
-  data?: typeof selectEvent;
+  data?: selectEvent;
 }) {
   // Constant for event
   const setStartTimeEvent = 'open:event-time-picker-start-modal';
@@ -568,7 +568,7 @@ function PublishSwitch(
 }
 
 function TitleBar(
-  existingEvent: typeof selectEvent | undefined,
+  existingEvent: selectEvent | undefined,
   onUpdate: () => void,
   onDraft: () => void,
   onPublish: () => void

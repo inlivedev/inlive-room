@@ -77,8 +77,8 @@ export const eventHasParticipantRelation = relations(
   })
 );
 
-export const insertEvent = events.$inferInsert;
-export const selectEvent = events.$inferSelect;
+export type insertEvent = typeof events.$inferInsert;
+export type selectEvent = typeof events.$inferSelect;
 
 export const insertParticipant = participant.$inferInsert;
 export const selectParticipant = participant.$inferSelect;

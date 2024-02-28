@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
     const eventRoom = await roomService.createRoom(user.id, 'event');
 
-    const Event: typeof insertEvent = {
+    const Event: insertEvent = {
       name: eventName,
       startTime: eventStartTime,
       endTime: eventEndTime,
