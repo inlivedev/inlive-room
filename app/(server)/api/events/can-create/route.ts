@@ -4,7 +4,9 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { eventRepo } from '@/(server)/api/_index';
 
-const EVENT_TRIAL_COUNT = parseInt(process.env.EVENT_TRIAL_COUNT || '3');
+const EVENT_TRIAL_COUNT = parseInt(
+  process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
+);
 
 export async function GET() {
   const cookieStore = cookies();
@@ -38,10 +40,11 @@ export async function GET() {
     );
   }
 
+  const { value } = await eventRepo.countAll(user.id);
+
   if (!user.whitelistFeature.includes('event')) {
     // check if have created more than 3 events
-    const { value } = await eventRepo.countDeleted(user.id);
-    if (value > EVENT_TRIAL_COUNT) {
+    if (value >= EVENT_TRIAL_COUNT) {
       return NextResponse.json(
         {
           code: 403,

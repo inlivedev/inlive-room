@@ -16,7 +16,9 @@ type CreateEvent = {
   isPublished?: boolean;
 };
 
-const EVENT_TRIAL_COUNT = parseInt(process.env.EVENT_TRIAL_COUNT || '3');
+const EVENT_TRIAL_COUNT = parseInt(
+  process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
+);
 
 export async function POST(req: Request) {
   const cookieStore = cookies();
@@ -43,8 +45,8 @@ export async function POST(req: Request) {
     ) {
       if (!user.whitelistFeature.includes('event')) {
         // check if have created more than 3 events
-        const { value } = await eventRepo.countDeleted(user.id);
-        if (value > EVENT_TRIAL_COUNT) {
+        const { value } = await eventRepo.countAll(user.id);
+        if (value >= EVENT_TRIAL_COUNT) {
           return NextResponse.json({
             code: 403,
             ok: false,
