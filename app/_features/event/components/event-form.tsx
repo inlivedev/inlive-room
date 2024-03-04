@@ -16,6 +16,7 @@ import { useAuthContext } from '@/_shared/contexts/auth';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import type { EventType } from '@/_shared/types/event';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
+import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import DeleteIcon from '@/_shared/components/icons/delete-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -234,11 +235,7 @@ export default function EventForm({
         imageData={imageData}
         updateImageData={updateImageData}
       ></ImageCropperModal>
-      <DatePickerModal
-        type="event-date"
-        heading="Set event date"
-        startDate={eventDate}
-      />
+      <DatePickerModal type="event-date" heading="Set event date" />
       <div className="bg-zinc-900">
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
           <Header logoText="inLive Event" logoHref="/event" />
@@ -438,7 +435,11 @@ export default function EventForm({
                           readOnly
                           onClick={() => {
                             document.dispatchEvent(
-                              new CustomEvent('open:date-picker-modal')
+                              new CustomEvent('open:date-picker-modal', {
+                                detail: {
+                                  currentDate: eventDate,
+                                },
+                              })
                             );
                           }}
                           value={new Date(eventDate).toLocaleDateString(

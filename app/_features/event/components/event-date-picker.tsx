@@ -9,18 +9,17 @@ import {
 } from '@nextui-org/react';
 import DatePicker from 'react-datepicker';
 import '../styles/date-picker.css';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 
 export function DatePickerModal({
   heading,
   type,
-  startDate,
 }: {
   heading: string;
   type: string;
-  startDate: Date;
 }) {
-  const [selectedDate, setSelectedDate] = useState<Date>(startDate);
+  const currentDate = useRef(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const onConfirm = useCallback(() => {
@@ -36,14 +35,18 @@ export function DatePickerModal({
   }, [onClose, selectedDate, type]);
 
   const onCancel = useCallback(() => {
-    setSelectedDate(startDate);
+    setSelectedDate(currentDate.current);
     onClose();
-  }, [onClose, startDate]);
+  }, [onClose]);
 
   useEffect(() => {
-    const openModal = () => {
+    const openModal = ((event: CustomEvent) => {
+      const detail = event.detail || {};
+      currentDate.current = detail.currentDate;
+      setSelectedDate(currentDate.current);
+
       onOpen();
-    };
+    }) as EventListener;
 
     document.addEventListener('open:date-picker-modal', openModal);
 
