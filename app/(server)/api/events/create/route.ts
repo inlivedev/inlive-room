@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { eventRepo, eventService, roomService } from '../../_index';
 import { cookies } from 'next/headers';
-import { events, insertEvent } from '@/(server)/_features/event/schema';
-import { existsSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import { insertEvent } from '@/(server)/_features/event/schema';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import * as Sentry from '@sentry/nextjs';
 import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 type CreateEvent = {
   name: string;
@@ -16,6 +15,8 @@ type CreateEvent = {
   host: string;
   isPublished?: boolean;
 };
+
+const EVENT_TRIAL_COUNT = parseInt(process.env.EVENT_TRIAL_COUNT || '3');
 
 export async function POST(req: Request) {
   const cookieStore = cookies();
@@ -34,6 +35,24 @@ export async function POST(req: Request) {
         },
         { status: 401 }
       );
+    }
+
+    if (
+      // Check if event feature is exclusive or not
+      whitelistFeature.includes('event') === true
+    ) {
+      if (!user.whitelistFeature.includes('event')) {
+        // check if have created more than 3 events
+        const { value } = await eventRepo.countDeleted(user.id);
+        if (value > EVENT_TRIAL_COUNT) {
+          return NextResponse.json({
+            code: 403,
+            ok: false,
+            message:
+              'You have reached the limit of creating events, please contact the admin for more information',
+          });
+        }
+      }
     }
 
     const formData = await req.formData();
@@ -138,13 +157,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
-
-function ensureDirectoryExist(filePath: string) {
-  const dir = dirname(filePath);
-  if (existsSync(dir)) {
-    return true;
-  }
-  ensureDirectoryExist(dir);
-  mkdirSync(dir);
 }
