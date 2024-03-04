@@ -47,6 +47,10 @@ export async function GET() {
     if (value >= EVENT_TRIAL_COUNT) {
       return NextResponse.json(
         {
+          data: {
+            count: value,
+            limit: EVENT_TRIAL_COUNT,
+          },
           code: 403,
           ok: false,
           message: 'You have reached the limit of creating events',
@@ -60,6 +64,10 @@ export async function GET() {
 
   return NextResponse.json(
     {
+      data: {
+        count: value,
+        limit: EVENT_TRIAL_COUNT,
+      },
       code: 200,
       ok: true,
       message: 'You are allowed to create event',
