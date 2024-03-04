@@ -66,16 +66,18 @@ export function DatePickerModal({
       <ModalContent>
         <ModalHeader>{heading}</ModalHeader>
         <ModalBody>
-          <DatePicker
-            selected={selectedDate}
-            onChange={(date) => {
-              if (date) {
-                setSelectedDate(date);
-              }
-            }}
-            inline
-            excludeDateIntervals={[{ start: new Date(0), end: yesterday }]}
-          />
+          <div className="min-h-[340px]">
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => {
+                if (date) {
+                  setSelectedDate(date);
+                }
+              }}
+              inline
+              excludeDateIntervals={[{ start: new Date(0), end: yesterday }]}
+            />
+          </div>
         </ModalBody>
         <ModalFooter>
           <Button
