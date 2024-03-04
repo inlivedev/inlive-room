@@ -10,6 +10,7 @@ import { useNavigate } from '@/_shared/hooks/use-navigate';
 import type { EventType } from '@/_shared/types/event';
 import DeleteIcon from '@/_shared/components/icons/delete-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { DeleteEventModal } from './event-delete-modal';
 
 type InputsType = {
   eventTitle: string;
@@ -127,6 +128,9 @@ export default function EventForm({
 
   return (
     <>
+      {existingEvent && (
+        <DeleteEventModal slug={existingEvent.slug}></DeleteEventModal>
+      )}
       <div className="bg-zinc-900">
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
           <Header logoText="inLive Event" logoHref="/event" />
