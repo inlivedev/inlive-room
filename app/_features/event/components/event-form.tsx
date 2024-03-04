@@ -129,26 +129,48 @@ export default function EventForm({
       type Action = 'publish' | 'save-as-draft' | 'update';
       const action = submitter.getAttribute('data-action') as Action;
 
+      const eventTitle = data.eventTitle;
+      const eventDescription = data.eventDescription.replace(
+        /(?:\r\n|\r|\n)/g,
+        '<br>'
+      );
+      const host = user.name;
+      const startTime = new Date().toISOString();
+      const endTime = new Date().toISOString();
+      const posterImage = imageData.imageBlob
+        ? await compressImage(imageData.imageBlob, 280, 560, 0.8)
+        : null;
+
       if (action === 'publish') {
         await createEvent({
-          eventTitle: data.eventTitle,
-          eventDescription: data.eventDescription,
-          host: user.name,
-          startTime: new Date(),
-          endTime: new Date(),
+          eventTitle,
+          eventDescription,
+          host,
+          startTime,
+          endTime,
+          posterImage,
           publish: true,
         });
       } else if (action === 'save-as-draft') {
         await createEvent({
-          eventTitle: data.eventTitle,
-          eventDescription: data.eventDescription,
-          host: user.name,
-          startTime: new Date(),
-          endTime: new Date(),
+          eventTitle,
+          eventDescription,
+          host,
+          startTime,
+          endTime,
+          posterImage,
           publish: false,
         });
       } else if (action === 'update') {
-        //
+        await updateEvent({
+          eventTitle,
+          eventDescription,
+          host,
+          startTime,
+          endTime,
+          posterImage,
+          publish: existingEvent?.isPublished || false,
+        });
       }
 
       setIsSubmitting(false);
@@ -178,32 +200,30 @@ export default function EventForm({
       host,
       startTime,
       endTime,
+      posterImage,
       publish = false,
     }: {
       eventTitle: string;
       eventDescription: string;
       host: string;
-      startTime: Date;
-      endTime: Date;
+      startTime: string;
+      endTime: string;
+      posterImage: Blob | null;
       publish: boolean;
     }) => {
       const data = {
         name: eventTitle,
-        description: eventDescription.replace(/(?:\r\n|\r|\n)/g, '<br>'),
-        isPublished: publish,
+        description: eventDescription,
         host: host,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
+        startTime: startTime,
+        endTime: endTime,
+        isPublished: publish,
       };
-
-      const image = imageData.imageBlob
-        ? await compressImage(imageData.imageBlob, 280, 560, 0.8)
-        : null;
 
       const formData = new FormData();
 
-      if (image) {
-        formData.append('image', image, 'poster.webp');
+      if (posterImage) {
+        formData.append('image', posterImage, 'poster.webp');
       }
 
       formData.append('data', JSON.stringify(data));
@@ -223,7 +243,62 @@ export default function EventForm({
         alert('Failed to create event, please try again later');
       }
     },
-    [navigateTo, imageData]
+    [navigateTo]
+  );
+
+  const updateEvent = useCallback(
+    async ({
+      eventTitle,
+      eventDescription,
+      host,
+      startTime,
+      endTime,
+      posterImage,
+      publish = false,
+    }: {
+      eventTitle: string;
+      eventDescription: string;
+      host: string;
+      startTime: string;
+      endTime: string;
+      posterImage: Blob | null;
+      publish: boolean;
+    }) => {
+      const deleteImage = imageData.imagePreview ? false : true;
+
+      const data = {
+        name: eventTitle,
+        description: eventDescription,
+        host: host,
+        startTime: startTime,
+        endTime: endTime,
+        isPublished: publish,
+        deleteImage: deleteImage,
+      };
+
+      const formData = new FormData();
+
+      if (posterImage) {
+        formData.append('image', posterImage, 'poster.webp');
+      }
+
+      formData.append('data', JSON.stringify(data));
+
+      const response = await InternalApiFetcher.put(
+        `/api/events/${existingEvent?.id}`,
+        {
+          body: formData,
+          // must set headers to undefined, so the content-type will be set properly automatically
+          headers: undefined,
+        }
+      );
+      if (response.ok) {
+        navigateTo(`/event/${response.data.slug}`);
+      } else {
+        alert('Failed to update event, please try again later');
+      }
+    },
+    [existingEvent, imageData, navigateTo]
   );
 
   return (
