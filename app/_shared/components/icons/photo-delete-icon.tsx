@@ -1,6 +1,6 @@
 import { SVGElementPropsType } from '@/_shared/types/types';
 
-export function PhotoDeleteIcon(props: SVGElementPropsType) {
+export default function PhotoDeleteIcon(props: SVGElementPropsType) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -1,16 +1,21 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useReducer, type ChangeEvent } from 'react';
 import { Button } from '@nextui-org/react';
+import NextImage from 'next/image';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import type { EventType } from '@/_shared/types/event';
+import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
+import PhotoDeleteIcon from '@/_shared/components/icons/photo-delete-icon';
 import DeleteIcon from '@/_shared/components/icons/delete-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { compressImage } from '@/_shared/utils/compress-image';
 import { DeleteEventModal } from './event-delete-modal';
+import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 
 type InputsType = {
   eventTitle: string;
@@ -18,6 +23,24 @@ type InputsType = {
   eventDate: Date;
   eventStartTime: Date;
   eventEndTime: Date;
+};
+
+const reducer = (state: ImageState, action: ActionType): ImageState => {
+  switch (action.type) {
+    case 'ConfirmCrop':
+      return {
+        imagePreview: action.payload.preview,
+        imageBlob: action.payload.blob,
+      };
+    case 'PickFile':
+      return { imagePreview: null, imageBlob: action.payload };
+    case 'Reset':
+      return { imagePreview: null, imageBlob: null };
+    case 'FetchExisting':
+      return { imagePreview: action.payload.preview, imageBlob: null };
+    default:
+      return state;
+  }
 };
 
 export default function EventForm({
@@ -36,6 +59,18 @@ export default function EventForm({
   } = useForm<InputsType>({
     mode: 'onTouched',
   });
+
+  const defaultImageDataState = {
+    imageBlob: null,
+    imagePreview: existingEvent?.thumbnailUrl
+      ? `/static${existingEvent.thumbnailUrl}`
+      : null,
+  };
+
+  const [imageData, updateImageData] = useReducer(
+    reducer,
+    defaultImageDataState
+  );
 
   const onSubmit: SubmitHandler<InputsType> = async (data, event) => {
     if (!user) return;
@@ -79,6 +114,22 @@ export default function EventForm({
     }
   };
 
+  const handleSelectImage = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const target = event.target;
+      const file = target.files && target.files[0];
+
+      if (file) {
+        updateImageData({ type: 'PickFile', payload: file });
+        document.dispatchEvent(new CustomEvent('open:image-cropper'));
+      }
+
+      // this is to reset the input value so that the same file can be selected again
+      target.value = '';
+    },
+    []
+  );
+
   const createEvent = useCallback(
     async ({
       eventTitle,
@@ -104,7 +155,15 @@ export default function EventForm({
         endTime: endTime.toISOString(),
       };
 
+      const image = imageData.imageBlob
+        ? await compressImage(imageData.imageBlob, 280, 560, 0.8)
+        : null;
+
       const formData = new FormData();
+
+      if (image) {
+        formData.append('image', image, 'poster.webp');
+      }
 
       formData.append('data', JSON.stringify(data));
 
@@ -123,7 +182,7 @@ export default function EventForm({
         alert('Failed to create event, please try again later');
       }
     },
-    [navigateTo]
+    [navigateTo, imageData]
   );
 
   return (
@@ -131,6 +190,10 @@ export default function EventForm({
       {existingEvent && (
         <DeleteEventModal slug={existingEvent.slug}></DeleteEventModal>
       )}
+      <ImageCropperModal
+        imageData={imageData}
+        updateImageData={updateImageData}
+      ></ImageCropperModal>
       <div className="bg-zinc-900">
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
           <Header logoText="inLive Event" logoHref="/event" />
@@ -257,7 +320,65 @@ export default function EventForm({
                     ) : null}
                   </div>
                 </div>
-                <div className="flex flex-1 flex-col gap-6"></div>
+                <div className="flex flex-1 flex-col gap-6">
+                  <div>
+                    {imageData.imagePreview ? (
+                      <div className="group relative">
+                        <NextImage
+                          width={560}
+                          height={280}
+                          src={imageData.imagePreview}
+                          alt="Event poster image"
+                          className="w-full rounded object-cover"
+                          style={{ aspectRatio: '2/1' }}
+                          unoptimized
+                        ></NextImage>
+                        <Button
+                          className="absolute right-3 top-3 z-10 hidden w-full min-w-0 rounded-lg bg-red-800 px-3 py-2 text-base font-medium antialiased opacity-30 hover:opacity-100 active:bg-red-700 group-hover:block lg:order-1 lg:w-auto"
+                          title="Remove this poster image"
+                          onPress={() => {
+                            updateImageData({ type: 'Reset' });
+                          }}
+                        >
+                          <PhotoDeleteIcon
+                            width={24}
+                            height={24}
+                          ></PhotoDeleteIcon>
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <label
+                          htmlFor="file-input"
+                          className="flex w-full cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-6 shadow-sm outline-none  ring-1 ring-zinc-800 hover:bg-zinc-950/40"
+                          style={{ aspectRatio: '2/1' }}
+                        >
+                          <PhotoUploadIcon
+                            width={48}
+                            height={48}
+                            className="text-zinc-400"
+                          ></PhotoUploadIcon>
+                          <p className="mt-3 text-sm font-medium text-zinc-400">
+                            Click to add poster image
+                          </p>
+                          <p className="mt-1 text-xs text-zinc-200">
+                            Support PNG, JPG, JPEG, WEBP
+                          </p>
+                          <p className="mt-1 text-xs text-zinc-200">
+                            560 x 280. Aspect ratio 2:1
+                          </p>
+                          <input
+                            id="file-input"
+                            type="file"
+                            className="hidden"
+                            onChange={handleSelectImage}
+                            accept="image/png, image/jpeg, image/webp"
+                          />
+                        </label>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </form>
           </main>
