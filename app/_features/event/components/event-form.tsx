@@ -24,13 +24,20 @@ import { compressImage } from '@/_shared/utils/compress-image';
 import { DeleteEventModal } from './event-delete-modal';
 import { DatePickerModal } from './event-date-picker';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
+import { StatusPublished, StatusDraft } from './event-status';
 
 type InputsType = {
   eventTitle: string;
   eventDescription: string;
   eventDate: Date;
-  eventStartTime: Date;
-  eventEndTime: Date;
+  eventStartTime: {
+    hour: number;
+    minute: number;
+  };
+  eventEndTime: {
+    hour: number;
+    minute: number;
+  };
 };
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
@@ -61,6 +68,7 @@ export default function EventForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const today = new Date();
   const currentHour = today.getHours();
+  const defaultEventDate = existingEvent?.startTime || today;
 
   const {
     register,
@@ -71,7 +79,7 @@ export default function EventForm({
   } = useForm<InputsType>({
     mode: 'onTouched',
     defaultValues: {
-      eventDate: existingEvent?.startTime || today,
+      eventDate: defaultEventDate,
     },
   });
 
@@ -126,7 +134,11 @@ export default function EventForm({
     if (submitter && !isSubmitting) {
       setIsSubmitting(true);
 
-      type Action = 'publish' | 'save-as-draft' | 'update';
+      type Action =
+        | 'create-as-publish'
+        | 'create-as-draft'
+        | 'update-as-publish'
+        | 'update-as-draft';
       const action = submitter.getAttribute('data-action') as Action;
 
       const eventTitle = data.eventTitle;
@@ -141,8 +153,8 @@ export default function EventForm({
         ? await compressImage(imageData.imageBlob, 280, 560, 0.8)
         : null;
 
-      if (action === 'publish') {
-        await createEvent({
+      if (action === 'create-as-publish') {
+        await saveChanges({
           eventTitle,
           eventDescription,
           host,
@@ -150,9 +162,10 @@ export default function EventForm({
           endTime,
           posterImage,
           publish: true,
+          newData: true,
         });
-      } else if (action === 'save-as-draft') {
-        await createEvent({
+      } else if (action === 'create-as-draft') {
+        await saveChanges({
           eventTitle,
           eventDescription,
           host,
@@ -160,16 +173,29 @@ export default function EventForm({
           endTime,
           posterImage,
           publish: false,
+          newData: true,
         });
-      } else if (action === 'update') {
-        await updateEvent({
+      } else if (action === 'update-as-publish') {
+        await saveChanges({
           eventTitle,
           eventDescription,
           host,
           startTime,
           endTime,
           posterImage,
-          publish: existingEvent?.isPublished || false,
+          publish: true,
+          newData: false,
+        });
+      } else if (action === 'update-as-draft') {
+        await saveChanges({
+          eventTitle,
+          eventDescription,
+          host,
+          startTime,
+          endTime,
+          posterImage,
+          publish: false,
+          newData: false,
         });
       }
 
@@ -193,7 +219,7 @@ export default function EventForm({
     []
   );
 
-  const createEvent = useCallback(
+  const saveChanges = useCallback(
     async ({
       eventTitle,
       eventDescription,
@@ -202,6 +228,7 @@ export default function EventForm({
       endTime,
       posterImage,
       publish = false,
+      newData = true,
     }: {
       eventTitle: string;
       eventDescription: string;
@@ -210,61 +237,9 @@ export default function EventForm({
       endTime: string;
       posterImage: Blob | null;
       publish: boolean;
+      newData: boolean;
     }) => {
-      const data = {
-        name: eventTitle,
-        description: eventDescription,
-        host: host,
-        startTime: startTime,
-        endTime: endTime,
-        isPublished: publish,
-      };
-
-      const formData = new FormData();
-
-      if (posterImage) {
-        formData.append('image', posterImage, 'poster.webp');
-      }
-
-      formData.append('data', JSON.stringify(data));
-
-      const response = await InternalApiFetcher.post(`/api/events/create`, {
-        body: formData,
-        headers: undefined,
-      });
-
-      if (response.ok) {
-        if (publish) {
-          navigateTo(`/event/${response.data.slug}`);
-        } else {
-          navigateTo(`/event`);
-        }
-      } else {
-        alert('Failed to create event, please try again later');
-      }
-    },
-    [navigateTo]
-  );
-
-  const updateEvent = useCallback(
-    async ({
-      eventTitle,
-      eventDescription,
-      host,
-      startTime,
-      endTime,
-      posterImage,
-      publish = false,
-    }: {
-      eventTitle: string;
-      eventDescription: string;
-      host: string;
-      startTime: string;
-      endTime: string;
-      posterImage: Blob | null;
-      publish: boolean;
-    }) => {
-      const deleteImage = imageData.imagePreview ? false : true;
+      const deleteImage = newData || imageData.imagePreview ? false : true;
 
       const data = {
         name: eventTitle,
@@ -284,21 +259,39 @@ export default function EventForm({
 
       formData.append('data', JSON.stringify(data));
 
-      const response = await InternalApiFetcher.put(
-        `/api/events/${existingEvent?.id}`,
-        {
+      if (newData) {
+        const response = await InternalApiFetcher.post(`/api/events/create`, {
           body: formData,
           // must set headers to undefined, so the content-type will be set properly automatically
           headers: undefined,
+        });
+
+        if (response.ok) {
+          if (publish) {
+            navigateTo(`/event/${response.data.slug}`);
+          } else {
+            navigateTo(`/event`);
+          }
+        } else {
+          alert('Failed to create event, please try again later');
         }
-      );
-      if (response.ok) {
-        navigateTo(`/event/${response.data.slug}`);
       } else {
-        alert('Failed to update event, please try again later');
+        const response = await InternalApiFetcher.put(
+          `/api/events/${existingEvent?.id}`,
+          {
+            body: formData,
+            headers: undefined,
+          }
+        );
+
+        if (response.ok) {
+          navigateTo(`/event/${response.data.slug}`);
+        } else {
+          alert('Failed to save the changes, please try again later');
+        }
       }
     },
-    [existingEvent, imageData, navigateTo]
+    [navigateTo, existingEvent, imageData]
   );
 
   return (
@@ -316,68 +309,58 @@ export default function EventForm({
           <Header logoText="inLive Event" logoHref="/event" />
           <main className="flex-1">
             <form onSubmit={handleSubmit(onSubmit)}>
+              {existingEvent ? (
+                <div className="mb-1.5">
+                  {existingEvent.isPublished ? (
+                    <StatusPublished />
+                  ) : (
+                    <StatusDraft />
+                  )}
+                </div>
+              ) : null}
               <div className="flex flex-col gap-5 lg:flex-row">
-                <h2 className="flex-auto text-2xl font-bold text-zinc-100 lg:text-3xl">
+                <h2 className="flex-auto text-2xl font-bold leading-9 text-zinc-100 lg:text-3xl lg:leading-10">
                   {existingEvent
-                    ? "Let's edit your event"
+                    ? 'Edit your event data'
                     : "Let's create your event"}
                 </h2>
                 <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
-                  {existingEvent ? (
-                    <div className="flex gap-4">
-                      <div className="flex-auto lg:order-2">
-                        <Button
-                          type="submit"
-                          data-action="update"
-                          className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:order-2 lg:w-auto"
-                          isDisabled={isSubmitting}
-                          aria-disabled={isSubmitting}
-                          disabled={isSubmitting}
-                        >
-                          Update event
-                        </Button>
-                      </div>
-                      <div className="lg:order-1">
-                        <Button
-                          className="w-full min-w-0 rounded-lg bg-zinc-800 px-3 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:order-1 lg:w-auto"
-                          onPress={() => {
-                            document.dispatchEvent(
-                              new CustomEvent('open:event-delete-modal')
-                            );
-                          }}
-                        >
-                          <DeleteIcon width={24} height={24}></DeleteIcon>
-                        </Button>
-                      </div>
+                  <div className="flex gap-4">
+                    <div className="flex-1 lg:order-2">
+                      <Button
+                        type="submit"
+                        data-action={
+                          existingEvent
+                            ? 'update-as-publish'
+                            : 'create-as-publish'
+                        }
+                        className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
+                        isDisabled={isSubmitting}
+                        aria-disabled={isSubmitting}
+                        disabled={isSubmitting}
+                      >
+                        {existingEvent
+                          ? existingEvent.isPublished
+                            ? 'Save changes'
+                            : 'Publish event'
+                          : 'Publish event'}
+                      </Button>
                     </div>
-                  ) : (
-                    <div className="flex gap-4">
-                      <div className="flex-1 lg:order-2">
-                        <Button
-                          type="submit"
-                          data-action="publish"
-                          className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
-                          isDisabled={isSubmitting}
-                          aria-disabled={isSubmitting}
-                          disabled={isSubmitting}
-                        >
-                          Publish event
-                        </Button>
-                      </div>
-                      <div className="flex-1 lg:order-1">
-                        <Button
-                          type="submit"
-                          data-action="save-as-draft"
-                          className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
-                          isDisabled={isSubmitting}
-                          aria-disabled={isSubmitting}
-                          disabled={isSubmitting}
-                        >
-                          Save as draft
-                        </Button>
-                      </div>
+                    <div className="flex-1 lg:order-1">
+                      <Button
+                        type="submit"
+                        data-action={
+                          existingEvent ? 'update-as-draft' : 'create-as-draft'
+                        }
+                        className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
+                        isDisabled={isSubmitting}
+                        aria-disabled={isSubmitting}
+                        disabled={isSubmitting}
+                      >
+                        Save as draft
+                      </Button>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
               <div className="mt-10 flex flex-col gap-6 pb-28 lg:flex-row lg:pb-20">
