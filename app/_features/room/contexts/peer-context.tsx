@@ -50,14 +50,7 @@ export function PeerProvider({
   useEffect(() => {
     if (!peer) {
       const createPeer = async () => {
-        const peer = await clientSDK.createPeer(roomID, client.clientID, {
-          codecs: codecPreferences,
-          bitrate: {
-            highBitrate: bitrateConfig.highBitrate,
-            midBitrate: bitrateConfig.midBitrate,
-            lowBitrate: bitrateConfig.lowBitrate,
-          },
-        });
+        const peer = await clientSDK.createPeer(roomID, client.clientID);
         setPeer(peer);
       };
 
