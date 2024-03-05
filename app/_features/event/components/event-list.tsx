@@ -87,7 +87,7 @@ export default function EventList({
               </Button>
             </div>
           ) : null}
-          <div className="mt-5 pb-24 lg:pb-10">
+          <div className="mt-5 pb-28 lg:pb-10">
             {validPagination ? (
               <>
                 {events.length > 0 ? (
