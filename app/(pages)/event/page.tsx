@@ -28,17 +28,6 @@ export const generateMetadata = (): Metadata => {
     };
   }
 
-  const eligibleForEvent =
-    whitelistFeature.includes('event') ||
-    !!user?.whitelistFeature.includes('event');
-
-  if (!eligibleForEvent) {
-    return {
-      title: `You are not eligible to see this page — inLive Room`,
-      description: 'Only early-access users can access this page.',
-    };
-  }
-
   return {
     title: `My Events — inLive Room`,
   };
