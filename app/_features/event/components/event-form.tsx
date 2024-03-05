@@ -78,6 +78,7 @@ export default function EventForm({
     formState: { errors },
   } = useForm<InputsType>({
     mode: 'onTouched',
+    disabled: true,
     defaultValues: {
       eventDate: defaultEventDate,
     },
@@ -308,6 +309,23 @@ export default function EventForm({
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
           <Header logoText="inLive Event" logoHref="/event" />
           <main className="flex-1">
+            {!user ? (
+              <div className="mx-auto mb-6 flex max-w-3xl items-center justify-between gap-4 rounded-md bg-red-900/25 px-4 py-3 text-red-300 sm:px-6">
+                <p className=" text-pretty">
+                  Just sign in and you can start creating your event now!
+                </p>
+                <Button
+                  className="h-8 rounded-md bg-transparent px-3 text-sm font-medium text-red-300 ring-2 ring-red-300"
+                  onClick={() =>
+                    document.dispatchEvent(
+                      new CustomEvent('open:sign-in-modal')
+                    )
+                  }
+                >
+                  Sign In
+                </Button>
+              </div>
+            ) : null}
             <form onSubmit={handleSubmit(onSubmit)}>
               {existingEvent ? (
                 <div className="mb-1.5">
@@ -318,49 +336,55 @@ export default function EventForm({
                   )}
                 </div>
               ) : null}
-              <div className="flex flex-col gap-5 lg:flex-row">
-                <h2 className="flex-auto text-2xl font-bold leading-9 text-zinc-100 lg:text-3xl lg:leading-10">
-                  {existingEvent
-                    ? 'Edit your event data'
-                    : "Let's create your event"}
-                </h2>
-                <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
-                  <div className="flex gap-4">
-                    <div className="flex-1 lg:order-2">
-                      <Button
-                        type="submit"
-                        data-action={
-                          existingEvent
-                            ? 'update-as-publish'
-                            : 'create-as-publish'
-                        }
-                        className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
-                        isDisabled={isSubmitting}
-                        aria-disabled={isSubmitting}
-                        disabled={isSubmitting}
-                      >
-                        {existingEvent
-                          ? existingEvent.isPublished
-                            ? 'Save changes'
-                            : 'Publish event'
-                          : 'Publish event'}
-                      </Button>
+              <div>
+                <div className="flex flex-col gap-5 lg:flex-row">
+                  <h2 className="flex-auto text-2xl font-bold leading-9 text-zinc-100 lg:text-3xl lg:leading-10">
+                    {existingEvent
+                      ? 'Edit your event data'
+                      : "Let's create your event"}
+                  </h2>
+                  {user ? (
+                    <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
+                      <div className="flex gap-4">
+                        <div className="flex-1 lg:order-2">
+                          <Button
+                            type="submit"
+                            data-action={
+                              existingEvent
+                                ? 'update-as-publish'
+                                : 'create-as-publish'
+                            }
+                            className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
+                            isDisabled={isSubmitting}
+                            aria-disabled={isSubmitting}
+                            disabled={isSubmitting}
+                          >
+                            {existingEvent
+                              ? existingEvent.isPublished
+                                ? 'Save changes'
+                                : 'Publish event'
+                              : 'Publish event'}
+                          </Button>
+                        </div>
+                        <div className="flex-1 lg:order-1">
+                          <Button
+                            type="submit"
+                            data-action={
+                              existingEvent
+                                ? 'update-as-draft'
+                                : 'create-as-draft'
+                            }
+                            className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
+                            isDisabled={isSubmitting}
+                            aria-disabled={isSubmitting}
+                            disabled={isSubmitting}
+                          >
+                            Save as draft
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 lg:order-1">
-                      <Button
-                        type="submit"
-                        data-action={
-                          existingEvent ? 'update-as-draft' : 'create-as-draft'
-                        }
-                        className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
-                        isDisabled={isSubmitting}
-                        aria-disabled={isSubmitting}
-                        disabled={isSubmitting}
-                      >
-                        Save as draft
-                      </Button>
-                    </div>
-                  </div>
+                  ) : null}
                 </div>
               </div>
               <div className="mt-10 flex flex-col gap-6 pb-28 lg:flex-row lg:pb-10">
