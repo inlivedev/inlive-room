@@ -15,7 +15,6 @@ import { useAuthContext } from '@/_shared/contexts/auth';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
-import { whitelistFeature } from '@/_shared/utils/flag';
 
 export default function Profile() {
   const { user, setUser } = useAuthContext();
@@ -25,23 +24,18 @@ export default function Profile() {
     document.dispatchEvent(new CustomEvent('open:sign-in-modal'));
   };
 
-  const eligibleForEvent =
-    whitelistFeature.includes('event') ||
-    !!user?.whitelistFeature.includes('event');
-
   const onProfileSelection = useCallback(
     async (selectedKey: Key) => {
       switch (selectedKey) {
         case 'my-events':
-          if (!eligibleForEvent) return;
-
-          navigateTo(new URL(`/event`, window.location.origin).href);
+          navigateTo(`/event`);
           break;
         case 'signout':
           {
             try {
               await InternalApiFetcher.get('/api/auth/signout');
               setUser(null);
+              window.location.reload();
             } catch (error) {
               console.error(error);
               Sentry.captureException(error, {
@@ -56,14 +50,8 @@ export default function Profile() {
           break;
       }
     },
-    [navigateTo, setUser, eligibleForEvent]
+    [navigateTo, setUser]
   );
-
-  const disabledKeys = ['profile'];
-
-  if (!eligibleForEvent) {
-    disabledKeys.push('my-events');
-  }
 
   return (
     <>
@@ -96,7 +84,6 @@ export default function Profile() {
             disallowEmptySelection
             aria-label="Profile menu"
             onAction={onProfileSelection}
-            disabledKeys={disabledKeys}
           >
             <DropdownSection aria-label="Profile information" showDivider>
               <DropdownItem
@@ -130,14 +117,7 @@ export default function Profile() {
               </DropdownItem>
             </DropdownSection>
             <DropdownItem key="my-events" textValue="my-events">
-              <div className="flex justify-between text-sm font-medium text-zinc-200">
-                <span className="inline-block">My Events</span>
-                {!whitelistFeature.includes('event') && (
-                  <span className="inline-flex items-center rounded-sm border border-emerald-800 bg-emerald-950 px-1 text-[10px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
-                    Limited Beta
-                  </span>
-                )}
-              </div>
+              My Events
             </DropdownItem>
             <DropdownItem key="signout" textValue="signout">
               Sign Out

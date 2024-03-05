@@ -9,6 +9,7 @@ import {
   Button,
 } from '@nextui-org/react';
 import { Dispatch, createRef, useCallback, useEffect } from 'react';
+import 'cropperjs/dist/cropper.css';
 
 export interface ImageState {
   imageBlob: Blob | null;
@@ -53,13 +54,17 @@ export function ImageCropperModal({
     }
   }, [cropperRef]);
 
-  const openModal = useCallback(() => {
-    onOpen();
-  }, [onOpen]);
-
   useEffect(() => {
+    const openModal = () => {
+      onOpen();
+    };
+
     document.addEventListener('open:image-cropper', openModal);
-  });
+
+    return () => {
+      document.removeEventListener('open:image-cropper', openModal);
+    };
+  }, [onOpen]);
 
   const onCancel = useCallback(() => {
     updateImageData({ type: 'Reset' });

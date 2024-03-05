@@ -3,7 +3,6 @@ import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import type { AuthType } from '@/_shared/types/auth';
 import HTTPError from '@/_shared/components/errors/http-error';
-import { whitelistFeature } from '@/_shared/utils/flag';
 import PastEvents from '@/_features/event/components/event-stat-list';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { EventType } from '@/_shared/types/event';
@@ -23,17 +22,6 @@ export const generateMetadata = (): Metadata => {
     return {
       title: `Login Required — inLive Room`,
       description: 'You need to be logged in to access this page',
-    };
-  }
-
-  const eligibleForEvent =
-    whitelistFeature.includes('event') ||
-    !!user?.whitelistFeature.includes('event');
-
-  if (!eligibleForEvent) {
-    return {
-      title: `You are not eligible to see this page — inLive Room`,
-      description: 'Only early-access users can access this page.',
     };
   }
 
@@ -61,21 +49,6 @@ export default async function Page({
         title="Login Required"
         description="You need to be logged in to access this page"
       />
-    );
-  }
-
-  const eligibleForEvent =
-    whitelistFeature.includes('event') ||
-    !!user?.whitelistFeature.includes('event');
-
-  if (!eligibleForEvent) {
-    return (
-      <AppContainer user={user}>
-        <HTTPError
-          title="You are not eligible to see this page"
-          description="Only early-access users can access this page."
-        />
-      </AppContainer>
     );
   }
 

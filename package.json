@@ -15,7 +15,7 @@
     "migrate": "ts-node ./migrate.ts"
   },
   "dependencies": {
-    "@inlivedev/inlive-js-sdk": "^0.14.5",
+    "@inlivedev/inlive-js-sdk": "^0.15.0",
     "@nextui-org/react": "^2.2.9",
     "@sentry/nextjs": "^7.70.0",
     "compressorjs": "^1.2.1",
@@ -35,6 +35,7 @@
     "react-cropper": "^2.3.3",
     "react-datepicker": "6.0.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.51.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
