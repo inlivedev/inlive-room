@@ -44,4 +44,12 @@ export declare namespace EventType {
     data: Event[];
     meta: PageMeta;
   };
+
+  type CreateLimit = FetcherResponse & {
+    data: {
+      count: number;
+      limit: number;
+    };
+    message: string;
+  };
 }
