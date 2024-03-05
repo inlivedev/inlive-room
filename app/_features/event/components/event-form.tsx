@@ -78,7 +78,7 @@ export default function EventForm({
     formState: { errors },
   } = useForm<InputsType>({
     mode: 'onTouched',
-    disabled: true,
+    disabled: !user,
     defaultValues: {
       eventDate: defaultEventDate,
     },
@@ -398,10 +398,12 @@ export default function EventForm({
                     </label>
                     <input
                       id="event-title"
-                      className="block w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm shadow-sm  outline-none ring-1 ring-zinc-800 placeholder:text-zinc-400  focus-visible:ring-zinc-400"
+                      className="block w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm shadow-sm  outline-none ring-1 ring-zinc-800 placeholder:text-zinc-400  focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:bg-zinc-700"
                       type="text"
-                      placeholder="Give your event a title"
+                      placeholder={user ? `Give your event a title` : ''}
                       autoComplete="off"
+                      aria-disabled={!user}
+                      disabled={!user}
                       defaultValue={existingEvent?.name || ''}
                       {...register('eventTitle', {
                         required: true,
@@ -427,9 +429,13 @@ export default function EventForm({
                     </label>
                     <textarea
                       id="event-description"
-                      className="block min-h-60 w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm shadow-sm  outline-none ring-1 ring-zinc-800 placeholder:text-zinc-400 focus-visible:ring-zinc-400  lg:min-h-80"
-                      placeholder="Give a clear information about the event"
+                      className="block min-h-60 w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm shadow-sm  outline-none ring-1 ring-zinc-800 placeholder:text-zinc-400 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:resize-none disabled:bg-zinc-700 lg:min-h-80"
+                      placeholder={
+                        user ? `Give a clear information about the event` : ''
+                      }
                       autoComplete="off"
+                      aria-disabled={!user}
+                      disabled={!user}
                       defaultValue={existingEvent?.description || ''}
                       {...register('eventDescription', {
                         required: true,
@@ -474,21 +480,29 @@ export default function EventForm({
                         <>
                           <label
                             htmlFor="file-input"
-                            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-6 shadow-sm outline-none  ring-1 ring-zinc-800 hover:bg-zinc-950/40"
+                            className={`flex w-full  flex-col items-center justify-center rounded-md p-6 shadow-sm outline-none  ring-1 ring-zinc-800 ${
+                              !user
+                                ? 'cursor-not-allowed bg-zinc-700 text-zinc-400'
+                                : 'cursor-pointer bg-zinc-950 hover:bg-zinc-950/40'
+                            }`}
                             style={{ aspectRatio: '2/1' }}
                           >
-                            <PhotoUploadIcon
-                              width={48}
-                              height={48}
-                              className="text-zinc-400"
-                            ></PhotoUploadIcon>
-                            <p className="mt-3 text-sm font-medium text-zinc-400">
-                              Click to add poster image
-                            </p>
-                            <p className="mt-1 text-xs text-zinc-200">
+                            <div className="mb-3">
+                              <PhotoUploadIcon
+                                width={48}
+                                height={48}
+                                className="text-zinc-400"
+                              ></PhotoUploadIcon>
+                            </div>
+                            {user ? (
+                              <p className="text-sm font-medium text-zinc-400">
+                                Click to add poster image
+                              </p>
+                            ) : null}
+                            <p className="mt-1 text-xs">
                               Support PNG, JPG, JPEG, WEBP
                             </p>
-                            <p className="mt-1 text-xs text-zinc-200">
+                            <p className="mt-1 text-xs">
                               560 x 280. Aspect ratio 2:1
                             </p>
                             <input
@@ -497,6 +511,8 @@ export default function EventForm({
                               className="hidden"
                               onChange={handleSelectImage}
                               accept="image/png, image/jpeg, image/webp"
+                              aria-disabled={!user}
+                              disabled={!user}
                             />
                           </label>
                         </>
