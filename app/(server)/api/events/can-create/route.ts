@@ -28,7 +28,7 @@ export async function GET() {
 
   if (
     // Check if event feature is whitelist only
-    !whitelistFeature.includes('event') === true
+    whitelistFeature.includes('event') === true
   ) {
     return NextResponse.json(
       {
@@ -42,24 +42,22 @@ export async function GET() {
 
   const { value } = await eventRepo.countAllPublishedEvents(user.id);
 
-  if (!user.whitelistFeature.includes('event')) {
-    // check if have created more than 3 events
-    if (value >= EVENT_TRIAL_COUNT) {
-      return NextResponse.json(
-        {
-          data: {
-            count: value,
-            limit: EVENT_TRIAL_COUNT,
-          },
-          code: 403,
-          ok: false,
-          message: 'You have reached the limit of creating events',
+  // check if have created more than 3 events
+  if (value >= EVENT_TRIAL_COUNT) {
+    return NextResponse.json(
+      {
+        data: {
+          count: value,
+          limit: EVENT_TRIAL_COUNT,
         },
-        {
-          status: 403,
-        }
-      );
-    }
+        code: 403,
+        ok: false,
+        message: 'You have reached the limit of creating events',
+      },
+      {
+        status: 403,
+      }
+    );
   }
 
   return NextResponse.json(
