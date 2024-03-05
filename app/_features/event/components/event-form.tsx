@@ -18,11 +18,11 @@ import type { EventType } from '@/_shared/types/event';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
-import DeleteIcon from '@/_shared/components/icons/delete-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { compressImage } from '@/_shared/utils/compress-image';
 import { DeleteEventModal } from './event-delete-modal';
 import { DatePickerModal } from './event-date-picker';
+import { TimePickerModal } from './event-time-picker';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { StatusPublished, StatusDraft } from './event-status';
 
@@ -69,6 +69,29 @@ export default function EventForm({
   const today = new Date();
   const currentHour = today.getHours();
   const defaultEventDate = existingEvent?.startTime || today;
+  const defaultEventStartTime = existingEvent?.startTime
+    ? {
+        hour: existingEvent.startTime.getHours(),
+        minute: existingEvent.startTime.getMinutes(),
+      }
+    : {
+        hour: currentHour,
+        minute: 0,
+      };
+
+  const defaultEventEndTime = existingEvent?.endTime
+    ? {
+        hour: existingEvent.endTime.getHours(),
+        minute: existingEvent.endTime.getMinutes(),
+      }
+    : {
+        hour: currentHour == 23 ? 23 : currentHour + 1,
+        minute: 0,
+      };
+
+  // Constant for event
+  const openStartTimePickerEvent = 'open:event-start-time-picker-modal';
+  const openEndTimePickerEvent = 'open:event-end-time-picker-modal';
 
   const {
     register,
@@ -81,12 +104,24 @@ export default function EventForm({
     disabled: !user,
     defaultValues: {
       eventDate: defaultEventDate,
+      eventStartTime: defaultEventStartTime,
+      eventEndTime: defaultEventEndTime,
     },
   });
 
   const eventDate = useWatch({
     control,
     name: 'eventDate',
+  });
+
+  const eventStartTime = useWatch({
+    control,
+    name: 'eventStartTime',
+  });
+
+  const eventEndTime = useWatch({
+    control,
+    name: 'eventEndTime',
   });
 
   const defaultImageDataState = {
@@ -122,6 +157,43 @@ export default function EventForm({
     };
   }, [setValue]);
 
+  useEffect(() => {
+    if (eventStartTime.hour === 23) {
+      if (
+        eventStartTime.minute === 45 &&
+        !(eventEndTime.hour === 23 && eventEndTime.minute === 59)
+      ) {
+        setValue('eventEndTime', { hour: 23, minute: 59 });
+        return;
+      }
+    }
+
+    if (eventStartTime.hour === eventEndTime.hour) {
+      if (eventStartTime.minute === 45) {
+        setValue('eventEndTime', {
+          hour: eventStartTime.hour + 1,
+          minute: 0,
+        });
+        return;
+      }
+      if (eventStartTime.minute >= eventEndTime.minute) {
+        setValue('eventEndTime', {
+          hour: eventStartTime.hour,
+          minute: eventStartTime.minute + 15,
+        });
+        return;
+      }
+    }
+
+    if (eventStartTime.hour > eventEndTime.hour) {
+      setValue('eventEndTime', {
+        hour: eventStartTime.hour,
+        minute: eventStartTime.minute + 15,
+      });
+      return;
+    }
+  }, [eventStartTime, eventEndTime, setValue]);
+
   const onSubmit: SubmitHandler<InputsType> = async (data, event) => {
     if (!user) return;
 
@@ -148,8 +220,22 @@ export default function EventForm({
         '<br>'
       );
       const host = user.name;
-      const startTime = new Date().toISOString();
-      const endTime = new Date().toISOString();
+      const startTime = new Date(
+        data.eventDate.setHours(
+          data.eventStartTime.hour,
+          data.eventEndTime.minute,
+          0
+        )
+      ).toISOString();
+
+      const endTime = new Date(
+        data.eventDate.setHours(
+          data.eventEndTime.hour,
+          data.eventEndTime.minute,
+          0
+        )
+      ).toISOString();
+
       const posterImage = imageData.imageBlob
         ? await compressImage(imageData.imageBlob, 280, 560, 0.8)
         : null;
@@ -305,6 +391,36 @@ export default function EventForm({
         updateImageData={updateImageData}
       ></ImageCropperModal>
       <DatePickerModal type="event-date" heading="Set event date" />
+      <TimePickerModal
+        heading="Set start time of event"
+        event={openStartTimePickerEvent}
+        hour={eventStartTime.hour}
+        minute={eventStartTime.minute}
+        setTime={(value: any) => {
+          setValue('eventStartTime', value);
+        }}
+        startHour={
+          today.getDate() == eventDate.getDate() &&
+          today.getMonth() == eventDate.getMonth() &&
+          today.getFullYear() == eventDate.getFullYear()
+            ? today.getHours()
+            : 0
+        }
+        step={15}
+      />
+      <TimePickerModal
+        heading="Set end time of event"
+        event={openEndTimePickerEvent}
+        hour={eventEndTime.hour}
+        minute={eventEndTime.minute}
+        setTime={(value: any) => {
+          setValue('eventEndTime', value);
+        }}
+        startHour={eventStartTime.hour}
+        startMinute={eventStartTime.minute}
+        isEndTime={true}
+        step={15}
+      />
       <div className="bg-zinc-900">
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
           <Header logoText="inLive Event" logoHref="/event" />
@@ -518,7 +634,7 @@ export default function EventForm({
                         </>
                       )}
                     </div>
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 sm:flex-row">
                       <div className="flex-1">
                         <label
                           htmlFor="event-date"
@@ -552,6 +668,64 @@ export default function EventForm({
                           />
                           <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
                             <CalendarIcon />
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <label
+                          htmlFor="event-start-time"
+                          className="mb-1 block text-sm font-medium text-zinc-200"
+                        >
+                          Event start time
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="event-start-time"
+                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800"
+                            type="text"
+                            readOnly
+                            onClick={() => {
+                              document.dispatchEvent(
+                                new CustomEvent(openStartTimePickerEvent)
+                              );
+                            }}
+                            value={`${eventStartTime.hour
+                              .toString()
+                              .padStart(2, '0')}:${eventStartTime.minute
+                              .toString()
+                              .padStart(2, '0')}`}
+                          />
+                          <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
+                            <ClockFillIcon />
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <label
+                          htmlFor="event-end-time"
+                          className="mb-1 block text-sm font-medium text-zinc-200"
+                        >
+                          Event end time
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="event-end-time"
+                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800"
+                            type="text"
+                            readOnly
+                            onClick={() => {
+                              document.dispatchEvent(
+                                new CustomEvent(openEndTimePickerEvent)
+                              );
+                            }}
+                            value={`${eventEndTime.hour
+                              .toString()
+                              .padStart(2, '0')}:${eventEndTime.minute
+                              .toString()
+                              .padStart(2, '0')}`}
+                          />
+                          <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
+                            <ClockFillIcon />
                           </span>
                         </div>
                       </div>
