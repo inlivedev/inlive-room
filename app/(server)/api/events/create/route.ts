@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
     if (
       // Check if event feature is exclusive or not
-      whitelistFeature.includes('event') === true
+      !whitelistFeature.includes('event') === true
     ) {
       if (!user.whitelistFeature.includes('event')) {
         // check if have created more than 3 events

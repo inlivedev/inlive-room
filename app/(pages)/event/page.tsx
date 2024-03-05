@@ -96,7 +96,7 @@ export default async function Page({
   let isLimitReached = false;
   let eventCreateLimit: EventType.CreateLimit | undefined = undefined;
 
-  if (whitelistFeature.includes('event') === true) {
+  if (!whitelistFeature.includes('event') === true) {
     eventCreateLimit = await InternalApiFetcher.get(`/api/events/can-create`, {
       headers: {
         Cookie: `token=${token}`,
@@ -136,12 +136,12 @@ export default async function Page({
   function TrialMessage() {
     return (
       <div>
-        {whitelistFeature.includes('event') === true &&
+        {!whitelistFeature.includes('event') === true &&
           user &&
           user.whitelistFeature.includes('event') === false && (
             <p className="rounded-md bg-blue-950 p-2 text-center ring-1 ring-blue-800">
-              You have a limit to publish only {eventCreateLimit?.data.limit}
-              events during Beta [{eventCreateLimit?.data.count} of
+              You have a limit to publish only {eventCreateLimit?.data.limit}{' '}
+              events during Beta [{eventCreateLimit?.data.count} of{' '}
               {eventCreateLimit?.data.limit}] left.
               <br />
               You can fill this{' '}
