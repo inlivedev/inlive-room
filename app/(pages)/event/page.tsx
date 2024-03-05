@@ -103,13 +103,13 @@ export default async function Page({
         {!whitelistFeature.includes('event') === true &&
           user &&
           user.whitelistFeature.includes('event') === false && (
-            <p className="rounded-md bg-blue-950 p-2 text-center ring-1 ring-blue-800">
+            <p className="text-pretty rounded-md bg-blue-900/25  p-2 text-center  text-blue-300">
               You have a limit to publish only {eventCreateLimit?.data.limit}{' '}
               events during Beta [{eventCreateLimit?.data.count} of{' '}
               {eventCreateLimit?.data.limit}] left.
               <br />
               You can fill this{' '}
-              <a className={'font-medium text-blue-300'} href={EVENT_FORM_URL}>
+              <a className={'font-bold text-blue-200'} href={EVENT_FORM_URL}>
                 form
               </a>{' '}
               to request an extended limit.
