@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import type { AuthType } from '@/_shared/types/auth';
-import HTTPError from '@/_shared/components/errors/http-error';
 import EventList from '@/_features/event/components/event-list';
 import type { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -45,30 +44,6 @@ export default async function Page({
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
-
-  if (!user) {
-    return (
-      <HTTPError
-        title="Login Required"
-        description="You need to be logged in to access this page"
-      />
-    );
-  }
-
-  const eligibleForEvent =
-    whitelistFeature.includes('event') ||
-    !!user?.whitelistFeature.includes('event');
-
-  if (!eligibleForEvent) {
-    return (
-      <AppContainer user={user}>
-        <HTTPError
-          title="You are not eligible to see this page"
-          description="Only early-access users can access this page."
-        />
-      </AppContainer>
-    );
-  }
 
   const page = searchParams['page'] ? parseInt(searchParams['page']) : 1;
   const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 10;
