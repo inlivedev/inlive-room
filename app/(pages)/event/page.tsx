@@ -6,27 +6,8 @@ import EventList from '@/_features/event/components/event-list';
 import type { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { whitelistFeature } from '@/_shared/utils/flag';
-import Header from '@/_shared/components/header/header';
-
-const EVENT_FORM_URL =
-  process.env.NEXT_PUBLIC_EVENT_FORM_URL || process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export const generateMetadata = (): Metadata => {
-  const headersList = headers();
-  const userAuthHeader = headersList.get('user-auth');
-
-  const user: AuthType.CurrentAuthData | null =
-    typeof userAuthHeader === 'string'
-      ? JSON.parse(userAuthHeader)
-      : userAuthHeader;
-
-  if (!user || !user.id) {
-    return {
-      title: `Login Required — inLive Room`,
-      description: 'You need to be logged in to access this page',
-    };
-  }
-
   return {
     title: `My Events — inLive Room`,
   };
@@ -57,19 +38,14 @@ export default async function Page({
       },
     });
 
-  let isLimitReached = false;
-  let eventCreateLimit: EventType.CreateLimit | undefined = undefined;
+  let createEventLimit: EventType.CreateLimit | undefined = undefined;
 
   if (!whitelistFeature.includes('event') === true) {
-    eventCreateLimit = await InternalApiFetcher.get(`/api/events/can-create`, {
+    createEventLimit = await InternalApiFetcher.get(`/api/events/can-create`, {
       headers: {
         Cookie: `token=${token}`,
       },
     });
-
-    if (eventCreateLimit?.code === 403) {
-      isLimitReached = true;
-    }
   }
 
   const events = eventResponse.data || [];
@@ -82,40 +58,13 @@ export default async function Page({
 
   return (
     <AppContainer user={user}>
-      <div className="bg-zinc-900">
-        <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
-          <Header logoText="inLive Room" logoHref="/" />
-          {TrialMessage()}
-          <EventList
-            events={events}
-            pageMeta={pageMeta}
-            validPagination={validPagination}
-            limitCreate={isLimitReached}
-          />
-        </div>
-      </div>
+      <EventList
+        events={events}
+        user={user}
+        pageMeta={pageMeta}
+        validPagination={validPagination}
+        createEventLimit={createEventLimit}
+      />
     </AppContainer>
   );
-
-  function TrialMessage() {
-    return (
-      <div>
-        {!whitelistFeature.includes('event') === true &&
-          user &&
-          user.whitelistFeature.includes('event') === false && (
-            <p className="text-pretty rounded-md bg-blue-900/25  p-2 text-center  text-blue-300">
-              You have a limit to publish only {eventCreateLimit?.data.limit}{' '}
-              events during Beta [{eventCreateLimit?.data.count} of{' '}
-              {eventCreateLimit?.data.limit}] left.
-              <br />
-              You can fill this{' '}
-              <a className={'font-bold text-blue-200'} href={EVENT_FORM_URL}>
-                form
-              </a>{' '}
-              to request an extended limit.
-            </p>
-          )}
-      </div>
-    );
-  }
 }

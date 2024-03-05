@@ -1,15 +1,21 @@
 'use client';
 
+import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 import { EventType } from '@/_shared/types/event';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@nextui-org/react';
 import { EventCard } from './event-card';
 import TabNavigation from '@/_features/event/components/tab-navigation';
-import EditIcon from '@/_shared/components/icons/edit-icon';
 import ChevronLeft from '@/_shared/components/icons/chevron-left';
 import ChevronRight from '@/_shared/components/icons/chevron-right';
 import type { SVGElementPropsType, PageMeta } from '@/_shared/types/types';
+import { whitelistFeature } from '@/_shared/utils/flag';
+import { AuthType } from '@/_shared/types/auth';
+
+const EVENT_FORM_URL =
+  process.env.NEXT_PUBLIC_EVENT_FORM_URL || process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 const navLinks = [
   {
@@ -20,138 +26,177 @@ const navLinks = [
 
 export default function EventList({
   events,
+  user,
   pageMeta,
   validPagination,
-  limitCreate,
+  createEventLimit,
 }: {
   events: EventType.Event[];
+  user: AuthType.CurrentAuthData | null;
   pageMeta: PageMeta;
   validPagination: boolean;
-  limitCreate?: boolean;
+  createEventLimit: EventType.CreateLimit | undefined;
 }) {
   const currentPage = pageMeta.current_page;
   const lastPage = pageMeta.total_page;
   const nextPage = currentPage < lastPage ? currentPage + 1 : 0;
   const previousPage = currentPage > 1 ? currentPage - 1 : 0;
 
+  const limitCreate = createEventLimit?.code === 403;
+
   return (
-    <div>
-      <main className="flex-1">
-        <TabNavigation navLinks={navLinks} />
-        <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:mt-5 lg:border-t-0 lg:p-0 lg:text-right">
-          <Button
-            as={Link}
-            isDisabled={limitCreate}
-            href="/event/create"
-            className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
-          >
-            <div className="flex items-center gap-2">
-              <EditIcon height={20} width={20} />
-              <span>Create a new event</span>
-            </div>
-          </Button>
+    <div className="bg-zinc-900">
+      <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
+        <Header logoText="inLive Event" logoHref="/event" />
+        <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-blue-900/25 px-4 py-3 text-center text-blue-300 sm:px-6">
+          {!whitelistFeature.includes('event') === true &&
+          user &&
+          user.whitelistFeature.includes('event') === false &&
+          createEventLimit ? (
+            <p className="text-pretty">
+              You have a limit to publish only {createEventLimit.data.limit}{' '}
+              events during Beta [{createEventLimit.data.count} of{' '}
+              {createEventLimit.data.limit}] left.
+              <br className="hidden sm:block" />
+              You can fill this&nbsp;
+              <a
+                className={
+                  'font-semibold text-blue-200 underline underline-offset-4'
+                }
+                href={EVENT_FORM_URL}
+                target="_blank"
+                rel="noreferrer"
+              >
+                form
+              </a>
+              &nbsp;to request an extended limit.
+            </p>
+          ) : null}
         </div>
-        <div className="mt-5 pb-28 lg:pb-20">
-          {validPagination ? (
-            <>
-              {events.length ? (
-                <>
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {events.map((event) => {
-                      return <EventCard key={event.id} event={event} />;
-                    })}
-                  </div>
-                  {previousPage || nextPage ? (
-                    <div className="mt-10 text-sm md:mt-20">
-                      <p className="pb-4 text-center text-sm font-medium text-zinc-500">
-                        Page {currentPage} of {lastPage}
+        <main className="flex-1">
+          <TabNavigation navLinks={navLinks} />
+          {events.length > 0 ? (
+            <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:mt-5 lg:border-t-0 lg:p-0 lg:text-right">
+              <Button
+                as={Link}
+                isDisabled={limitCreate}
+                href="/event/create"
+                className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
+              >
+                Create new event
+              </Button>
+            </div>
+          ) : null}
+          <div className="mt-5 pb-24 lg:pb-10">
+            {validPagination ? (
+              <>
+                {events.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      {events.map((event) => {
+                        return <EventCard key={event.id} event={event} />;
+                      })}
+                    </div>
+                    {previousPage || nextPage ? (
+                      <div className="mt-10 text-sm md:mt-20">
+                        <p className="pb-4 text-center text-sm font-medium text-zinc-500">
+                          Page {currentPage} of {lastPage}
+                        </p>
+                        <div className="flex items-center justify-center gap-6">
+                          {previousPage ? (
+                            <div>
+                              <Button
+                                className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                                as={Link}
+                                href={`/event?page=${previousPage}&limit=${pageMeta.per_page}`}
+                              >
+                                <span className="flex items-center">
+                                  <ChevronLeft width={16} height={16} />
+                                </span>
+                                <span>Previous page</span>
+                              </Button>
+                            </div>
+                          ) : null}
+                          {nextPage ? (
+                            <div>
+                              <Button
+                                className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                                as={Link}
+                                href={`/event?page=${nextPage}&limit=${pageMeta.per_page}`}
+                              >
+                                <span>Next page</span>
+                                <span className="flex items-center">
+                                  <ChevronRight width={16} height={16} />
+                                </span>
+                              </Button>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="flex h-[360px] w-full items-center justify-center rounded-3xl border border-zinc-800 lg:h-80">
+                    <div className="text-center">
+                      <div className="flex justify-center">
+                        <Image
+                          src="/images/webinar/calendar-speaker-illustration.svg"
+                          alt="Illustration of a calendar with a speaker"
+                          width={200}
+                          height={100}
+                          style={{ objectFit: 'cover' }}
+                          unoptimized
+                        />
+                      </div>
+                      <p className="mt-6 text-pretty text-base font-medium text-zinc-400">
+                        Click Create new event” button to create your webinar
+                        event. Let’s go!
                       </p>
-                      <div className="flex items-center justify-center gap-6">
-                        {previousPage ? (
-                          <div>
-                            <Button
-                              className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                              as={Link}
-                              href={`/event?page=${previousPage}&limit=${pageMeta.per_page}`}
-                            >
-                              <span className="flex items-center">
-                                <ChevronLeft width={16} height={16} />
-                              </span>
-                              <span>Previous page</span>
-                            </Button>
-                          </div>
-                        ) : null}
-                        {nextPage ? (
-                          <div>
-                            <Button
-                              className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                              as={Link}
-                              href={`/event?page=${nextPage}&limit=${pageMeta.per_page}`}
-                            >
-                              <span>Next page</span>
-                              <span className="flex items-center">
-                                <ChevronRight width={16} height={16} />
-                              </span>
-                            </Button>
-                          </div>
-                        ) : null}
+                      <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:mt-10 lg:border-t-0 lg:p-0">
+                        <Button
+                          as={Link}
+                          isDisabled={limitCreate}
+                          href="/event/create"
+                          className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
+                        >
+                          Create new event
+                        </Button>
                       </div>
                     </div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="flex h-60 w-full items-center justify-center rounded border border-zinc-800">
-                  <div className="text-center">
-                    <div className="flex justify-center">
-                      <EventCalendarIcon width={40} height={40} />
-                    </div>
-                    <b className="mt-3 block text-lg font-semibold">
-                      We&apos;ll keep your events here
-                    </b>
-                    <p className="mt-1.5 text-sm text-zinc-400">
-                      Come back to this page once you create your event.
-                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex h-[360px] w-full items-center justify-center rounded-3xl border border-zinc-800 lg:h-80">
+                <div className="text-center">
+                  <div className="flex justify-center">
+                    <EventCalendarIcon width={40} height={40} />
+                  </div>
+                  <b className="mt-3 block text-lg font-semibold">
+                    Oops, no event found
+                  </b>
+                  <p className="mt-1.5 text-sm text-zinc-400">
+                    We couldn&apos;t find any data from your request.
+                  </p>
+                  {pageMeta.total_page >= 1 ? (
                     <div className="mt-6">
                       <Button
                         as={Link}
-                        href="/event/create"
-                        className="h-8 min-w-0 rounded bg-red-700 px-4 py-1.5 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
+                        href="/event"
+                        className="min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                       >
-                        Create event
+                        Refresh the page
                       </Button>
                     </div>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex h-60 w-full items-center justify-center rounded border border-zinc-800">
-              <div className="text-center">
-                <div className="flex justify-center">
-                  <EventCalendarIcon width={40} height={40} />
-                </div>
-                <b className="mt-3 block text-lg font-semibold">
-                  Oops, no event found
-                </b>
-                <p className="mt-1.5 text-sm text-zinc-400">
-                  We couldn&apos;t find any data from your request.
-                </p>
-                <div className="mt-6">
-                  <Button
-                    as={Link}
-                    href="/event"
-                    className="h-8 min-w-0 rounded bg-zinc-800 px-4 py-1.5 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                  >
-                    Refresh the page
-                  </Button>
+                  ) : null}
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        </main>
+        <div className="hidden lg:block">
+          <Footer />
         </div>
-      </main>
-      <div className="hidden lg:block">
-        <Footer />
       </div>
     </div>
   );
