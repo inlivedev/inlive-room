@@ -6,7 +6,7 @@ import type { AuthType } from '@/_shared/types/auth';
 
 export const generateMetadata = (): Metadata => {
   return {
-    title: `Create Your Event — inLive Room`,
+    title: `Let's Create Your Event — inLive Room`,
   };
 };
 
