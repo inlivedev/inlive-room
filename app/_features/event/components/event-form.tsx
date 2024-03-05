@@ -428,12 +428,12 @@ export default function EventForm({
           <Header logoText="inLive Event" logoHref="/event" />
           <main className="flex-1">
             {!user ? (
-              <div className="mx-auto mb-6 flex max-w-3xl items-center justify-between gap-4 rounded-md bg-red-900/25 px-4 py-3 text-red-300 sm:px-6">
+              <div className="mx-auto mb-6 flex max-w-3xl items-center justify-between gap-4 rounded-md bg-blue-900/25 px-4 py-3 text-blue-300 sm:px-6">
                 <p className=" text-pretty">
                   Just sign in and you can start creating your event now!
                 </p>
                 <Button
-                  className="h-8 rounded-md bg-transparent px-3 text-sm font-medium text-red-300 ring-2 ring-red-300"
+                  className="h-8 rounded-md bg-transparent px-3 text-sm font-medium text-blue-300 ring-2 ring-blue-300"
                   onClick={() =>
                     document.dispatchEvent(
                       new CustomEvent('open:sign-in-modal')
@@ -647,9 +647,11 @@ export default function EventForm({
                         <div className="relative">
                           <input
                             id="event-date"
-                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800"
+                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-700"
                             type="text"
                             readOnly
+                            aria-disabled={!user}
+                            disabled={!user}
                             onClick={() => {
                               document.dispatchEvent(
                                 new CustomEvent('open:date-picker-modal', {
@@ -659,14 +661,18 @@ export default function EventForm({
                                 })
                               );
                             }}
-                            value={new Date(eventDate).toLocaleDateString(
-                              'en-GB',
-                              {
-                                month: 'short',
-                                day: '2-digit',
-                                year: 'numeric',
-                              }
-                            )}
+                            value={
+                              user
+                                ? new Date(eventDate).toLocaleDateString(
+                                    'en-GB',
+                                    {
+                                      month: 'short',
+                                      day: '2-digit',
+                                      year: 'numeric',
+                                    }
+                                  )
+                                : ''
+                            }
                           />
                           <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
                             <CalendarIcon />
@@ -683,19 +689,25 @@ export default function EventForm({
                         <div className="relative">
                           <input
                             id="event-start-time"
-                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800"
+                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-700"
                             type="text"
                             readOnly
+                            aria-disabled={!user}
+                            disabled={!user}
                             onClick={() => {
                               document.dispatchEvent(
                                 new CustomEvent(openStartTimePickerEvent)
                               );
                             }}
-                            value={`${eventStartTime.hour
-                              .toString()
-                              .padStart(2, '0')}:${eventStartTime.minute
-                              .toString()
-                              .padStart(2, '0')}`}
+                            value={
+                              user
+                                ? `${eventStartTime.hour
+                                    .toString()
+                                    .padStart(2, '0')}:${eventStartTime.minute
+                                    .toString()
+                                    .padStart(2, '0')}`
+                                : ''
+                            }
                           />
                           <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
                             <ClockFillIcon />
@@ -712,19 +724,25 @@ export default function EventForm({
                         <div className="relative">
                           <input
                             id="event-end-time"
-                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800"
+                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-700"
                             type="text"
                             readOnly
+                            aria-disabled={!user}
+                            disabled={!user}
                             onClick={() => {
                               document.dispatchEvent(
                                 new CustomEvent(openEndTimePickerEvent)
                               );
                             }}
-                            value={`${eventEndTime.hour
-                              .toString()
-                              .padStart(2, '0')}:${eventEndTime.minute
-                              .toString()
-                              .padStart(2, '0')}`}
+                            value={
+                              user
+                                ? `${eventEndTime.hour
+                                    .toString()
+                                    .padStart(2, '0')}:${eventEndTime.minute
+                                    .toString()
+                                    .padStart(2, '0')}`
+                                : ''
+                            }
                           />
                           <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
                             <ClockFillIcon />
