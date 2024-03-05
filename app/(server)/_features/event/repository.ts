@@ -8,7 +8,16 @@ import {
   participant as participants,
   selectEvent,
 } from './schema';
-import { DBQueryConfig, SQL, and, count, eq, sql } from 'drizzle-orm';
+import {
+  DBQueryConfig,
+  SQL,
+  and,
+  count,
+  eq,
+  isNotNull,
+  isNull,
+  sql,
+} from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 
 export class EventRepo implements iEventRepo {
@@ -20,7 +29,7 @@ export class EventRepo implements iEventRepo {
 
   async getEventBySlug(slug: string): Promise<selectEvent | undefined> {
     const data = await db.query.events.findFirst({
-      where: eq(events.slug, slug),
+      where: and(eq(events.slug, slug), isNull(events.deletedAt)),
     });
 
     if (data) return data as selectEvent;
@@ -29,7 +38,7 @@ export class EventRepo implements iEventRepo {
 
   async getEventById(id: number): Promise<selectEvent | undefined> {
     const data = await db.query.events.findFirst({
-      where: eq(events.id, id),
+      where: and(eq(events.id, id), isNull(events.deletedAt)),
     });
 
     if (data) return data as selectEvent;
@@ -64,6 +73,8 @@ export class EventRepo implements iEventRepo {
     };
 
     const whereQuery: SQL[] = [];
+
+    whereQuery.push(sql`${events.deletedAt} IS NULL`);
 
     if (userId) {
       whereQuery.push(sql`${events.createdBy} = ${userId}`);
@@ -122,14 +133,16 @@ export class EventRepo implements iEventRepo {
 
   async deleteEvent(id: number, userId: number) {
     return await db
-      .delete(events)
+      .update(events)
+      .set({ deletedAt: new Date() })
       .where(and(eq(events.id, id), eq(events.id, userId)))
       .returning();
   }
 
   async deleteEventBySlug(slug: string, userId: number) {
     return await db
-      .delete(events)
+      .update(events)
+      .set({ deletedAt: new Date() })
       .where(and(eq(events.slug, slug), eq(events.createdBy, userId)))
       .returning();
   }
@@ -160,11 +173,7 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async updateEventBySlug(
-    userId: number,
-    slug: string,
-    event: insertEvent
-  ) {
+  async updateEventBySlug(userId: number, slug: string, event: insertEvent) {
     return await db
       .update(events)
       .set(event)
@@ -208,6 +217,25 @@ export class EventRepo implements iEventRepo {
       })
       .from(eventHasParticipant)
       .where(eq(eventHasParticipant.eventId, eventID));
+
+    return res[0];
+  }
+
+  /**
+   * This function counts all published events for a given user, including those that have been deleted.
+   *
+   * @param userID The ID of the user for whom to count the events.
+   * @returns A promise that resolves to the count of all published events for the given user.
+   */
+  async countAllPublishedEvents(userID: number) {
+    const res = await db
+      .select({
+        value: count(),
+      })
+      .from(events)
+      .where(
+        sql`${events.isPublished}=true AND ${events.createdBy} = ${userID}`
+      );
 
     return res[0];
   }

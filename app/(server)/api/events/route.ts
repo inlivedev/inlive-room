@@ -51,6 +51,12 @@ export async function GET(req: Request) {
           code: 401,
           ok: false,
           message: 'Please check if token is provided in the cookie',
+          meta: {
+            current_page: 1,
+            total_page: 0,
+            per_page: 10,
+            total_record: 0,
+          },
         },
         { status: 401 }
       );
