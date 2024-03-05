@@ -221,14 +221,20 @@ export class EventRepo implements iEventRepo {
     return res[0];
   }
 
-  async countDeletedPublished(userID: number) {
+  /**
+   * This function counts all published events for a given user, including those that have been deleted.
+   *
+   * @param userID The ID of the user for whom to count the events.
+   * @returns A promise that resolves to the count of all published events for the given user.
+   */
+  async countAllPublishedEvents(userID: number) {
     const res = await db
       .select({
         value: count(),
       })
       .from(events)
       .where(
-        sql`${events.deletedAt} IS NOT NULL AND ${events.createdBy} = ${userID} AND ${events.isPublished} = true`
+        sql`${events.isPublished}=true AND ${events.createdBy} = ${userID}`
       );
 
     return res[0];
