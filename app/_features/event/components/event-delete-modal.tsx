@@ -14,7 +14,7 @@ import { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import WarningIcon from '@/_shared/components/icons/warning-icon';
 
-export function DeleteEventModal({ slug }: { slug: string }) {
+export default function DeleteEventModal({ slug }: { slug: string }) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [isDeleting, setIsDeleting] = useState(false);
   const { navigateTo } = useNavigate();

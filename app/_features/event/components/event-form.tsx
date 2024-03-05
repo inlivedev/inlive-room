@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { Button } from '@nextui-org/react';
 import NextImage from 'next/image';
+import dynamic from 'next/dynamic';
 import { useForm, SubmitHandler, useWatch } from 'react-hook-form';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
@@ -20,11 +21,12 @@ import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { compressImage } from '@/_shared/utils/compress-image';
-import { DeleteEventModal } from './event-delete-modal';
-import { DatePickerModal } from './event-date-picker';
-import { TimePickerModal } from './event-time-picker';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { StatusPublished, StatusDraft } from './event-status';
+
+const DeleteEventModal = dynamic(() => import('./event-delete-modal'));
+const DatePickerModal = dynamic(() => import('./event-date-picker'));
+const TimePickerModal = dynamic(() => import('./event-time-picker'));
 
 type InputsType = {
   eventTitle: string;

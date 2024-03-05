@@ -11,7 +11,7 @@ import DatePicker from 'react-datepicker';
 import '../styles/date-picker.css';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
-export function DatePickerModal({
+export default function DatePickerModal({
   heading,
   type,
 }: {

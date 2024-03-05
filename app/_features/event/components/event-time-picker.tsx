@@ -25,7 +25,7 @@ interface TimePickerModalProps {
   startMinute?: number;
 }
 
-export function TimePickerModal({
+export default function TimePickerModal({
   hour,
   minute,
   event,
