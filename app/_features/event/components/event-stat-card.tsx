@@ -30,7 +30,7 @@ export function EventStatCard({ event }: { event: selectEvent }) {
     fetchStat();
   }, [event]);
 
-  const eventTime = new Date(event.startTime).toLocaleString('en-GB', {
+  const eventTime = new Date(event.startTime).toLocaleString('en-US', {
     month: 'short',
     day: '2-digit',
     hour: 'numeric',
