@@ -82,7 +82,7 @@ export function DeleteEventModal({ slug }: { slug: string }) {
                 setIsDeleting(false);
               }
             }}
-            className="w-full basis-1/2 rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+            className="w-full basis-1/2 rounded-md bg-red-800 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-700 active:bg-red-600"
           >
             {isDeleting ? (
               <div className="flex gap-2">
@@ -96,7 +96,7 @@ export function DeleteEventModal({ slug }: { slug: string }) {
                 <span>Deleting...</span>
               </div>
             ) : (
-              <span>Delete</span>
+              <span>Delete this event</span>
             )}
           </Button>{' '}
         </ModalFooter>

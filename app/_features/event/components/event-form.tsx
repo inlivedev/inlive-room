@@ -363,7 +363,7 @@ export default function EventForm({
                   </div>
                 </div>
               </div>
-              <div className="mt-10 flex flex-col gap-6 pb-28 lg:flex-row lg:pb-20">
+              <div className="mt-10 flex flex-col gap-6 pb-28 lg:flex-row lg:pb-10">
                 <div className="flex flex-1 flex-col gap-6">
                   <div>
                     <label
@@ -403,7 +403,7 @@ export default function EventForm({
                     </label>
                     <textarea
                       id="event-description"
-                      className="block min-h-60 w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm  shadow-sm outline-none ring-1 ring-zinc-800 placeholder:text-zinc-400  focus-visible:ring-zinc-400"
+                      className="block min-h-60 w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm shadow-sm  outline-none ring-1 ring-zinc-800 placeholder:text-zinc-400 focus-visible:ring-zinc-400  lg:min-h-80"
                       placeholder="Give a clear information about the event"
                       autoComplete="off"
                       defaultValue={existingEvent?.description || ''}
@@ -422,99 +422,115 @@ export default function EventForm({
                     ) : null}
                   </div>
                 </div>
-                <div className="flex flex-1 flex-col gap-6">
-                  <div>
-                    {imageData.imagePreview ? (
-                      <div className="relative">
-                        <NextImage
-                          width={560}
-                          height={280}
-                          src={imageData.imagePreview}
-                          alt="Event poster image"
-                          className="w-full rounded object-cover"
-                          style={{ aspectRatio: '2/1' }}
-                          unoptimized
-                        ></NextImage>
-                        <Button
-                          className="absolute right-3 top-3 z-10 inline-block h-8 min-h-0 min-w-0 rounded-lg bg-zinc-800 px-2.5 py-1.5 text-sm font-medium antialiased hover:bg-zinc-700 lg:order-1"
-                          title="Remove this poster image"
-                          onPress={() => {
-                            updateImageData({ type: 'Reset' });
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        <label
-                          htmlFor="file-input"
-                          className="flex w-full cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-6 shadow-sm outline-none  ring-1 ring-zinc-800 hover:bg-zinc-950/40"
-                          style={{ aspectRatio: '2/1' }}
-                        >
-                          <PhotoUploadIcon
-                            width={48}
-                            height={48}
-                            className="text-zinc-400"
-                          ></PhotoUploadIcon>
-                          <p className="mt-3 text-sm font-medium text-zinc-400">
-                            Click to add poster image
-                          </p>
-                          <p className="mt-1 text-xs text-zinc-200">
-                            Support PNG, JPG, JPEG, WEBP
-                          </p>
-                          <p className="mt-1 text-xs text-zinc-200">
-                            560 x 280. Aspect ratio 2:1
-                          </p>
-                          <input
-                            id="file-input"
-                            type="file"
-                            className="hidden"
-                            onChange={handleSelectImage}
-                            accept="image/png, image/jpeg, image/webp"
-                          />
-                        </label>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex gap-4">
+                <div className="flex-1">
+                  <div className="flex flex-col gap-6">
                     <div>
-                      <label
-                        htmlFor="event-date"
-                        className="mb-1 block text-sm font-medium text-zinc-200"
-                      >
-                        Event date
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="event-date"
-                          className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800"
-                          type="text"
-                          readOnly
-                          onClick={() => {
-                            document.dispatchEvent(
-                              new CustomEvent('open:date-picker-modal', {
-                                detail: {
-                                  currentDate: eventDate,
-                                },
-                              })
-                            );
-                          }}
-                          value={new Date(eventDate).toLocaleDateString(
-                            'en-GB',
-                            {
-                              month: 'short',
-                              day: '2-digit',
-                              year: 'numeric',
-                            }
-                          )}
-                        />
-                        <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
-                          <CalendarIcon />
-                        </span>
+                      {imageData.imagePreview ? (
+                        <div className="relative">
+                          <NextImage
+                            width={560}
+                            height={280}
+                            src={imageData.imagePreview}
+                            alt="Event poster image"
+                            className="w-full rounded object-cover"
+                            style={{ aspectRatio: '2/1' }}
+                            unoptimized
+                          ></NextImage>
+                          <Button
+                            className="absolute right-3 top-3 z-10 inline-block h-8 min-h-0 min-w-0 rounded-lg bg-zinc-800 px-2.5 py-1.5 text-sm font-medium antialiased hover:bg-zinc-700 lg:order-1"
+                            title="Remove this poster image"
+                            onPress={() => {
+                              updateImageData({ type: 'Reset' });
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <label
+                            htmlFor="file-input"
+                            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-6 shadow-sm outline-none  ring-1 ring-zinc-800 hover:bg-zinc-950/40"
+                            style={{ aspectRatio: '2/1' }}
+                          >
+                            <PhotoUploadIcon
+                              width={48}
+                              height={48}
+                              className="text-zinc-400"
+                            ></PhotoUploadIcon>
+                            <p className="mt-3 text-sm font-medium text-zinc-400">
+                              Click to add poster image
+                            </p>
+                            <p className="mt-1 text-xs text-zinc-200">
+                              Support PNG, JPG, JPEG, WEBP
+                            </p>
+                            <p className="mt-1 text-xs text-zinc-200">
+                              560 x 280. Aspect ratio 2:1
+                            </p>
+                            <input
+                              id="file-input"
+                              type="file"
+                              className="hidden"
+                              onChange={handleSelectImage}
+                              accept="image/png, image/jpeg, image/webp"
+                            />
+                          </label>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex-1">
+                        <label
+                          htmlFor="event-date"
+                          className="mb-1 block text-sm font-medium text-zinc-200"
+                        >
+                          Event date
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="event-date"
+                            className="block w-full cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800"
+                            type="text"
+                            readOnly
+                            onClick={() => {
+                              document.dispatchEvent(
+                                new CustomEvent('open:date-picker-modal', {
+                                  detail: {
+                                    currentDate: eventDate,
+                                  },
+                                })
+                              );
+                            }}
+                            value={new Date(eventDate).toLocaleDateString(
+                              'en-GB',
+                              {
+                                month: 'short',
+                                day: '2-digit',
+                                year: 'numeric',
+                              }
+                            )}
+                          />
+                          <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
+                            <CalendarIcon />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
+                  {existingEvent ? (
+                    <div className="mt-20 flex justify-center lg:mt-12 lg:justify-end">
+                      <Button
+                        className="h-9 w-60 rounded-lg bg-transparent px-3 py-1.5 text-base font-medium text-red-400 antialiased ring-2 ring-red-900 active:ring-red-700"
+                        onPress={() => {
+                          document.dispatchEvent(
+                            new CustomEvent('open:event-delete-modal')
+                          );
+                        }}
+                      >
+                        Delete this event
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </form>
