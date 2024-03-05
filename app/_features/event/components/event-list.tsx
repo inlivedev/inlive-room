@@ -48,11 +48,12 @@ export default function EventList({
     <div className="bg-zinc-900">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
         <Header logoText="inLive Event" logoHref="/event" />
-        <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-blue-900/25 px-4 py-3 text-center text-blue-300 sm:px-6">
-          {!whitelistFeature.includes('event') === true &&
-          user &&
-          user.whitelistFeature.includes('event') === false &&
-          createEventLimit ? (
+
+        {!whitelistFeature.includes('event') === true &&
+        user &&
+        user.whitelistFeature.includes('event') === false &&
+        createEventLimit ? (
+          <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-blue-900/25 px-4 py-3 text-center text-blue-300 sm:px-6">
             <p className="text-pretty">
               You have a limit to publish only {createEventLimit.data.limit}{' '}
               events during Beta [{createEventLimit.data.count} of{' '}
@@ -71,8 +72,8 @@ export default function EventList({
               </a>
               &nbsp;to request an extended limit.
             </p>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
         <main className="flex-1">
           <TabNavigation navLinks={navLinks} />
           {events.length > 0 ? (
