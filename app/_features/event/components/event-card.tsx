@@ -6,7 +6,7 @@ import Image from 'next/image';
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export function EventCard({ event }: { event: EventType.Event }) {
-  const eventTime = new Date(event.startTime).toLocaleString('en-GB', {
+  const eventTime = new Date(event.startTime).toLocaleString('en-US', {
     month: 'short',
     day: '2-digit',
     hour: 'numeric',

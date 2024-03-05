@@ -23,9 +23,9 @@ export default function EventRegistrationSuccess({
     year: 'numeric',
   });
 
-  const eventStartTime = new Date(startTime).toLocaleTimeString('en-GB', {
+  const eventStartTime = new Date(startTime).toLocaleTimeString('en-US', {
+    hour: 'numeric',
     minute: '2-digit',
-    hour: '2-digit',
     hour12: true,
   });
 
