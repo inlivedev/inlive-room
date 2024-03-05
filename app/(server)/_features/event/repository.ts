@@ -120,7 +120,7 @@ export class EventRepo implements iEventRepo {
 
     const meta: PageMeta = {
       current_page: page + 1,
-      total_page: Math.ceil(total / limit),
+      total_page: Math.ceil(total / limit) || 1,
       per_page: limit,
       total_record: total,
     };
