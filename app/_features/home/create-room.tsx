@@ -15,13 +15,8 @@ import { useState } from 'react';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import type { RoomType } from '@/_shared/types/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { whitelistFeature } from '@/_shared/utils/flag';
 
-export default function CreateRoom({
-  setWebinarAlertActive,
-}: {
-  setWebinarAlertActive: () => void;
-}) {
+export default function CreateRoom() {
   const { user } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -57,15 +52,6 @@ export default function CreateRoom({
     async (key: Key) => {
       if (!user || isSubmitting || typeof key !== 'string') return;
 
-      if (
-        key === 'event' &&
-        !whitelistFeature.includes('event') &&
-        !user?.whitelistFeature.includes('event')
-      ) {
-        setWebinarAlertActive();
-        return;
-      }
-
       setIsSubmitting(true);
 
       try {
@@ -84,7 +70,7 @@ export default function CreateRoom({
         console.error(error);
       }
     },
-    [user, isSubmitting, createRoom, setWebinarAlertActive]
+    [user, isSubmitting, createRoom]
   );
 
   return (
@@ -152,11 +138,6 @@ export default function CreateRoom({
               >
                 <div className="flex justify-between text-sm font-medium text-zinc-200">
                   <span className="inline-block">Webinar</span>
-                  {!whitelistFeature.includes('event') && (
-                    <span className="inline-flex items-center rounded-sm border border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
-                      Limited Beta
-                    </span>
-                  )}
                 </div>
                 <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
                   Host sessions with large audiences
