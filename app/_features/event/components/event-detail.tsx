@@ -86,7 +86,7 @@ export default function EventDetail({
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
           <Header logoText="inLive Event" logoHref="/event" needAuth={true} />
           <main className="mb-28 flex flex-1 flex-col">
-            <div className="mb-1">
+            <div className="mb-1.5">
               {user?.id == createdBy &&
                 (isPublished ? <StatusPublished /> : <StatusDraft />)}
             </div>

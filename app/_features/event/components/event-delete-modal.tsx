@@ -2,7 +2,6 @@ import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import {
   Button,
-  Code,
   Modal,
   ModalBody,
   ModalContent,
@@ -11,46 +10,51 @@ import {
   Spinner,
   useDisclosure,
 } from '@nextui-org/react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import WarningIcon from '@/_shared/components/icons/warning-icon';
 
-export function DeleteEventModal({ slug }: { slug: string }) {
+export default function DeleteEventModal({ slug }: { slug: string }) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [isDeleting, setIsDeleting] = useState(false);
   const { navigateTo } = useNavigate();
 
-  const openModal = useCallback(() => {
-    onOpen();
-  }, [onOpen]);
-
   useEffect(() => {
+    const openModal = () => {
+      onOpen();
+    };
+
     document.addEventListener('open:event-delete-modal', openModal);
-  });
+
+    return () => {
+      document.removeEventListener('open:event-delete-modal', openModal);
+    };
+  }, [onOpen]);
 
   return (
     <Modal
+      size="md"
+      placement="center"
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      className="w-[calc(100%-1.5em)]"
     >
       <ModalContent>
         <ModalHeader>
-          <h3>Delete Event</h3>
+          <h3>Delete this event</h3>
         </ModalHeader>
 
         <ModalBody>
-          <div className="flex gap-2">
-            <div className="flex w-fit items-center gap-2 rounded-sm bg-red-950 p-1 text-xs text-red-300 ring-1 ring-red-800">
-              <WarningIcon height={24} width={24}></WarningIcon>
+          <div>
+            <div className="flex gap-2">
+              <div className="flex items-center rounded bg-red-950 p-2  text-red-200 ring-1 ring-red-900">
+                <WarningIcon height={20} width={20}></WarningIcon>
+              </div>
+              <p className="flex w-full items-center gap-2 rounded bg-red-950 p-2 text-sm text-red-200 ring-1 ring-red-900">
+                This action cannot be undone!
+              </p>
             </div>
-            <div className="flex w-full items-center gap-2 rounded-sm bg-red-950 p-1 text-xs text-red-300 ring-1 ring-red-800">
-              <p className="w-full">This action cannot be undone!</p>
-            </div>
+            <p className="mt-4">Are you sure you want to delete this event?</p>
           </div>
-          <p className="mt-1 font-normal">
-            Are you sure you want to delete this event?
-          </p>
         </ModalBody>
         <ModalFooter>
           <Button
@@ -68,7 +72,7 @@ export function DeleteEventModal({ slug }: { slug: string }) {
                 );
 
                 if (response.ok) {
-                  navigateTo(new URL('/event', window.location.origin).href);
+                  navigateTo('/event');
                 } else {
                   alert('Failed to delete event, please try again later');
                 }
@@ -78,7 +82,7 @@ export function DeleteEventModal({ slug }: { slug: string }) {
                 setIsDeleting(false);
               }
             }}
-            className="w-full basis-1/2 rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+            className="w-full basis-1/2 rounded-md bg-red-800 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-700 active:bg-red-600"
           >
             {isDeleting ? (
               <div className="flex gap-2">
@@ -92,7 +96,7 @@ export function DeleteEventModal({ slug }: { slug: string }) {
                 <span>Deleting...</span>
               </div>
             ) : (
-              <span>Delete</span>
+              <span>Delete this event</span>
             )}
           </Button>{' '}
         </ModalFooter>
