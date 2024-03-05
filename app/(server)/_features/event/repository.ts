@@ -221,13 +221,15 @@ export class EventRepo implements iEventRepo {
     return res[0];
   }
 
-  async countDeleted(userID: number) {
+  async countDeletedPublished(userID: number) {
     const res = await db
       .select({
         value: count(),
       })
       .from(events)
-      .where(and(eq(events.id, userID), isNotNull(events.deletedAt)));
+      .where(
+        sql`${events.deletedAt} IS NOT NULL AND ${events.createdBy} = ${userID} AND ${events.isPublished} = true`
+      );
 
     return res[0];
   }

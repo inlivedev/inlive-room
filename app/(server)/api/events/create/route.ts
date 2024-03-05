@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     ) {
       if (!user.whitelistFeature.includes('event')) {
         // check if have created more than 3 events
-        const { value } = await eventRepo.countAll(user.id);
+        const { value } = await eventRepo.countDeletedPublished(user.id);
         if (value >= EVENT_TRIAL_COUNT) {
           return NextResponse.json({
             code: 403,

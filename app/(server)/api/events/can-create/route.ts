@@ -40,7 +40,7 @@ export async function GET() {
     );
   }
 
-  const { value } = await eventRepo.countAll(user.id);
+  const { value } = await eventRepo.countDeletedPublished(user.id);
 
   if (!user.whitelistFeature.includes('event')) {
     // check if have created more than 3 events
