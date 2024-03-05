@@ -239,15 +239,4 @@ export class EventRepo implements iEventRepo {
 
     return res[0];
   }
-
-  async countAll(userID: number) {
-    const res = await db
-      .select({
-        value: count(),
-      })
-      .from(events)
-      .where(eq(events.createdBy, userID));
-
-    return res[0];
-  }
 }
