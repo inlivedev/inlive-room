@@ -14,16 +14,11 @@ import {
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
 interface TimePickerModalProps {
-  setTime: React.Dispatch<
-    React.SetStateAction<{
-      hour: number;
-      minute: number;
-    }>
-  >;
+  setTime: any;
   hour: number;
   minute: number;
   event: string;
-  title: string;
+  heading: string;
   step?: number;
   isEndTime?: boolean;
   startHour?: number;
@@ -39,7 +34,7 @@ export function TimePickerModal({
   isEndTime = false,
   startHour = 0,
   startMinute = 0,
-  title,
+  heading,
 }: TimePickerModalProps) {
   const dropDownVariant = 'solid';
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -65,14 +60,18 @@ export function TimePickerModal({
     [selectedMinute]
   );
 
-  const openModal = useCallback(() => {
-    onOpen();
-    setSelectHour(new Set([hour.toString()]));
-    setSelectMinute(new Set([minute.toString()]));
-  }, [onOpen, hour, minute]);
-
   useEffect(() => {
+    const openModal = () => {
+      onOpen();
+      setSelectHour(new Set([hour.toString()]));
+      setSelectMinute(new Set([minute.toString()]));
+    };
+
     document.addEventListener(event, openModal);
+
+    return () => {
+      document.removeEventListener(event, openModal);
+    };
   });
 
   const onConfirm = useCallback(() => {
@@ -136,7 +135,7 @@ export function TimePickerModal({
       isDismissable={false}
     >
       <ModalContent>
-        <ModalHeader>{title}</ModalHeader>
+        <ModalHeader>{heading}</ModalHeader>
         <ModalBody>
           <div className="flex items-center justify-center gap-1">
             <Dropdown className="basis-1/2">
