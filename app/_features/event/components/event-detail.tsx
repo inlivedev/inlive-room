@@ -10,7 +10,7 @@ import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import EditIcon from '@/_shared/components/icons/edit-icon';
-import { StatusDraft, StatusPublished } from './event-status';
+import { StatusCanceled, StatusDraft, StatusPublished } from './event-status';
 import Link from 'next/link';
 import EnterRoomIcon from '@/_shared/components/icons/enter-room-icon';
 
@@ -25,7 +25,7 @@ type EventDetailProps = {
   startTime: Date;
   slug: string;
   host: string;
-  isPublished?: boolean;
+  status: 'draft' | 'published' | 'canceled';
   thumbnailUrl?: string | null;
   createdBy: number;
   roomId?: string;
@@ -37,7 +37,7 @@ export default function EventDetail({
   slug,
   host,
   startTime,
-  isPublished,
+  status,
   thumbnailUrl,
   createdBy,
   roomId,
@@ -88,7 +88,16 @@ export default function EventDetail({
           <main className="mb-28 flex flex-1 flex-col">
             <div className="mb-1.5">
               {user?.id == createdBy &&
-                (isPublished ? <StatusPublished /> : <StatusDraft />)}
+                (() => {
+                  switch (status) {
+                    case 'draft':
+                      return <StatusDraft />;
+                    case 'published':
+                      return <StatusPublished />;
+                    case 'canceled':
+                      return <StatusCanceled />;
+                  }
+                })()}
             </div>
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
               {title}
@@ -122,6 +131,7 @@ export default function EventDetail({
                     <div className="flex flex-col gap-1 lg:gap-2">
                       {user?.id == createdBy ? (
                         <AuthorActionButtons
+                          status={status}
                           copiedActive={copiedActive}
                           handleCopyLink={handleCopyLink}
                           slug={slug}
@@ -161,11 +171,13 @@ function AuthorActionButtons({
   slug,
   copiedActive,
   roomId,
+  status,
 }: {
   handleCopyLink: (text?: string) => Promise<void>;
   slug: string;
   copiedActive: boolean;
   roomId?: string;
+  status: 'draft' | 'published' | 'canceled';
 }) {
   return (
     <div className="flex justify-between gap-2">
@@ -174,6 +186,7 @@ function AuthorActionButtons({
           href={`/room/${roomId}`}
           as={Link}
           variant="flat"
+          isDisabled={status !== 'published' || !roomId}
           className="w-full rounded-md bg-red-700 p-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 lg:basis-1/2"
         >
           <EnterRoomIcon width={20} height={20} strokeWidth={2} />
@@ -200,6 +213,7 @@ function AuthorActionButtons({
           className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
           variant="flat"
           href={`/event/${slug}/edit`}
+          isDisabled={status === 'canceled'}
         >
           <EditIcon width={20} height={20}></EditIcon>
         </Button>

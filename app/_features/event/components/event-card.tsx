@@ -1,5 +1,5 @@
 import type { EventType } from '@/_shared/types/event';
-import { StatusPublished, StatusDraft } from './event-status';
+import { StatusPublished, StatusDraft, StatusCanceled } from './event-status';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -23,7 +23,16 @@ export function EventCard({ event }: { event: EventType.Event }) {
       className="rounded-3xl border border-zinc-800 p-5 hover:bg-zinc-800/50 active:bg-zinc-800"
     >
       <div className="flex items-center gap-3 border-b border-zinc-800 pb-5">
-        {event.isPublished ? <StatusPublished /> : <StatusDraft />}
+        {(() => {
+          switch (event.status) {
+            case 'draft':
+              return <StatusDraft />;
+            case 'published':
+              return <StatusPublished />;
+            case 'canceled':
+              return <StatusCanceled />;
+          }
+        })()}
         <p className="text-xs font-medium tracking-[0.275px] text-zinc-500">
           Free • Join without register
         </p>

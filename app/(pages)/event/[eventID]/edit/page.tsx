@@ -2,7 +2,7 @@ import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventForm from '@/_features/event/components/event-form';
 import { AuthType } from '@/_shared/types/auth';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { eventService } from '@/(server)/api/_index';
 import HTTPError from '@/_shared/components/errors/http-error';
@@ -97,6 +97,10 @@ export default async function Page({ params: { eventID } }: PageProps) {
     if (eventCreateLimit?.code === 403) {
       isLimitReached = true;
     }
+  }
+
+  if (event.status === 'canceled') {
+    redirect(`/event/${eventID}`);
   }
 
   return (

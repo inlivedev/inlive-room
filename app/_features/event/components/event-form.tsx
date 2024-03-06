@@ -22,7 +22,7 @@ import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { compressImage } from '@/_shared/utils/compress-image';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
-import { StatusPublished, StatusDraft } from './event-status';
+import { StatusPublished, StatusDraft, StatusCanceled } from './event-status';
 
 const DeleteEventModal = dynamic(() => import('./event-delete-modal'));
 const DatePickerModal = dynamic(() => import('./event-date-picker'));
@@ -314,7 +314,6 @@ export default function EventForm({
     async ({
       eventTitle,
       eventDescription,
-      host,
       startTime,
       endTime,
       posterImage,
@@ -335,10 +334,9 @@ export default function EventForm({
       const data = {
         name: eventTitle,
         description: eventDescription,
-        host: host,
         startTime: startTime,
         endTime: endTime,
-        isPublished: publish,
+        status: publish ? 'published' : 'draft',
         deleteImage: deleteImage,
       };
 
@@ -449,11 +447,14 @@ export default function EventForm({
             <form onSubmit={handleSubmit(onSubmit)}>
               {existingEvent ? (
                 <div className="mb-1.5">
-                  {existingEvent.isPublished ? (
-                    <StatusPublished />
-                  ) : (
-                    <StatusDraft />
-                  )}
+                  {(() => {
+                    switch (existingEvent.status) {
+                      case 'published':
+                        return <StatusPublished />;
+                      case 'draft':
+                        return <StatusDraft />;
+                    }
+                  })()}
                 </div>
               ) : null}
               <div>
@@ -480,7 +481,7 @@ export default function EventForm({
                             disabled={isSubmitting}
                           >
                             {existingEvent
-                              ? existingEvent.isPublished
+                              ? existingEvent.status === 'published'
                                 ? 'Save changes'
                                 : 'Publish event'
                               : 'Publish event'}
