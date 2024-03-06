@@ -147,6 +147,30 @@ export async function DELETE(
   }
 
   try {
+    const event = await eventService.getEventBySlugOrID(slugOrId, user.id);
+
+    if (!event) {
+      return NextResponse.json(
+        {
+          code: 404,
+          ok: false,
+          message: 'Event not found',
+        },
+        { status: 404 }
+      );
+    }
+
+    if (event.status !== 'draft') {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: 'You can only delete draft events',
+        },
+        { status: 400 }
+      );
+    }
+
     const deletedEvent = await eventRepo.deleteEventBySlug(slugOrId, user.id);
 
     if (!deletedEvent || deletedEvent.length == 0) {
