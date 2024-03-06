@@ -23,20 +23,17 @@ export default async function Page() {
       : userAuthHeader;
 
   let isLimitReached = false;
-  let eventCreateLimit: EventType.CreateLimit | undefined = undefined;
 
   if (user) {
     const token = cookies().get('token')?.value ?? '';
 
     if (!whitelistFeature.includes('event') === true) {
-      eventCreateLimit = await InternalApiFetcher.get(
-        `/api/events/can-create`,
-        {
+      const eventCreateLimit: EventType.CreateLimit =
+        await InternalApiFetcher.get(`/api/events/can-create`, {
           headers: {
             Cookie: `token=${token}`,
           },
-        }
-      );
+        });
 
       if (eventCreateLimit?.code === 403) {
         isLimitReached = true;
