@@ -21,7 +21,7 @@ export function GenerateIcal(event: selectEvent, timezone: string) {
   Don't forget to mark your calendar on that date, see you there!\\n
   \\n
   About event : ${PUBLIC_URL}/event/${event.slug}\\n
-  Joint the event : ${PUBLIC_URL}/room/${event.roomId}`;
+  Join the event : ${PUBLIC_URL}/rooms/${event.roomId}`;
 
   // eslint-disable-next-line prettier/prettier
   return `BEGIN:VCALENDAR
