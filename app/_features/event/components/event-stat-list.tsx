@@ -15,7 +15,7 @@ import Link from 'next/link';
 const navLinks = [
   {
     title: 'My Events',
-    href: '/event',
+    href: '/events',
   },
   {
     title: 'Past Events',

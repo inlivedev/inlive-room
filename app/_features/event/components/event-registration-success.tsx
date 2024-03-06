@@ -32,7 +32,7 @@ export default function EventRegistrationSuccess({
   return (
     <div className="min-viewport-height bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
-        <Header logoText="inLive Event" logoHref="/event" />
+        <Header logoText="inLive Event" logoHref="/events" />
         <main className="mb-10 flex flex-1 flex-col gap-8 lg:gap-28">
           <div className="flex flex-col lg:order-2 lg:flex-row lg:gap-10">
             <div className="flex justify-center">
@@ -73,7 +73,7 @@ export default function EventRegistrationSuccess({
           <div className="text-center lg:text-left">
             <Button
               as={Link}
-              href={`/event/${slug}`}
+              href={`/events/${slug}`}
               variant="flat"
               className="rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
             >

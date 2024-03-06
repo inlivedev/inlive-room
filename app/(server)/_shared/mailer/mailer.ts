@@ -45,7 +45,7 @@ export async function SendEventInvitationEmail(
     to: address,
     subject: `Your invitation URL for ${event.name}`,
     'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
-    'v:event-url': `${PUBLIC_URL}/event/${event.slug}`,
+    'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
     'v:event-name': event.name,
     'v:event-description': event.description,
     'v:event-date': eventDate,

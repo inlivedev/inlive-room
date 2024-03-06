@@ -41,7 +41,7 @@ export function EventStatCard({ event }: { event: selectEvent }) {
   return (
     <li>
       <Link
-        href={`/event/${event.slug}/stat`}
+        href={`/events/${event.slug}/stat`}
         className="flex flex-col gap-4 rounded-3xl border border-zinc-800 p-5 px-4 hover:bg-zinc-800/50 active:bg-zinc-800 sm:p-5"
       >
         {/* Header */}

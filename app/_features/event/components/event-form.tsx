@@ -359,9 +359,9 @@ export default function EventForm({
 
         if (response.ok) {
           if (publish) {
-            navigateTo(`/event/${response.data.slug}`);
+            navigateTo(`/events/${response.data.slug}`);
           } else {
-            navigateTo(`/event`);
+            navigateTo(`/events`);
           }
         } else {
           alert('Failed to create event, please try again later');
@@ -376,7 +376,7 @@ export default function EventForm({
         );
 
         if (response.ok) {
-          navigateTo(`/event/${response.data.slug}`);
+          navigateTo(`/events/${response.data.slug}`);
         } else {
           alert('Failed to save the changes, please try again later');
         }
@@ -427,7 +427,7 @@ export default function EventForm({
       />
       <div className="bg-zinc-900">
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
-          <Header logoText="inLive Event" logoHref="/event" />
+          <Header logoText="inLive Event" logoHref="/events" />
           <main className="flex-1">
             {!user ? (
               <div className="mx-auto mb-6 flex max-w-3xl items-center justify-between gap-4 rounded-md bg-blue-900/25 px-4 py-3 text-blue-300 sm:px-6">
