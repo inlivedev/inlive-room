@@ -57,7 +57,6 @@ export default async function Page({
       },
     });
 
-  let isLimitReached = false;
   let eventCreateLimit: EventType.CreateLimit | undefined = undefined;
 
   if (!whitelistFeature.includes('event') === true) {
@@ -66,10 +65,6 @@ export default async function Page({
         Cookie: `token=${token}`,
       },
     });
-
-    if (eventCreateLimit?.code === 403) {
-      isLimitReached = true;
-    }
   }
 
   const events = eventResponse.data || [];
@@ -90,7 +85,6 @@ export default async function Page({
             events={events}
             pageMeta={pageMeta}
             validPagination={validPagination}
-            limitCreate={isLimitReached}
           />
         </div>
       </div>

@@ -62,8 +62,10 @@ const reducer = (state: ImageState, action: ActionType): ImageState => {
 
 export default function EventForm({
   data: existingEvent,
+  limitPublish,
 }: {
   data?: EventType.Event;
+  limitPublish?: boolean;
 }) {
   const { user } = useAuthContext();
   const { navigateTo } = useNavigate();
@@ -473,7 +475,7 @@ export default function EventForm({
                                 : 'create-as-publish'
                             }
                             className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
-                            isDisabled={isSubmitting}
+                            isDisabled={isSubmitting || limitPublish}
                             aria-disabled={isSubmitting}
                             disabled={isSubmitting}
                           >

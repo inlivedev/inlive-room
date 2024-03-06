@@ -39,23 +39,6 @@ export async function POST(req: Request) {
       );
     }
 
-    if (
-      // Check if event feature is exclusive or not
-      !whitelistFeature.includes('event') === true
-    ) {
-      if (!user.whitelistFeature.includes('event')) {
-        // check if have created more than 3 events
-        const { value } = await eventRepo.countAllPublishedEvents(user.id);
-        if (value >= EVENT_TRIAL_COUNT) {
-          return NextResponse.json({
-            code: 403,
-            ok: false,
-            message: 'You have reached the limit of creating events',
-          });
-        }
-      }
-    }
-
     const formData = await req.formData();
     const eventMeta = JSON.parse(formData.get('data') as string) as CreateEvent;
     const eventImage = formData.get('image') as Blob;
@@ -99,6 +82,22 @@ export async function POST(req: Request) {
         ok: false,
         message: 'Event host is not valid, please check the request body',
       });
+    }
+
+    if (eventMeta.isPublished && !whitelistFeature.includes('event')) {
+      {
+        if (!user.whitelistFeature.includes('event')) {
+          // check if have created more than 3 events
+          const { value } = await eventRepo.countAllPublishedEvents(user.id);
+          if (value >= EVENT_TRIAL_COUNT) {
+            return NextResponse.json({
+              code: 403,
+              ok: false,
+              message: 'You have reached the limit of creating events',
+            });
+          }
+        }
+      }
     }
 
     const eventRoom = await roomService.createRoom(user.id, 'event');

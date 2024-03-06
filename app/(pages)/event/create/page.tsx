@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventForm from '@/_features/event/components/event-form';
 import type { AuthType } from '@/_shared/types/auth';
+import { EventType } from '@/_shared/types/event';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 export const generateMetadata = (): Metadata => {
   return {
@@ -19,9 +22,31 @@ export default async function Page() {
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
+  let isLimitReached = false;
+  let eventCreateLimit: EventType.CreateLimit | undefined = undefined;
+
+  if (user) {
+    const token = cookies().get('token')?.value ?? '';
+
+    if (!whitelistFeature.includes('event') === true) {
+      eventCreateLimit = await InternalApiFetcher.get(
+        `/api/events/can-create`,
+        {
+          headers: {
+            Cookie: `token=${token}`,
+          },
+        }
+      );
+
+      if (eventCreateLimit?.code === 403) {
+        isLimitReached = true;
+      }
+    }
+  }
+
   return (
     <AppContainer user={user}>
-      <EventForm />
+      <EventForm limitPublish={isLimitReached} />
     </AppContainer>
   );
 }
