@@ -57,7 +57,7 @@ export default function CreateRoom() {
       try {
         const room = await createRoom(key);
         setIsSubmitting(false);
-        window.location.href = `/room/${room.id}`;
+        window.location.href = `/rooms/${room.id}`;
       } catch (error) {
         Sentry.captureException(error, {
           extra: {

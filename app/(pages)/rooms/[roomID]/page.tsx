@@ -34,7 +34,7 @@ export const generateMetadata = (): Metadata | null => {
     openGraph: {
       title: `Join the ${type.toLocaleLowerCase()} room — inLive Room`,
       description: description,
-      url: `/room/${roomData.id}`,
+      url: `/rooms/${roomData.id}`,
       images: [ogImage],
       type: 'website',
     },
