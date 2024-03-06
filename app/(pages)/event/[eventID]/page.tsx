@@ -120,7 +120,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
         isPublished={eventData.isPublished}
         thumbnailUrl={eventData.thumbnailUrl}
         createdBy={eventData.createdBy}
-        roomId={eventData.roomId}
+        roomId={eventData.roomId || ''}
       />
     </AppContainer>
   );
