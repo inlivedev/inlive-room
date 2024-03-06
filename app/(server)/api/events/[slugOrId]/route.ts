@@ -8,8 +8,12 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-au
 import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
 import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
+const EVENT_TRIAL_COUNT = parseInt(
+  process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
+);
 
 export async function GET(
   request: NextRequest,
@@ -115,36 +119,48 @@ export async function DELETE(
   const user = response.data ? response.data : null;
 
   if (!user) {
-    return NextResponse.json({
-      code: 401,
-      ok: false,
-      message: 'Please check if token is provided in the cookie',
-    });
+    return NextResponse.json(
+      {
+        code: 401,
+        ok: false,
+        message: 'Please check if token is provided in the cookie',
+      },
+      { status: 401 }
+    );
   }
 
   try {
     const deletedEvent = await eventRepo.deleteEventBySlug(slugOrId, user.id);
 
     if (!deletedEvent || deletedEvent.length == 0) {
-      return NextResponse.json({
-        code: 404,
-        ok: false,
-        message: 'Event not found',
-      });
+      return NextResponse.json(
+        {
+          code: 404,
+          ok: false,
+          message: 'Event not found',
+        },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({
-      code: 200,
-      ok: true,
-      message: 'Event deleted successfully',
-      data: deletedEvent,
-    });
+    return NextResponse.json(
+      {
+        code: 200,
+        ok: true,
+        message: 'Event deleted successfully',
+        data: deletedEvent,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    return NextResponse.json({
-      code: 500,
-      ok: false,
-      message: 'An error has occured on our side please try again later',
-    });
+    return NextResponse.json(
+      {
+        code: 500,
+        ok: false,
+        message: 'An error has occured on our side please try again later',
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -180,11 +196,16 @@ export async function PUT(
   const user = response.data ? response.data : null;
 
   if (!user) {
-    return NextResponse.json({
-      code: 401,
-      ok: false,
-      message: 'Please check if token is provided in the cookie',
-    });
+    return NextResponse.json(
+      {
+        code: 401,
+        ok: false,
+        message: 'Please check if token is provided in the cookie',
+      },
+      {
+        status: 401,
+      }
+    );
   }
 
   try {
@@ -202,11 +223,14 @@ export async function PUT(
     }
 
     if (oldEvent.createdBy !== user.id)
-      return NextResponse.json({
-        code: 401,
-        ok: false,
-        message: 'You are not authorized to update this event',
-      });
+      return NextResponse.json(
+        {
+          code: 401,
+          ok: false,
+          message: 'You are not authorized to update this event',
+        },
+        { status: 401 }
+      );
 
     const formData = await request.formData();
     const updateEventMeta = JSON.parse(
@@ -229,6 +253,22 @@ export async function PUT(
       roomId: oldEvent.roomId,
       isPublished: updateEventMeta.isPublished,
     };
+
+    if (!whitelistFeature.includes('event') && newEvent.isPublished) {
+      if (!user.whitelistFeature.includes('event')) {
+        const { value } = await eventRepo.countAllPublishedEvents(user.id);
+        if (value >= EVENT_TRIAL_COUNT) {
+          return NextResponse.json(
+            {
+              code: 403,
+              ok: false,
+              message: 'You have reached the limit of creating events',
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
 
     if (newEvent.name === oldEvent.name) {
       newEvent.slug = oldEvent.slug;
@@ -270,11 +310,14 @@ export async function PUT(
     );
 
     if (!updatedEvent) {
-      return NextResponse.json({
-        code: 404,
-        ok: false,
-        message: 'Event not found',
-      });
+      return NextResponse.json(
+        {
+          code: 404,
+          ok: false,
+          message: 'Event not found',
+        },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(
