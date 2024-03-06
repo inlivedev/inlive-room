@@ -53,7 +53,7 @@ export async function GET(req: Request) {
           message: 'Please check if token is provided in the cookie',
           meta: {
             current_page: 1,
-            total_page: 0,
+            total_page: 1,
             per_page: 10,
             total_record: 0,
           },
