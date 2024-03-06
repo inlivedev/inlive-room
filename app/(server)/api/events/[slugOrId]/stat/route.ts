@@ -59,6 +59,26 @@ export async function GET(
       );
     }
 
+    if (existingEvent.endTime > new Date()) {
+      return NextResponse.json(
+        {
+          code: 400,
+          message: 'event has not ended yet',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!existingEvent.roomId) {
+      return NextResponse.json(
+        {
+          code: 400,
+          message: 'event has no room',
+        },
+        { status: 400 }
+      );
+    }
+
     const countRegistirees = (
       await eventRepo.countRegistiree(existingEvent?.id)
     ).value;
