@@ -232,22 +232,6 @@ export async function PUT(
         { status: 401 }
       );
 
-    if (!whitelistFeature.includes('event')) {
-      if (!user.whitelistFeature.includes('event')) {
-        const { value } = await eventRepo.countAllPublishedEvents(user.id);
-        if (value >= EVENT_TRIAL_COUNT) {
-          return NextResponse.json(
-            {
-              code: 403,
-              ok: false,
-              message: 'You have reached the limit of creating events',
-            },
-            { status: 403 }
-          );
-        }
-      }
-    }
-
     const formData = await request.formData();
     const updateEventMeta = JSON.parse(
       formData.get('data') as string
@@ -269,6 +253,22 @@ export async function PUT(
       roomId: oldEvent.roomId,
       isPublished: updateEventMeta.isPublished,
     };
+
+    if (!whitelistFeature.includes('event') && newEvent.isPublished) {
+      if (!user.whitelistFeature.includes('event')) {
+        const { value } = await eventRepo.countAllPublishedEvents(user.id);
+        if (value >= EVENT_TRIAL_COUNT) {
+          return NextResponse.json(
+            {
+              code: 403,
+              ok: false,
+              message: 'You have reached the limit of creating events',
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
 
     if (newEvent.name === oldEvent.name) {
       newEvent.slug = oldEvent.slug;
