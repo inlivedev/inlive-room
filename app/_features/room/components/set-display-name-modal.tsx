@@ -49,7 +49,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
 
           const response: ClientType.SetClientNameResponse =
             await InternalApiFetcher.put(
-              `/api/room/${roomID}/setname/${clientID}`,
+              `/api/rooms/${roomID}/setname/${clientID}`,
               {
                 body: JSON.stringify({
                   name: clientNameInput,

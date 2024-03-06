@@ -260,7 +260,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                     className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                     onClick={() =>
                       handleCopy(
-                        `${APP_ORIGIN}/room/${roomID}`,
+                        `${APP_ORIGIN}/rooms/${roomID}`,
                         setCopiedLinkActive,
                         setCopiedLinkInActive
                       )

@@ -171,7 +171,7 @@ function AuthorActionButtons({
     <div className="flex justify-between gap-2">
       <div className="flex w-full gap-2">
         <Button
-          href={`/room/${roomId}`}
+          href={`/rooms/${roomId}`}
           as={Link}
           variant="flat"
           className="w-full rounded-md bg-red-700 p-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500 lg:basis-1/2"

@@ -44,7 +44,7 @@ export async function SendEventInvitationEmail(
     from: 'inLive Room Events <notification@inlive.app>',
     to: address,
     subject: `Your invitation URL for ${event.name}`,
-    'v:room-url': `${PUBLIC_URL}/room/${event.roomId}`,
+    'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
     'v:event-url': `${PUBLIC_URL}/event/${event.slug}`,
     'v:event-name': event.name,
     'v:event-description': event.description,

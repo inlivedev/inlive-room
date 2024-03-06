@@ -26,7 +26,7 @@ export default function CreateRoom() {
 
   const createRoom = useCallback(async (type: string) => {
     const response: RoomType.CreateGetRoomResponse =
-      await InternalApiFetcher.post('/api/room/create', {
+      await InternalApiFetcher.post('/api/rooms/create', {
         body: JSON.stringify({
           type: type,
         }),
@@ -57,7 +57,7 @@ export default function CreateRoom() {
       try {
         const room = await createRoom(key);
         setIsSubmitting(false);
-        window.location.href = `/room/${room.id}`;
+        window.location.href = `/rooms/${room.id}`;
       } catch (error) {
         Sentry.captureException(error, {
           extra: {

@@ -15,7 +15,7 @@ export default function JoinRoom() {
       return;
     }
 
-    navigateTo(`/room/${roomId}`);
+    navigateTo(`/rooms/${roomId}`);
   };
 
   return (
