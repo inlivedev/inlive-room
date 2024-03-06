@@ -7,9 +7,15 @@ import {
   primaryKey,
   serial,
   jsonb,
-  boolean,
+  pgEnum,
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
+
+export const statusEnum = pgEnum('event_status_enum', [
+  'draft',
+  'published',
+  'canceled',
+]);
 
 // Event Table
 export const events = pgTable('events', {
@@ -24,10 +30,9 @@ export const events = pgTable('events', {
   createdBy: integer('created_by').notNull(),
   roomId: text('room_id').references(() => rooms.id, { onDelete: 'set null' }),
   host: text('host').notNull(),
-  isPublished: boolean('is_published').notNull().default(false),
   thumbnailUrl: text('thumbnail_url'),
   deletedAt: timestamp('deleted_at'),
-  isCanceled: boolean('is_canceled').notNull().default(false),
+  status: statusEnum('status').notNull().default('draft'),
 });
 
 export const eventsRelation = relations(events, ({ many, one }) => ({
@@ -86,6 +91,7 @@ export const eventHasParticipantRelation = relations(
 
 export type insertEvent = typeof events.$inferInsert;
 export type selectEvent = typeof events.$inferSelect;
+export type eventStatusEnum = 'draft' | 'published' | 'canceled';
 
 export const insertParticipant = participant.$inferInsert;
 export const selectParticipant = participant.$inferSelect;

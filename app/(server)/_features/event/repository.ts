@@ -7,6 +7,7 @@ import {
   insertParticipant,
   participant as participants,
   selectEvent,
+  eventStatusEnum,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -42,7 +43,7 @@ export class EventRepo implements iEventRepo {
     userId?: number,
     isAfter?: Date,
     isBefore?: Date,
-    isPublished?: boolean
+    status?: eventStatusEnum
   ) {
     page = page - 1;
 
@@ -87,8 +88,8 @@ export class EventRepo implements iEventRepo {
       }
     }
 
-    if (isPublished !== undefined) {
-      whereQuery.push(sql`${events.isPublished} = ${isPublished}`);
+    if (status !== undefined) {
+      whereQuery.push(sql`${events.status} = ${status}`);
     }
 
     const whereFilter = sql.join(whereQuery, sql` AND `);
@@ -213,19 +214,19 @@ export class EventRepo implements iEventRepo {
   }
 
   /**
-   * This function counts all published events for a given user, including those that have been deleted.
+   * This function counts all published events for a given user, including those that have been canceled.
    *
    * @param userID The ID of the user for whom to count the events.
    * @returns A promise that resolves to the count of all published events for the given user.
    */
-  async countAllPublishedEvents(userID: number) {
+  async countNonDraftEvents(userID: number) {
     const res = await db
       .select({
         value: count(),
       })
       .from(events)
       .where(
-        sql`${events.isPublished}=true AND ${events.createdBy} = ${userID}`
+        sql`${events.status} !='draft' AND ${events.createdBy} = ${userID}`
       );
 
     return res[0];
