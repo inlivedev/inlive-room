@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 
-export async function POST(
+export async function PUT(
   request: Request,
   { params }: { params: { slugOrId: string } }
 ) {
@@ -51,11 +51,22 @@ export async function POST(
       );
     }
 
+    if (oldEvent.status !== 'published') {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: 'Event is not published',
+        },
+        { status: 400 }
+      );
+    }
+
     if (oldEvent.roomId) {
       roomRepo.removeRoom(oldEvent.roomId, user.id);
       oldEvent.roomId = null;
     }
-    oldEvent.isCanceled = true;
+    oldEvent.status = 'canceled';
 
     const updatedEvent = await eventRepo.updateEvent(
       user.id,

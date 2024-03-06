@@ -6,15 +6,15 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-au
 import * as Sentry from '@sentry/nextjs';
 import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
 import { whitelistFeature } from '@/_shared/utils/flag';
+import * as z from 'zod';
 
-type CreateEvent = {
-  name: string;
-  startTime: string;
-  endTime: string;
-  description?: string;
-  host: string;
-  isPublished?: boolean;
-};
+export const CreateEventSchema = z.object({
+  name: z.string().max(255),
+  startTime: z.string().datetime({ offset: true }),
+  endTime: z.string().datetime({ offset: true }),
+  description: z.string(),
+  status: z.enum(['draft', 'published']),
+});
 
 const EVENT_TRIAL_COUNT = parseInt(
   process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
@@ -40,23 +40,22 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    const eventMeta = JSON.parse(formData.get('data') as string) as CreateEvent;
+    const eventMeta = CreateEventSchema.parse(formData.get('data') as string);
     const eventImage = formData.get('image') as Blob;
-    const eventName = eventMeta.name;
     const eventStartTime = new Date(eventMeta.startTime);
     const eventEndTime =
       eventMeta.endTime == '' || undefined
         ? new Date(eventStartTime.getTime() + (60 * 60 * 1000) / 2)
         : new Date(eventMeta.endTime);
     const eventDesc = eventMeta.description;
-    const eventHost = eventMeta.host;
+    const eventHost = user.name;
 
     eventStartTime.setUTCSeconds(0);
     eventStartTime.setUTCMilliseconds(0);
     eventEndTime.setUTCSeconds(0);
     eventEndTime.setUTCMilliseconds(0);
 
-    if (typeof eventName !== 'string' || eventName.trim().length === 0) {
+    if (eventMeta.name.trim().length === 0) {
       return NextResponse.json({
         code: 400,
         ok: false,
@@ -73,25 +72,13 @@ export async function POST(req: Request) {
     }
 
     if (
-      !eventHost ||
-      eventHost.trim().length === 0 ||
-      typeof eventHost !== 'string'
+      eventMeta.status == 'published' &&
+      !whitelistFeature.includes('event')
     ) {
-      return NextResponse.json(
-        {
-          code: 400,
-          ok: false,
-          message: 'Event host is not valid, please check the request body',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (eventMeta.isPublished && !whitelistFeature.includes('event')) {
       {
         if (!user.whitelistFeature.includes('event')) {
           // check if have created more than 3 events
-          const { value } = await eventRepo.countAllPublishedEvents(user.id);
+          const { value } = await eventRepo.countNonDraftEvents(user.id);
           if (value >= EVENT_TRIAL_COUNT) {
             return NextResponse.json(
               {
@@ -109,15 +96,15 @@ export async function POST(req: Request) {
     const eventRoom = await roomService.createRoom(user.id, 'event');
 
     const Event: insertEvent = {
-      name: eventName,
+      status: eventMeta.status,
+      name: eventMeta.name,
       startTime: eventStartTime,
       endTime: eventEndTime,
-      slug: eventName.toLowerCase().replace(/\s/g, '-'),
+      slug: eventMeta.name.toLowerCase().replace(/\s/g, '-'),
       description: eventDesc,
       createdBy: user.id,
       roomId: eventRoom.id,
       host: eventHost,
-      isPublished: eventMeta.isPublished,
     };
 
     const createdEvent = await eventService.createEvent(Event);

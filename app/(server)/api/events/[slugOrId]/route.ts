@@ -15,17 +15,13 @@ const EVENT_TRIAL_COUNT = parseInt(
   process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
 );
 
-const updateEventSchema = z.object({
+export const updateEventSchema = z.object({
   name: z.string().max(255),
   startTime: z.string().datetime({ offset: true }),
   endTime: z.string().datetime({ offset: true }),
   description: z.string(),
   host: z.string().max(255),
-  isPublished: z
-    .string()
-    .toLowerCase()
-    .transform((x) => x === 'true')
-    .pipe(z.boolean()),
+  status: z.enum(['draft', 'published']),
   deleteImage: z
     .string()
     .toLowerCase()
@@ -54,7 +50,20 @@ export async function GET(
 
     const existingEvent = await eventService.getEventBySlugOrID(slug, userID);
 
-    if (existingEvent?.isPublished) {
+    if (!existingEvent) {
+      return NextResponse.json(
+        {
+          code: 404,
+          message: 'Event not found',
+        },
+        { status: 404 }
+      );
+    }
+
+    if (
+      existingEvent.status !== 'published' &&
+      existingEvent.createdBy !== userID
+    ) {
       return NextResponse.json(
         {
           code: 200,
@@ -67,22 +76,12 @@ export async function GET(
 
     if (
       existingEvent?.createdBy !== userID &&
-      existingEvent?.isPublished === false
+      existingEvent?.status !== 'published'
     ) {
       return NextResponse.json(
         {
           code: 404,
           message: "Event doesn't exist",
-        },
-        { status: 404 }
-      );
-    }
-
-    if (!existingEvent) {
-      return NextResponse.json(
-        {
-          code: 404,
-          message: 'Event not found',
         },
         { status: 404 }
       );
@@ -258,12 +257,15 @@ export async function PUT(
       host: updateEventMeta.host ?? oldEvent.host,
       createdBy: oldEvent.createdBy,
       roomId: oldEvent.roomId,
-      isPublished: updateEventMeta.isPublished,
+      status: updateEventMeta.status,
     };
 
-    if (!whitelistFeature.includes('event') && newEvent.isPublished) {
+    if (
+      !whitelistFeature.includes('event') &&
+      newEvent.status === 'published'
+    ) {
       if (!user.whitelistFeature.includes('event')) {
-        const { value } = await eventRepo.countAllPublishedEvents(user.id);
+        const { value } = await eventRepo.countNonDraftEvents(user.id);
         if (value >= EVENT_TRIAL_COUNT) {
           return NextResponse.json(
             {
