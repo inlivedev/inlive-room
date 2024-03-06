@@ -9,11 +9,29 @@ import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-
 import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
 import { whitelistFeature } from '@/_shared/utils/flag';
-
+import * as z from 'zod';
 const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
 const EVENT_TRIAL_COUNT = parseInt(
   process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
 );
+
+const updateEventSchema = z.object({
+  name: z.string().max(255),
+  startTime: z.string().datetime({ offset: true }),
+  endTime: z.string().datetime({ offset: true }),
+  description: z.string(),
+  host: z.string().max(255),
+  isPublished: z
+    .string()
+    .toLowerCase()
+    .transform((x) => x === 'true')
+    .pipe(z.boolean()),
+  deleteImage: z
+    .string()
+    .toLowerCase()
+    .transform((x) => x === 'true')
+    .pipe(z.boolean()),
+});
 
 export async function GET(
   request: NextRequest,
@@ -172,16 +190,6 @@ export async function PUT(
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
-  type updateEvent = {
-    name?: string;
-    startTime?: string;
-    endTime?: string;
-    description?: string;
-    host?: string;
-    isPublished?: boolean;
-    deleteImage?: boolean;
-  };
-
   if (!requestToken) {
     return NextResponse.json(
       {
@@ -200,11 +208,10 @@ export async function PUT(
       {
         code: 401,
         ok: false,
-        message: 'Please check if token is provided in the cookie',
+        message:
+          'User not found, please check if token is provided in the cookie is valid',
       },
-      {
-        status: 401,
-      }
+      { status: 401 }
     );
   }
 
@@ -233,9 +240,9 @@ export async function PUT(
       );
 
     const formData = await request.formData();
-    const updateEventMeta = JSON.parse(
+    const updateEventMeta = updateEventSchema.parse(
       formData.get('data') as string
-    ) as updateEvent;
+    );
     const eventImage = formData.get('image') as Blob;
 
     const newEvent: insertEvent = {

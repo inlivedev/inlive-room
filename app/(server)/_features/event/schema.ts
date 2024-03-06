@@ -27,6 +27,7 @@ export const events = pgTable('events', {
   isPublished: boolean('is_published').notNull().default(false),
   thumbnailUrl: text('thumbnail_url'),
   deletedAt: timestamp('deleted_at'),
+  isCanceled: boolean('is_canceled').notNull().default(false),
 });
 
 export const eventsRelation = relations(events, ({ many, one }) => ({

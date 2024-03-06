@@ -8,16 +8,7 @@ import {
   participant as participants,
   selectEvent,
 } from './schema';
-import {
-  DBQueryConfig,
-  SQL,
-  and,
-  count,
-  eq,
-  isNotNull,
-  isNull,
-  sql,
-} from 'drizzle-orm';
+import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 
 export class EventRepo implements iEventRepo {
