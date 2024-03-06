@@ -113,6 +113,13 @@
       "when": 1709617194939,
       "tag": "0015_soft_delete_events",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1709704568724,
+      "tag": "0016_events_room_relation",
+      "breakpoints": true
     }
   ]
 }

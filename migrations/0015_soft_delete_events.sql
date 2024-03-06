@@ -1,1 +1,1 @@
-ALTER TABLE "events" ADD COLUMN "deleted_at" timestamp;
+ALTER TABLE "events" ADD COLUMN IF NOT EXISTS "deleted_at" timestamp;

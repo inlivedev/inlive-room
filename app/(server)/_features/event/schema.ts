@@ -9,6 +9,7 @@ import {
   jsonb,
   boolean,
 } from 'drizzle-orm/pg-core';
+import { rooms } from '../room/schema';
 
 // Event Table
 export const events = pgTable('events', {
@@ -21,15 +22,19 @@ export const events = pgTable('events', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   description: text('description'),
   createdBy: integer('created_by').notNull(),
-  roomId: text('room_id').notNull(),
+  roomId: text('room_id').references(() => rooms.id, { onDelete: 'set null' }),
   host: text('host').notNull(),
   isPublished: boolean('is_published').notNull().default(false),
   thumbnailUrl: text('thumbnail_url'),
   deletedAt: timestamp('deleted_at'),
 });
 
-export const eventsRelation = relations(events, ({ many }) => ({
+export const eventsRelation = relations(events, ({ many, one }) => ({
   eventsToParticipant: many(eventHasParticipant),
+  room: one(rooms, {
+    fields: [events.roomId],
+    references: [rooms.id],
+  }),
 }));
 
 // Participant Table
