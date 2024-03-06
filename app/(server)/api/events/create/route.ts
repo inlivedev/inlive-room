@@ -77,11 +77,14 @@ export async function POST(req: Request) {
       eventHost.trim().length === 0 ||
       typeof eventHost !== 'string'
     ) {
-      return NextResponse.json({
-        code: 400,
-        ok: false,
-        message: 'Event host is not valid, please check the request body',
-      });
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: 'Event host is not valid, please check the request body',
+        },
+        { status: 400 }
+      );
     }
 
     if (eventMeta.isPublished && !whitelistFeature.includes('event')) {
@@ -90,11 +93,14 @@ export async function POST(req: Request) {
           // check if have created more than 3 events
           const { value } = await eventRepo.countAllPublishedEvents(user.id);
           if (value >= EVENT_TRIAL_COUNT) {
-            return NextResponse.json({
-              code: 403,
-              ok: false,
-              message: 'You have reached the limit of creating events',
-            });
+            return NextResponse.json(
+              {
+                code: 403,
+                ok: false,
+                message: 'You have reached the limit of creating events',
+              },
+              { status: 403 }
+            );
           }
         }
       }
