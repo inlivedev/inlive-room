@@ -8,8 +8,12 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-au
 import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
 import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
+import { whitelistFeature } from '@/_shared/utils/flag';
 
 const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
+const EVENT_TRIAL_COUNT = parseInt(
+  process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
+);
 
 export async function GET(
   request: NextRequest,
@@ -207,6 +211,19 @@ export async function PUT(
         ok: false,
         message: 'You are not authorized to update this event',
       });
+
+    if (!whitelistFeature.includes('event')) {
+      if (!user.whitelistFeature.includes('event')) {
+        const { value } = await eventRepo.countAllPublishedEvents(user.id);
+        if (value >= EVENT_TRIAL_COUNT) {
+          return NextResponse.json({
+            code: 403,
+            ok: false,
+            message: 'You have reached the limit of creating events',
+          });
+        }
+      }
+    }
 
     const formData = await request.formData();
     const updateEventMeta = JSON.parse(

@@ -50,8 +50,7 @@ export async function POST(req: Request) {
           return NextResponse.json({
             code: 403,
             ok: false,
-            message:
-              'You have reached the limit of creating events, please contact the admin for more information',
+            message: 'You have reached the limit of creating events',
           });
         }
       }
