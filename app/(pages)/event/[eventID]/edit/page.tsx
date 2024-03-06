@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventForm from '@/_features/event/components/event-form';
 import { AuthType } from '@/_shared/types/auth';
@@ -6,6 +6,9 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { eventService } from '@/(server)/api/_index';
 import HTTPError from '@/_shared/components/errors/http-error';
+import { whitelistFeature } from '@/_shared/utils/flag';
+import { EventType } from '@/_shared/types/event';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 
 type PageProps = {
   params: {
@@ -80,9 +83,25 @@ export default async function Page({ params: { eventID } }: PageProps) {
     );
   }
 
+  let isLimitReached = false;
+  let eventCreateLimit: EventType.CreateLimit | undefined = undefined;
+  const token = cookies().get('token')?.value ?? '';
+
+  if (!whitelistFeature.includes('event') === true) {
+    eventCreateLimit = await InternalApiFetcher.get(`/api/events/can-create`, {
+      headers: {
+        Cookie: `token=${token}`,
+      },
+    });
+
+    if (eventCreateLimit?.code === 403) {
+      isLimitReached = true;
+    }
+  }
+
   return (
     <AppContainer user={user}>
-      <EventForm data={event} />
+      <EventForm data={event} limitPublish={isLimitReached} />
     </AppContainer>
   );
 }
