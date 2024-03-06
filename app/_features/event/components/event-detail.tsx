@@ -25,7 +25,7 @@ type EventDetailProps = {
   startTime: Date;
   slug: string;
   host: string;
-  status: 'draft' | 'published' | 'canceled';
+  status: 'draft' | 'published' | 'cancelled';
   thumbnailUrl?: string | null;
   createdBy: number;
   roomId?: string;
@@ -94,7 +94,7 @@ export default function EventDetail({
                       return <StatusDraft />;
                     case 'published':
                       return <StatusPublished />;
-                    case 'canceled':
+                    case 'cancelled':
                       return <StatusCanceled />;
                   }
                 })()}
@@ -177,7 +177,7 @@ function AuthorActionButtons({
   slug: string;
   copiedActive: boolean;
   roomId?: string;
-  status: 'draft' | 'published' | 'canceled';
+  status: 'draft' | 'published' | 'cancelled';
 }) {
   return (
     <div className="flex justify-between gap-2">
@@ -213,7 +213,7 @@ function AuthorActionButtons({
           className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
           variant="flat"
           href={`/event/${slug}/edit`}
-          isDisabled={status === 'canceled'}
+          isDisabled={status === 'cancelled'}
         >
           <EditIcon width={20} height={20}></EditIcon>
         </Button>

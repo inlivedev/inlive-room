@@ -29,7 +29,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
               return <StatusDraft />;
             case 'published':
               return <StatusPublished />;
-            case 'canceled':
+            case 'cancelled':
               return <StatusCanceled />;
           }
         })()}

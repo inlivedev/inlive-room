@@ -66,7 +66,7 @@ export async function PUT(
       roomRepo.removeRoom(oldEvent.roomId, user.id);
       oldEvent.roomId = null;
     }
-    oldEvent.status = 'canceled';
+    oldEvent.status = 'cancelled';
 
     const updatedEvent = await eventRepo.updateEvent(
       user.id,

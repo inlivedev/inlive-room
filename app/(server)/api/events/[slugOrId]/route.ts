@@ -21,7 +21,7 @@ export const updateEventSchema = z.object({
   endTime: z.string().datetime({ offset: true }),
   description: z.string(),
   host: z.string().max(255),
-  status: z.enum(['draft', 'published']),
+  status: z.enum(['draft', 'published', 'cancelled']),
   deleteImage: z
     .string()
     .toLowerCase()

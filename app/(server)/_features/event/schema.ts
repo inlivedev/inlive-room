@@ -14,7 +14,7 @@ import { rooms } from '../room/schema';
 export const statusEnum = pgEnum('event_status_enum', [
   'draft',
   'published',
-  'canceled',
+  'cancelled',
 ]);
 
 // Event Table
@@ -91,7 +91,7 @@ export const eventHasParticipantRelation = relations(
 
 export type insertEvent = typeof events.$inferInsert;
 export type selectEvent = typeof events.$inferSelect;
-export type eventStatusEnum = 'draft' | 'published' | 'canceled';
+export type eventStatusEnum = 'draft' | 'published' | 'cancelled';
 
 export const insertParticipant = participant.$inferInsert;
 export const selectParticipant = participant.$inferSelect;
