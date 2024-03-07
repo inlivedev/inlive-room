@@ -12,7 +12,7 @@ export function StatusDraft() {
     </div>
   );
 }
-export function StatusCanceled() {
+export function StatusCancelled() {
   return (
     <div className="inline-flex items-center rounded-sm bg-red-950 px-2 py-0.5 text-xs font-medium tracking-[0.275px] text-red-300 outline outline-red-800">
       Canceled

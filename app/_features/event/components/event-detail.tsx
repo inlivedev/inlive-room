@@ -10,7 +10,7 @@ import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import EditIcon from '@/_shared/components/icons/edit-icon';
-import { StatusCanceled, StatusDraft, StatusPublished } from './event-status';
+import { StatusCancelled, StatusDraft, StatusPublished } from './event-status';
 import Link from 'next/link';
 import EnterRoomIcon from '@/_shared/components/icons/enter-room-icon';
 
@@ -95,7 +95,7 @@ export default function EventDetail({
                     case 'published':
                       return <StatusPublished />;
                     case 'cancelled':
-                      return <StatusCanceled />;
+                      return <StatusCancelled />;
                   }
                 })()}
             </div>

@@ -1,5 +1,5 @@
 import type { EventType } from '@/_shared/types/event';
-import { StatusPublished, StatusDraft, StatusCanceled } from './event-status';
+import { StatusPublished, StatusDraft, StatusCancelled } from './event-status';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -30,7 +30,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
             case 'published':
               return <StatusPublished />;
             case 'cancelled':
-              return <StatusCanceled />;
+              return <StatusCancelled />;
           }
         })()}
         <p className="text-xs font-medium tracking-[0.275px] text-zinc-500">

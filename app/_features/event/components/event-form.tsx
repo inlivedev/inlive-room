@@ -22,7 +22,7 @@ import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { compressImage } from '@/_shared/utils/compress-image';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
-import { StatusPublished, StatusDraft, StatusCanceled } from './event-status';
+import { StatusPublished, StatusDraft, StatusCancelled } from './event-status';
 
 const DeleteEventModal = dynamic(() => import('./event-delete-modal'));
 const DatePickerModal = dynamic(() => import('./event-date-picker'));
@@ -453,6 +453,8 @@ export default function EventForm({
                         return <StatusPublished />;
                       case 'draft':
                         return <StatusDraft />;
+                      case 'cancelled':
+                        return <StatusCancelled />;
                     }
                   })()}
                 </div>
