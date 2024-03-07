@@ -23,6 +23,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { compressImage } from '@/_shared/utils/compress-image';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { StatusPublished, StatusDraft, StatusCancelled } from './event-status';
+import CancelEventModal from './event-cancel-modal';
 
 const DeleteEventModal = dynamic(() => import('./event-delete-modal'));
 const DatePickerModal = dynamic(() => import('./event-date-picker'));
@@ -385,8 +386,11 @@ export default function EventForm({
 
   return (
     <>
-      {existingEvent && (
+      {existingEvent && existingEvent.status == 'draft' && (
         <DeleteEventModal slug={existingEvent.slug}></DeleteEventModal>
+      )}
+      {existingEvent && existingEvent.status == 'published' && (
+        <CancelEventModal slug={existingEvent.slug}></CancelEventModal>
       )}
       <ImageCropperModal
         imageData={imageData}
@@ -758,16 +762,36 @@ export default function EventForm({
                   </div>
                   {existingEvent ? (
                     <div className="mt-20 flex justify-center lg:mt-12 lg:justify-end">
-                      <Button
-                        className="h-9 w-60 rounded-lg bg-transparent px-3 py-1.5 text-base font-medium text-red-400 antialiased ring-2 ring-red-900 active:ring-red-700"
-                        onPress={() => {
-                          document.dispatchEvent(
-                            new CustomEvent('open:event-delete-modal')
-                          );
-                        }}
-                      >
-                        Delete this event
-                      </Button>
+                      {(() => {
+                        switch (existingEvent.status) {
+                          case 'draft':
+                            return (
+                              <Button
+                                className="h-9 w-60 rounded-lg bg-transparent px-3 py-1.5 text-base font-medium text-red-400 antialiased ring-2 ring-red-900 active:ring-red-700"
+                                onPress={() => {
+                                  document.dispatchEvent(
+                                    new CustomEvent('open:event-delete-modal')
+                                  );
+                                }}
+                              >
+                                Delete this event
+                              </Button>
+                            );
+                          case 'published':
+                            return (
+                              <Button
+                                className="h-9 w-60 rounded-lg bg-transparent px-3 py-1.5 text-base font-medium text-red-400 antialiased ring-2 ring-red-900 active:ring-red-700"
+                                onPress={() => {
+                                  document.dispatchEvent(
+                                    new CustomEvent('open:event-cancel-modal')
+                                  );
+                                }}
+                              >
+                                Cancel this event
+                              </Button>
+                            );
+                        }
+                      })()}
                     </div>
                   ) : null}
                 </div>
