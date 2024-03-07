@@ -46,17 +46,16 @@ export default function CancelEventModal({ slug }: { slug: string }) {
         <ModalBody>
           <div>
             <div className="flex gap-2">
-              <div className="flex items-center rounded bg-yellow-950 p-2  text-yellow-200 ring-1 ring-yellow-900">
+              <div className="flex items-center rounded bg-red-950 p-2  text-red-200 ring-1 ring-red-900">
                 <WarningIcon height={20} width={20}></WarningIcon>
               </div>
-              <p className="flex w-full items-center gap-2 rounded bg-yellow-950 p-2 text-sm text-yellow-200 ring-1 ring-yellow-900">
+              <p className="flex w-full items-center gap-2 rounded bg-red-950 p-2 text-sm text-red-200 ring-1 ring-red-900">
                 This action cannot be undone!
               </p>
             </div>
             <p className="mt-4">
-              Canceling event means the webinar will no longer acessible
-              <br />
-              Are you sure you want to cancel this event?
+              Are you sure you want to cancel this event? <br />
+              Cancelling the event will make the room unavailable
             </p>
           </div>
         </ModalBody>
@@ -97,10 +96,10 @@ export default function CancelEventModal({ slug }: { slug: string }) {
                     wrapper: 'w-4 h-4',
                   }}
                 />
-                <span>Deleting...</span>
+                <span>Cancelling...</span>
               </div>
             ) : (
-              <span>cancel this event</span>
+              <span>Cancel this event</span>
             )}
           </Button>{' '}
         </ModalFooter>
