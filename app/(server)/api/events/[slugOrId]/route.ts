@@ -290,12 +290,13 @@ export async function PUT(
     ) {
       if (!user.whitelistFeature.includes('event')) {
         const { value } = await eventRepo.countNonDraftEvents(user.id);
-        if (value >= EVENT_TRIAL_COUNT) {
+        if (value >= EVENT_TRIAL_COUNT && oldEvent.status !== 'published') {
           return NextResponse.json(
             {
               code: 403,
               ok: false,
-              message: 'You have reached the limit of creating events',
+              message:
+                'You have reached the limit of creating published events',
             },
             { status: 403 }
           );

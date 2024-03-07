@@ -97,6 +97,10 @@ export default async function Page({ params: { eventID } }: PageProps) {
     if (eventCreateLimit?.code === 403) {
       isLimitReached = true;
     }
+
+    if (event.status === 'published') {
+      isLimitReached = false;
+    }
   }
 
   if (event.status === 'cancelled') {
