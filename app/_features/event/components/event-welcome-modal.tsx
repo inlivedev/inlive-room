@@ -124,7 +124,7 @@ function Step2({
         </p>
       </div>
 
-      <div className="flex justify-between gap-4 p-6">
+      <div className="flex justify-between gap-3 p-6">
         <Button
           className="min-w-0 rounded-lg bg-zinc-800 px-4 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
           onClick={setPrevious}
@@ -182,7 +182,7 @@ function Step3({
           register. Now you can share it to announce your event.
         </p>
       </div>
-      <div className="flex justify-between gap-4 p-6">
+      <div className="flex justify-between gap-3 p-6">
         <Button
           className="min-w-0 rounded-lg bg-zinc-800 px-4 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
           onClick={setPrevious}
@@ -240,7 +240,7 @@ function Step4({
           presentations, chat with attendees, and answer questions live.
         </p>
       </div>
-      <div className="flex justify-between gap-4 p-6">
+      <div className="flex justify-between gap-3 p-6">
         <Button
           className="min-w-0 rounded-lg bg-zinc-800 px-4 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
           onClick={setPrevious}
@@ -299,7 +299,7 @@ function Step5({
           soon
         </p>
       </div>
-      <div className="flex justify-between gap-4 p-6">
+      <div className="flex justify-between gap-3 p-6">
         <Button
           className="min-w-0 rounded-lg bg-zinc-800 px-4 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
           onClick={setPrevious}
@@ -357,7 +357,7 @@ function Step6({
           re-invite, and boost future attendance. — coming soon
         </p>
       </div>
-      <div className="flex justify-between gap-4 p-6">
+      <div className="flex justify-between gap-3 p-6">
         <Button
           className="min-w-0 rounded-lg bg-zinc-800 px-4 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
           onClick={setPrevious}
@@ -409,15 +409,14 @@ function Step7() {
           see it there!
         </p>
       </div>
-      <div className="flex justify-between gap-4 p-6">
+      <div className="flex items-center justify-between gap-3 p-6">
         <a
           href="https://inlive.app/blog"
           target="_blank"
-          className=" rounded-lg px-4 py-2 text-base font-medium text-red-500 outline-none hover:text-red-400 active:text-red-300"
+          className="text-base font-medium text-red-500 outline-none hover:text-red-400 active:text-red-300"
         >
           Learn more
         </a>
-
         <Button
           as={Link}
           href="/events/create"
