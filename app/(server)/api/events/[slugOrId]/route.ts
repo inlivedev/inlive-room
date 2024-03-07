@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eventRepo, eventService } from '../../_index';
+import { eventRepo, eventService, roomService } from '../../_index';
 import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
 import { generateID } from '@/(server)/_shared/utils/generateid';
@@ -9,11 +9,23 @@ import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-
 import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
 import { whitelistFeature } from '@/_shared/utils/flag';
-
+import * as z from 'zod';
 const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
 const EVENT_TRIAL_COUNT = parseInt(
   process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
 );
+
+const ALLOW_EDIT_CANCELLED_EVENT =
+  process.env.ALLOW_EDIT_CANCELLED_EVENT === 'true';
+
+const updateEventSchema = z.object({
+  name: z.string().max(255),
+  startTime: z.string().datetime({ offset: true }),
+  endTime: z.string().datetime({ offset: true }),
+  description: z.string(),
+  status: z.enum(['draft', 'published', 'cancelled']),
+  deleteImage: z.boolean().optional(),
+});
 
 export async function GET(
   request: NextRequest,
@@ -36,31 +48,20 @@ export async function GET(
 
     const existingEvent = await eventService.getEventBySlugOrID(slug, userID);
 
-    if (existingEvent?.isPublished) {
-      return NextResponse.json(
-        {
-          code: 200,
-          message: 'Event found',
-          data: existingEvent,
-        },
-        { status: 200 }
-      );
-    }
-
-    if (
-      existingEvent?.createdBy !== userID &&
-      existingEvent?.isPublished === false
-    ) {
+    if (!existingEvent) {
       return NextResponse.json(
         {
           code: 404,
-          message: "Event doesn't exist",
+          message: 'Event not found',
         },
         { status: 404 }
       );
     }
 
-    if (!existingEvent) {
+    if (
+      existingEvent.status === 'draft' &&
+      existingEvent.createdBy !== userID
+    ) {
       return NextResponse.json(
         {
           code: 404,
@@ -130,6 +131,30 @@ export async function DELETE(
   }
 
   try {
+    const event = await eventService.getEventBySlugOrID(slugOrId, user.id);
+
+    if (!event) {
+      return NextResponse.json(
+        {
+          code: 404,
+          ok: false,
+          message: 'Event not found',
+        },
+        { status: 404 }
+      );
+    }
+
+    if (event.status !== 'draft') {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: 'You can only delete draft events',
+        },
+        { status: 400 }
+      );
+    }
+
     const deletedEvent = await eventRepo.deleteEventBySlug(slugOrId, user.id);
 
     if (!deletedEvent || deletedEvent.length == 0) {
@@ -172,16 +197,6 @@ export async function PUT(
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 
-  type updateEvent = {
-    name?: string;
-    startTime?: string;
-    endTime?: string;
-    description?: string;
-    host?: string;
-    isPublished?: boolean;
-    deleteImage?: boolean;
-  };
-
   if (!requestToken) {
     return NextResponse.json(
       {
@@ -200,11 +215,10 @@ export async function PUT(
       {
         code: 401,
         ok: false,
-        message: 'Please check if token is provided in the cookie',
+        message:
+          'User not found, please check if token is provided in the cookie is valid',
       },
-      {
-        status: 401,
-      }
+      { status: 401 }
     );
   }
 
@@ -233,9 +247,8 @@ export async function PUT(
       );
 
     const formData = await request.formData();
-    const updateEventMeta = JSON.parse(
-      formData.get('data') as string
-    ) as updateEvent;
+    const jsonBody = JSON.parse(formData.get('data') as string);
+    const updateEventMeta = updateEventSchema.parse(jsonBody);
     const eventImage = formData.get('image') as Blob;
 
     const newEvent: insertEvent = {
@@ -248,21 +261,71 @@ export async function PUT(
           generateID(8)
         : oldEvent.slug,
       description: updateEventMeta.description ?? oldEvent.description,
-      host: updateEventMeta.host ?? oldEvent.host,
+      host: user.name,
       createdBy: oldEvent.createdBy,
       roomId: oldEvent.roomId,
-      isPublished: updateEventMeta.isPublished,
+      status: updateEventMeta.status,
     };
 
-    if (!whitelistFeature.includes('event') && newEvent.isPublished) {
-      if (!user.whitelistFeature.includes('event')) {
-        const { value } = await eventRepo.countAllPublishedEvents(user.id);
+    if (!ALLOW_EDIT_CANCELLED_EVENT) {
+      if (oldEvent.status === 'cancelled') {
+        return NextResponse.json(
+          {
+            code: 400,
+            ok: false,
+            message: 'You cannot edit a cancelled event',
+          },
+          { status: 400 }
+        );
+      }
+      if (newEvent.status === 'cancelled') {
+        return NextResponse.json(
+          {
+            code: 400,
+            ok: false,
+            message:
+              'use the "/events/:slugOrId/cancel" endpoint to cancel an event',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    const invalidTransitions = {
+      published: ['draft'],
+      cancelled: ['draft', 'published'],
+      draft: ['cancelled'],
+    };
+
+    if (
+      invalidTransitions[oldEvent.status].includes(newEvent.status || 'draft')
+    ) {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: `You cannot change a ${oldEvent.status} event to ${newEvent.status}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (oldEvent.status === 'draft' && newEvent.status === 'published') {
+      const eventRoom = await roomService.createRoom(user.id, 'event');
+      newEvent.roomId = eventRoom.id;
+
+      if (
+        !whitelistFeature.includes('event') &&
+        !user.whitelistFeature.includes('event')
+      ) {
+        const { value } = await eventRepo.countNonDraftEvents(user.id);
         if (value >= EVENT_TRIAL_COUNT) {
           return NextResponse.json(
             {
               code: 403,
               ok: false,
-              message: 'You have reached the limit of creating events',
+              message:
+                'You have reached the limit of creating published events',
             },
             { status: 403 }
           );
@@ -330,6 +393,18 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         code: 500,
