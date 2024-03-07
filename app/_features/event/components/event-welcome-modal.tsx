@@ -11,7 +11,7 @@ export default function EventWelcomeModal() {
 
   return (
     <>
-      <div className="viewport-height fixed left-0 top-0 z-40 w-full select-none bg-zinc-950 opacity-50"></div>
+      <div className="viewport-height fixed left-0 top-0 z-40 w-full bg-zinc-950 opacity-50"></div>
       <div className="viewport-height fixed left-0 top-0 z-50 flex w-full items-end justify-center sm:items-center">
         <div className="w-full max-w-none rounded-2xl bg-zinc-900 ring-1 ring-zinc-800 sm:max-w-sm lg:max-w-[640px]">
           {step === 1 ? (
