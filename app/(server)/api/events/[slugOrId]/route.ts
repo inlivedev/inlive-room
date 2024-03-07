@@ -383,6 +383,18 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         code: 500,

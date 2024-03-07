@@ -7,6 +7,7 @@ import * as Sentry from '@sentry/nextjs';
 import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-local-storage';
 import { whitelistFeature } from '@/_shared/utils/flag';
 import * as z from 'zod';
+import { selectRoom } from '@/(server)/_features/room/schema';
 
 export const CreateEventSchema = z.object({
   name: z.string().max(255),
@@ -144,6 +145,17 @@ export async function POST(req: Request) {
       data: createdEvent,
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
     Sentry.captureException(error);
     return NextResponse.json(
       {
