@@ -61,27 +61,13 @@ export async function GET(
     }
 
     if (
-      existingEvent.status !== 'published' &&
+      existingEvent.status === 'draft' &&
       existingEvent.createdBy !== userID
     ) {
       return NextResponse.json(
         {
-          code: 200,
-          message: 'Event found',
-          data: existingEvent,
-        },
-        { status: 200 }
-      );
-    }
-
-    if (
-      existingEvent?.createdBy !== userID &&
-      existingEvent?.status !== 'published'
-    ) {
-      return NextResponse.json(
-        {
           code: 404,
-          message: "Event doesn't exist",
+          message: 'Event not found',
         },
         { status: 404 }
       );
