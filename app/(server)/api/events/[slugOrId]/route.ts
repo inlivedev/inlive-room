@@ -303,6 +303,33 @@ export async function PUT(
       }
     }
 
+    switch (oldEvent.status) {
+      case 'published':
+        if (newEvent.status === 'draft') {
+          return NextResponse.json(
+            {
+              code: 400,
+              ok: false,
+              message: 'You cannot change a published event to draft',
+            },
+            { status: 400 }
+          );
+        }
+      case 'cancelled':
+        if (newEvent.status === 'draft' || newEvent.status === 'published') {
+          return NextResponse.json(
+            {
+              code: 400,
+              ok: false,
+              message:
+                'You cannot change a cancelled event to draft or published',
+            },
+            { status: 400 }
+          );
+        }
+        break;
+    }
+
     if (newEvent.name === oldEvent.name) {
       newEvent.slug = oldEvent.slug;
     }
