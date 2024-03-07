@@ -306,6 +306,26 @@ export async function PUT(
             { status: 400 }
           );
         }
+
+        if (
+          !whitelistFeature.includes('event') &&
+          newEvent.status === 'published'
+        ) {
+          if (!user.whitelistFeature.includes('event')) {
+            const { value } = await eventRepo.countNonDraftEvents(user.id);
+            if (value >= EVENT_TRIAL_COUNT) {
+              return NextResponse.json(
+                {
+                  code: 403,
+                  ok: false,
+                  message:
+                    'You have reached the limit of creating published events',
+                },
+                { status: 403 }
+              );
+            }
+          }
+        }
     }
 
     if (newEvent.name === oldEvent.name) {
