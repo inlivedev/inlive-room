@@ -15,6 +15,9 @@ const EVENT_TRIAL_COUNT = parseInt(
   process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
 );
 
+const ALLOW_EDIT_CANCELLED_EVENT =
+  process.env.ALLOW_EDIT_CANCELLED_EVENT === 'true';
+
 export const updateEventSchema = z.object({
   name: z.string().max(255),
   startTime: z.string().datetime({ offset: true }),
@@ -263,6 +266,30 @@ export async function PUT(
       roomId: oldEvent.roomId,
       status: updateEventMeta.status,
     };
+
+    if (!ALLOW_EDIT_CANCELLED_EVENT) {
+      if (oldEvent.status === 'cancelled') {
+        return NextResponse.json(
+          {
+            code: 400,
+            ok: false,
+            message: 'You cannot edit a cancelled event',
+          },
+          { status: 400 }
+        );
+      }
+      if (newEvent.status === 'cancelled') {
+        return NextResponse.json(
+          {
+            code: 400,
+            ok: false,
+            message:
+              'use the "/events/:slugOrId/cancel" endpoint to cancel an event',
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     const invalidTransitions = {
       published: ['draft'],
