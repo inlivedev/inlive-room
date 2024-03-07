@@ -493,22 +493,25 @@ export default function EventForm({
                               : 'Publish event'}
                           </Button>
                         </div>
-                        <div className="flex-1 lg:order-1">
-                          <Button
-                            type="submit"
-                            data-action={
-                              existingEvent
-                                ? 'update-as-draft'
-                                : 'create-as-draft'
-                            }
-                            className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
-                            isDisabled={isSubmitting}
-                            aria-disabled={isSubmitting}
-                            disabled={isSubmitting}
-                          >
-                            Save as draft
-                          </Button>
-                        </div>
+                        {existingEvent?.status == 'draft' ||
+                        existingEvent === undefined ? (
+                          <div className="flex-1 lg:order-1">
+                            <Button
+                              type="submit"
+                              data-action={
+                                existingEvent
+                                  ? 'update-as-draft'
+                                  : 'create-as-draft'
+                              }
+                              className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
+                              isDisabled={isSubmitting}
+                              aria-disabled={isSubmitting}
+                              disabled={isSubmitting}
+                            >
+                              Save as draft
+                            </Button>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   ) : null}
