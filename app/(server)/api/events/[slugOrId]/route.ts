@@ -302,6 +302,11 @@ export async function PUT(
           );
         }
 
+        if (newEvent.status === 'published') {
+          const eventRoom = await roomService.createRoom(user.id, 'event');
+          newEvent.roomId = eventRoom.id;
+        }
+
         if (
           !whitelistFeature.includes('event') &&
           newEvent.status === 'published'
@@ -320,11 +325,6 @@ export async function PUT(
               );
             }
           }
-        }
-
-        if (newEvent.status === 'published') {
-          const eventRoom = await roomService.createRoom(user.id, 'event');
-          newEvent.roomId = eventRoom.id;
         }
     }
 
