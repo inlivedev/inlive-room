@@ -483,8 +483,8 @@ export default function EventForm({
                             }
                             className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
                             isDisabled={isSubmitting || limitPublish}
-                            aria-disabled={isSubmitting}
-                            disabled={isSubmitting}
+                            aria-disabled={isSubmitting || limitPublish}
+                            disabled={isSubmitting || limitPublish}
                           >
                             {existingEvent
                               ? existingEvent.status === 'published'
