@@ -75,7 +75,7 @@ export default function CancelEventModal({ slug }: { slug: string }) {
                 );
 
                 if (response.ok) {
-                  navigateTo('/event');
+                  navigateTo('/events');
                 } else {
                   alert('Failed to cancel event, please try again later');
                 }
