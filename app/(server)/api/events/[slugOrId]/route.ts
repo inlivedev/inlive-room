@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eventRepo, eventService } from '../../_index';
+import { eventRepo, eventService, roomService } from '../../_index';
 import { isError } from 'lodash-es';
 import { cookies } from 'next/headers';
 import { generateID } from '@/(server)/_shared/utils/generateid';
@@ -320,6 +320,11 @@ export async function PUT(
               );
             }
           }
+        }
+
+        if (newEvent.status === 'published') {
+          const eventRoom = await roomService.createRoom(user.id, 'event');
+          newEvent.roomId = eventRoom.id;
         }
     }
 
