@@ -20,13 +20,8 @@ export const updateEventSchema = z.object({
   startTime: z.string().datetime({ offset: true }),
   endTime: z.string().datetime({ offset: true }),
   description: z.string(),
-  host: z.string().max(255),
   status: z.enum(['draft', 'published', 'cancelled']),
-  deleteImage: z
-    .string()
-    .toLowerCase()
-    .transform((x) => x === 'true')
-    .pipe(z.boolean()),
+  deleteImage: z.boolean().optional(),
 });
 
 export async function GET(
