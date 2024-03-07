@@ -87,17 +87,16 @@ export default function EventDetail({
           <Header logoText="inLive Event" logoHref="/events" needAuth={true} />
           <main className="mb-28 flex flex-1 flex-col">
             <div className="mb-1.5">
-              {user?.id == createdBy &&
-                (() => {
-                  switch (status) {
-                    case 'draft':
-                      return <StatusDraft />;
-                    case 'published':
-                      return <StatusPublished />;
-                    case 'cancelled':
-                      return <StatusCancelled />;
-                  }
-                })()}
+              {(() => {
+                switch (status) {
+                  case 'draft':
+                    return <StatusDraft />;
+                  case 'published':
+                    return <StatusPublished />;
+                  case 'cancelled':
+                    return <StatusCancelled />;
+                }
+              })()}
             </div>
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
               {title}
@@ -142,6 +141,7 @@ export default function EventDetail({
                           copiedActive={copiedActive}
                           handleCopyLink={handleCopyLink}
                           slug={slug}
+                          status={status}
                         />
                       )}{' '}
                     </div>
@@ -212,8 +212,8 @@ function AuthorActionButtons({
           as={Link}
           className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
           variant="flat"
-          href={`/event/${slug}/edit`}
-          isDisabled={status === 'cancelled'}
+          href={`/events/${slug}/edit`}
+          isDisabled={status == 'cancelled'}
         >
           <EditIcon width={20} height={20}></EditIcon>
         </Button>
@@ -226,10 +226,12 @@ function DefaultActionButtons({
   handleCopyLink,
   slug,
   copiedActive,
+  status,
 }: {
   handleCopyLink: (text?: string) => Promise<void>;
   slug: string;
   copiedActive: boolean;
+  status: 'draft' | 'published' | 'cancelled';
 }) {
   const openRegisterEventForm = () => {
     document.dispatchEvent(new CustomEvent('open:event-registration-modal'));
@@ -242,6 +244,7 @@ function DefaultActionButtons({
           variant="flat"
           className="w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
           onClick={openRegisterEventForm}
+          isDisabled={status !== 'published'}
         >
           Register to Attend
         </Button>
