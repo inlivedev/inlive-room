@@ -40,7 +40,7 @@ export async function GET() {
     );
   }
 
-  const { value } = await eventRepo.countAllPublishedEvents(user.id);
+  const { value } = await eventRepo.countNonDraftEvents(user.id);
 
   // check if have created more than 3 events
 

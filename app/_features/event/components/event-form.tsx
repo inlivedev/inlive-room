@@ -22,7 +22,8 @@ import PhotoUploadIcon from '@/_shared/components/icons/photo-upload-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { compressImage } from '@/_shared/utils/compress-image';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
-import { StatusPublished, StatusDraft } from './event-status';
+import { StatusPublished, StatusDraft, StatusCancelled } from './event-status';
+import CancelEventModal from './event-cancel-modal';
 
 const DeleteEventModal = dynamic(() => import('./event-delete-modal'));
 const DatePickerModal = dynamic(() => import('./event-date-picker'));
@@ -314,7 +315,6 @@ export default function EventForm({
     async ({
       eventTitle,
       eventDescription,
-      host,
       startTime,
       endTime,
       posterImage,
@@ -335,10 +335,9 @@ export default function EventForm({
       const data = {
         name: eventTitle,
         description: eventDescription,
-        host: host,
         startTime: startTime,
         endTime: endTime,
-        isPublished: publish,
+        status: publish ? 'published' : 'draft',
         deleteImage: deleteImage,
       };
 
@@ -387,8 +386,11 @@ export default function EventForm({
 
   return (
     <>
-      {existingEvent && (
+      {existingEvent && existingEvent.status == 'draft' && (
         <DeleteEventModal slug={existingEvent.slug}></DeleteEventModal>
+      )}
+      {existingEvent && existingEvent.status == 'published' && (
+        <CancelEventModal slug={existingEvent.slug}></CancelEventModal>
       )}
       <ImageCropperModal
         imageData={imageData}
@@ -449,11 +451,16 @@ export default function EventForm({
             <form onSubmit={handleSubmit(onSubmit)}>
               {existingEvent ? (
                 <div className="mb-1.5">
-                  {existingEvent.isPublished ? (
-                    <StatusPublished />
-                  ) : (
-                    <StatusDraft />
-                  )}
+                  {(() => {
+                    switch (existingEvent.status) {
+                      case 'published':
+                        return <StatusPublished />;
+                      case 'draft':
+                        return <StatusDraft />;
+                      case 'cancelled':
+                        return <StatusCancelled />;
+                    }
+                  })()}
                 </div>
               ) : null}
               <div>
@@ -476,32 +483,35 @@ export default function EventForm({
                             }
                             className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
                             isDisabled={isSubmitting || limitPublish}
-                            aria-disabled={isSubmitting}
-                            disabled={isSubmitting}
+                            aria-disabled={isSubmitting || limitPublish}
+                            disabled={isSubmitting || limitPublish}
                           >
                             {existingEvent
-                              ? existingEvent.isPublished
+                              ? existingEvent.status === 'published'
                                 ? 'Save changes'
                                 : 'Publish event'
                               : 'Publish event'}
                           </Button>
                         </div>
-                        <div className="flex-1 lg:order-1">
-                          <Button
-                            type="submit"
-                            data-action={
-                              existingEvent
-                                ? 'update-as-draft'
-                                : 'create-as-draft'
-                            }
-                            className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
-                            isDisabled={isSubmitting}
-                            aria-disabled={isSubmitting}
-                            disabled={isSubmitting}
-                          >
-                            Save as draft
-                          </Button>
-                        </div>
+                        {existingEvent?.status == 'draft' ||
+                        existingEvent === undefined ? (
+                          <div className="flex-1 lg:order-1">
+                            <Button
+                              type="submit"
+                              data-action={
+                                existingEvent
+                                  ? 'update-as-draft'
+                                  : 'create-as-draft'
+                              }
+                              className="w-full min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:w-auto"
+                              isDisabled={isSubmitting}
+                              aria-disabled={isSubmitting}
+                              disabled={isSubmitting}
+                            >
+                              Save as draft
+                            </Button>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   ) : null}
@@ -755,16 +765,36 @@ export default function EventForm({
                   </div>
                   {existingEvent ? (
                     <div className="mt-20 flex justify-center lg:mt-12 lg:justify-end">
-                      <Button
-                        className="h-9 w-60 rounded-lg bg-transparent px-3 py-1.5 text-base font-medium text-red-400 antialiased ring-2 ring-red-900 active:ring-red-700"
-                        onPress={() => {
-                          document.dispatchEvent(
-                            new CustomEvent('open:event-delete-modal')
-                          );
-                        }}
-                      >
-                        Delete this event
-                      </Button>
+                      {(() => {
+                        switch (existingEvent.status) {
+                          case 'draft':
+                            return (
+                              <Button
+                                className="h-9 w-60 rounded-lg bg-transparent px-3 py-1.5 text-base font-medium text-red-400 antialiased ring-2 ring-red-900 active:ring-red-700"
+                                onPress={() => {
+                                  document.dispatchEvent(
+                                    new CustomEvent('open:event-delete-modal')
+                                  );
+                                }}
+                              >
+                                Delete this event
+                              </Button>
+                            );
+                          case 'published':
+                            return (
+                              <Button
+                                className="h-9 w-60 rounded-lg bg-transparent px-3 py-1.5 text-base font-medium text-red-400 antialiased ring-2 ring-red-900 active:ring-red-700"
+                                onPress={() => {
+                                  document.dispatchEvent(
+                                    new CustomEvent('open:event-cancel-modal')
+                                  );
+                                }}
+                              >
+                                Cancel this event
+                              </Button>
+                            );
+                        }
+                      })()}
                     </div>
                   ) : null}
                 </div>

@@ -68,7 +68,7 @@ export async function GET(req: Request) {
       user?.id,
       isAfterParsed,
       isBeforeParsed,
-      isPublishedParsed
+      isPublishedParsed ? 'published' : undefined
     );
 
     if (data.length === 0) {

@@ -2,7 +2,7 @@ import type { Room } from '@/(server)/_features/room/service';
 import { iRoomRepo } from './service';
 import { db } from '@/(server)/_shared/database/database';
 import { insertRoom, rooms } from '@/(server)/_features/room/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 const persistentData = process.env.PERSISTENT_DATA || false;
 
@@ -24,6 +24,13 @@ export class RoomRepo implements iRoomRepo {
       .where(eq(rooms.id, room.id))
       .returning();
     return data[0];
+  }
+
+  removeRoom(roomId: string, createdBy: number) {
+    return db
+      .delete(rooms)
+      .where(and(eq(rooms.id, roomId), eq(rooms.createdBy, createdBy)))
+      .returning();
   }
 
   isPersistent(): boolean {

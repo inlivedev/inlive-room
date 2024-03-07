@@ -34,6 +34,13 @@ export async function POST(
       });
     }
 
+    if (existingEvent.status !== 'published') {
+      return NextResponse.json({
+        code: 400,
+        message: 'Event not found',
+      });
+    }
+
     const newParticipant: typeof insertParticipant = {
       clientId: generateID(8),
       firstName: body.firstName,
