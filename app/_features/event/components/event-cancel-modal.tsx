@@ -86,7 +86,7 @@ export default function CancelEventModal({ slug }: { slug: string }) {
                 setIsDeleting(false);
               }
             }}
-            className="w-full basis-1/2 rounded-md bg-yellow-800 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-yellow-700 active:bg-yellow-600"
+            className="w-full basis-1/2 rounded-md bg-red-800 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-700 active:bg-red-600"
           >
             {isDeleting ? (
               <div className="flex gap-2">
