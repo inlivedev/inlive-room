@@ -264,68 +264,46 @@ export async function PUT(
       status: updateEventMeta.status,
     };
 
-    switch (oldEvent.status) {
-      case 'published':
-        if (newEvent.status === 'draft') {
+    const invalidTransitions = {
+      published: ['draft'],
+      cancelled: ['draft', 'published'],
+      draft: ['cancelled'],
+    };
+
+    if (
+      invalidTransitions[oldEvent.status].includes(newEvent.status || 'draft')
+    ) {
+      return NextResponse.json(
+        {
+          code: 400,
+          ok: false,
+          message: `You cannot change a ${oldEvent.status} event to ${newEvent.status}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (oldEvent.status === 'draft' && newEvent.status === 'published') {
+      const eventRoom = await roomService.createRoom(user.id, 'event');
+      newEvent.roomId = eventRoom.id;
+
+      if (
+        !whitelistFeature.includes('event') &&
+        !user.whitelistFeature.includes('event')
+      ) {
+        const { value } = await eventRepo.countNonDraftEvents(user.id);
+        if (value >= EVENT_TRIAL_COUNT) {
           return NextResponse.json(
             {
-              code: 400,
-              ok: false,
-              message: 'You cannot change a published event to draft',
-            },
-            { status: 400 }
-          );
-        }
-        break;
-      case 'cancelled':
-        if (newEvent.status === 'draft' || newEvent.status === 'published') {
-          return NextResponse.json(
-            {
-              code: 400,
+              code: 403,
               ok: false,
               message:
-                'You cannot change a cancelled event to draft or published',
+                'You have reached the limit of creating published events',
             },
-            { status: 400 }
+            { status: 403 }
           );
         }
-        break;
-      case 'draft':
-        if (newEvent.status === 'cancelled') {
-          return NextResponse.json(
-            {
-              code: 400,
-              ok: false,
-              message: 'You cannot change a draft event to cancelled',
-            },
-            { status: 400 }
-          );
-        }
-
-        if (newEvent.status === 'published') {
-          const eventRoom = await roomService.createRoom(user.id, 'event');
-          newEvent.roomId = eventRoom.id;
-        }
-
-        if (
-          !whitelistFeature.includes('event') &&
-          newEvent.status === 'published'
-        ) {
-          if (!user.whitelistFeature.includes('event')) {
-            const { value } = await eventRepo.countNonDraftEvents(user.id);
-            if (value >= EVENT_TRIAL_COUNT) {
-              return NextResponse.json(
-                {
-                  code: 403,
-                  ok: false,
-                  message:
-                    'You have reached the limit of creating published events',
-                },
-                { status: 403 }
-              );
-            }
-          }
-        }
+      }
     }
 
     if (newEvent.name === oldEvent.name) {
