@@ -249,9 +249,8 @@ export async function PUT(
       );
 
     const formData = await request.formData();
-    const updateEventMeta = updateEventSchema.parse(
-      formData.get('data') as string
-    );
+    const meta = JSON.parse(formData.get('data') as string);
+    const updateEventMeta = updateEventSchema.parse(meta);
     const eventImage = formData.get('image') as Blob;
 
     const newEvent: insertEvent = {
@@ -264,31 +263,11 @@ export async function PUT(
           generateID(8)
         : oldEvent.slug,
       description: updateEventMeta.description ?? oldEvent.description,
-      host: updateEventMeta.host ?? oldEvent.host,
+      host: user.name,
       createdBy: oldEvent.createdBy,
       roomId: oldEvent.roomId,
       status: updateEventMeta.status,
     };
-
-    if (
-      !whitelistFeature.includes('event') &&
-      newEvent.status === 'published'
-    ) {
-      if (!user.whitelistFeature.includes('event')) {
-        const { value } = await eventRepo.countNonDraftEvents(user.id);
-        if (value >= EVENT_TRIAL_COUNT && oldEvent.status !== 'published') {
-          return NextResponse.json(
-            {
-              code: 403,
-              ok: false,
-              message:
-                'You have reached the limit of creating published events',
-            },
-            { status: 403 }
-          );
-        }
-      }
-    }
 
     switch (oldEvent.status) {
       case 'published':
@@ -302,6 +281,7 @@ export async function PUT(
             { status: 400 }
           );
         }
+        break;
       case 'cancelled':
         if (newEvent.status === 'draft' || newEvent.status === 'published') {
           return NextResponse.json(
@@ -315,6 +295,17 @@ export async function PUT(
           );
         }
         break;
+      case 'draft':
+        if (newEvent.status === 'cancelled') {
+          return NextResponse.json(
+            {
+              code: 400,
+              ok: false,
+              message: 'You cannot change a draft event to cancelled',
+            },
+            { status: 400 }
+          );
+        }
     }
 
     if (newEvent.name === oldEvent.name) {
