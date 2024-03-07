@@ -41,7 +41,8 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    const eventMeta = CreateEventSchema.parse(formData.get('data') as string);
+    const jsonBody = JSON.parse(formData.get('data') as string);
+    const eventMeta = CreateEventSchema.parse(jsonBody);
     const eventImage = formData.get('image') as Blob;
     const eventStartTime = new Date(eventMeta.startTime);
     const eventEndTime =

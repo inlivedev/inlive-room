@@ -247,8 +247,8 @@ export async function PUT(
       );
 
     const formData = await request.formData();
-    const meta = JSON.parse(formData.get('data') as string);
-    const updateEventMeta = updateEventSchema.parse(meta);
+    const jsonBody = JSON.parse(formData.get('data') as string);
+    const updateEventMeta = updateEventSchema.parse(jsonBody);
     const eventImage = formData.get('image') as Blob;
 
     const newEvent: insertEvent = {
