@@ -68,7 +68,7 @@ export const generateMetadata = async ({
     openGraph: {
       title: `Webinar — ${eventData.name} — inLive Room`,
       description: descriptionSummary,
-      url: `/event/${eventData.slug}`,
+      url: `/events/${eventData.slug}`,
       images: [imageSrc],
       type: 'website',
     },

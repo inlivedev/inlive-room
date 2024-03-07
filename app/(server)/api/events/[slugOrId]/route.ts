@@ -337,7 +337,7 @@ export async function PUT(
 
     if (updateEventMeta.deleteImage) {
       // delete image
-      const path = `${roomStoragePath}/assets/images/event/${oldEvent.id}/poster.webp`;
+      const path = `${roomStoragePath}/assets/images/events/${oldEvent.id}/poster.webp`;
       stat(path, function (err) {
         if (err) {
           Sentry.captureException(err);
@@ -358,7 +358,7 @@ export async function PUT(
 
     if (eventImage) {
       // update image
-      const path = `/assets/images/event/${oldEvent.id}/poster.webp`;
+      const path = `/assets/images/events/${oldEvent.id}/poster.webp`;
       const storagePath = `${roomStoragePath}${path}`;
       writeFiletoLocalStorage(storagePath, eventImage);
       newEvent.thumbnailUrl = path;

@@ -9,7 +9,7 @@ import { customAlphabet } from 'nanoid';
 const registerClient = async (roomID: string, clientName: string) => {
   try {
     const response: RoomType.CreateClientResponse =
-      await InternalApiFetcher.post(`/api/room/${roomID}/register`, {
+      await InternalApiFetcher.post(`/api/rooms/${roomID}/register`, {
         body: JSON.stringify({
           name: clientName,
         }),
@@ -69,13 +69,13 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
     const response = await middleware(request, event);
     const splitPath = request.nextUrl.pathname.split('/');
 
-    if (response && splitPath[1] === 'room' && splitPath.length === 3) {
+    if (response && splitPath[1] === 'rooms' && splitPath.length === 3) {
       const roomID = splitPath[2];
       let roomData: RoomType.RoomData | null = null;
 
       try {
         const roomResponse: RoomType.CreateGetRoomResponse =
-          await InternalApiFetcher.get(`/api/room/${roomID}`, {
+          await InternalApiFetcher.get(`/api/rooms/${roomID}`, {
             cache: 'no-cache',
           });
 

@@ -28,7 +28,7 @@ export default function Profile() {
     async (selectedKey: Key) => {
       switch (selectedKey) {
         case 'my-events':
-          navigateTo(`/event`);
+          navigateTo(`/events`);
           break;
         case 'signout':
           {

@@ -112,10 +112,10 @@ export async function POST(req: Request) {
     if (eventImage) {
       const roomStoragePath =
         process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
-      const path = `${roomStoragePath}/assets/images/event/${createdEvent.id}/poster.webp`;
+      const path = `${roomStoragePath}/assets/images/events/${createdEvent.id}/poster.webp`;
 
       writeFiletoLocalStorage(path, eventImage);
-      createdEvent.thumbnailUrl = `/assets/images/event/${createdEvent.id}/poster.webp`;
+      createdEvent.thumbnailUrl = `/assets/images/events/${createdEvent.id}/poster.webp`;
       const updatedEvent = await eventRepo.updateEvent(
         user.id,
         createdEvent.id,

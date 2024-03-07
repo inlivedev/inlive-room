@@ -72,7 +72,7 @@ export default function DeleteEventModal({ slug }: { slug: string }) {
                 );
 
                 if (response.ok) {
-                  navigateTo('/event');
+                  navigateTo('/events');
                 } else {
                   alert('Failed to delete event, please try again later');
                 }

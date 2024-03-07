@@ -20,7 +20,7 @@ const EVENT_FORM_URL =
 const navLinks = [
   {
     title: 'My Events',
-    href: '/event',
+    href: '/events',
   },
 ];
 
@@ -47,7 +47,7 @@ export default function EventList({
   return (
     <div className="bg-zinc-900">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
-        <Header logoText="inLive Event" logoHref="/event" />
+        <Header logoText="inLive Event" logoHref="/events" />
 
         {!whitelistFeature.includes('event') === true &&
         user &&
@@ -80,7 +80,7 @@ export default function EventList({
             <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:mt-5 lg:border-t-0 lg:p-0 lg:text-right">
               <Button
                 as={Link}
-                href="/event/create"
+                href="/events/create"
                 className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
               >
                 Create new event
@@ -108,7 +108,7 @@ export default function EventList({
                               <Button
                                 className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                                 as={Link}
-                                href={`/event?page=${previousPage}&limit=${pageMeta.per_page}`}
+                                href={`/events?page=${previousPage}&limit=${pageMeta.per_page}`}
                               >
                                 <span className="flex items-center">
                                   <ChevronLeft width={16} height={16} />
@@ -122,7 +122,7 @@ export default function EventList({
                               <Button
                                 className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                                 as={Link}
-                                href={`/event?page=${nextPage}&limit=${pageMeta.per_page}`}
+                                href={`/events?page=${nextPage}&limit=${pageMeta.per_page}`}
                               >
                                 <span>Next page</span>
                                 <span className="flex items-center">
@@ -156,7 +156,7 @@ export default function EventList({
                         <Button
                           as={Link}
                           isDisabled={limitCreate}
-                          href="/event/create"
+                          href="/events/create"
                           className="w-full min-w-0 rounded-lg bg-red-700 px-6 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500 lg:w-auto"
                         >
                           Create new event
@@ -182,7 +182,7 @@ export default function EventList({
                     <div className="mt-6">
                       <Button
                         as={Link}
-                        href="/event"
+                        href="/events"
                         className="min-w-0 rounded-lg bg-zinc-800 px-6 py-2 text-base font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
                       >
                         Refresh the page

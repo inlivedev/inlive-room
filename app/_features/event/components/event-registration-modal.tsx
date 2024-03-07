@@ -106,7 +106,7 @@ export default function EventRegistrationModal({
             `${response.data.participant.firstName} ${response.data.participant.lastName}`.trim();
 
           const redirectPath = new URL(
-            `/event/${slug}/registration-success?name=${participantName}`,
+            `/events/${slug}/registration-success?name=${participantName}`,
             window.location.origin
           ).href;
 

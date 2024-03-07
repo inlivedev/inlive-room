@@ -84,7 +84,7 @@ export default function EventDetail({
       <EventRegistrationModal title={title} slug={slug} startTime={startTime} />
       <div className="min-viewport-height bg-zinc-900 text-zinc-200">
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
-          <Header logoText="inLive Event" logoHref="/event" needAuth={true} />
+          <Header logoText="inLive Event" logoHref="/events" needAuth={true} />
           <main className="mb-28 flex flex-1 flex-col">
             <div className="mb-1.5">
               {user?.id == createdBy &&
@@ -183,7 +183,7 @@ function AuthorActionButtons({
     <div className="flex justify-between gap-2">
       <div className="flex w-full gap-2">
         <Button
-          href={`/room/${roomId}`}
+          href={`/rooms/${roomId}`}
           as={Link}
           variant="flat"
           isDisabled={status !== 'published' || !roomId}
@@ -195,7 +195,7 @@ function AuthorActionButtons({
         <Button
           className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:basis-1/2"
           variant="flat"
-          onClick={() => handleCopyLink(`${APP_ORIGIN}/event/${slug}`)}
+          onClick={() => handleCopyLink(`${APP_ORIGIN}/events/${slug}`)}
         >
           <span>
             {copiedActive ? (
@@ -250,7 +250,7 @@ function DefaultActionButtons({
         <Button
           variant="flat"
           className="flex min-w-0 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
-          onClick={() => handleCopyLink(`${APP_ORIGIN}/event/${slug}`)}
+          onClick={() => handleCopyLink(`${APP_ORIGIN}/events/${slug}`)}
         >
           <span>
             {copiedActive ? (

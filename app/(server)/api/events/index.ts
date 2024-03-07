@@ -20,8 +20,8 @@ export function GenerateIcal(event: selectEvent, timezone: string) {
   \\n
   Don't forget to mark your calendar on that date, see you there!\\n
   \\n
-  About event : ${PUBLIC_URL}/event/${event.slug}\\n
-  Joint the event : ${PUBLIC_URL}/room/${event.roomId}`;
+  About event : ${PUBLIC_URL}/events/${event.slug}\\n
+  Join the event : ${PUBLIC_URL}/rooms/${event.roomId}`;
 
   // eslint-disable-next-line prettier/prettier
   return `BEGIN:VCALENDAR
@@ -51,7 +51,7 @@ ORGANIZER:${event.host}
 ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTIONRSVP=TRUE:CN=${
     event.host
   }:MAILTO:example@example.com
-URL;VALUE=URI:${PUBLIC_URL}/event/${event.slug}
+URL;VALUE=URI:${PUBLIC_URL}/events/${event.slug}
 DESCRIPTION:${eventDesc}
 END:VEVENT
 END:VCALENDAR`;
