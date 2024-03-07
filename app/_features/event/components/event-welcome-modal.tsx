@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button, Modal, ModalBody, ModalContent } from '@nextui-org/react';
+import { Button } from '@nextui-org/react';
 
 export default function EventWelcomeModal() {
   const [step, setStep] = useState<number>(1);
@@ -11,41 +11,35 @@ export default function EventWelcomeModal() {
 
   return (
     <>
-      <Modal
-        defaultOpen={true}
-        isDismissable={false}
-        hideCloseButton={true}
-        backdrop="blur"
-      >
-        <ModalContent className="w-full max-w-none ring-1 ring-zinc-800 sm:max-w-sm lg:max-w-[640px]">
-          <ModalBody className="block p-0">
-            {step === 1 ? (
-              <WelcomeStep setNext={setNext} />
-            ) : step === 2 ? (
-              <Step2 setPrevious={setPrevious} setNext={setNext} />
-            ) : step === 3 ? (
-              <Step3 setPrevious={setPrevious} setNext={setNext} />
-            ) : step === 4 ? (
-              <Step4 setPrevious={setPrevious} setNext={setNext} />
-            ) : step === 5 ? (
-              <Step5 setPrevious={setPrevious} setNext={setNext} />
-            ) : step === 6 ? (
-              <Step6 setPrevious={setPrevious} setNext={setNext} />
-            ) : step === 7 ? (
-              <Step7 />
-            ) : (
-              <WelcomeStep setNext={setNext} />
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <div className="viewport-height fixed left-0 top-0 z-40 w-full select-none bg-zinc-950 opacity-50"></div>
+      <div className="viewport-height fixed left-0 top-0 z-50 flex w-full items-end justify-center sm:items-center">
+        <div className="w-full max-w-none rounded-2xl bg-zinc-900 ring-1 ring-zinc-800 sm:max-w-sm lg:max-w-[640px]">
+          {step === 1 ? (
+            <WelcomeStep setNext={setNext} />
+          ) : step === 2 ? (
+            <Step2 setPrevious={setPrevious} setNext={setNext} />
+          ) : step === 3 ? (
+            <Step3 setPrevious={setPrevious} setNext={setNext} />
+          ) : step === 4 ? (
+            <Step4 setPrevious={setPrevious} setNext={setNext} />
+          ) : step === 5 ? (
+            <Step5 setPrevious={setPrevious} setNext={setNext} />
+          ) : step === 6 ? (
+            <Step6 setPrevious={setPrevious} setNext={setNext} />
+          ) : step === 7 ? (
+            <Step7 />
+          ) : (
+            <WelcomeStep setNext={setNext} />
+          )}
+        </div>
+      </div>
     </>
   );
 }
 
 function WelcomeStep({ setNext }: { setNext: () => void }) {
   return (
-    <div className="flex h-dvh max-h-[630px] flex-col overflow-auto sm:max-h-[610px] lg:max-h-[562px]">
+    <div className="flex h-dvh max-h-[630px] flex-col overflow-y-auto overscroll-y-contain sm:max-h-[610px] lg:max-h-[562px]">
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <Image
@@ -92,7 +86,7 @@ function Step2({
   setNext: () => void;
 }) {
   return (
-    <div className="flex h-dvh max-h-[630px] flex-col overflow-auto sm:max-h-[610px] lg:max-h-[562px]">
+    <div className="flex h-dvh max-h-[630px] flex-col overflow-y-auto overscroll-y-contain sm:max-h-[610px] lg:max-h-[562px]">
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
@@ -151,7 +145,7 @@ function Step3({
   setNext: () => void;
 }) {
   return (
-    <div className="flex h-dvh max-h-[630px] flex-col overflow-auto sm:max-h-[610px] lg:max-h-[562px]">
+    <div className="flex h-dvh max-h-[630px] flex-col overflow-y-auto overscroll-y-contain sm:max-h-[610px] lg:max-h-[562px]">
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
@@ -209,7 +203,7 @@ function Step4({
   setNext: () => void;
 }) {
   return (
-    <div className="flex h-dvh max-h-[630px] flex-col overflow-auto sm:max-h-[610px] lg:max-h-[562px]">
+    <div className="flex h-dvh max-h-[630px] flex-col overflow-y-auto overscroll-y-contain sm:max-h-[610px] lg:max-h-[562px]">
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
@@ -267,7 +261,7 @@ function Step5({
   setNext: () => void;
 }) {
   return (
-    <div className="flex h-dvh max-h-[630px] flex-col overflow-auto sm:max-h-[610px] lg:max-h-[562px]">
+    <div className="flex h-dvh max-h-[630px] flex-col overflow-y-auto overscroll-y-contain sm:max-h-[610px] lg:max-h-[562px]">
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
@@ -326,7 +320,7 @@ function Step6({
   setNext: () => void;
 }) {
   return (
-    <div className="flex h-dvh max-h-[630px] flex-col overflow-auto sm:max-h-[610px] lg:max-h-[562px]">
+    <div className="flex h-dvh max-h-[630px] flex-col overflow-y-auto overscroll-y-contain sm:max-h-[610px] lg:max-h-[562px]">
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
@@ -378,7 +372,7 @@ function Step6({
 
 function Step7() {
   return (
-    <div className="flex h-dvh max-h-[630px] flex-col overflow-auto sm:max-h-[610px] lg:max-h-[562px]">
+    <div className="flex h-dvh max-h-[630px] flex-col overflow-y-auto overscroll-y-contain sm:max-h-[610px] lg:max-h-[562px]">
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
