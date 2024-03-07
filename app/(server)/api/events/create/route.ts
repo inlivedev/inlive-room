@@ -93,7 +93,11 @@ export async function POST(req: Request) {
       }
     }
 
-    const eventRoom = await roomService.createRoom(user.id, 'event');
+    let eventRoom: typeof selectRoom | null = null;
+
+    if (eventMeta.status == 'published') {
+      eventRoom = await roomService.createRoom(user.id, 'event');
+    }
 
     const Event: insertEvent = {
       status: eventMeta.status,
@@ -103,7 +107,7 @@ export async function POST(req: Request) {
       slug: eventMeta.name.toLowerCase().replace(/\s/g, '-'),
       description: eventDesc,
       createdBy: user.id,
-      roomId: eventRoom.id,
+      roomId: eventRoom?.id,
       host: eventHost,
     };
 
