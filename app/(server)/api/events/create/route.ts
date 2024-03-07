@@ -9,7 +9,7 @@ import { whitelistFeature } from '@/_shared/utils/flag';
 import * as z from 'zod';
 import { selectRoom } from '@/(server)/_features/room/schema';
 
-export const CreateEventSchema = z.object({
+const CreateEventSchema = z.object({
   name: z.string().max(255),
   startTime: z.string().datetime({ offset: true }),
   endTime: z.string().datetime({ offset: true }),

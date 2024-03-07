@@ -18,7 +18,7 @@ const EVENT_TRIAL_COUNT = parseInt(
 const ALLOW_EDIT_CANCELLED_EVENT =
   process.env.ALLOW_EDIT_CANCELLED_EVENT === 'true';
 
-export const updateEventSchema = z.object({
+const updateEventSchema = z.object({
   name: z.string().max(255),
   startTime: z.string().datetime({ offset: true }),
   endTime: z.string().datetime({ offset: true }),
