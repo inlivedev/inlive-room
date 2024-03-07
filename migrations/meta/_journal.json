@@ -120,6 +120,13 @@
       "when": 1709704568724,
       "tag": "0016_events_room_relation",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1709789071930,
+      "tag": "0017_add_event_status",
+      "breakpoints": true
     }
   ]
 }
