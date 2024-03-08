@@ -7,7 +7,7 @@ import type { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { whitelistFeature } from '@/_shared/utils/flag';
 
-const title = 'My Events — inLive Event';
+const title = 'Events — inLive Event';
 const description = `Enjoy features like analytics, hassle-free event registration, and automatic virtual room integration all conveniently accessible within a single application.`;
 const ogImage = '/images/webinar/og-image-webinar.png';
 
