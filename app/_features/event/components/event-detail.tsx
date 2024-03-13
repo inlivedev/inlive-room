@@ -86,18 +86,20 @@ export default function EventDetail({
         <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
           <Header logoText="inLive Event" logoHref="/events" needAuth={true} />
           <main className="mb-28 flex flex-1 flex-col">
-            <div className="mb-1.5">
-              {(() => {
-                switch (status) {
-                  case 'draft':
-                    return <StatusDraft />;
-                  case 'published':
-                    return <StatusPublished />;
-                  case 'cancelled':
-                    return <StatusCancelled />;
-                }
-              })()}
-            </div>
+            {user?.id === createdBy ? (
+              <div className="mb-1.5">
+                {(() => {
+                  switch (status) {
+                    case 'draft':
+                      return <StatusDraft />;
+                    case 'published':
+                      return <StatusPublished />;
+                    case 'cancelled':
+                      return <StatusCancelled />;
+                  }
+                })()}
+              </div>
+            ) : null}
             <h2 className="text-2xl font-bold text-zinc-100 lg:text-4xl">
               {title}
             </h2>
