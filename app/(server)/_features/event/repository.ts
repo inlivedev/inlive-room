@@ -242,10 +242,11 @@ export class EventRepo implements iEventRepo {
     const res = await db.transaction(async (tx) => {
       const registeree = await tx
         .select({
-          firstName: participants.firstName,
-          lastName: participants.lastName,
+          first_name: participants.firstName,
+          last_name: participants.lastName,
           email: participants.email,
           id: participants.id,
+          created_at: participants.createdAt,
         })
         .from(eventHasParticipant)
         .innerJoin(events, eq(eventHasParticipant.eventId, events.id))
