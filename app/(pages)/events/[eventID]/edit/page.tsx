@@ -77,7 +77,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
     return notFound();
   }
 
-  if (true) {
+  if (event.createdBy !== user.id) {
     return (
       <AppContainer user={user}>
         <HTTPError
