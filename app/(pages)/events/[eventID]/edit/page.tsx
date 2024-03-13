@@ -61,10 +61,13 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   if (!user || !user.id) {
     return (
-      <HTTPError
-        title="Login Required"
-        description="You need to be logged in to access this page"
-      />
+      <AppContainer user={user}>
+        <HTTPError
+          code={401}
+          title="Login Required"
+          description="You need to be logged in to access this page"
+        />
+      </AppContainer>
     );
   }
 
@@ -76,10 +79,13 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   if (event.createdBy !== user.id) {
     return (
-      <HTTPError
-        title="You are not authorized"
-        description="You don't have permission to access this page. Please sign in with different account."
-      />
+      <AppContainer user={user}>
+        <HTTPError
+          code={403}
+          title="You are not authorized"
+          description="You don't have permission to access this page. Please sign in with different account."
+        />
+      </AppContainer>
     );
   }
 
