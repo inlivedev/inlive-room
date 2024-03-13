@@ -43,11 +43,12 @@ function WelcomeStep({ setNext }: { setNext: () => void }) {
       <div className="flex-1">
         <div className="flex justify-center p-6">
           <Image
-            width={320}
-            height={246}
+            width={0}
+            height={0}
             src="/images/webinar/event-welcome-banner.png"
             alt="inLive Event Poster Illustration"
-            loading="lazy"
+            className="h-auto w-full max-w-[320px]"
+            priority={true}
             unoptimized
           ></Image>
         </div>
@@ -91,22 +92,22 @@ function Step2({
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
             <Image
-              width={320}
-              height={400}
+              width={0}
+              height={0}
               src="/images/webinar/my-events-mobile.png"
               alt="A mobile view of my events page"
-              className="w-full max-w-[320px]"
+              className="h-auto w-full max-w-[320px]"
               loading="lazy"
               unoptimized
             />
           </div>
           <div className="hidden justify-center lg:flex">
             <Image
-              width={592}
-              height={370}
+              width={0}
+              height={0}
               src="/images/webinar/my-events-desktop.png"
               alt="A desktop view of my events page"
-              className="w-full"
+              className="h-auto w-full"
               loading="lazy"
               unoptimized
             />
@@ -150,22 +151,22 @@ function Step3({
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
             <Image
-              width={320}
-              height={400}
+              width={0}
+              height={0}
               src="/images/webinar/event-detail-non-creator-mobile.png"
               alt="A mobile view of event page"
-              className="w-full max-w-[320px]"
+              className="h-auto w-full max-w-[320px]"
               loading="lazy"
               unoptimized
             />
           </div>
           <div className="hidden justify-center lg:flex">
             <Image
-              width={592}
-              height={370}
+              width={0}
+              height={0}
               src="/images/webinar/event-detail-non-creator-desktop.png"
               alt="A desktop view of event page"
-              className="w-full"
+              className="h-auto w-full"
               loading="lazy"
               unoptimized
             />
@@ -208,22 +209,22 @@ function Step4({
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
             <Image
-              width={320}
-              height={400}
+              width={0}
+              height={0}
               src="/images/webinar/host-in-the-webinar-room-mobile.png"
               alt="A mobile view of webinar session with audiences"
-              className="w-full max-w-[320px]"
+              className="h-auto w-full max-w-[320px]"
               loading="lazy"
               unoptimized
             />
           </div>
           <div className="hidden justify-center lg:flex">
             <Image
-              width={592}
-              height={370}
+              width={0}
+              height={0}
               src="/images/webinar/host-in-the-webinar-room-desktop.png"
               alt="A desktop view of webinar session with audiences"
-              className="w-full"
+              className="h-auto w-full"
               loading="lazy"
               unoptimized
             />
@@ -266,22 +267,22 @@ function Step5({
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
             <Image
-              width={320}
-              height={400}
+              width={0}
+              height={0}
               src="/images/webinar/past-events-mobile.png"
               alt="A mobile view of past events page"
-              className="w-full max-w-[320px]"
+              className="h-auto w-full max-w-[320px]"
               loading="lazy"
               unoptimized
             />
           </div>
           <div className="hidden justify-center lg:flex">
             <Image
-              width={592}
-              height={370}
+              width={0}
+              height={0}
               src="/images/webinar/past-events-desktop.png"
               alt="A desktop view of past events page"
-              className="w-full"
+              className="h-auto w-full"
               loading="lazy"
               unoptimized
             />
@@ -325,22 +326,22 @@ function Step6({
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
             <Image
-              width={320}
-              height={400}
+              width={0}
+              height={0}
               src="/images/webinar/past-event-participant-list-mobile.png"
               alt="A mobile view of past event participant list"
-              className="w-full max-w-[320px]"
+              className="h-auto w-full max-w-[320px]"
               loading="lazy"
               unoptimized
             />
           </div>
           <div className="hidden justify-center lg:flex">
             <Image
-              width={592}
-              height={370}
+              width={0}
+              height={0}
               src="/images/webinar/past-event-participant-list-desktop.png"
               alt="A desktop view of past event participant list"
-              className="w-full"
+              className="h-auto w-full"
               loading="lazy"
               unoptimized
             />
@@ -377,22 +378,22 @@ function Step7() {
         <div className="flex justify-center p-6">
           <div className="flex justify-center lg:hidden">
             <Image
-              width={320}
-              height={400}
+              width={0}
+              height={0}
               src="/images/webinar/create-event-form-mobile.png"
               alt="A mobile view of create event form"
-              className="w-full max-w-[320px]"
+              className="h-auto w-full max-w-[320px]"
               loading="lazy"
               unoptimized
             />
           </div>
           <div className="hidden justify-center lg:flex">
             <Image
-              width={592}
-              height={370}
+              width={0}
+              height={0}
               src="/images/webinar/create-event-form-desktop.png"
               alt="A desktop view of create event form"
-              className="w-full"
+              className="h-auto w-full"
               loading="lazy"
               unoptimized
             />
