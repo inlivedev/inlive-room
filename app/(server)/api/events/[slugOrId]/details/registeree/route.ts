@@ -11,6 +11,9 @@ export async function GET(
   const slugOrId = params.slugOrId;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') ?? '1');
+  const limit = parseInt(searchParams.get('limit') ?? '10');
 
   try {
     if (!requestToken) {
@@ -36,18 +39,12 @@ export async function GET(
       );
     }
 
-    const res = await eventRepo.getRegisteredParticipants(slugOrId, user.id);
-
-    if (res.data.length === 0) {
-      return NextResponse.json(
-        {
-          code: 404,
-          message: 'not found',
-          ok: false,
-        },
-        { status: 404 }
-      );
-    }
+    const res = await eventRepo.getRegisteredParticipants(
+      slugOrId,
+      user.id,
+      limit,
+      page
+    );
 
     return NextResponse.json(
       {
