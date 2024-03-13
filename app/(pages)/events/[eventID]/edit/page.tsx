@@ -41,7 +41,7 @@ export const generateMetadata = async ({
   if (event.createdBy !== user.id) {
     return {
       title: `You Are Not Authorized — inLive Event`,
-      description: `You don't have permission to access this page. Please use an account which has the access to this page.`,
+      description: `You don't have permission to access this page. Please use an account which has access to this page.`,
     };
   }
 
@@ -83,7 +83,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
         <HTTPError
           code={403}
           title="You are not authorized"
-          description="You don't have permission to access this page. Please use an account which has the access to this page."
+          description="You don't have permission to access this page. Please use an account which has access to this page."
         />
       </AppContainer>
     );
