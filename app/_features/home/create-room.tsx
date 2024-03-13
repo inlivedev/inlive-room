@@ -130,19 +130,6 @@ export default function CreateRoom() {
                   Personal or group meetings
                 </div>
               </DropdownItem>
-              <DropdownItem
-                key="event"
-                classNames={{
-                  wrapper: 'group',
-                }}
-              >
-                <div className="flex justify-between text-sm font-medium text-zinc-200">
-                  <span className="inline-block">Webinar</span>
-                </div>
-                <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
-                  Host sessions with large audiences
-                </div>
-              </DropdownItem>
             </DropdownMenu>
           </Dropdown>
         ) : (
