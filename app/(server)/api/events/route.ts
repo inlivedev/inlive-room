@@ -12,32 +12,40 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get('page') ?? '1');
   const limit = parseInt(searchParams.get('limit') ?? '10');
-  let isAfter = searchParams.get('is_after')?.trim();
-  let isBefore = searchParams.get('is_before')?.trim();
-  const isPublished = searchParams.get('is_published')?.trim();
+  let startIsAfter = searchParams.get('start_is_after')?.trim();
+  let startIsBefore = searchParams.get('start_is_before')?.trim();
+  let endIsAfter = searchParams.get('end_is_after')?.trim();
+  let endIsBefore = searchParams.get('end_is_before')?.trim();
+  const status = searchParams.get('status')?.trim();
 
-  let isAfterParsed: Date | undefined = undefined;
-  let isBeforeParsed: Date | undefined = undefined;
-  let isPublishedParsed: boolean | undefined = undefined;
-
+  let isStartAfterParsed: Date | undefined = undefined;
+  let isStartBeforeParsed: Date | undefined = undefined;
+  let isEndStartAfterParsed: Date | undefined = undefined;
+  let isEndBeforeParsed: Date | undefined = undefined;
+  let statusParsed: 'published' | 'draft' | 'cancelled' | undefined;
   try {
-    if (isAfter) {
-      isAfter = z.string().datetime().parse(isAfter);
-      isAfterParsed = new Date(isAfter);
+    if (startIsAfter) {
+      startIsAfter = z.string().datetime().parse(startIsAfter);
+      isStartAfterParsed = new Date(startIsAfter);
     }
 
-    if (isBefore) {
-      isBefore = z.string().datetime().parse(isBefore);
-      isBeforeParsed = new Date(isBefore);
+    if (startIsBefore) {
+      startIsBefore = z.string().datetime().parse(startIsBefore);
+      isStartBeforeParsed = new Date(startIsBefore);
     }
 
-    if (isPublished) {
-      isPublishedParsed = z
-        .string()
-        .toLowerCase()
-        .transform((x) => x === 'true')
-        .pipe(z.boolean())
-        .parse(isPublished);
+    if (endIsAfter) {
+      endIsAfter = z.string().datetime().parse(endIsAfter);
+      isEndStartAfterParsed = new Date(endIsAfter);
+    }
+
+    if (endIsBefore) {
+      endIsBefore = z.string().datetime().parse(endIsBefore);
+      isEndBeforeParsed = new Date(endIsBefore);
+    }
+
+    if (status) {
+      statusParsed = z.enum(['published', 'draft', 'cancelled']).parse(status);
     }
 
     const getUserResp = await getCurrentAuthenticated(
@@ -66,9 +74,11 @@ export async function GET(req: Request) {
       page,
       limit,
       user?.id,
-      isAfterParsed,
-      isBeforeParsed,
-      isPublishedParsed ? 'published' : undefined
+      statusParsed,
+      isStartAfterParsed,
+      isStartBeforeParsed,
+      isEndStartAfterParsed,
+      isEndBeforeParsed
     );
 
     if (data.length === 0) {

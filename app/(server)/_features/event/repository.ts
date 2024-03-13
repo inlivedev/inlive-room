@@ -41,9 +41,11 @@ export class EventRepo implements iEventRepo {
     page: number,
     limit: number,
     userId?: number,
-    isAfter?: Date,
-    isBefore?: Date,
-    status?: eventStatusEnum
+    status?: eventStatusEnum,
+    isStartAfter?: Date,
+    isStartBefore?: Date,
+    isEndAfter?: Date,
+    isEndBefore?: Date
   ) {
     page = page - 1;
 
@@ -72,23 +74,35 @@ export class EventRepo implements iEventRepo {
       whereQuery.push(sql`${events.createdBy} = ${userId}`);
     }
 
-    if (isAfter && isBefore) {
+    if (isStartAfter && isStartBefore) {
       whereQuery.push(
         sql`${
           events.startTime
-        } BETWEEN ${isAfter.toISOString()} AND ${isBefore.toISOString()}`
+        } BETWEEN ${isStartAfter.toISOString()} AND ${isStartBefore.toISOString()}`
       );
-    } else {
-      if (isAfter) {
-        whereQuery.push(sql`${events.startTime} >= ${isAfter.toISOString()}`);
-      }
-
-      if (isBefore) {
-        whereQuery.push(sql`${events.startTime} <= ${isBefore.toISOString()}`);
-      }
+    } else if (isStartAfter) {
+      whereQuery.push(
+        sql`${events.startTime} >= ${isStartAfter.toISOString()}`
+      );
+    } else if (isStartBefore) {
+      whereQuery.push(
+        sql`${events.startTime} <= ${isStartBefore.toISOString()}`
+      );
     }
 
-    if (status !== undefined) {
+    if (isEndAfter && isEndBefore) {
+      whereQuery.push(
+        sql`${
+          events.endTime
+        } BETWEEN ${isEndAfter.toISOString()} AND ${isEndBefore.toISOString()}`
+      );
+    } else if (isEndAfter) {
+      whereQuery.push(sql`${events.endTime} >= ${isEndAfter.toISOString()}`);
+    } else if (isEndBefore) {
+      whereQuery.push(sql`${events.endTime} <= ${isEndBefore.toISOString()}`);
+    }
+
+    if (status) {
       whereQuery.push(sql`${events.status} = ${status}`);
     }
 
