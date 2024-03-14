@@ -52,10 +52,10 @@ export class EventRepo implements iEventRepo {
     }
 
     const filter = sql`
+    ${events.createdBy} = ${userID} AND(
     (${events.status} = ${'published'} AND ${events.endTime} <= NOW()) 
     OR ${events.status} = ${'cancelled'} 
-    OR ${events.status} = ${'draft'}
-    AND ${events.createdBy} = ${userID}`;
+    OR ${events.status} = ${'draft'})`;
 
     const res = await db.query.events.findMany({
       where: filter,
