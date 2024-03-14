@@ -41,7 +41,7 @@ export declare namespace EventType {
 
   type ListEventsResponse = FetcherResponse & {
     message: string;
-    data: Event[];
+    data?: Event[];
     meta: PageMeta;
   };
 

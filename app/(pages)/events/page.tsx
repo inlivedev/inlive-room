@@ -66,7 +66,7 @@ export default async function Page({
     });
   }
 
-  const events = eventResponse.data;
+  const events = eventResponse.data || [];
   const pageMeta = eventResponse.meta;
 
   let validPagination = false;
