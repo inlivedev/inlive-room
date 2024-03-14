@@ -94,8 +94,8 @@ export async function GET(
         registeredUsers: countRegistirees || 0,
         joinedUsers: countUser || 0,
         joinedGuests: countGuest || 0,
-        percentageJoined: percentageJoined.toFixed(2) || 0,
-        percentageGuest: percentageGuest.toFixed(2) || 0,
+        percentageJoined: percentageJoined ? percentageJoined.toFixed(2) : 0,
+        percentageGuest: percentageGuest ? percentageGuest.toFixed(2) : 0,
       },
     });
   } catch (error) {
