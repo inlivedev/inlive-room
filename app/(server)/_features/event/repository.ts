@@ -37,6 +37,46 @@ export class EventRepo implements iEventRepo {
     else return undefined;
   }
 
+  /**
+   * Retrive published events that not yet started and drafted and cancelled events by the user.
+   */
+  async getMyEvents(userID: number, page: number, limit: number) {
+    page = page - 1;
+
+    if (page < 0) {
+      page = 0;
+    }
+
+    if (limit <= 0) {
+      limit = 10;
+    }
+
+    const filter = sql`
+    (${events.status} = ${'published'} AND ${events.endTime} <= NOW()) 
+    OR ${events.status} = ${'cancelled'} 
+    OR ${events.status} = ${'draft'}
+    AND ${events.createdBy} = ${userID}`;
+
+    const res = await db.query.events.findMany({
+      where: filter,
+      limit: limit,
+      offset: page * limit,
+    });
+
+    const resCount = await db
+      .select({ total: count() })
+      .from(events)
+      .where(filter);
+
+    const pageMeta: PageMeta = {
+      current_page: page + 1,
+      total_page: Math.ceil(resCount[0].total / limit) || 1,
+      per_page: limit,
+      total_record: resCount[0].total,
+    };
+
+    return { data: res, meta: pageMeta };
+  }
   async getEvents(
     page: number,
     limit: number,
