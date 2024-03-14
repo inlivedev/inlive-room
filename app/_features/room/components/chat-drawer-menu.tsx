@@ -2,7 +2,6 @@
 import linkifyHtml from 'linkify-html';
 import { useEffect, useCallback } from 'react';
 import {
-  Button,
   Modal,
   ModalContent,
   ModalHeader,
@@ -122,15 +121,13 @@ export default function ChatDrawerMenu() {
               placeholder="Type a message"
               {...bindMessageInputField}
             />
-            <Button
+            <button
               type="submit"
-              isIconOnly
-              variant="flat"
               aria-label="Submit chat message"
-              className="absolute right-3 top-1/2 h-6 w-6 min-w-0 -translate-y-1/2 rounded-full bg-transparent text-zinc-400"
+              className="absolute right-3 top-1/2 h-6 w-6 min-w-0 -translate-y-1/2 rounded-full bg-transparent text-zinc-400 hover:text-zinc-300"
             >
               <SendPlaneIcon width={24} height={24} />
-            </Button>
+            </button>
           </form>
         </ModalFooter>
       </ModalContent>
