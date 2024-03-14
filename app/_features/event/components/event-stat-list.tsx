@@ -38,7 +38,7 @@ export default function PastEvents({
   return (
     <div className="bg-zinc-900">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
-        <Header logoText="inLive Event" logoHref="/" />
+        <Header logoText="inLive Room" logoHref="/" />
         <main className="flex-1">
           <TabNavigation navLinks={navLinks} />
           <div className="mt-5 pb-5 md:pb-10">

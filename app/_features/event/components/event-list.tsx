@@ -54,7 +54,7 @@ export default function EventList({
       {!user ? <EventWelcomeModal /> : null}
       <div className="bg-zinc-900">
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
-          <Header logoText="inLive Event" logoHref="/events" />
+          <Header logoText="inLive Room" logoHref="/" />
 
           {!whitelistFeature.includes('event') === true &&
           user &&

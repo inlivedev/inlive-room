@@ -429,7 +429,7 @@ export default function EventForm({
       />
       <div className="bg-zinc-900">
         <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
-          <Header logoText="inLive Event" logoHref="/events" />
+          <Header logoText="inLive Room" logoHref="/" />
           <main className="flex-1">
             {!user ? (
               <div className="mx-auto mb-6 flex max-w-3xl items-center justify-between gap-4 rounded-md bg-blue-900/25 px-4 py-3 text-blue-300 sm:px-6">
