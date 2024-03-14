@@ -11,6 +11,7 @@ import {
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
+import { User } from '../user/schema';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
@@ -294,5 +295,51 @@ export class EventRepo implements iEventRepo {
       );
 
     return res[0];
+  }
+
+  async getRegisteredParticipants(
+    slug: string,
+    createdBy: User['id'],
+    limit = 10,
+    page = 1
+  ) {
+    const res = await db.transaction(async (tx) => {
+      const registeree = await tx
+        .select({
+          first_name: participants.firstName,
+          last_name: participants.lastName,
+          email: participants.email,
+          id: participants.id,
+          created_at: participants.createdAt,
+        })
+        .from(eventHasParticipant)
+        .innerJoin(events, eq(eventHasParticipant.eventId, events.id))
+        .innerJoin(
+          participants,
+          eq(eventHasParticipant.participantId, participants.id)
+        )
+        .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
+
+      const total = await tx
+        .select({ total: count() })
+        .from(eventHasParticipant)
+        .innerJoin(events, eq(eventHasParticipant.eventId, events.id))
+        .innerJoin(
+          participants,
+          eq(eventHasParticipant.participantId, participants.id)
+        )
+        .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
+      total[0].total = total[0].total || 0;
+
+      return { total: total[0].total, registeree };
+    });
+
+    const meta: PageMeta = {
+      current_page: page,
+      total_page: Math.ceil(res.total / limit) || 1,
+      per_page: limit,
+      total_record: res.total,
+    };
+    return { data: res.registeree, meta };
   }
 }

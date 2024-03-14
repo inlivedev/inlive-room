@@ -43,12 +43,15 @@ export default async function Page({
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  if (!user) {
+  if (!user || !user.id) {
     return (
-      <HTTPError
-        title="Login Required"
-        description="You need to be logged in to access this page"
-      />
+      <AppContainer user={user}>
+        <HTTPError
+          code={401}
+          title="Login Required"
+          description="You need to be logged in to access this page"
+        />
+      </AppContainer>
     );
   }
 

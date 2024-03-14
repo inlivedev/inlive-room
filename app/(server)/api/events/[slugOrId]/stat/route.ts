@@ -84,9 +84,14 @@ export async function GET(
     ).value;
     const countUser = (await countJoinedUser(existingEvent.roomId)).value;
     const countGuest = (await countJoinedGuest(existingEvent.roomId)).value;
+    const totalJoined = countGuest + countUser;
+
     const percentageJoined =
-      ((countGuest + countUser) / countRegistirees) * 100;
-    const percentageGuest = (countGuest / (countGuest + countUser)) * 100;
+      totalJoined > 0 && countRegistirees > 0
+        ? (totalJoined / countRegistirees) * 100
+        : 0;
+    const percentageGuest =
+      countGuest > 0 && totalJoined > 0 ? (countGuest / totalJoined) * 100 : 0;
 
     return NextResponse.json({
       code: 200,
@@ -94,8 +99,9 @@ export async function GET(
         registeredUsers: countRegistirees || 0,
         joinedUsers: countUser || 0,
         joinedGuests: countGuest || 0,
-        percentageJoined: percentageJoined ? percentageJoined.toFixed(2) : 0,
-        percentageGuest: percentageGuest ? percentageGuest.toFixed(2) : 0,
+        percentageJoined:
+          percentageJoined > 0 ? percentageJoined.toFixed(2) : 0,
+        percentageGuest: percentageGuest > 0 ? percentageGuest.toFixed(2) : 0,
       },
     });
   } catch (error) {

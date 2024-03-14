@@ -117,7 +117,14 @@ export default function Profile() {
               </DropdownItem>
             </DropdownSection>
             <DropdownItem key="my-events" textValue="my-events">
-              My Events
+              <div className="flex justify-between text-sm font-medium text-zinc-200">
+                <span className="inline-block">My Events</span>
+                <div className="inline-flex items-center">
+                  <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
+                    Beta
+                  </span>
+                </div>
+              </div>
             </DropdownItem>
             <DropdownItem key="signout" textValue="signout">
               Sign Out
