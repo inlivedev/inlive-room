@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   let isStartBeforeParsed: Date | undefined = undefined;
   let isEndStartAfterParsed: Date | undefined = undefined;
   let isEndBeforeParsed: Date | undefined = undefined;
-  let statusParsed: 'published' | 'draft' | 'cancelled' | undefined;
+  let statusParsed: Array<string> | undefined;
   try {
     if (startIsAfter) {
       startIsAfter = z.string().datetime().parse(startIsAfter);
@@ -45,7 +45,24 @@ export async function GET(req: Request) {
     }
 
     if (status) {
-      statusParsed = z.enum(['published', 'draft', 'cancelled']).parse(status);
+      statusParsed = z
+        .string()
+        .array()
+        .refine(
+          (val: Array<string>) => {
+            const Valid = ['draft', 'published', 'cancelled'];
+
+            for (let i = 0; i < val.length; i++) {
+              if (!Valid.includes(val[i])) {
+                console.log(val[i]);
+                return false;
+              }
+            }
+            return true;
+          },
+          { message: 'status can only be draft, published, and cancelled' }
+        )
+        .parse(JSON.parse(status));
     }
 
     const getUserResp = await getCurrentAuthenticated(

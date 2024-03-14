@@ -41,7 +41,7 @@ export class EventRepo implements iEventRepo {
     page: number,
     limit: number,
     userId?: number,
-    status?: eventStatusEnum,
+    status?: string[],
     isStartAfter?: Date,
     isStartBefore?: Date,
     isEndAfter?: Date,
@@ -102,16 +102,26 @@ export class EventRepo implements iEventRepo {
       whereQuery.push(sql`${events.endTime} <= ${isEndBefore.toISOString()}`);
     }
 
-    if (status) {
-      whereQuery.push(sql`${events.status} = ${status}`);
+    const statusQuery: SQL[] = [];
+    if (status && status.length > 0) {
+      status.forEach((s) => {
+        statusQuery.push(sql`${events.status} = ${s}`);
+      });
     }
 
+    const statusFilter = statusQuery.length
+      ? sql.join(statusQuery, sql` OR `)
+      : null;
     const whereFilter = sql.join(whereQuery, sql` AND `);
+
+    const finalFilter = statusFilter
+      ? sql`${whereFilter} AND (${statusFilter})`
+      : whereFilter;
 
     const { data, total } = await db.transaction(async (tx) => {
       const data = await tx.query.events.findMany({
         ...filter,
-        where: whereFilter,
+        where: finalFilter,
       });
 
       const totalRows = await db
@@ -119,7 +129,7 @@ export class EventRepo implements iEventRepo {
           total: count(),
         })
         .from(events)
-        .where(whereFilter);
+        .where(finalFilter);
 
       return { data, total: totalRows[0].total };
     });
