@@ -37,8 +37,6 @@ export default function ChatDrawerMenu() {
   const onSubmitMessage = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      if (!datachannel) return;
-
       if (messageInput.trim().length !== 0) {
         const message: ChatType.ChatMessage = {
           sender: {
@@ -50,7 +48,10 @@ export default function ChatDrawerMenu() {
 
         addMessage && addMessage(message);
         setMessageInput('');
-        datachannel.send(JSON.stringify(message));
+
+        if (datachannel) {
+          datachannel.send(JSON.stringify(message));
+        }
       }
     },
     [
