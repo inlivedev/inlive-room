@@ -100,11 +100,11 @@ export function EventStatCard({ event }: { event: selectEvent }) {
                 />
                 <StatItem
                   name="Percentage joined"
-                  value={stat.data.percentageJoined}
+                  value={`${stat.data.percentageJoined}%`}
                 />
                 <StatItem
                   name="Percentage guest"
-                  value={stat.data.percentageGuest}
+                  value={`${stat.data.percentageGuest}%`}
                 />
               </StatList>
             </>
