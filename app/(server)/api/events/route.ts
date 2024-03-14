@@ -98,22 +98,10 @@ export async function GET(req: Request) {
       isEndBeforeParsed
     );
 
-    if (data.length === 0) {
-      const response: HTTPResponse = {
-        code: 404,
-        data: [],
-        message: 'No events found',
-        meta: pageMeta,
-        ok: true,
-      };
-
-      return NextResponse.json(response);
-    }
-
     const response: HTTPResponse = {
       code: 200,
       data,
-      message: 'Events retrieved successfully',
+      message: 'List of events retrieved successfully',
       meta: pageMeta,
       ok: true,
     };

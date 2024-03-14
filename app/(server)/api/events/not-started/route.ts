@@ -36,28 +36,11 @@ export async function GET(req: Request) {
 
     const { data, meta } = await eventRepo.getMyEvents(user.id, page, limit);
 
-    if (!data) {
-      return NextResponse.json(
-        {
-          code: 404,
-          ok: false,
-          message: 'No events found',
-          meta: {
-            current_page: 1,
-            total_page: 1,
-            per_page: 10,
-            total_record: 0,
-          },
-        },
-        { status: 404 }
-      );
-    }
-
     return NextResponse.json(
       {
         code: 200,
         data,
-        message: 'Events retrieved successfully',
+        message: 'List of events retrieved successfully',
         meta,
         ok: true,
       },
