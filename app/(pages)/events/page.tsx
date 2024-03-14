@@ -47,11 +47,14 @@ export default async function Page({
   const token = cookies().get('token')?.value ?? '';
 
   const eventResponse: EventType.ListEventsResponse =
-    await InternalApiFetcher.get(`/api/events?page=${page}&limit=${limit}`, {
-      headers: {
-        Cookie: `token=${token}`,
-      },
-    });
+    await InternalApiFetcher.get(
+      `/api/events/not-started?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Cookie: `token=${token}`,
+        },
+      }
+    );
 
   let createEventLimit: EventType.CreateLimit | undefined = undefined;
 
@@ -63,7 +66,7 @@ export default async function Page({
     });
   }
 
-  const events = eventResponse.data || [];
+  const events = eventResponse.data;
   const pageMeta = eventResponse.meta;
 
   let validPagination = false;

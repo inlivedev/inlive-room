@@ -38,13 +38,55 @@ export class EventRepo implements iEventRepo {
     else return undefined;
   }
 
+  /**
+   * Retrive published events that not yet started and drafted and cancelled events by the user.
+   */
+  async getMyEvents(userID: number, page: number, limit: number) {
+    page = page - 1;
+
+    if (page < 0) {
+      page = 0;
+    }
+
+    if (limit <= 0) {
+      limit = 10;
+    }
+
+    const filter = sql`
+    ${events.createdBy} = ${userID} AND(
+    (${events.status} = ${'published'} AND ${events.endTime} >= NOW()) 
+    OR ${events.status} = ${'cancelled'} 
+    OR ${events.status} = ${'draft'})`;
+
+    const res = await db.query.events.findMany({
+      where: filter,
+      limit: limit,
+      offset: page * limit,
+    });
+
+    const resCount = await db
+      .select({ total: count() })
+      .from(events)
+      .where(filter);
+
+    const pageMeta: PageMeta = {
+      current_page: page + 1,
+      total_page: Math.ceil(resCount[0].total / limit) || 1,
+      per_page: limit,
+      total_record: resCount[0].total,
+    };
+
+    return { data: res, meta: pageMeta };
+  }
   async getEvents(
     page: number,
     limit: number,
     userId?: number,
-    isAfter?: Date,
-    isBefore?: Date,
-    status?: eventStatusEnum
+    status?: string[],
+    isStartAfter?: Date,
+    isStartBefore?: Date,
+    isEndAfter?: Date,
+    isEndBefore?: Date
   ) {
     page = page - 1;
 
@@ -73,32 +115,54 @@ export class EventRepo implements iEventRepo {
       whereQuery.push(sql`${events.createdBy} = ${userId}`);
     }
 
-    if (isAfter && isBefore) {
+    if (isStartAfter && isStartBefore) {
       whereQuery.push(
         sql`${
           events.startTime
-        } BETWEEN ${isAfter.toISOString()} AND ${isBefore.toISOString()}`
+        } BETWEEN ${isStartAfter.toISOString()} AND ${isStartBefore.toISOString()}`
       );
-    } else {
-      if (isAfter) {
-        whereQuery.push(sql`${events.startTime} >= ${isAfter.toISOString()}`);
-      }
-
-      if (isBefore) {
-        whereQuery.push(sql`${events.startTime} <= ${isBefore.toISOString()}`);
-      }
+    } else if (isStartAfter) {
+      whereQuery.push(
+        sql`${events.startTime} >= ${isStartAfter.toISOString()}`
+      );
+    } else if (isStartBefore) {
+      whereQuery.push(
+        sql`${events.startTime} <= ${isStartBefore.toISOString()}`
+      );
     }
 
-    if (status !== undefined) {
-      whereQuery.push(sql`${events.status} = ${status}`);
+    if (isEndAfter && isEndBefore) {
+      whereQuery.push(
+        sql`${
+          events.endTime
+        } BETWEEN ${isEndAfter.toISOString()} AND ${isEndBefore.toISOString()}`
+      );
+    } else if (isEndAfter) {
+      whereQuery.push(sql`${events.endTime} >= ${isEndAfter.toISOString()}`);
+    } else if (isEndBefore) {
+      whereQuery.push(sql`${events.endTime} <= ${isEndBefore.toISOString()}`);
     }
 
+    const statusQuery: SQL[] = [];
+    if (status && status.length > 0) {
+      status.forEach((s) => {
+        statusQuery.push(sql`${events.status} = ${s}`);
+      });
+    }
+
+    const statusFilter = statusQuery.length
+      ? sql.join(statusQuery, sql` OR `)
+      : null;
     const whereFilter = sql.join(whereQuery, sql` AND `);
+
+    const finalFilter = statusFilter
+      ? sql`${whereFilter} AND (${statusFilter})`
+      : whereFilter;
 
     const { data, total } = await db.transaction(async (tx) => {
       const data = await tx.query.events.findMany({
         ...filter,
-        where: whereFilter,
+        where: finalFilter,
       });
 
       const totalRows = await db
@@ -106,7 +170,7 @@ export class EventRepo implements iEventRepo {
           total: count(),
         })
         .from(events)
-        .where(whereFilter);
+        .where(finalFilter);
 
       return { data, total: totalRows[0].total };
     });
