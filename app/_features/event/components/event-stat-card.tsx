@@ -4,7 +4,6 @@ import { EventType } from '@/_shared/types/event';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import { useEffect, useState } from 'react';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { Link } from '@nextui-org/react';
 
 export function EventStatCard({ event }: { event: selectEvent }) {
   const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
@@ -40,10 +39,7 @@ export function EventStatCard({ event }: { event: selectEvent }) {
 
   return (
     <li>
-      <Link
-        href={`/events/${event.slug}/stat`}
-        className="flex flex-col gap-4 rounded-3xl border border-zinc-800 p-5 px-4 hover:bg-zinc-800/50 active:bg-zinc-800 sm:p-5"
-      >
+      <div className="flex flex-col gap-4 rounded-3xl border border-zinc-800 p-5 px-4 sm:p-5">
         {/* Header */}
         <div className="flex w-full flex-col gap-5 sm:flex-row sm:justify-between">
           <div className="max-w-none sm:order-2 sm:max-w-60 md:max-w-40">
@@ -100,11 +96,11 @@ export function EventStatCard({ event }: { event: selectEvent }) {
                 />
                 <StatItem
                   name="Percentage joined"
-                  value={stat.data.percentageJoined}
+                  value={`${stat.data.percentageJoined}%`}
                 />
                 <StatItem
                   name="Percentage guest"
-                  value={stat.data.percentageGuest}
+                  value={`${stat.data.percentageGuest}%`}
                 />
               </StatList>
             </>
@@ -116,7 +112,7 @@ export function EventStatCard({ event }: { event: selectEvent }) {
             </div>
           )}
         </div>
-      </Link>
+      </div>
     </li>
   );
 }
