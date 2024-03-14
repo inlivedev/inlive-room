@@ -98,8 +98,12 @@ export default function ChatDrawerMenu() {
                       className="mt-0.5 break-words text-sm text-zinc-100"
                       dangerouslySetInnerHTML={{
                         __html: linkifyHtml(sanitizeHTML(data.message), {
-                          attributes: { target: '_blank' },
-                          className: 'text-blue-600	',
+                          attributes: {
+                            target: '_blank',
+                            rel: 'noopener noreferrer',
+                          },
+                          className:
+                            'text-blue-300 hover:text-blue-200 active:text-blue-200 underline underline-offset-2',
                         }),
                       }}
                     ></p>
