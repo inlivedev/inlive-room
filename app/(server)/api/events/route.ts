@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   let startIsBefore = searchParams.get('start_is_before')?.trim();
   let endIsAfter = searchParams.get('end_is_after')?.trim();
   let endIsBefore = searchParams.get('end_is_before')?.trim();
-  const status = searchParams.get('status')?.trim();
+  const status = searchParams.getAll('status[]');
 
   let isStartAfterParsed: Date | undefined = undefined;
   let isStartBeforeParsed: Date | undefined = undefined;
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
           },
           { message: 'status can only be draft, published, and cancelled' }
         )
-        .parse(JSON.parse(status));
+        .parse(status);
     }
 
     const getUserResp = await getCurrentAuthenticated(
