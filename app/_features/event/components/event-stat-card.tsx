@@ -83,28 +83,40 @@ export function EventStatCard({ event }: { event: selectEvent }) {
                 {"Event is still ongoing, come back when it's finished."}
               </span>
             </div>
-          ) : stat ? (
+          ) : stat?.data ? (
             <>
               <StatList>
                 <StatItem
                   name="Registered users"
-                  value={stat.data.registeredUsers}
+                  value={
+                    stat.data.registeredUsers ? stat.data.registeredUsers : 'NA'
+                  }
                 />
                 <StatItem
                   name="Joined users"
-                  value={stat.data.joinedGuests + stat.data.joinedGuests}
+                  value={
+                    stat.data.joinedGuests && stat.data.joinedUsers
+                      ? stat.data.joinedGuests + stat.data.joinedUsers
+                      : 'NA'
+                  }
                 />
                 <StatItem
                   name="Joined as guest"
-                  value={stat.data.joinedGuests}
+                  value={stat.data.joinedGuests ? stat.data.joinedGuests : 'NA'}
                 />
                 <StatItem
                   name="Percentage joined"
-                  value={stat.data.percentageJoined}
+                  value={
+                    stat.data.percentageJoined
+                      ? stat.data.percentageJoined
+                      : 'NA'
+                  }
                 />
                 <StatItem
                   name="Percentage guest"
-                  value={stat.data.percentageGuest}
+                  value={
+                    stat.data.percentageGuest ? stat.data.percentageGuest : 'NA'
+                  }
                 />
               </StatList>
             </>
