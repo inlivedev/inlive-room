@@ -20,13 +20,13 @@ export const generateMetadata = (): Metadata => {
 
   if (!user || !user.id) {
     return {
-      title: `Login Required — inLive Event`,
+      title: `Login Required — inLive Room`,
       description: 'You need to be logged in to access this page',
     };
   }
 
   return {
-    title: `Past Events — inLive Event`,
+    title: `Past Events — inLive Room`,
   };
 };
 

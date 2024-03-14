@@ -29,7 +29,7 @@ export const generateMetadata = async ({
 
   if (!user || !user.id) {
     return {
-      title: `Login Required — inLive Event`,
+      title: `Login Required — inLive Room`,
       description: 'You need to be logged in to access this page',
     };
   }
@@ -40,13 +40,13 @@ export const generateMetadata = async ({
 
   if (event.createdBy !== user.id) {
     return {
-      title: `You Are Not Authorized — inLive Event`,
+      title: `You Are Not Authorized — inLive Room`,
       description: `You don't have permission to access this page. Please use an account which has access to this page.`,
     };
   }
 
   return {
-    title: `Edit ${event.name} — inLive Event`,
+    title: `Edit ${event.name} — inLive Room`,
   };
 };
 
