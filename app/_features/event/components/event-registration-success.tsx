@@ -30,8 +30,8 @@ export default function EventRegistrationSuccess({
   });
 
   return (
-    <div className="min-viewport-height bg-zinc-900 text-zinc-200">
-      <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
+    <div className="bg-zinc-900 text-zinc-200">
+      <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="mb-10 flex flex-1 flex-col gap-8 lg:gap-28">
           <div className="flex flex-col lg:order-2 lg:flex-row lg:gap-10">
