@@ -39,12 +39,19 @@ export default function Header({
           </Link>
         </div>
         <div className="flex items-center">
-          <Link
-            href="/events"
-            className="text-sm font-semibold text-zinc-100 no-underline underline-offset-2 active:underline"
-          >
-            Events
-          </Link>
+          <div className="relative">
+            <Link
+              href="/events"
+              className="block text-sm font-semibold text-zinc-100 no-underline underline-offset-2 active:underline"
+            >
+              Events
+            </Link>
+            <div className="absolute left-0 top-[-17px] inline-flex items-center">
+              <span className="leading-2 rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1 text-[9px] font-medium text-emerald-300">
+                Beta
+              </span>
+            </div>
+          </div>
           <div className="mx-4 sm:mx-5">
             <hr className="h-6 w-px border-none bg-zinc-600" />
           </div>
