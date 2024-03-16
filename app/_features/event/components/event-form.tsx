@@ -428,7 +428,7 @@ export default function EventForm({
         step={15}
       />
       <div className="bg-zinc-900">
-        <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
+        <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
           <Header logoText="inLive Room" logoHref="/" />
           <main className="flex-1">
             {!user ? (

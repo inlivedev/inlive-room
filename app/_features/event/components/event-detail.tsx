@@ -82,8 +82,8 @@ export default function EventDetail({
   return (
     <>
       <EventRegistrationModal title={title} slug={slug} startTime={startTime} />
-      <div className="min-viewport-height bg-zinc-900 text-zinc-200">
-        <div className="min-viewport-height mx-auto flex w-full max-w-6xl flex-1 flex-col px-4">
+      <div className="bg-zinc-900 text-zinc-200">
+        <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
           <Header logoText="inLive Room" logoHref="/" />
           <main className="mb-28 flex flex-1 flex-col">
             {user?.id === createdBy ? (
