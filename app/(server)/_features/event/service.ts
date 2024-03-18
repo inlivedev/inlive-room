@@ -11,7 +11,11 @@ export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
   getEventBySlug(slug: string): Promise<selectEvent | undefined>;
   getEventById(id: number): Promise<selectEvent | undefined>;
-  getEventParticipantsByEventId(eventId: number): Promise<selectParticipant[]>;
+  getEventParticipantsByEventId(eventId: number): Promise<
+    {
+      participant: selectParticipant;
+    }[]
+  >;
   getParticipantById(id: number): Promise<selectParticipant | undefined>;
   getEventHostByEventId(eventId: number): Promise<selectUser | undefined>;
 }
@@ -81,7 +85,12 @@ export class EventService implements iEventService {
     }
 
     for (const participant of participants) {
-      SendEventRescheduledEmail(participant, oldEvent, newEvent, host);
+      SendEventRescheduledEmail(
+        participant.participant,
+        oldEvent,
+        newEvent,
+        host
+      );
     }
   }
 
@@ -98,7 +107,7 @@ export class EventService implements iEventService {
     }
 
     for (const participant of participants) {
-      SendEventCancelledEmail(participant, event, host);
+      SendEventCancelledEmail(participant.participant, event, host);
     }
   }
 

@@ -7,8 +7,6 @@ import {
   insertParticipant,
   participant as participants,
   selectEvent,
-  eventStatusEnum,
-  participant,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -365,12 +363,16 @@ export class EventRepo implements iEventRepo {
   }
 
   async getEventParticipantsByEventId(eventId: number) {
-    return await await db.query.participant.findMany({
+    return await db.query.eventHasParticipant.findMany({
+      columns: {
+        participantId: false,
+        eventId: false,
+      },
       with: {
-        eventHasParticipant: true,
+        participant: true,
       },
       where: (eventHasParticipant, { eq }) =>
-        eq(eventHasParticipant.id, eventId),
+        eq(eventHasParticipant.eventId, eventId),
     });
   }
 
