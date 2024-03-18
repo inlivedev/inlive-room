@@ -54,7 +54,6 @@ export async function GET(req: Request) {
 
             for (let i = 0; i < val.length; i++) {
               if (!Valid.includes(val[i])) {
-                console.log(val[i]);
                 return false;
               }
             }

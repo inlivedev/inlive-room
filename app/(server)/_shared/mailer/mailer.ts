@@ -26,7 +26,6 @@ export async function SendEventInvitationEmail(
   event: selectEvent,
   host: selectUser
 ) {
-  console.log('MAILER_API_KEY', MAILER_API_KEY);
   const mg = new Mailgun(formData);
   const mailer = mg.client({
     key: MAILER_API_KEY,
@@ -103,7 +102,6 @@ export async function SendEventCancelledEmail(
   event: selectEvent,
   host: selectUser
 ) {
-  console.log('MAILER_API_KEY', MAILER_API_KEY);
   const mg = new Mailgun(formData);
   const mailer = mg.client({
     key: MAILER_API_KEY,
@@ -181,7 +179,6 @@ export async function SendEventRescheduledEmail(
   oldEvent: selectEvent,
   host: selectUser
 ) {
-  console.log('MAILER_API_KEY', MAILER_API_KEY);
   const mg = new Mailgun(formData);
   const mailer = mg.client({
     key: MAILER_API_KEY,

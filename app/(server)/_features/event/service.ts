@@ -80,7 +80,7 @@ export class EventService implements iEventService {
       return;
     }
 
-    if (!event || participants.length == 0) {
+    if (participants.length == 0) {
       return;
     }
 
