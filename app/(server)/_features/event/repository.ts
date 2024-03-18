@@ -8,6 +8,7 @@ import {
   participant as participants,
   selectEvent,
   eventStatusEnum,
+  participant,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -343,6 +344,16 @@ export class EventRepo implements iEventRepo {
       total_record: res.total,
     };
     return { data: res.registeree, meta };
+  }
+
+  async getEventParticipantsByEventId(eventId: number) {
+    return await await db.query.participant.findMany({
+      with: {
+        eventHasParticipant: true,
+      },
+      where: (eventHasParticipant, { eq }) =>
+        eq(eventHasParticipant.id, eventId),
+    });
   }
 
   async getParticipantById(id: number) {

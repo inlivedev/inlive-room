@@ -11,6 +11,9 @@ import { selectUser } from '@/(server)/_features/user/schema';
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
 const ROOM_INV_EMAIL_TEMPLATE = process.env.ROOM_INV_EMAIL_TEMPLATE || '';
+const ROOM_CANCEL_EMAIL_TEMPLATE = process.env.ROOM_CANCEL_EMAIL_TEMPLATE || '';
+const ROOM_RESCHED_EMAIL_TEMPLATE =
+  process.env.ROOM_RESCHED_EMAIL_TEMPLATE || '';
 const ENABLE_MAILER = process.env.ENABLE_MAILER || false;
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
@@ -85,6 +88,160 @@ export async function SendEventInvitationEmail(
 
   Sentry.captureEvent({
     message: 'Event Invitation Email Request Success',
+    level: 'info',
+    extra: {
+      name: participant.firstName,
+      email: participant.email,
+      event,
+      res,
+    },
+  });
+}
+
+export async function SendEventCancelledEmail(
+  participant: selectParticipant,
+  event: selectEvent,
+  host: selectUser
+) {
+  console.log('MAILER_API_KEY', MAILER_API_KEY);
+  const mg = new Mailgun(formData);
+  const mailer = mg.client({
+    key: MAILER_API_KEY,
+    username: 'api',
+  });
+
+  const eventDate = Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'full',
+    timeZone: 'Asia/Jakarta',
+  }).format(event.startTime);
+
+  const eventTime = Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'long',
+    timeZone: 'Asia/Jakarta',
+  }).format(event.startTime);
+
+  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
+  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+
+  const res = await mailer.messages.create(MAILER_DOMAIN, {
+    template: ROOM_INV_EMAIL_TEMPLATE,
+    from: 'inLive Room Events <notification@inlive.app>',
+    to: participant.email,
+    subject: `Your event ${event.name} has been cancelled`,
+    'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
+    'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
+    'v:event-name': event.name,
+    'v:event-description': event.description,
+    'v:event-date': eventDate,
+    'v:event-time': eventTime,
+    'v:event-host': host.name,
+    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar/${participant.id}`,
+    'v:user-firstname': participant.firstName,
+    'v:user-lastname': participant.lastName,
+    inline: {
+      data: iCalendarBuffer,
+      filename: 'invite.ics',
+      contentType:
+        'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+      contentDisposition: 'inline; filename=invite.ics',
+      contentTransferEncoding: 'base64',
+    },
+  });
+
+  if (res.status >= 400) {
+    Sentry.captureEvent({
+      message: 'Event Cancelled Email Request Fail',
+      level: 'info',
+      extra: {
+        name: participant.firstName,
+        email: participant.email,
+        event,
+        res,
+      },
+    });
+
+    return;
+  }
+
+  Sentry.captureEvent({
+    message: 'Event Cancelled Email Request Success',
+    level: 'info',
+    extra: {
+      name: participant.firstName,
+      email: participant.email,
+      event,
+      res,
+    },
+  });
+}
+
+export async function SendEventRescheduledEmail(
+  participant: selectParticipant,
+  event: selectEvent,
+  host: selectUser
+) {
+  console.log('MAILER_API_KEY', MAILER_API_KEY);
+  const mg = new Mailgun(formData);
+  const mailer = mg.client({
+    key: MAILER_API_KEY,
+    username: 'api',
+  });
+
+  const eventDate = Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'full',
+    timeZone: 'Asia/Jakarta',
+  }).format(event.startTime);
+
+  const eventTime = Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'long',
+    timeZone: 'Asia/Jakarta',
+  }).format(event.startTime);
+
+  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
+  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+
+  const res = await mailer.messages.create(MAILER_DOMAIN, {
+    template: ROOM_INV_EMAIL_TEMPLATE,
+    from: 'inLive Room Events <notification@inlive.app>',
+    to: participant.email,
+    subject: `Your event ${event.name} has been rescheduled`,
+    'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
+    'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
+    'v:event-name': event.name,
+    'v:event-description': event.description,
+    'v:event-date': eventDate,
+    'v:event-time': eventTime,
+    'v:event-host': host.name,
+    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar/${participant.id}`,
+    'v:user-firstname': participant.firstName,
+    'v:user-lastname': participant.lastName,
+    inline: {
+      data: iCalendarBuffer,
+      filename: 'invite.ics',
+      contentType:
+        'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+      contentDisposition: 'inline; filename=invite.ics',
+      contentTransferEncoding: 'base64',
+    },
+  });
+
+  if (res.status >= 400) {
+    Sentry.captureEvent({
+      message: 'Event Rescheduled Email Request Fail',
+      level: 'info',
+      extra: {
+        name: participant.firstName,
+        email: participant.email,
+        event,
+        res,
+      },
+    });
+
+    return;
+  }
+
+  Sentry.captureEvent({
+    message: 'Event Rescheduled Email Request Success',
     level: 'info',
     extra: {
       name: participant.firstName,

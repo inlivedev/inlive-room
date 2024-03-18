@@ -2,11 +2,16 @@ import { iEventService } from '@/(server)/api/_index';
 import { insertEvent, selectEvent, selectParticipant } from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { selectUser } from '../user/schema';
+import {
+  SendEventCancelledEmail,
+  SendEventRescheduledEmail,
+} from '@/(server)/_shared/mailer/mailer';
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
   getEventBySlug(slug: string): Promise<selectEvent | undefined>;
   getEventById(id: number): Promise<selectEvent | undefined>;
+  getEventParticipantsByEventId(eventId: number): Promise<selectParticipant[]>;
   getParticipantById(id: number): Promise<selectParticipant | undefined>;
   getEventHostByEventId(eventId: number): Promise<selectUser | undefined>;
 }
@@ -53,5 +58,55 @@ export class EventService implements iEventService {
 
   async getEventHostByEventId(eventId: number) {
     return await this.repo.getEventHostByEventId(eventId);
+  }
+
+  async getAllParticipantsByEventId(eventId: number) {
+    return await this.repo.getEventParticipantsByEventId(eventId);
+  }
+
+  async sendEmailsRescheduledEvent(eventId: number) {
+    const participants = await this.repo.getEventParticipantsByEventId(eventId);
+    const event = await this.repo.getEventById(eventId);
+    const host = await this.repo.getEventHostByEventId(eventId);
+    if (!host) {
+      return;
+    }
+
+    if (!event || participants.length == 0) {
+      return;
+    }
+
+    for (const participant of participants) {
+      SendEventRescheduledEmail(participant, event, host);
+    }
+  }
+
+  async sendEmailsCancelledEvent(eventId: number) {
+    const participants = await this.repo.getEventParticipantsByEventId(eventId);
+    const event = await this.repo.getEventById(eventId);
+    const host = await this.repo.getEventHostByEventId(eventId);
+    if (!host) {
+      return;
+    }
+
+    if (!event || participants.length == 0) {
+      return;
+    }
+
+    for (const participant of participants) {
+      SendEventCancelledEmail(participant, event, host);
+    }
+  }
+
+  isEventRescheduled(event: selectEvent, newEvent: insertEvent) {
+    if (
+      event.status === 'published' &&
+      (event.startTime != newEvent.startTime ||
+        event.endTime != newEvent.endTime)
+    ) {
+      return true;
+    }
+
+    return false;
   }
 }

@@ -1,5 +1,3 @@
-
-
 // MAILER_API_KEY=xxx MAILER_DOMAIN=mail.inlive.app ROOM_INV_EMAIL_TEMPLATE=inlive-room-event-invitation ENABLE_MAILER=true NEXT_PUBLIC_APP_ORIGIN=https://event.inlive.app npx tsx cli/send-ical.js participant@example.com published|rescheduled|cancelled
 import {SendEventInvitationEmail} from '../app/(server)/_shared/mailer/mailer';
 // af778b4b-f8fd5564

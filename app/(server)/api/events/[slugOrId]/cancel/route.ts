@@ -3,6 +3,7 @@ import { eventService, eventRepo, roomRepo } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
+import { isMailerEnabled } from '@/(server)/_shared/mailer/mailer';
 
 export async function PUT(
   request: Request,
@@ -73,6 +74,10 @@ export async function PUT(
       oldEvent.id,
       oldEvent
     );
+
+    if (isMailerEnabled()) {
+      eventService.sendEmailsCancelledEvent(oldEvent.id);
+    }
 
     return NextResponse.json(
       {
