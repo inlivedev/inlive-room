@@ -1,9 +1,7 @@
-// MAILER_API_KEY=xxx MAILER_DOMAIN=mail.inlive.app ROOM_INV_EMAIL_TEMPLATE=inlive-room-event-invitation ENABLE_MAILER=true NEXT_PUBLIC_APP_ORIGIN=https://event.inlive.app npx tsx cli/send-ical.js participant@example.com published|rescheduled|cancelled
-import {SendEventInvitationEmail} from '../app/(server)/_shared/mailer/mailer';
-// af778b4b-f8fd5564
-async function send(apiKey, email,status) {
+// MAILER_API_KEY=xxxx MAILER_DOMAIN=mail.inlive.app ROOM_INV_EMAIL_TEMPLATE=inlive-room-event-invitation ROOM_RESCHED_EMAIL_TEMPLATE=inlive-room-event-rescheduled ROOM_CANCEL_EMAIL_TEMPLATE=inlive-room-event-cancelled ENABLE_MAILER=true NEXT_PUBLIC_APP_ORIGIN=https://event.inlive.app npx tsx cli/send-ical.js tyohan@inlive.app published // published|rescheduled|cancelled
+import {SendEventCancelledEmail, SendEventInvitationEmail, SendEventRescheduledEmail} from '../app/(server)/_shared/mailer/mailer';
 
-
+async function send(email,status) {
 	// selectParticipant dummy
 	const participant = {
 		id: 1,
@@ -39,12 +37,19 @@ async function send(apiKey, email,status) {
 
 	host = {
 		id: 1,
-		firstName: "John",
-		lastName: "Doe",
+		name: "John Doe",
 		email: "host@event.inlive.app"
 	}
 
-	await SendEventInvitationEmail(participant,event,host)
+	if (status === 'rescheduled') {
+		await SendEventRescheduledEmail(participant,event,host)
+	} else if (status === 'cancelled') {
+		await SendEventCancelledEmail(participant,event,host)
+	} else {
+		await SendEventInvitationEmail(participant,event,host)
+	}
+
+	
 }
 
 const args = process.argv.slice(2)
@@ -54,7 +59,11 @@ if (args.length < 2) {
 	process.exit(1)
 }
 
-send(args[0],args[1],args[2]).then(() => {
+console.log("Using API key ",process.env.MAILER_API_KEY)
+console.log("Sending email to",args[0])
+console.log("Status",args[1])
+
+send(args[0],args[1]).then(() => {
 	console.log("Email sent")
 }).catch((err) => {
 	console.error(err)

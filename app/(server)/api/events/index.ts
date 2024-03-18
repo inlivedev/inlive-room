@@ -65,6 +65,7 @@ SUMMARY:${event.name}
 ORGANIZER;CN=${host.name}:mailto:${host.email}
 ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${participant.firstName} ${participant.lastName};X-NUM-GUESTS=0:mailto:${participant.email}
 URL;VALUE=URI:${PUBLIC_URL}/events/${event.slug}
+X-INLIVE-ROOM:${PUBLIC_URL}/rooms/${event.roomId}
 SEQUENCE:${event.update_count}
 STATUS:${eventStatus}
 DESCRIPTION:${eventDesc}

@@ -124,7 +124,7 @@ export async function SendEventCancelledEmail(
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
-    template: ROOM_INV_EMAIL_TEMPLATE,
+    template: ROOM_CANCEL_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
     to: participant.email,
     subject: `Your event ${event.name} has been cancelled`,
@@ -201,7 +201,7 @@ export async function SendEventRescheduledEmail(
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
-    template: ROOM_INV_EMAIL_TEMPLATE,
+    template: ROOM_RESCHED_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
     to: participant.email,
     subject: `Your event ${event.name} has been rescheduled`,

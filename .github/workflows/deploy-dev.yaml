@@ -40,6 +40,8 @@ jobs:
         PERSISTENT_DATA: true
         ENABLE_MAILER: true
         ROOM_INV_EMAIL_TEMPLATE: inlive-room-event-invitation
+        ROOM_CANCEL_EMAIL_TEMPLATE: inlive-room-event-cancelled
+        ROOM_RESCHED_EMAIL_TEMPLATE: inlive-room-event-rescheduled
         INLIVE_HUB_API_KEY: ${{secrets.HUB_KEY}}
         ROOM_LOCAL_STORAGE_PATH: ./storage
         PORT: 3000
