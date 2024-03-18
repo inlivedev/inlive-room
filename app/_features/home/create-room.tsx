@@ -74,7 +74,7 @@ export default function CreateRoom() {
   );
 
   return (
-    <section className="md:max-w-lg">
+    <section className="md:max-w-xl">
       <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
         Virtual room for your real-time collaboration
       </h2>

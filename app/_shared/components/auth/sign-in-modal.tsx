@@ -90,26 +90,6 @@ export default function SignInModal({
       size="sm"
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      motionProps={{
-        variants: {
-          enter: {
-            y: 0,
-            opacity: 1,
-            transition: {
-              duration: 0.3,
-              ease: 'easeOut',
-            },
-          },
-          exit: {
-            y: -20,
-            opacity: 0,
-            transition: {
-              duration: 0.2,
-              ease: 'easeIn',
-            },
-          },
-        },
-      }}
     >
       <ModalContent className="ring-1 ring-zinc-800">
         <ModalHeader className="flex justify-center">
