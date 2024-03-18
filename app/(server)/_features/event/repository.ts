@@ -2,12 +2,10 @@ import { db } from '@/(server)/_shared/database/database';
 import { iEventRepo } from './service';
 import {
   events,
-  eventHasParticipant,
   insertEvent,
   insertParticipant,
   participant as participants,
   selectEvent,
-  eventStatusEnum,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -238,28 +236,12 @@ export class EventRepo implements iEventRepo {
       .returning();
   }
 
-  async registerParticipant(
-    participant: typeof insertParticipant,
-    eventId: number
-  ) {
+  async registerParticipant(participant: typeof insertParticipant) {
     const res = await db.transaction(async (tx) => {
       const insertedParticipant = await tx
         .insert(participants)
         .values(participant)
         .returning();
-
-      await tx
-        .insert(eventHasParticipant)
-        .values({
-          eventId: eventId,
-          participantId: insertedParticipant[0].id,
-        })
-        .returning();
-
-      const event = await db.query.events.findFirst({
-        where: eq(events.id, eventId),
-        columns: { roomId: false },
-      });
 
       return { participant: insertedParticipant[0], event: event };
     });
@@ -272,8 +254,8 @@ export class EventRepo implements iEventRepo {
       .select({
         value: count(),
       })
-      .from(eventHasParticipant)
-      .where(eq(eventHasParticipant.eventId, eventID));
+      .from(participants)
+      .where(eq(participants.eventID, eventID));
 
     return res[0];
   }
@@ -312,22 +294,14 @@ export class EventRepo implements iEventRepo {
           id: participants.id,
           created_at: participants.createdAt,
         })
-        .from(eventHasParticipant)
-        .innerJoin(events, eq(eventHasParticipant.eventId, events.id))
-        .innerJoin(
-          participants,
-          eq(eventHasParticipant.participantId, participants.id)
-        )
+        .from(participants)
+        .innerJoin(events, eq(participants.eventID, events.id))
         .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
 
       const total = await tx
         .select({ total: count() })
-        .from(eventHasParticipant)
-        .innerJoin(events, eq(eventHasParticipant.eventId, events.id))
-        .innerJoin(
-          participants,
-          eq(eventHasParticipant.participantId, participants.id)
-        )
+        .from(participants)
+        .innerJoin(events, eq(participants.eventID, events.id))
         .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
       total[0].total = total[0].total || 0;
 

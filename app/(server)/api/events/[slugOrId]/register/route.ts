@@ -2,7 +2,6 @@ import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 import { eventRepo } from '../../../_index';
 import { insertParticipant } from '@/(server)/_features/event/schema';
-import { generateID } from '@/(server)/_shared/utils/generateid';
 import {
   SendEventInvitationEmail,
   isMailerEnabled,
@@ -13,7 +12,6 @@ type RegisterParticipant = {
   lastName: string;
   email: string;
   description: string;
-  data?: Map<string, string>;
 };
 
 export async function POST(
@@ -42,17 +40,17 @@ export async function POST(
     }
 
     const newParticipant: typeof insertParticipant = {
-      clientId: generateID(8),
       firstName: body.firstName,
       lastName: body.lastName,
       email: body.email,
       description: body.description,
-      data: body.data,
+      clientId: '',
+      eventID: existingEvent.id,
+      uniqueURL: '',
     };
 
     const registeredParticipant = await eventRepo.registerParticipant(
-      newParticipant,
-      existingEvent.id
+      newParticipant
     );
 
     if (isMailerEnabled()) {

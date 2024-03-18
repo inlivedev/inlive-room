@@ -1,13 +1,12 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   pgTable,
   timestamp,
   text,
   integer,
-  primaryKey,
   serial,
-  jsonb,
   pgEnum,
+  char,
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
 
@@ -35,14 +34,6 @@ export const events = pgTable('events', {
   status: statusEnum('status').notNull().default('draft'),
 });
 
-export const eventsRelation = relations(events, ({ many, one }) => ({
-  eventsToParticipant: many(eventHasParticipant),
-  room: one(rooms, {
-    fields: [events.roomId],
-    references: [rooms.id],
-  }),
-}));
-
 // Participant Table
 export const participant = pgTable('events_participant', {
   id: serial('id').primaryKey(),
@@ -52,42 +43,13 @@ export const participant = pgTable('events_participant', {
   lastName: text('last_name').notNull(),
   email: text('email').notNull(),
   description: text('description'),
-  data: jsonb('data'),
+  eventID: integer('event_id')
+    .notNull()
+    .references(() => events.id, { onDelete: 'cascade' }),
+  uniqueURL: char('unique_url', {
+    length: 12,
+  }).notNull(),
 });
-
-export const participantRelation = relations(participant, ({ many }) => ({
-  eventsToParticipant: many(eventHasParticipant),
-}));
-
-// Junction Table
-export const eventHasParticipant = pgTable(
-  'events_to_participant',
-  {
-    eventId: integer('event_id')
-      .notNull()
-      .references(() => events.id, { onDelete: 'cascade' }),
-    participantId: integer('participant_id')
-      .notNull()
-      .references(() => participant.id),
-  },
-  (table) => ({
-    pk: primaryKey(table.eventId, table.participantId),
-  })
-);
-
-export const eventHasParticipantRelation = relations(
-  eventHasParticipant,
-  ({ one }) => ({
-    events: one(events, {
-      fields: [eventHasParticipant.eventId],
-      references: [events.id],
-    }),
-    participant: one(participant, {
-      fields: [eventHasParticipant.participantId],
-      references: [participant.id],
-    }),
-  })
-);
 
 export type insertEvent = typeof events.$inferInsert;
 export type selectEvent = typeof events.$inferSelect;
@@ -95,6 +57,3 @@ export type eventStatusEnum = 'draft' | 'published' | 'cancelled';
 
 export const insertParticipant = participant.$inferInsert;
 export const selectParticipant = participant.$inferSelect;
-
-export const insertEventsToParticipant = eventHasParticipant.$inferInsert;
-export const selectEventsToParticipant = eventHasParticipant.$inferSelect;
