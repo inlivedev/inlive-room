@@ -1,8 +1,12 @@
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
-import { selectEvent } from '@/(server)/_features/event/schema';
+import {
+  selectEvent,
+  selectParticipant,
+} from '@/(server)/_features/event/schema';
 import * as Sentry from '@sentry/nextjs';
 import { GenerateIcal } from '@/(server)/api/events';
+import { selectUser } from '@/(server)/_features/user/schema';
 
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
@@ -15,11 +19,11 @@ export function isMailerEnabled() {
 }
 
 export async function SendEventInvitationEmail(
-  firstName: string,
-  lastName: string,
-  address: string,
-  event: selectEvent
+  participant: selectParticipant,
+  event: selectEvent,
+  host: selectUser
 ) {
+  console.log('MAILER_API_KEY', MAILER_API_KEY);
   const mg = new Mailgun(formData);
   const mailer = mg.client({
     key: MAILER_API_KEY,
@@ -36,13 +40,13 @@ export async function SendEventInvitationEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
-  const icalString = GenerateIcal(event, 'Asia/Jakarta');
+  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
-    to: address,
+    to: participant.email,
     subject: `Your invitation URL for ${event.name}`,
     'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
     'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
@@ -50,10 +54,10 @@ export async function SendEventInvitationEmail(
     'v:event-description': event.description,
     'v:event-date': eventDate,
     'v:event-time': eventTime,
-    'v:event-host': event.host,
-    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar`,
-    'v:user-firstname': firstName,
-    'v:user-lastname': lastName,
+    'v:event-host': host.name,
+    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar/${participant.id}`,
+    'v:user-firstname': participant.firstName,
+    'v:user-lastname': participant.lastName,
     inline: {
       data: iCalendarBuffer,
       filename: 'invite.ics',
@@ -69,8 +73,8 @@ export async function SendEventInvitationEmail(
       message: 'Event Invitation Email Request Fail',
       level: 'info',
       extra: {
-        name: firstName,
-        email: address,
+        name: participant.firstName,
+        email: participant.email,
         event,
         res,
       },
@@ -82,6 +86,11 @@ export async function SendEventInvitationEmail(
   Sentry.captureEvent({
     message: 'Event Invitation Email Request Success',
     level: 'info',
-    extra: { name: firstName, email: address, event, res },
+    extra: {
+      name: participant.firstName,
+      email: participant.email,
+      event,
+      res,
+    },
   });
 }

@@ -1,11 +1,14 @@
 import { iEventService } from '@/(server)/api/_index';
-import { insertEvent, selectEvent } from './schema';
+import { insertEvent, selectEvent, selectParticipant } from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
+import { selectUser } from '../user/schema';
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
   getEventBySlug(slug: string): Promise<selectEvent | undefined>;
   getEventById(id: number): Promise<selectEvent | undefined>;
+  getParticipantById(id: number): Promise<selectParticipant | undefined>;
+  getEventHostByEventId(eventId: number): Promise<selectUser | undefined>;
 }
 
 export interface EventParticipant {
@@ -42,5 +45,13 @@ export class EventService implements iEventService {
     }
 
     return event;
+  }
+
+  async getParticipantById(id: number) {
+    return await this.repo.getParticipantById(id);
+  }
+
+  async getEventHostByEventId(eventId: number) {
+    return await this.repo.getEventHostByEventId(eventId);
   }
 }

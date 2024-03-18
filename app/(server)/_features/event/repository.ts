@@ -11,7 +11,7 @@ import {
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
-import { User } from '../user/schema';
+import { User, users } from '../user/schema';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
@@ -209,6 +209,8 @@ export class EventRepo implements iEventRepo {
     id: number,
     event: insertEvent
   ): Promise<selectEvent | undefined> {
+    event.update_count = event.update_count ? event.update_count : 1 + 1;
+
     const data = await db.transaction(async (tx) => {
       if (!event.thumbnailUrl) {
         await tx
@@ -341,5 +343,25 @@ export class EventRepo implements iEventRepo {
       total_record: res.total,
     };
     return { data: res.registeree, meta };
+  }
+
+  async getParticipantById(id: number) {
+    return await db.query.participant.findFirst({
+      where: eq(participants.id, id),
+    });
+  }
+
+  async getEventHostByEventId(eventId: number) {
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, eventId),
+    });
+
+    if (typeof event !== 'undefined' && event.createdBy !== null) {
+      return await db.query.users.findFirst({
+        where: eq(users.id, event.createdBy),
+      });
+    }
+
+    return undefined;
   }
 }
