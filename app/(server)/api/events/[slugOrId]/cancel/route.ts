@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { isMailerEnabled } from '@/(server)/_shared/mailer/mailer';
+import omit from 'lodash-es/omit';
 
 export async function PUT(
   request: Request,
@@ -63,16 +64,19 @@ export async function PUT(
       );
     }
 
-    if (oldEvent.roomId) {
-      roomRepo.removeRoom(oldEvent.roomId, user.id);
-      oldEvent.roomId = null;
+    const newEvent = omit(oldEvent, 'host');
+
+    if (newEvent.roomId) {
+      roomRepo.removeRoom(newEvent.roomId, user.id);
+      newEvent.roomId = null;
     }
-    oldEvent.status = 'cancelled';
+
+    newEvent.status = 'cancelled';
 
     const updatedEvent = await eventRepo.updateEvent(
       user.id,
       oldEvent.id,
-      oldEvent
+      newEvent
     );
 
     if (isMailerEnabled()) {
