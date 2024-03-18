@@ -177,7 +177,8 @@ export async function SendEventCancelledEmail(
 
 export async function SendEventRescheduledEmail(
   participant: selectParticipant,
-  event: selectEvent,
+  newEvent: selectEvent,
+  oldEvent: selectEvent,
   host: selectUser
 ) {
   console.log('MAILER_API_KEY', MAILER_API_KEY);
@@ -187,32 +188,46 @@ export async function SendEventRescheduledEmail(
     username: 'api',
   });
 
-  const eventDate = Intl.DateTimeFormat('en-GB', {
+  const oldEventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
     timeZone: 'Asia/Jakarta',
-  }).format(event.startTime);
+  }).format(oldEvent.startTime);
 
-  const eventTime = Intl.DateTimeFormat('en-GB', {
+  const oldEventTime = Intl.DateTimeFormat('en-GB', {
     timeStyle: 'long',
     timeZone: 'Asia/Jakarta',
-  }).format(event.startTime);
+  }).format(oldEvent.startTime);
 
-  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
+  const newEventDate = Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'full',
+    timeZone: 'Asia/Jakarta',
+  }).format(newEvent.startTime);
+
+  const newEventTime = Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'long',
+    timeZone: 'Asia/Jakarta',
+  }).format(newEvent.startTime);
+
+  const icalString = GenerateIcal(newEvent, 'Asia/Jakarta', host, participant);
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_RESCHED_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
     to: participant.email,
-    subject: `Your event ${event.name} has been rescheduled`,
-    'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
-    'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
-    'v:event-name': event.name,
-    'v:event-description': event.description,
-    'v:event-date': eventDate,
-    'v:event-time': eventTime,
+    subject: `Your event ${oldEvent.name} has been rescheduled`,
+    'v:room-url': `${PUBLIC_URL}/rooms/${newEvent.roomId}`,
+    'v:event-url': `${PUBLIC_URL}/events/${newEvent.slug}`,
+    'v:new-event-name': newEvent.name,
+    'v:new-event-description': newEvent.description,
+    'v:new-event-date': newEventDate,
+    'v:new-event-time': newEventTime,
+    'v:old-event-name': oldEvent.name,
+    'v:old-event-description': oldEvent.description,
+    'v:old-event-date': oldEventDate,
+    'v:old-event-time': oldEventTime,
     'v:event-host': host.name,
-    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar/${participant.id}`,
+    'v:event-calendar': `${PUBLIC_URL}/api/events/${newEvent.slug}/calendar/${participant.id}`,
     'v:user-firstname': participant.firstName,
     'v:user-lastname': participant.lastName,
     inline: {

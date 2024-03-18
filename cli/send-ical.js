@@ -42,7 +42,7 @@ async function send(email,status) {
 	}
 
 	if (status === 'rescheduled') {
-		await SendEventRescheduledEmail(participant,event,host)
+		await SendEventRescheduledEmail(participant,event,event,host)
 	} else if (status === 'cancelled') {
 		await SendEventCancelledEmail(participant,event,host)
 	} else {

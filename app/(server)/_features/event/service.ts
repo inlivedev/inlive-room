@@ -64,10 +64,14 @@ export class EventService implements iEventService {
     return await this.repo.getEventParticipantsByEventId(eventId);
   }
 
-  async sendEmailsRescheduledEvent(eventId: number) {
-    const participants = await this.repo.getEventParticipantsByEventId(eventId);
-    const event = await this.repo.getEventById(eventId);
-    const host = await this.repo.getEventHostByEventId(eventId);
+  async sendEmailsRescheduledEvent(
+    oldEvent: selectEvent,
+    newEvent: selectEvent
+  ) {
+    const participants = await this.repo.getEventParticipantsByEventId(
+      oldEvent.id
+    );
+    const host = await this.repo.getEventHostByEventId(oldEvent.id);
     if (!host) {
       return;
     }
@@ -77,7 +81,7 @@ export class EventService implements iEventService {
     }
 
     for (const participant of participants) {
-      SendEventRescheduledEmail(participant, event, host);
+      SendEventRescheduledEmail(participant, oldEvent, newEvent, host);
     }
   }
 

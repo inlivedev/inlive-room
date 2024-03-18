@@ -385,10 +385,10 @@ export async function PUT(
     }
 
     if (
-      eventService.isEventRescheduled(oldEvent, newEvent) &&
+      eventService.isEventRescheduled(oldEvent, updatedEvent) &&
       isMailerEnabled()
     ) {
-      eventService.sendEmailsRescheduledEvent(oldEvent.id);
+      eventService.sendEmailsRescheduledEvent(oldEvent, updatedEvent);
     }
 
     return NextResponse.json(
