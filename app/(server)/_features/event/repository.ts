@@ -19,7 +19,7 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async getEventBySlug(slug: string): Promise<selectEvent | undefined> {
+  async getEventBySlug(slug: string) {
     const data = await db.query.events.findFirst({
       with: {
         host: {
@@ -33,11 +33,10 @@ export class EventRepo implements iEventRepo {
       where: and(eq(events.slug, slug), isNull(events.deletedAt)),
     });
 
-    if (data) return data as selectEvent;
-    else return undefined;
+    return data;
   }
 
-  async getEventById(id: number): Promise<selectEvent | undefined> {
+  async getEventById(id: number) {
     const data = await db.query.events.findFirst({
       with: {
         host: {
@@ -51,8 +50,7 @@ export class EventRepo implements iEventRepo {
       where: and(eq(events.id, id), isNull(events.deletedAt)),
     });
 
-    if (data) return data as selectEvent;
-    else return undefined;
+    return data;
   }
 
   /**

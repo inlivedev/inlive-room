@@ -9,8 +9,32 @@ import {
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
-  getEventBySlug(slug: string): Promise<selectEvent | undefined>;
-  getEventById(id: number): Promise<selectEvent | undefined>;
+  getEventById(id: number): Promise<
+    | (selectEvent & {
+        host:
+          | {
+              name: string;
+              id: number;
+              pictureUrl: string | null;
+            }
+          | null
+          | undefined;
+      })
+    | undefined
+  >;
+  getEventBySlug(slug: string): Promise<
+    | (selectEvent & {
+        host:
+          | {
+              name: string;
+              id: number;
+              pictureUrl: string | null;
+            }
+          | null
+          | undefined;
+      })
+    | undefined
+  >;
   getEventParticipantsByEventId(eventId: number): Promise<
     {
       participant: selectParticipant;
