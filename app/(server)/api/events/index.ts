@@ -19,9 +19,11 @@ export function GenerateIcal(
   );
 
   let eventStatus = 'CONFIRMED';
+  let eventMethod = 'REQUEST';
 
   if (event.status === 'cancelled') {
     eventStatus = 'CANCELLED';
+    eventMethod = 'CANCEL';
   }
 
   const eventDesc = `Hi there!\\n
@@ -42,7 +44,7 @@ export function GenerateIcal(
   return `BEGIN:VCALENDAR
 VERSION:2.0
 CALSCALE:GREGORIAN
-METHOD:REQUEST
+METHOD:${eventMethod}
 PRODID:-//inLive//inLive//EN
 BEGIN:VTIMEZONE
 TZID:Asia/Jakarta
