@@ -79,7 +79,6 @@ export class EventService implements iEventService {
 
     return event;
   }
-
   async getParticipantById(id: number) {
     return await this.repo.getParticipantById(id);
   }

@@ -248,14 +248,6 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async updateEventBySlug(userId: number, slug: string, event: insertEvent) {
-    return await db
-      .update(events)
-      .set(event)
-      .where(and(eq(events.slug, slug), eq(events.createdBy, userId)))
-      .returning();
-  }
-
   async registerParticipant(
     participant: typeof insertParticipant,
     eventId: number
