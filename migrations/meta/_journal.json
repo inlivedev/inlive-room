@@ -127,6 +127,13 @@
       "when": 1709789071930,
       "tag": "0017_add_event_status",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1710745013499,
+      "tag": "0018_reschedule_event",
+      "breakpoints": true
     }
   ]
 }
