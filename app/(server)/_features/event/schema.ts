@@ -1,4 +1,3 @@
-import { relations, sql } from 'drizzle-orm';
 import {
   pgTable,
   timestamp,
@@ -7,6 +6,7 @@ import {
   serial,
   pgEnum,
   char,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
 
@@ -35,21 +35,29 @@ export const events = pgTable('events', {
 });
 
 // Participant Table
-export const participant = pgTable('events_participant', {
-  id: serial('id').primaryKey(),
-  clientId: text('client_id').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  email: text('email').notNull(),
-  description: text('description'),
-  eventID: integer('event_id')
-    .notNull()
-    .references(() => events.id, { onDelete: 'cascade' }),
-  uniqueURL: char('unique_url', {
-    length: 12,
-  }).notNull(),
-});
+export const participant = pgTable(
+  'events_participant',
+  {
+    id: serial('id').primaryKey(),
+    clientId: text('client_id').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    firstName: text('first_name').notNull(),
+    lastName: text('last_name').notNull(),
+    email: text('email').notNull(),
+    description: text('description'),
+    eventID: integer('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    uniqueURL: char('unique_url', {
+      length: 12,
+    }).notNull(),
+  },
+  (table) => {
+    return {
+      unique: unique().on(table.clientId, table.eventID),
+    };
+  }
+);
 
 export type insertEvent = typeof events.$inferInsert;
 export type selectEvent = typeof events.$inferSelect;
