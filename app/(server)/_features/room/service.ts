@@ -17,9 +17,9 @@ export interface Participant {
 }
 
 export interface iRoomRepo {
-  addRoom(room: typeof insertRoom): Promise<typeof selectRoom>;
-  getRoomById(id: string): Promise<Room | undefined>;
-  updateRoomById(room: Room): Promise<Room | undefined>;
+  addRoom(room: insertRoom): Promise<selectRoom>;
+  getRoomById(id: string): Promise<insertRoom | undefined>;
+  updateRoomById(room: Room): Promise<insertRoom | undefined>;
   isPersistent(): boolean;
 }
 
@@ -141,7 +141,7 @@ export class RoomService {
   async createRoom(
     userID: number,
     type: 'event' | 'meeting'
-  ): Promise<typeof selectRoom> {
+  ): Promise<selectRoom> {
     let retries = 0;
     const maxRetries = 3;
 
