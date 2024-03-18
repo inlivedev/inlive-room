@@ -23,6 +23,15 @@ export class EventRepo implements iEventRepo {
 
   async getEventBySlug(slug: string): Promise<selectEvent | undefined> {
     const data = await db.query.events.findFirst({
+      with: {
+        host: {
+          columns: {
+            id: true,
+            name: true,
+            pictureUrl: true,
+          },
+        },
+      },
       where: and(eq(events.slug, slug), isNull(events.deletedAt)),
     });
 
@@ -32,6 +41,15 @@ export class EventRepo implements iEventRepo {
 
   async getEventById(id: number): Promise<selectEvent | undefined> {
     const data = await db.query.events.findFirst({
+      with: {
+        host: {
+          columns: {
+            id: true,
+            name: true,
+            pictureUrl: true,
+          },
+        },
+      },
       where: and(eq(events.id, id), isNull(events.deletedAt)),
     });
 
