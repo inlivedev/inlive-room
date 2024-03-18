@@ -6,6 +6,7 @@ import {
   SendEventInvitationEmail,
   isMailerEnabled,
 } from '@/(server)/_shared/mailer/mailer';
+import { generateID } from '@/(server)/_shared/utils/generateid';
 
 type RegisterParticipant = {
   firstName: string;
@@ -44,9 +45,9 @@ export async function POST(
       lastName: body.lastName,
       email: body.email,
       description: body.description,
-      clientId: '',
+      clientId: generateID(12),
       eventID: existingEvent.id,
-      uniqueURL: '',
+      joinID: generateID(12),
     };
 
     const registeredParticipant = await eventRepo.registerParticipant(
@@ -58,7 +59,8 @@ export async function POST(
         newParticipant.firstName,
         newParticipant.lastName,
         newParticipant.email,
-        existingEvent
+        existingEvent,
+        registeredParticipant.joinID
       );
     }
 

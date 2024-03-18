@@ -18,7 +18,8 @@ export async function SendEventInvitationEmail(
   firstName: string,
   lastName: string,
   address: string,
-  event: selectEvent
+  event: selectEvent,
+  joinID?: string
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
@@ -38,13 +39,17 @@ export async function SendEventInvitationEmail(
 
   const icalString = GenerateIcal(event, 'Asia/Jakarta');
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+  let roomURL = `${PUBLIC_URL}/rooms/${event.roomId}`;
+  if (!joinID) {
+    roomURL += `?joinID=${joinID}`;
+  }
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
     to: address,
     subject: `Your invitation URL for ${event.name}`,
-    'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
+    'v:room-url': roomURL,
     'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
     'v:event-name': event.name,
     'v:event-description': event.description,
