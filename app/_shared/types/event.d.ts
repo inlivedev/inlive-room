@@ -3,7 +3,9 @@ import { selectEvent } from '@/(server)/_features/event/schema';
 import { PageMeta } from './types';
 
 export declare namespace EventType {
-  type Event = selectEvent;
+  type Event = selectEvent & {
+    host?: selectUser;
+  };
 
   type DetailEventResponse = FetcherResponse & {
     message: string;

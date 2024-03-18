@@ -115,7 +115,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
         title={eventData.name}
         descriptionMarkup={descriptionMarkup}
         slug={eventData.slug}
-        host={eventData.host}
+        host={eventData.host.name}
         startTime={eventData.startTime}
         status={eventData.status}
         thumbnailUrl={eventData.thumbnailUrl}

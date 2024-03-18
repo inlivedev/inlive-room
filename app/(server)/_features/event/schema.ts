@@ -87,7 +87,7 @@ export const eventHasParticipant = pgTable(
 export const eventHasParticipantRelation = relations(
   eventHasParticipant,
   ({ one }) => ({
-    events: one(events, {
+    event: one(events, {
       fields: [eventHasParticipant.eventId],
       references: [events.id],
     }),

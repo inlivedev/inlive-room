@@ -27,7 +27,7 @@ type EventDetailProps = {
   host: string;
   status: 'draft' | 'published' | 'cancelled';
   thumbnailUrl?: string | null;
-  createdBy: number;
+  createdBy?: number | null;
   roomId?: string;
 };
 
