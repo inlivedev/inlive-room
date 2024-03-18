@@ -48,7 +48,7 @@ export const participant = pgTable(
     eventID: integer('event_id')
       .notNull()
       .references(() => events.id, { onDelete: 'cascade' }),
-    uniqueURL: char('unique_url', {
+    joinID: char('unique_url', {
       length: 12,
     }).notNull(),
   },
