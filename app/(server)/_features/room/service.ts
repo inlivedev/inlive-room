@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
+import { eventRepo } from '@/(server)/api/_index';
 
 export interface Room {
   id: string;
@@ -33,7 +34,12 @@ export class RoomService {
     this._datachannels = ['chat', 'moderator'];
   }
 
-  async createClient(roomId: string, clientName: string, clientID?: string) {
+  async createClient(
+    roomId: string,
+    clientName: string,
+    clientID?: string,
+    joinID?: string
+  ): Promise<Participant> {
     if (!this._roomRepo.isPersistent()) {
       const clientResponse = await this._sdk.createClient(roomId, {
         clientName: clientName,
@@ -75,6 +81,18 @@ export class RoomService {
         'error'
       );
       throw new Error('Room not found');
+    }
+
+    if (roomData.meta.type === 'event' && joinID) {
+      const event = await eventRepo.getByRoomID(roomData.id);
+
+      if (event) {
+        const participant = await eventRepo.getParticipantByUniqueURL(
+          event.id,
+          joinID
+        );
+        clientID = participant?.clientId;
+      }
     }
 
     const clientResponse = await this._sdk.createClient(roomData.id, {

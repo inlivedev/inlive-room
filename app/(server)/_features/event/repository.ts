@@ -76,6 +76,7 @@ export class EventRepo implements iEventRepo {
 
     return { data: res, meta: pageMeta };
   }
+
   async getEvents(
     page: number,
     limit: number,
@@ -315,5 +316,24 @@ export class EventRepo implements iEventRepo {
       total_record: res.total,
     };
     return { data: res.registeree, meta };
+  }
+
+  async getParticipantByUniqueURL(eventID: number, uniqueURL: string) {
+    const res = await db.query.participant.findFirst({
+      where: and(
+        eq(participants.joinID, uniqueURL),
+        eq(participants.eventID, eventID)
+      ),
+    });
+
+    return res;
+  }
+
+  async getByRoomID(id: string) {
+    const res = await db.query.events.findFirst({
+      where: eq(events.roomId, id),
+    });
+
+    return res;
   }
 }
