@@ -5,7 +5,6 @@ import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import { customAlphabet } from 'nanoid';
-import { useSearchParams } from 'next/navigation';
 
 const registerClient = async (
   roomID: string,
@@ -17,7 +16,7 @@ const registerClient = async (
       await InternalApiFetcher.post(`/api/rooms/${roomID}/register`, {
         body: JSON.stringify({
           name: clientName,
-          join_id: joinID,
+          joinID: joinID,
         }),
       });
 
@@ -79,8 +78,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       const roomID = splitPath[2];
       let roomData: RoomType.RoomData | null = null;
 
-      const params = useSearchParams();
-      const joinID = params.get('joinID');
+      const joinID = request.nextUrl.searchParams.get('joinID');
 
       try {
         const roomResponse: RoomType.CreateGetRoomResponse =

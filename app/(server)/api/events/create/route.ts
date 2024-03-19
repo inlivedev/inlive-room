@@ -95,7 +95,7 @@ export async function POST(req: Request) {
       }
     }
 
-    let eventRoom: typeof selectRoom | null = null;
+    let eventRoom: selectRoom | null = null;
 
     if (eventMeta.status == 'published') {
       eventRoom = await roomService.createRoom(user.id, 'event');
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
       {
         code: 500,
         ok: false,
-        message: 'Something went wrong, please try again later',
+        message: `Something went wrong, please try again later`,
       },
       { status: 500 }
     );
