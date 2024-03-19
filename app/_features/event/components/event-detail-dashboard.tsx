@@ -41,13 +41,7 @@ let registeredData = [
   },
 ];
 
-registeredData = [
-  ...registeredData,
-  ...registeredData,
-  ...registeredData,
-  ...registeredData,
-  ...registeredData,
-];
+registeredData = [...registeredData, ...registeredData, ...registeredData];
 
 export default function EventDetailDashboard({}) {
   return (
@@ -196,9 +190,9 @@ export default function EventDetailDashboard({}) {
                   <span className="tabular-nums">54</span> participants
                 </div>
                 {/* table */}
-                <div className="relative mt-4 overflow-x-auto">
+                <div className="relative mt-4 block max-h-[400px] overflow-auto overscroll-contain">
                   <table className="w-full table-auto divide-y divide-zinc-700 text-left">
-                    <thead className="bg-zinc-800 leading-5 text-zinc-300">
+                    <thead className="sticky top-0 z-20 bg-zinc-800 leading-5 text-zinc-300">
                       <tr>
                         <th
                           scope="col"
@@ -221,34 +215,24 @@ export default function EventDetailDashboard({}) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-700 text-sm">
-                      <tr>
-                        <th
-                          scope="row"
-                          className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
-                        >
-                          Faiq Naufal Gybriana
-                        </th>
-                        <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                          Silver
-                        </td>
-                        <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                          Laptop
-                        </td>
-                      </tr>
-                      <tr>
-                        <th
-                          scope="row"
-                          className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
-                        >
-                          Faiq Naufal Gybriana
-                        </th>
-                        <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                          Silver
-                        </td>
-                        <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                          Laptop
-                        </td>
-                      </tr>
+                      {registeredData.map((data) => {
+                        return (
+                          <tr key={data.email}>
+                            <th
+                              scope="row"
+                              className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
+                            >
+                              {data.name}
+                            </th>
+                            <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
+                              {data.email}
+                            </td>
+                            <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
+                              {data.registeredAt}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
