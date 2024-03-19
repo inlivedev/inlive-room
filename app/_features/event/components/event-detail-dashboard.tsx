@@ -130,7 +130,7 @@ export default function EventDetailDashboard({
                 {event.status === 'published' ? (
                   <div className="flex items-center gap-2">
                     <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-4">
                         <div className="max-w-xs flex-1 lg:order-2">
                           <Button
                             className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-sm font-semibold text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
@@ -240,7 +240,7 @@ export default function EventDetailDashboard({
                 </div>
                 <div className="relative mt-4 block max-h-[400px] overflow-auto overscroll-contain">
                   <table className="w-full table-auto divide-y divide-zinc-700 text-left">
-                    <thead className="sticky top-0 z-20 bg-zinc-800 leading-5 text-zinc-300">
+                    <thead className="sticky top-0 bg-zinc-800 leading-5 text-zinc-300">
                       <tr>
                         <th
                           scope="col"
