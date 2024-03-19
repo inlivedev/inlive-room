@@ -2,6 +2,14 @@
 import {SendEventCancelledEmail, SendEventInvitationEmail, SendEventRescheduledEmail} from '../app/(server)/_shared/mailer/mailer';
 
 async function send(email,status) {
+	
+	let sequence = 1;
+	if (status === 'rescheduled') {
+		sequence = 2;
+	} else if (status === 'cancelled') {
+		sequence = 3;
+	}
+
 	// selectParticipant dummy
 	const participant = {
 		id: 1,
@@ -10,18 +18,14 @@ async function send(email,status) {
 		firstName: "John",
 		lastName: "Doe",
 		email: email,
+		updateCount : sequence
 	}
 
-	let sequence = 1;
-	if (status === 'rescheduled') {
-		sequence = 2;
-	} else if (status === 'cancelled') {
-		sequence = 3;
-	}
+	console.log("Sequence : ",sequence)
 
 	const event = {
 		id: 1,
-		uuid: "123e4567-e89b-12d3-a456-426614174000",
+		uuid: "123e4567-e89b-12d3-a456-426614174009",
 		slug: "test-event",
 		name: "Test Event",
 		startTime: new Date(),
@@ -32,7 +36,6 @@ async function send(email,status) {
 		createdBy: 1,
 		roomId: "123e4567",
 		status: status,
-		update_count: sequence,
 	}
 
 	host = {
