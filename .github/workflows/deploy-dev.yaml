@@ -3,6 +3,8 @@ on:
     push:
         branches: [ "main" ]
         paths:
+            - 'app/**'
+            - 'public/**'
             - '**.js'
             - '**.ts'
             - '**.tsx'
