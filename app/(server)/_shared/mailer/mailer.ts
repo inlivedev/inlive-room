@@ -244,7 +244,7 @@ export async function SendEventRescheduledEmail(
       extra: {
         name: participant.firstName,
         email: participant.email,
-        event,
+        newEvent,
         res,
       },
     });
@@ -258,7 +258,7 @@ export async function SendEventRescheduledEmail(
     extra: {
       name: participant.firstName,
       email: participant.email,
-      event,
+      newEvent,
       res,
     },
   });
