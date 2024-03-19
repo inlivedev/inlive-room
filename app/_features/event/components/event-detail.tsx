@@ -11,8 +11,6 @@ import Link from 'next/link';
 import type { EventType } from '@/_shared/types/event';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
-import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
-import CheckIcon from '@/_shared/components/icons/check-icon';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -184,16 +182,7 @@ function PublicAction({ event }: { event: EventType.Event }) {
                 handleCopyLink(`${APP_ORIGIN}/events/${event.slug}`)
               }
             >
-              <span>
-                {copiedActive ? (
-                  <CheckIcon className="h-5 w-5" />
-                ) : (
-                  <CopyOutlineIcon className="h-5 w-5" />
-                )}
-              </span>
-              <span className="hidden lg:inline">
-                {copiedActive ? 'Copied!' : 'Copy link'}
-              </span>
+              {copiedActive ? 'Copied!' : 'Copy link'}
             </Button>
           </div>
         </div>

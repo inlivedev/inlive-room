@@ -19,8 +19,6 @@ import {
 import type { EventType } from '@/_shared/types/event';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
-import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
-import CheckIcon from '@/_shared/components/icons/check-icon';
 import CancelEventModal from './event-cancel-modal';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
@@ -137,16 +135,7 @@ export default function EventDetailDashboard({
                               )
                             }
                           >
-                            <span>
-                              {copiedActive ? (
-                                <CheckIcon className="h-5 w-5" />
-                              ) : (
-                                <CopyOutlineIcon className="h-5 w-5" />
-                              )}
-                            </span>
-                            <span className="hidden lg:inline">
-                              {copiedActive ? 'Copied!' : 'Copy link'}
-                            </span>
+                            {copiedActive ? 'Copied!' : 'Copy link'}
                           </Button>
                         </div>
                         <div className="max-w-xs flex-1 lg:order-1">
@@ -290,7 +279,7 @@ export default function EventDetailDashboard({
                           });
 
                           return (
-                            <tr key={registeree.email}>
+                            <tr key={`${registeree.id}-${registeree.email}`}>
                               <th
                                 scope="row"
                                 className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
