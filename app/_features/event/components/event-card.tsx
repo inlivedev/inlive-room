@@ -19,7 +19,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
 
   return (
     <Link
-      href={`/events/${event.slug}`}
+      href={`/events/${event.slug}/detail`}
       className="rounded-3xl border border-zinc-800 p-5 hover:bg-zinc-800/50 active:bg-zinc-800"
     >
       <div className="flex items-center gap-3 border-b border-zinc-800 pb-5">
