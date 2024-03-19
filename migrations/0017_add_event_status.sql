@@ -14,7 +14,7 @@ BEGIN
         WHERE table_name = 'events' 
         AND column_name = 'is_published'
     ) THEN
-        UPDATE your_table_name
+        UPDATE events
         SET status = CASE
                         WHEN is_published = false THEN 'draft'::event_status_enum
                         WHEN is_published = true THEN 'published'::event_status_enum
