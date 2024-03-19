@@ -131,9 +131,19 @@ export default function EventDetailDashboard({
                   <div className="flex items-center gap-2">
                     <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
                       <div className="flex items-center justify-center gap-4">
-                        <div className="max-w-xs flex-1 lg:order-2">
+                        <div className="flex-auto">
                           <Button
-                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-sm font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:font-semibold"
+                            as={Link}
+                            href={`/rooms/${event.roomId}`}
+                            target="_blank"
+                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
+                          >
+                            Join Webinar
+                          </Button>
+                        </div>
+                        <div>
+                          <Button
+                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
                             onClick={() =>
                               handleCopyLink(
                                 `${APP_ORIGIN}/events/${event.slug}`
@@ -141,16 +151,6 @@ export default function EventDetailDashboard({
                             }
                           >
                             {copiedActive ? 'Copied!' : 'Copy link'}
-                          </Button>
-                        </div>
-                        <div className="max-w-xs flex-1 lg:order-1">
-                          <Button
-                            as={Link}
-                            href={`/rooms/${event.roomId}`}
-                            target="_blank"
-                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:font-semibold"
-                          >
-                            Join Webinar
                           </Button>
                         </div>
                       </div>
