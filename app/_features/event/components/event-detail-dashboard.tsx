@@ -11,39 +11,71 @@ import {
 } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
-import { StatusPublished } from '@/_features/event/components/event-status';
+import {
+  StatusPublished,
+  StatusCancelled,
+} from '@/_features/event/components/event-status';
+import type { EventType } from '@/_shared/types/event';
+import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { useToggle } from '@/_shared/hooks/use-toggle';
+import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
+import CheckIcon from '@/_shared/components/icons/check-icon';
 
-let registeredData = [
-  {
-    name: 'Yohan Totting',
-    email: 'emailyohan@gmail.com',
-    registeredAt: '31 Dec 2023, 15:12am',
-  },
-  {
-    name: 'Faiq Naufal',
-    email: 'emailfaiq@gmail.com',
-    registeredAt: '31 Dec 2023, 15:12am',
-  },
-  {
-    name: 'Ashar Setiawan',
-    email: 'emailashar@gmail.com',
-    registeredAt: '31 Dec 2023, 15:12am',
-  },
-  {
-    name: 'Gagah GK',
-    email: 'emailgagah@gmail.com',
-    registeredAt: '31 Dec 2023, 15:12am',
-  },
-  {
-    name: 'Dian Putera',
-    email: 'emaildian@gmail.com',
-    registeredAt: '31 Dec 2023, 15:12am',
-  },
-];
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
-registeredData = [...registeredData, ...registeredData, ...registeredData];
+export default function EventDetailDashboard({
+  event,
+  registerees,
+  totalRegisterees,
+}: {
+  event: EventType.Event;
+  registerees: EventType.RegistereeParticipant[];
+  totalRegisterees: number;
+}) {
+  const {
+    active: copiedActive,
+    setActive: setCopiedActive,
+    setInActive: setCopiedInActive,
+  } = useToggle(false);
 
-export default function EventDetailDashboard({}) {
+  const handleCopyLink = async (text = '') => {
+    const success = await copyToClipboard(text);
+
+    if (success) {
+      setCopiedActive();
+      setTimeout(() => {
+        setCopiedInActive();
+      }, 2000);
+    } else {
+      alert('Failed to copy link');
+    }
+  };
+
+  const eventStartDate = new Date(event.startTime).toLocaleDateString('en-GB', {
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
+  });
+
+  const eventStartTime = new Date(event.startTime).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const eventCreatedDate = new Date(event.createdAt).toLocaleDateString(
+    'en-GB',
+    {
+      month: 'long',
+      day: '2-digit',
+      year: 'numeric',
+    }
+  );
+
+  const thumbnailUrl = event.thumbnailUrl
+    ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
+    : '/images/webinar/webinar-no-image-placeholder.png';
+
   return (
     <div className="bg-zinc-900">
       <div className="min-viewport-height mx-auto flex max-w-7xl flex-col px-4">
@@ -85,17 +117,28 @@ export default function EventDetailDashboard({}) {
                     <div className="flex items-center justify-center gap-2">
                       <div className="max-w-xs flex-1 lg:order-2">
                         <Button
-                          as={Link}
-                          href="/events/create"
                           className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-sm font-semibold text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                          onClick={() =>
+                            handleCopyLink(`${APP_ORIGIN}/events/${event.slug}`)
+                          }
                         >
-                          Share
+                          <span>
+                            {copiedActive ? (
+                              <CheckIcon className="h-5 w-5" />
+                            ) : (
+                              <CopyOutlineIcon className="h-5 w-5" />
+                            )}
+                          </span>
+                          <span className="hidden lg:inline">
+                            {copiedActive ? 'Copied!' : 'Copy link'}
+                          </span>
                         </Button>
                       </div>
                       <div className="max-w-xs flex-1 lg:order-1">
                         <Button
                           as={Link}
-                          href="/events/create"
+                          href={`/rooms/${event.roomId}`}
+                          target="_blank"
                           className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white antialiased hover:bg-red-600 active:bg-red-500"
                         >
                           Join Webinar
@@ -136,7 +179,8 @@ export default function EventDetailDashboard({}) {
               </div>
               <div className="border-b border-zinc-800 py-4 lg:py-6">
                 <div className="mb-3 flex items-center md:-mb-5">
-                  <StatusPublished />
+                  {event.status === 'published' && <StatusPublished />}
+                  {event.status === 'cancelled' && <StatusCancelled />}
                   <span className="ml-3 inline-block text-sm font-medium text-zinc-500">
                     Free event
                   </span>
@@ -145,8 +189,8 @@ export default function EventDetailDashboard({}) {
                   <div className="md:order-2">
                     <Image
                       referrerPolicy="no-referrer"
-                      src="/images/webinar/webinar-no-image-placeholder.png"
-                      alt={`Thumbnail image of `}
+                      src={thumbnailUrl}
+                      alt={`Thumbnail image of ${event.name}`}
                       loading="lazy"
                       width={160}
                       height={80}
@@ -156,21 +200,17 @@ export default function EventDetailDashboard({}) {
                   </div>
                   <div className="md:order-1 md:flex-1 md:pt-7">
                     <h3 className="text-base font-medium text-zinc-300 lg:text-lg">
-                      Developing Real-Time Communication Features with WebRTC
-                      and SFU
+                      {event.name}
                     </h3>
                     <span className="mt-2 inline-block text-sm font-medium text-zinc-500">
-                      7 December 2023, 10:00am
+                      {eventStartDate}, {eventStartTime}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="flex flex-col gap-1 py-3 sm:flex-row sm:gap-8 lg:py-5">
                 <div className="text-sm font-medium text-zinc-400">
-                  Created on 1 December 2023
-                </div>
-                <div className="text-sm font-medium text-zinc-400">
-                  Published on 2 December 2023
+                  Created on {eventCreatedDate}
                 </div>
               </div>
             </div>
@@ -187,9 +227,9 @@ export default function EventDetailDashboard({}) {
               </nav>
               <div className="mt-4 pt-2.5 lg:mt-2 lg:px-5 lg:pt-2">
                 <div className="text-xs font-medium text-zinc-400 lg:text-base">
-                  <span className="tabular-nums">54</span> participants
+                  <span className="tabular-nums">{totalRegisterees}</span>{' '}
+                  participants
                 </div>
-                {/* table */}
                 <div className="relative mt-4 block max-h-[400px] overflow-auto overscroll-contain">
                   <table className="w-full table-auto divide-y divide-zinc-700 text-left">
                     <thead className="sticky top-0 z-20 bg-zinc-800 leading-5 text-zinc-300">
@@ -215,24 +255,52 @@ export default function EventDetailDashboard({}) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-700 text-sm">
-                      {registeredData.map((data) => {
-                        return (
-                          <tr key={data.email}>
-                            <th
-                              scope="row"
-                              className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
-                            >
-                              {data.name}
-                            </th>
-                            <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                              {data.email}
-                            </td>
-                            <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                              {data.registeredAt}
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {totalRegisterees > 0 ? (
+                        registerees.map((registeree) => {
+                          const name = `${registeree.firstName} ${registeree.lastName}`;
+
+                          const registereeCreatedDate = new Date(
+                            registeree.createdAt
+                          ).toLocaleDateString('en-GB', {
+                            month: 'long',
+                            day: '2-digit',
+                            year: 'numeric',
+                          });
+
+                          const registereeCreatedTime = new Date(
+                            registeree.createdAt
+                          ).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true,
+                          });
+
+                          return (
+                            <tr key={registeree.email}>
+                              <th
+                                scope="row"
+                                className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
+                              >
+                                {name}
+                              </th>
+                              <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
+                                {registeree.email}
+                              </td>
+                              <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
+                                {registereeCreatedDate}, {registereeCreatedTime}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={3}>
+                            <div className="flex items-center justify-center p-3 text-zinc-200 lg:p-6">
+                              Empty data
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>

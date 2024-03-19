@@ -107,10 +107,32 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   const isHost = userAuth?.id === eventData.createdBy;
 
+  let registerees: EventType.RegistereeParticipant[] = [];
+  let totalRegisterees = 0;
+
+  if (isHost && eventData.status === 'published') {
+    const registereesResponse: EventType.RegistereeParticipantResponse =
+      await InternalApiFetcher.get(
+        `/api/events/${eventID}/details/registeree`,
+        {
+          headers: {
+            Cookie: `token=${cookie}`,
+          },
+        }
+      );
+
+    registerees = registereesResponse.data;
+    totalRegisterees = registereesResponse.meta.total_record;
+  }
+
   return (
     <AppContainer user={userAuth}>
       {isHost && eventData.status === 'published' ? (
-        <EventDetailDashboard />
+        <EventDetailDashboard
+          event={eventData}
+          registerees={registerees}
+          totalRegisterees={totalRegisterees}
+        />
       ) : isHost && eventData.status === 'draft' ? (
         <EventDetail event={eventData} status="draft" />
       ) : (
