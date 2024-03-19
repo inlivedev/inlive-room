@@ -90,11 +90,11 @@ export class EventService implements iEventService {
   async getAllParticipantsByEventId(eventId: number) {
     return await this.repo.getEventParticipantsByEventId(eventId);
   }
-
   async sendEmailsRescheduledEvent(
     oldEvent: selectEvent,
     newEvent: selectEvent
   ) {
+    eventRepo.updateParticipantCount(newEvent.id);
     const participants = await this.repo.getEventParticipantsByEventId(
       oldEvent.id
     );
@@ -107,8 +107,6 @@ export class EventService implements iEventService {
       return;
     }
 
-    eventRepo.updateParticipantCount(newEvent.id);
-
     for (const participant of participants) {
       SendEventRescheduledEmail(
         participant.participant,
@@ -120,6 +118,7 @@ export class EventService implements iEventService {
   }
 
   async sendEmailsCancelledEvent(eventId: number) {
+    eventRepo.updateParticipantCount(eventId);
     const participants = await this.repo.getEventParticipantsByEventId(eventId);
     const event = await this.repo.getEventById(eventId);
     const host = await this.repo.getEventHostByEventId(eventId);
@@ -130,8 +129,6 @@ export class EventService implements iEventService {
     if (!event || participants.length == 0) {
       return;
     }
-
-    eventRepo.updateParticipantCount(eventId);
 
     for (const participant of participants) {
       SendEventCancelledEmail(participant.participant, event, host);
