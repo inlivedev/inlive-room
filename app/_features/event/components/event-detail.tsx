@@ -166,7 +166,7 @@ function PublicAction({ event }: { event: EventType.Event }) {
         startTime={event.startTime}
       />
       <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
-        <div className="flex gap-4">
+        <div className="flex items-center justify-center gap-4">
           <div className="flex-auto">
             <Button
               className="w-full rounded-md bg-red-700 px-4 py-2 text-base font-medium antialiased hover:bg-red-600 active:bg-red-500"
