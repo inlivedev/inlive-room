@@ -1,4 +1,3 @@
-import { useNavigate } from '@/_shared/hooks/use-navigate';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import {
   Button,
@@ -16,8 +15,7 @@ import WarningIcon from '@/_shared/components/icons/warning-icon';
 
 export default function CancelEventModal({ slug }: { slug: string }) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { navigateTo } = useNavigate();
+  const [isCanceling, setIsCanceling] = useState(false);
 
   useEffect(() => {
     const openModal = () => {
@@ -40,9 +38,8 @@ export default function CancelEventModal({ slug }: { slug: string }) {
     >
       <ModalContent>
         <ModalHeader>
-          <h3>cancel this event</h3>
+          <h3>Cancel This Event</h3>
         </ModalHeader>
-
         <ModalBody>
           <div>
             <div className="flex gap-2">
@@ -53,9 +50,11 @@ export default function CancelEventModal({ slug }: { slug: string }) {
                 This action cannot be undone!
               </p>
             </div>
-            <p className="mt-4">
-              Are you sure you want to cancel this event? <br />
-              Cancelling the event will make the room unavailable
+            <p className="mt-4 text-sm">
+              Are you sure you want to cancel this event?
+            </p>
+            <p className="mt-1 text-sm">
+              Cancelling the event will make webinar room unavailable
             </p>
           </div>
         </ModalBody>
@@ -64,30 +63,30 @@ export default function CancelEventModal({ slug }: { slug: string }) {
             onPress={onClose}
             className="flex min-w-0 basis-1/2 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
           >
-            Cancel
+            Close
           </Button>
           <Button
             onPress={async () => {
-              setIsDeleting(true);
+              setIsCanceling(true);
               try {
                 const response = await InternalApiFetcher.put(
                   `/api/events/${slug}/cancel`
                 );
 
                 if (response.ok) {
-                  navigateTo('/events');
+                  window.location.reload();
                 } else {
                   alert('Failed to cancel event, please try again later');
                 }
               } catch (error) {
                 Sentry.captureException(error);
               } finally {
-                setIsDeleting(false);
+                setIsCanceling(false);
               }
             }}
             className="w-full basis-1/2 rounded-md bg-red-800 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-700 active:bg-red-600"
           >
-            {isDeleting ? (
+            {isCanceling ? (
               <div className="flex gap-2">
                 <Spinner
                   classNames={{

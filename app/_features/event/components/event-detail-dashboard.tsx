@@ -1,5 +1,6 @@
 'use client';
 
+import { type Key, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -20,6 +21,7 @@ import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
 import CheckIcon from '@/_shared/components/icons/check-icon';
+import CancelEventModal from './event-cancel-modal';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -76,8 +78,15 @@ export default function EventDetailDashboard({
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
+  const onMoreActionSelection = useCallback(async (selectedKey: Key) => {
+    if (selectedKey === 'cancel-event') {
+      document.dispatchEvent(new CustomEvent('open:event-cancel-modal'));
+    }
+  }, []);
+
   return (
     <div className="bg-zinc-900">
+      <CancelEventModal slug={event.slug} />
       <div className="min-viewport-height mx-auto flex max-w-7xl flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex-1">
@@ -166,9 +175,7 @@ export default function EventDetailDashboard({
                     </DropdownTrigger>
                     <DropdownMenu
                       disallowEmptySelection
-                      onAction={() => {
-                        console.log('sss');
-                      }}
+                      onAction={onMoreActionSelection}
                     >
                       <DropdownItem key="cancel-event">
                         <span className="text-red-400">Cancel Event</span>
