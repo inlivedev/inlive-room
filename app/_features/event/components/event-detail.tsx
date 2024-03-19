@@ -47,7 +47,7 @@ export default function EventDetail({
             </h2>
             <div className="my-4 lg:my-6">
               <b className="font-medium text-zinc-100">
-                Hosted by {event.host}
+                Hosted by {event.host?.name}
               </b>
             </div>
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
