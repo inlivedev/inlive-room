@@ -7,12 +7,10 @@ import {
   insertParticipant,
   participant as participants,
   selectEvent,
-  eventStatusEnum,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
-import { User } from '../user/schema';
-import { register } from 'mixpanel-browser';
+import { User, users } from '../user/schema';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
@@ -21,22 +19,38 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async getEventBySlug(slug: string): Promise<selectEvent | undefined> {
+  async getEventBySlug(slug: string) {
     const data = await db.query.events.findFirst({
+      with: {
+        host: {
+          columns: {
+            id: true,
+            name: true,
+            pictureUrl: true,
+          },
+        },
+      },
       where: and(eq(events.slug, slug), isNull(events.deletedAt)),
     });
 
-    if (data) return data as selectEvent;
-    else return undefined;
+    return data;
   }
 
-  async getEventById(id: number): Promise<selectEvent | undefined> {
+  async getEventById(id: number) {
     const data = await db.query.events.findFirst({
+      with: {
+        host: {
+          columns: {
+            id: true,
+            name: true,
+            pictureUrl: true,
+          },
+        },
+      },
       where: and(eq(events.id, id), isNull(events.deletedAt)),
     });
 
-    if (data) return data as selectEvent;
-    else return undefined;
+    return data;
   }
 
   /**
@@ -232,14 +246,6 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async updateEventBySlug(userId: number, slug: string, event: insertEvent) {
-    return await db
-      .update(events)
-      .set(event)
-      .where(and(eq(events.slug, slug), eq(events.createdBy, userId)))
-      .returning();
-  }
-
   async registerParticipant(
     participant: typeof insertParticipant,
     eventId: number
@@ -354,5 +360,49 @@ export class EventRepo implements iEventRepo {
     });
 
     return { data: data, meta };
+  }
+
+  async getEventParticipantsByEventId(eventId: number) {
+    return await db.query.eventHasParticipant.findMany({
+      columns: {
+        participantId: false,
+        eventId: false,
+      },
+      with: {
+        participant: true,
+      },
+      where: (eventHasParticipant, { eq }) =>
+        eq(eventHasParticipant.eventId, eventId),
+    });
+  }
+
+  async getParticipantById(id: number) {
+    return await db.query.participant.findFirst({
+      where: eq(participants.id, id),
+    });
+  }
+
+  async getEventHostByEventId(eventId: number) {
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, eventId),
+    });
+
+    if (typeof event !== 'undefined' && event.createdBy !== null) {
+      return await db.query.users.findFirst({
+        where: eq(users.id, event.createdBy),
+      });
+    }
+
+    return undefined;
+  }
+
+  async updateParticipantCount(eventId: number) {
+    return await db
+      .update(participants)
+      .set({ updateCount: sql`${participants.updateCount} + 1` })
+      .where(
+        sql`${participants.id} IN (SELECT ${eventHasParticipant.participantId} FROM ${eventHasParticipant} WHERE ${eventHasParticipant.eventId} = ${eventId})`
+      )
+      .returning();
   }
 }

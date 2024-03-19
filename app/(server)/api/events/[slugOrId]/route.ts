@@ -10,6 +10,8 @@ import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
 import { whitelistFeature } from '@/_shared/utils/flag';
 import * as z from 'zod';
+import { isMailerEnabled } from '@/(server)/_shared/mailer/mailer';
+
 const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
 const EVENT_TRIAL_COUNT = parseInt(
   process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
@@ -261,7 +263,6 @@ export async function PUT(
           generateID(8)
         : oldEvent.slug,
       description: updateEventMeta.description ?? oldEvent.description,
-      host: user.name,
       createdBy: oldEvent.createdBy,
       roomId: oldEvent.roomId,
       status: updateEventMeta.status,
@@ -381,6 +382,13 @@ export async function PUT(
         },
         { status: 404 }
       );
+    }
+
+    if (
+      eventService.isEventRescheduled(oldEvent, updatedEvent) &&
+      isMailerEnabled()
+    ) {
+      eventService.sendEmailsRescheduledEvent(oldEvent, updatedEvent);
     }
 
     return NextResponse.json(

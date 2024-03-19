@@ -1,13 +1,15 @@
 import { eventService } from '@/(server)/api/_index';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
-import { GenerateIcal } from '../..';
+import { GenerateIcal } from '../../..';
 
 export async function GET(
   _: Request,
-  { params }: { params: { slugOrId: string } }
+  { params }: { params: { slugOrId: string; participantId: number } }
 ) {
   const slug = params.slugOrId;
+  const participantId = params.participantId;
+
   try {
     const event = await eventService.getEventBySlugOrID(slug);
     if (!event) {
@@ -17,7 +19,23 @@ export async function GET(
       });
     }
 
-    const icalString = GenerateIcal(event, 'Asia/Jakarta');
+    const host = await eventService.getEventHostByEventId(event.id);
+    if (!host) {
+      return NextResponse.json({
+        code: 404,
+        message: 'Host not found',
+      });
+    }
+
+    const participant = await eventService.getParticipantById(participantId);
+    if (!participant) {
+      return NextResponse.json({
+        code: 404,
+        message: 'Participant not found',
+      });
+    }
+
+    const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
     const resp = new Response(icalString);
     resp.headers.set(
       'Content-Type',
