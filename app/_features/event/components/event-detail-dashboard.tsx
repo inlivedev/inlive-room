@@ -133,7 +133,7 @@ export default function EventDetailDashboard({
                       <div className="flex items-center justify-center gap-4">
                         <div className="max-w-xs flex-1 lg:order-2">
                           <Button
-                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-sm font-semibold text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-sm font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:font-semibold"
                             onClick={() =>
                               handleCopyLink(
                                 `${APP_ORIGIN}/events/${event.slug}`
@@ -148,7 +148,7 @@ export default function EventDetailDashboard({
                             as={Link}
                             href={`/rooms/${event.roomId}`}
                             target="_blank"
-                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white antialiased hover:bg-red-600 active:bg-red-500"
+                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:font-semibold"
                           >
                             Join Webinar
                           </Button>
