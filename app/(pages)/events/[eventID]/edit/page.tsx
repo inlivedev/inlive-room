@@ -36,7 +36,12 @@ export const generateMetadata = async ({
 
   const event = await eventService.getEventBySlugOrID(eventID, user.id);
 
-  if (!event || !event.id) return null; // use not-found metadata
+  if (!event || !event.id) {
+    return {
+      title: 'Page Not Found',
+      description: 'There is nothing to see on this page',
+    };
+  }
 
   if (event.createdBy !== user.id) {
     return {
