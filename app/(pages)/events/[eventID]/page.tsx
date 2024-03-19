@@ -127,7 +127,8 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   return (
     <AppContainer user={userAuth}>
-      {isHost && eventData.status === 'published' ? (
+      {(isHost && eventData.status === 'published') ||
+      eventData.status === 'cancelled' ? (
         <EventDetailDashboard
           event={eventData}
           registerees={registerees}
