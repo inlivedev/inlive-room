@@ -110,8 +110,8 @@ export class EventService implements iEventService {
     for (const participant of participants) {
       SendEventRescheduledEmail(
         participant.participant,
-        oldEvent,
         newEvent,
+        oldEvent,
         host
       );
     }
