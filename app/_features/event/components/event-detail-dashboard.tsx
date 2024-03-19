@@ -72,6 +72,11 @@ export default function EventDetailDashboard({
     }
   );
 
+  registerees = registerees.map((registeree) => ({
+    ...registeree,
+    createdAt: new Date(registeree.createdAt),
+  }));
+
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
@@ -262,21 +267,19 @@ export default function EventDetailDashboard({
                         registerees.map((registeree) => {
                           const name = `${registeree.firstName} ${registeree.lastName}`;
 
-                          const registereeCreatedDate = new Date(
-                            registeree.createdAt
-                          ).toLocaleDateString('en-GB', {
-                            month: 'long',
-                            day: '2-digit',
-                            year: 'numeric',
-                          });
+                          const registereeCreatedDate =
+                            registeree.createdAt.toLocaleDateString('en-GB', {
+                              month: 'long',
+                              day: '2-digit',
+                              year: 'numeric',
+                            });
 
-                          const registereeCreatedTime = new Date(
-                            registeree.createdAt
-                          ).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                          });
+                          const registereeCreatedTime =
+                            registeree.createdAt.toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true,
+                            });
 
                           return (
                             <tr key={`${registeree.id}-${registeree.email}`}>
