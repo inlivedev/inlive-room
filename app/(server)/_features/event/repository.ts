@@ -388,7 +388,7 @@ export class EventRepo implements iEventRepo {
   async updateParticipantCount(eventId: number) {
     return await db
       .update(participants)
-      .set({ updateCount: +1 })
+      .set({ updateCount: sql`${participants.updateCount} + 1` })
       .where(
         sql`${participants.id} IN (SELECT ${eventHasParticipant.participantId} FROM ${eventHasParticipant} WHERE ${eventHasParticipant.eventId} = ${eventId})`
       )
