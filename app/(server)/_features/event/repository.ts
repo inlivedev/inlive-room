@@ -225,8 +225,6 @@ export class EventRepo implements iEventRepo {
     id: number,
     event: insertEvent
   ): Promise<selectEvent | undefined> {
-    event.update_count = event.update_count ? event.update_count : 1 + 1;
-
     const data = await db.transaction(async (tx) => {
       if (!event.thumbnailUrl) {
         await tx
@@ -385,5 +383,15 @@ export class EventRepo implements iEventRepo {
     }
 
     return undefined;
+  }
+
+  async updateParticipantCount(eventId: number) {
+    return await db
+      .update(participants)
+      .set({ updateCount: +1 })
+      .where(
+        sql`${participants.id} IN (SELECT ${eventHasParticipant.participantId} FROM ${eventHasParticipant} WHERE ${eventHasParticipant.eventId} = ${eventId})`
+      )
+      .returning();
   }
 }

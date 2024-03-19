@@ -37,7 +37,6 @@ export const events = pgTable('events', {
   thumbnailUrl: text('thumbnail_url'),
   deletedAt: timestamp('deleted_at'),
   status: statusEnum('status').notNull().default('draft'),
-  update_count: integer('update_count').notNull().default(0),
 });
 
 export const eventsRelation = relations(events, ({ many, one }) => ({
@@ -61,6 +60,7 @@ export const participant = pgTable('events_participant', {
   lastName: text('last_name').notNull(),
   email: text('email').notNull(),
   description: text('description'),
+  updateCount: integer('update_count').notNull().default(0),
   data: jsonb('data'),
 });
 

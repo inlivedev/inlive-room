@@ -1,4 +1,4 @@
-import { iEventService } from '@/(server)/api/_index';
+import { eventRepo, iEventService } from '@/(server)/api/_index';
 import { insertEvent, selectEvent, selectParticipant } from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { selectUser } from '../user/schema';
@@ -107,6 +107,8 @@ export class EventService implements iEventService {
       return;
     }
 
+    eventRepo.updateParticipantCount(newEvent.id);
+
     for (const participant of participants) {
       SendEventRescheduledEmail(
         participant.participant,
@@ -128,6 +130,8 @@ export class EventService implements iEventService {
     if (!event || participants.length == 0) {
       return;
     }
+
+    eventRepo.updateParticipantCount(eventId);
 
     for (const participant of participants) {
       SendEventCancelledEmail(participant.participant, event, host);
