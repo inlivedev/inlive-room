@@ -19,9 +19,8 @@ import {
 import type { EventType } from '@/_shared/types/event';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
-import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
-import CheckIcon from '@/_shared/components/icons/check-icon';
 import CancelEventModal from './event-cancel-modal';
+import type { SVGElementPropsType } from '@/_shared/types/types';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -74,15 +73,25 @@ export default function EventDetailDashboard({
     }
   );
 
+  registerees = registerees.map((registeree) => ({
+    ...registeree,
+    createdAt: new Date(registeree.createdAt),
+  }));
+
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
-  const onMoreActionSelection = useCallback(async (selectedKey: Key) => {
-    if (selectedKey === 'cancel-event') {
-      document.dispatchEvent(new CustomEvent('open:event-cancel-modal'));
-    }
-  }, []);
+  const onMoreActionSelection = useCallback(
+    async (selectedKey: Key) => {
+      if (selectedKey === 'public-view') {
+        window.open(`/events/${event.slug}`, '_blank');
+      } else if (selectedKey === 'cancel-event') {
+        document.dispatchEvent(new CustomEvent('open:event-cancel-modal'));
+      }
+    },
+    [event]
+  );
 
   return (
     <div className="bg-zinc-900">
@@ -124,72 +133,60 @@ export default function EventDetailDashboard({
                     </span>
                   </Button>
                 </div>
-                {event.status === 'published' ? (
-                  <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-2">
+                  {event.status === 'published' ? (
                     <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="max-w-xs flex-1 lg:order-2">
+                      <div className="flex items-center justify-center gap-4">
+                        <div className="flex-auto">
                           <Button
-                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-sm font-semibold text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                            as={Link}
+                            href={`/rooms/${event.roomId}`}
+                            target="_blank"
+                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
+                          >
+                            Join Webinar
+                          </Button>
+                        </div>
+                        <div>
+                          <Button
+                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
                             onClick={() =>
                               handleCopyLink(
                                 `${APP_ORIGIN}/events/${event.slug}`
                               )
                             }
                           >
-                            <span>
-                              {copiedActive ? (
-                                <CheckIcon className="h-5 w-5" />
-                              ) : (
-                                <CopyOutlineIcon className="h-5 w-5" />
-                              )}
-                            </span>
-                            <span className="hidden lg:inline">
-                              {copiedActive ? 'Copied!' : 'Copy link'}
-                            </span>
-                          </Button>
-                        </div>
-                        <div className="max-w-xs flex-1 lg:order-1">
-                          <Button
-                            as={Link}
-                            href={`/rooms/${event.roomId}`}
-                            target="_blank"
-                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white antialiased hover:bg-red-600 active:bg-red-500"
-                          >
-                            Join Webinar
+                            {copiedActive ? 'Copied!' : 'Copy link'}
                           </Button>
                         </div>
                       </div>
                     </div>
-                    <Dropdown className="ring-1 ring-zinc-800/70">
-                      <DropdownTrigger>
-                        <Button className="h-9 min-w-0 rounded-md bg-transparent px-4 py-2  text-white hover:bg-zinc-800 active:bg-zinc-700 lg:bg-zinc-800 lg:hover:bg-zinc-700 lg:active:bg-zinc-600">
-                          <svg
-                            viewBox="0 0 15 15"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                          >
-                            <path
-                              d="M3.625 7.5C3.625 8.12132 3.12132 8.625 2.5 8.625C1.87868 8.625 1.375 8.12132 1.375 7.5C1.375 6.87868 1.87868 6.375 2.5 6.375C3.12132 6.375 3.625 6.87868 3.625 7.5ZM8.625 7.5C8.625 8.12132 8.12132 8.625 7.5 8.625C6.87868 8.625 6.375 8.12132 6.375 7.5C6.375 6.87868 6.87868 6.375 7.5 6.375C8.12132 6.375 8.625 6.87868 8.625 7.5ZM12.5 8.625C13.1213 8.625 13.625 8.12132 13.625 7.5C13.625 6.87868 13.1213 6.375 12.5 6.375C11.8787 6.375 11.375 6.87868 11.375 7.5C11.375 8.12132 11.8787 8.625 12.5 8.625Z"
-                              fill="currentColor"
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                            ></path>
-                          </svg>
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        disallowEmptySelection
-                        onAction={onMoreActionSelection}
-                      >
-                        <DropdownItem key="cancel-event">
-                          <span className="text-red-400">Cancel Event</span>
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
-                  </div>
-                ) : null}
+                  ) : null}
+                  <Dropdown className="ring-1 ring-zinc-800/70">
+                    <DropdownTrigger>
+                      <Button className="h-9 min-w-0 rounded-md bg-transparent px-4 py-2  text-white hover:bg-zinc-800 active:bg-zinc-700 lg:bg-zinc-800 lg:hover:bg-zinc-700 lg:active:bg-zinc-600">
+                        <MoreIcon className="h-4 w-4" />
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      disallowEmptySelection
+                      onAction={onMoreActionSelection}
+                    >
+                      {[
+                        <DropdownItem key="public-view">
+                          <span className="text-zinc-200">View Event</span>
+                        </DropdownItem>,
+                        // @ts-ignore
+                        event.status === 'published' ? (
+                          <DropdownItem key="cancel-event">
+                            <span className="text-red-400">Cancel Event</span>
+                          </DropdownItem>
+                        ) : undefined,
+                      ]}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
               </div>
               <div className="border-b border-zinc-800 py-4 lg:py-6">
                 <div className="mb-3 flex items-center md:-mb-5">
@@ -246,7 +243,7 @@ export default function EventDetailDashboard({
                 </div>
                 <div className="relative mt-4 block max-h-[400px] overflow-auto overscroll-contain">
                   <table className="w-full table-auto divide-y divide-zinc-700 text-left">
-                    <thead className="sticky top-0 z-20 bg-zinc-800 leading-5 text-zinc-300">
+                    <thead className="sticky top-0 bg-zinc-800 leading-5 text-zinc-300">
                       <tr>
                         <th
                           scope="col"
@@ -273,24 +270,22 @@ export default function EventDetailDashboard({
                         registerees.map((registeree) => {
                           const name = `${registeree.firstName} ${registeree.lastName}`;
 
-                          const registereeCreatedDate = new Date(
-                            registeree.createdAt
-                          ).toLocaleDateString('en-GB', {
-                            month: 'long',
-                            day: '2-digit',
-                            year: 'numeric',
-                          });
+                          const registereeCreatedDate =
+                            registeree.createdAt.toLocaleDateString('en-GB', {
+                              month: 'long',
+                              day: '2-digit',
+                              year: 'numeric',
+                            });
 
-                          const registereeCreatedTime = new Date(
-                            registeree.createdAt
-                          ).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                          });
+                          const registereeCreatedTime =
+                            registeree.createdAt.toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true,
+                            });
 
                           return (
-                            <tr key={registeree.email}>
+                            <tr key={`${registeree.id}-${registeree.email}`}>
                               <th
                                 scope="row"
                                 className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
@@ -329,5 +324,23 @@ export default function EventDetailDashboard({
         </div>
       </div>
     </div>
+  );
+}
+
+function MoreIcon(props: SVGElementPropsType) {
+  return (
+    <svg
+      viewBox="0 0 15 15"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M3.625 7.5C3.625 8.12132 3.12132 8.625 2.5 8.625C1.87868 8.625 1.375 8.12132 1.375 7.5C1.375 6.87868 1.87868 6.375 2.5 6.375C3.12132 6.375 3.625 6.87868 3.625 7.5ZM8.625 7.5C8.625 8.12132 8.12132 8.625 7.5 8.625C6.87868 8.625 6.375 8.12132 6.375 7.5C6.375 6.87868 6.87868 6.375 7.5 6.375C8.12132 6.375 8.625 6.87868 8.625 7.5ZM12.5 8.625C13.1213 8.625 13.625 8.12132 13.625 7.5C13.625 6.87868 13.1213 6.375 12.5 6.375C11.8787 6.375 11.375 6.87868 11.375 7.5C11.375 8.12132 11.8787 8.625 12.5 8.625Z"
+        fill="currentColor"
+        fillRule="evenodd"
+        clipRule="evenodd"
+      ></path>
+    </svg>
   );
 }

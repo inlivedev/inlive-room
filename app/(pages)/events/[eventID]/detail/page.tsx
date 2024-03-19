@@ -1,14 +1,14 @@
+import type { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
+import { notFound } from 'next/navigation';
 import AppContainer from '@/_shared/components/containers/app-container';
-import EventForm from '@/_features/event/components/event-form';
-import { AuthType } from '@/_shared/types/auth';
-import { notFound, redirect } from 'next/navigation';
-import { Metadata } from 'next';
-import { eventService } from '@/(server)/api/_index';
+import EventDetail from '@/_features/event/components/event-detail';
+import EventDetailDashboard from '@/_features/event/components/event-detail-dashboard';
 import HTTPError from '@/_shared/components/errors/http-error';
-import { whitelistFeature } from '@/_shared/utils/flag';
-import { EventType } from '@/_shared/types/event';
+import { eventService } from '@/(server)/api/_index';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import type { AuthType } from '@/_shared/types/auth';
+import type { EventType } from '@/_shared/types/event';
 
 type PageProps = {
   params: {
@@ -18,7 +18,7 @@ type PageProps = {
 
 export const generateMetadata = async ({
   params: { eventID },
-}: PageProps): Promise<Metadata | null> => {
+}: PageProps): Promise<Metadata> => {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
@@ -51,7 +51,8 @@ export const generateMetadata = async ({
   }
 
   return {
-    title: `Edit ${event.name} — inLive Room`,
+    title: `Webinar — ${event.name} — inLive Room`,
+    description: `Detail of ${event.name}`,
   };
 };
 
@@ -76,13 +77,15 @@ export default async function Page({ params: { eventID } }: PageProps) {
     );
   }
 
-  const event = await eventService.getEventBySlugOrID(eventID, user?.id);
+  const event = await eventService.getEventBySlugOrID(eventID, user.id);
 
   if (!event) {
     return notFound();
   }
 
-  if (event.createdBy !== user.id) {
+  const isHost = user.id === event.createdBy;
+
+  if (!isHost) {
     return (
       <AppContainer user={user}>
         <HTTPError
@@ -94,33 +97,29 @@ export default async function Page({ params: { eventID } }: PageProps) {
     );
   }
 
-  let isLimitReached = false;
   const token = cookies().get('token')?.value ?? '';
 
-  if (!whitelistFeature.includes('event') === true) {
-    const eventCreateLimit: EventType.CreateLimit =
-      await InternalApiFetcher.get(`/api/events/can-create`, {
-        headers: {
-          Cookie: `token=${token}`,
-        },
-      });
+  const registereesResponse: EventType.RegistereeParticipantResponse =
+    await InternalApiFetcher.get(`/api/events/${eventID}/details/registeree`, {
+      headers: {
+        Cookie: `token=${token}`,
+      },
+    });
 
-    if (eventCreateLimit?.code === 403) {
-      isLimitReached = true;
-    }
-
-    if (event.status === 'published') {
-      isLimitReached = false;
-    }
-  }
-
-  if (event.status === 'cancelled') {
-    redirect(`/event/${eventID}`);
-  }
+  const registerees = registereesResponse.data || [];
+  const totalRegisterees = registereesResponse.meta.total_record || 0;
 
   return (
     <AppContainer user={user}>
-      <EventForm data={event} limitPublish={isLimitReached} />
+      {event.status === 'draft' ? (
+        <EventDetail event={event} status="draft" />
+      ) : (
+        <EventDetailDashboard
+          event={event}
+          registerees={registerees}
+          totalRegisterees={totalRegisterees}
+        />
+      )}
     </AppContainer>
   );
 }
