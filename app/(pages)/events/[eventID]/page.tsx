@@ -3,6 +3,7 @@ import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventDetail from '@/_features/event/components/event-detail';
+import EventDetailDashboard from '@/_features/event/components/event-detail-dashboard';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
 import type { EventType } from '@/_shared/types/event';
@@ -104,24 +105,40 @@ export default async function Page({ params: { eventID } }: PageProps) {
     notFound();
   }
 
-  const descriptionMarkup = {
-    __html: eventData.description || '',
-  };
+  const isHost = userAuth?.id === eventData.createdBy;
+
+  let registerees: EventType.RegistereeParticipant[] = [];
+  let totalRegisterees = 0;
+
+  if (isHost && eventData.status === 'published') {
+    const registereesResponse: EventType.RegistereeParticipantResponse =
+      await InternalApiFetcher.get(
+        `/api/events/${eventID}/details/registeree`,
+        {
+          headers: {
+            Cookie: `token=${cookie}`,
+          },
+        }
+      );
+
+    registerees = registereesResponse.data;
+    totalRegisterees = registereesResponse.meta.total_record;
+  }
 
   return (
     <AppContainer user={userAuth}>
-      <EventDetail
-        id={eventData.id}
-        title={eventData.name}
-        descriptionMarkup={descriptionMarkup}
-        slug={eventData.slug}
-        host={eventData.host}
-        startTime={eventData.startTime}
-        status={eventData.status}
-        thumbnailUrl={eventData.thumbnailUrl}
-        createdBy={eventData.createdBy}
-        roomId={eventData.roomId || ''}
-      />
+      {(isHost && eventData.status === 'published') ||
+      eventData.status === 'cancelled' ? (
+        <EventDetailDashboard
+          event={eventData}
+          registerees={registerees}
+          totalRegisterees={totalRegisterees}
+        />
+      ) : isHost && eventData.status === 'draft' ? (
+        <EventDetail event={eventData} status="draft" />
+      ) : (
+        <EventDetail event={eventData} status="public" />
+      )}
     </AppContainer>
   );
 }

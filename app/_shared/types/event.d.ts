@@ -39,6 +39,20 @@ export declare namespace EventType {
     };
   };
 
+  type RegistereeParticipant = {
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    createdAt: Date;
+  };
+
+  type RegistereeParticipantResponse = FetcherResponse & {
+    message: string;
+    data: RegistereeParticipant[];
+    meta: PageMeta;
+  };
+
   type ListEventsResponse = FetcherResponse & {
     message: string;
     data?: Event[];

@@ -12,6 +12,7 @@ import {
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { User } from '../user/schema';
+import { register } from 'mixpanel-browser';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
@@ -55,8 +56,8 @@ export class EventRepo implements iEventRepo {
     const filter = sql`
     ${events.createdBy} = ${userID} AND
     ${events.deletedAt} IS NULL AND
-    ((${events.status} = ${'published'} AND ${events.endTime} >= NOW()) 
-    OR ${events.status} = ${'cancelled'} 
+    ((${events.status} = ${'published'} AND ${events.endTime} >= NOW())
+    OR ${events.status} = ${'cancelled'}
     OR ${events.status} = ${'draft'})`;
 
     const res = await db.query.events.findMany({
@@ -341,6 +342,17 @@ export class EventRepo implements iEventRepo {
       per_page: limit,
       total_record: res.total,
     };
-    return { data: res.registeree, meta };
+
+    const data = res.registeree.map((user) => {
+      return {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        createdAt: user.created_at,
+      };
+    });
+
+    return { data: data, meta };
   }
 }
