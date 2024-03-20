@@ -41,12 +41,25 @@ export default async function Page({
     notFound();
   }
 
+  const startDate = new Date(eventData.startTime).toLocaleDateString('en-GB', {
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
+  });
+
+  const startTime = new Date(eventData.startTime).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
   return (
     <AppContainer user={userAuth}>
       <EventRegistrationSuccess
         participantName={participantName}
         title={eventData.name}
-        startTime={eventData.startTime}
+        startDate={startDate}
+        startTime={startTime}
         slug={eventData.slug}
       />
     </AppContainer>
