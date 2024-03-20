@@ -143,14 +143,14 @@ export default function EventDetailDashboard({
                             as={Link}
                             href={`/rooms/${event.roomId}`}
                             target="_blank"
-                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
+                            className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm"
                           >
                             Join Webinar
                           </Button>
                         </div>
                         <div>
                           <Button
-                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:text-sm"
                             onClick={() =>
                               handleCopyLink(
                                 `${APP_ORIGIN}/events/${event.slug}`

@@ -109,10 +109,18 @@ export default async function Page({ params: { eventID } }: PageProps) {
   const registerees = registereesResponse.data || [];
   const totalRegisterees = registereesResponse.meta.total_record || 0;
 
+  const startTime = new Date(event.startTime);
+  const endTime = new Date(event.endTime);
+
   return (
     <AppContainer user={user}>
       {event.status === 'draft' ? (
-        <EventDetail event={event} status="draft" />
+        <EventDetail
+          event={event}
+          status="draft"
+          startTime={startTime}
+          endTime={endTime}
+        />
       ) : (
         <EventDetailDashboard
           event={event}

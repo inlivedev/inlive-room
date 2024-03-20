@@ -115,7 +115,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
   }
 
   if (event.status === 'cancelled') {
-    redirect(`/event/${eventID}`);
+    redirect(`/events/${eventID}`);
   }
 
   return (

@@ -87,9 +87,17 @@ export default async function Page({ params: { eventID } }: PageProps) {
     return notFound();
   }
 
+  const startTime = new Date(event.startTime);
+  const endTime = new Date(event.endTime);
+
   return (
     <AppContainer user={user}>
-      <EventDetail event={event} status="public" />
+      <EventDetail
+        event={event}
+        status="public"
+        startTime={startTime}
+        endTime={endTime}
+      />
     </AppContainer>
   );
 }
