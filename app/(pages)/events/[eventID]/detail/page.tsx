@@ -106,8 +106,31 @@ export default async function Page({ params: { eventID } }: PageProps) {
       },
     });
 
-  const registerees = registereesResponse.data || [];
-  const totalRegisterees = registereesResponse.meta.total_record || 0;
+  const registerees =
+    registereesResponse.data.map((registeree) => {
+      const name = `${registeree.firstName} ${registeree.lastName}`;
+
+      const registeredDate = registeree.createdAt.toLocaleDateString('en-GB', {
+        month: 'long',
+        day: '2-digit',
+        year: 'numeric',
+      });
+
+      const registeredTime = registeree.createdAt.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+
+      const registeredAt = `${registeredDate}, ${registeredTime}`;
+
+      return {
+        id: registeree.id,
+        name: name,
+        email: registeree.email,
+        registeredAt: registeredAt,
+      };
+    }) || [];
 
   const eventStartTime = new Date(event.startTime);
   const eventEndTime = new Date(event.endTime);
@@ -158,7 +181,6 @@ export default async function Page({ params: { eventID } }: PageProps) {
         <EventDetailDashboard
           event={event}
           registerees={registerees}
-          totalRegisterees={totalRegisterees}
           startDateWithYear={startDateWithYear}
           startTime={startTime}
           createdDate={createdDate}

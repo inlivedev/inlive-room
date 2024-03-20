@@ -24,17 +24,22 @@ import type { SVGElementPropsType } from '@/_shared/types/types';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
+type Registree = {
+  id: number;
+  name: string;
+  email: string;
+  registeredAt: string;
+};
+
 export default function EventDetailDashboard({
   event,
   registerees,
-  totalRegisterees,
   startDateWithYear,
   startTime,
   createdDate,
 }: {
   event: EventType.Event;
-  registerees: EventType.RegistereeParticipant[];
-  totalRegisterees: number;
+  registerees: Registree[];
   startDateWithYear: string;
   startTime: string;
   createdDate: string;
@@ -57,11 +62,6 @@ export default function EventDetailDashboard({
       alert('Failed to copy link');
     }
   };
-
-  registerees = registerees.map((registeree) => ({
-    ...registeree,
-    createdAt: new Date(registeree.createdAt),
-  }));
 
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
@@ -223,7 +223,7 @@ export default function EventDetailDashboard({
               </nav>
               <div className="mt-4 pt-2.5 lg:mt-2 lg:px-5 lg:pt-2">
                 <div className="text-xs font-medium text-zinc-400 lg:text-base">
-                  <span className="tabular-nums">{totalRegisterees}</span>{' '}
+                  <span className="tabular-nums">{registerees.length}</span>{' '}
                   participants
                 </div>
                 <div className="relative mt-4 block max-h-[400px] overflow-auto overscroll-contain">
@@ -251,37 +251,21 @@ export default function EventDetailDashboard({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-700 text-sm">
-                      {totalRegisterees > 0 ? (
+                      {registerees.length > 0 ? (
                         registerees.map((registeree) => {
-                          const name = `${registeree.firstName} ${registeree.lastName}`;
-
-                          const registereeCreatedDate =
-                            registeree.createdAt.toLocaleDateString('en-GB', {
-                              month: 'long',
-                              day: '2-digit',
-                              year: 'numeric',
-                            });
-
-                          const registereeCreatedTime =
-                            registeree.createdAt.toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit',
-                              hour12: true,
-                            });
-
                           return (
                             <tr key={`${registeree.id}-${registeree.email}`}>
                               <th
                                 scope="row"
                                 className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
                               >
-                                {name}
+                                {registeree.name}
                               </th>
                               <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
                                 {registeree.email}
                               </td>
                               <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                                {registereeCreatedDate}, {registereeCreatedTime}
+                                {registeree.registeredAt}
                               </td>
                             </tr>
                           );
