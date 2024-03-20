@@ -1,3 +1,6 @@
+-- Enable pgcrypto for gen_random_uuid() function
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 ALTER TABLE "events" ALTER COLUMN "created_by" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "events" ADD COLUMN "uuid" uuid DEFAULT gen_random_uuid();--> statement-breakpoint
 ALTER TABLE "events" ADD COLUMN "update_count" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
