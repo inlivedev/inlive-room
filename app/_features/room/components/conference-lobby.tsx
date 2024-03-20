@@ -5,8 +5,6 @@ import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import CopyOutlineIcon from '@/_shared/components/icons/copy-outline-icon';
-import CheckIcon from '@/_shared/components/icons/check-icon';
 import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
@@ -244,14 +242,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                       handleCopy(roomID, setCopiedIDActive, setCopiedIDInActive)
                     }
                   >
-                    <span>
-                      {copiedIDActive ? (
-                        <CheckIcon className="h-5 w-5" />
-                      ) : (
-                        <CopyOutlineIcon className="h-5 w-5" />
-                      )}
-                    </span>
-                    <span>{copiedIDActive ? 'Copied!' : 'Copy ID'}</span>
+                    {copiedIDActive ? 'Copied!' : 'Copy ID'}
                   </Button>
                 </div>
 
@@ -266,13 +257,6 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                       )
                     }
                   >
-                    <span>
-                      {copiedLinkActive ? (
-                        <CheckIcon className="h-5 w-5" />
-                      ) : (
-                        <CopyOutlineIcon className="h-5 w-5" />
-                      )}
-                    </span>
                     <span>{copiedLinkActive ? 'Copied!' : 'Copy link'}</span>
                   </Button>
                 </div>
