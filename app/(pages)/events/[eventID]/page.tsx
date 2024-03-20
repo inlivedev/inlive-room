@@ -87,14 +87,41 @@ export default async function Page({ params: { eventID } }: PageProps) {
     return notFound();
   }
 
-  const startTime = new Date(event.startTime);
-  const endTime = new Date(event.endTime);
+  const eventStartTime = new Date(event.startTime);
+  const eventEndTime = new Date(event.endTime);
+
+  const startDateWithoutYear = eventStartTime.toLocaleString('en-GB', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const startDateWithYear = eventStartTime.toLocaleString('en-GB', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const startTime = eventStartTime.toLocaleString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const endTime = eventEndTime.toLocaleString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
 
   return (
     <AppContainer user={user}>
       <EventDetail
         event={event}
         status="public"
+        startDateWithoutYear={startDateWithoutYear}
+        startDateWithYear={startDateWithYear}
         startTime={startTime}
         endTime={endTime}
       />

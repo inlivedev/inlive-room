@@ -28,10 +28,16 @@ export default function EventDetailDashboard({
   event,
   registerees,
   totalRegisterees,
+  startDateWithYear,
+  startTime,
+  createdDate,
 }: {
   event: EventType.Event;
   registerees: EventType.RegistereeParticipant[];
   totalRegisterees: number;
+  startDateWithYear: string;
+  startTime: string;
+  createdDate: string;
 }) {
   const {
     active: copiedActive,
@@ -51,27 +57,6 @@ export default function EventDetailDashboard({
       alert('Failed to copy link');
     }
   };
-
-  const eventStartDate = new Date(event.startTime).toLocaleDateString('en-GB', {
-    month: 'long',
-    day: '2-digit',
-    year: 'numeric',
-  });
-
-  const eventStartTime = new Date(event.startTime).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-
-  const eventCreatedDate = new Date(event.createdAt).toLocaleDateString(
-    'en-GB',
-    {
-      month: 'long',
-      day: '2-digit',
-      year: 'numeric',
-    }
-  );
 
   registerees = registerees.map((registeree) => ({
     ...registeree,
@@ -214,14 +199,14 @@ export default function EventDetailDashboard({
                       {event.name}
                     </h3>
                     <span className="mt-2 inline-block text-sm font-medium text-zinc-500">
-                      {eventStartDate}, {eventStartTime}
+                      {startDateWithYear}, {startTime}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="flex flex-col gap-1 py-3 sm:flex-row sm:gap-8 lg:py-5">
                 <div className="text-sm font-medium text-zinc-400">
-                  Created on {eventCreatedDate}
+                  Created on {createdDate}
                 </div>
               </div>
             </div>
