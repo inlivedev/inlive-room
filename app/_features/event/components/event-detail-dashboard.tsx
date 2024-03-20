@@ -223,7 +223,9 @@ export default function EventDetailDashboard({
               </nav>
               <div className="mt-4 pt-2.5 lg:mt-2 lg:px-5 lg:pt-2">
                 <div className="text-xs font-medium text-zinc-400 lg:text-base">
-                  <span className="tabular-nums">{registerees.length}</span>{' '}
+                  <span className="tabular-nums">
+                    {registerees.length || 0}
+                  </span>{' '}
                   participants
                 </div>
                 <div className="relative mt-4 block max-h-[400px] overflow-auto overscroll-contain">
