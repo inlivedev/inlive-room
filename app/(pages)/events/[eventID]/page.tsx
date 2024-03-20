@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
-import { cookies, headers } from 'next/headers';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import AppContainer from '@/_shared/components/containers/app-container';
 import EventDetail from '@/_features/event/components/event-detail';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { eventService } from '@/(server)/api/_index';
 import type { AuthType } from '@/_shared/types/auth';
-import type { EventType } from '@/_shared/types/event';
 
 type PageProps = {
   params: {
@@ -39,42 +38,34 @@ function sanitizeHTML(htmlString: string) {
 export const generateMetadata = async ({
   params: { eventID },
 }: PageProps): Promise<Metadata> => {
-  const cookie = (await cookies().get('token')?.value) ?? '';
+  const event = await eventService.getEventBySlugOrID(eventID, undefined);
 
-  const { data: eventData }: EventType.DetailEventResponse =
-    await InternalApiFetcher.get(`/api/events/${eventID}`, {
-      headers: {
-        Cookie: `token=${cookie}`,
-      },
-      cache: 'no-cache',
-    });
-
-  if (!eventData || !eventData.id) {
+  if (!event || !event.id) {
     return {
       title: 'Page Not Found',
       description: 'There is nothing to see on this page',
     };
   }
 
-  const imageSrc = eventData.thumbnailUrl
-    ? `${APP_ORIGIN}/static${eventData.thumbnailUrl}`
+  const imageSrc = event.thumbnailUrl
+    ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/og-image-inlive-room-webinar-generic-en.png';
-  const description = sanitizeHTML(eventData.description || '');
+  const description = sanitizeHTML(event.description || '');
   const descriptionSummary = `${description.slice(0, 150) + '...'}`;
 
   return {
-    title: `Webinar — ${eventData.name} — inLive Room`,
+    title: `Webinar — ${event.name} — inLive Room`,
     description: descriptionSummary,
     openGraph: {
-      title: `Webinar — ${eventData.name} — inLive Room`,
+      title: `Webinar — ${event.name} — inLive Room`,
       description: descriptionSummary,
-      url: `/events/${eventData.slug}`,
+      url: `/events/${event.slug}`,
       images: [imageSrc],
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Webinar — ${eventData.name} — inLive Room`,
+      title: `Webinar — ${event.name} — inLive Room`,
       description: descriptionSummary,
       images: [imageSrc],
     },
@@ -85,43 +76,20 @@ export default async function Page({ params: { eventID } }: PageProps) {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
 
-  const userAuth: AuthType.CurrentAuthData | null =
+  const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const cookie = cookies().get('token')?.value ?? '';
+  const event = await eventService.getEventBySlugOrID(eventID, undefined);
 
-  const { data: eventData }: EventType.DetailEventResponse =
-    await InternalApiFetcher.get(`/api/events/${eventID}`, {
-      headers: {
-        Cookie: `token=${cookie}`,
-      },
-      cache: 'no-cache',
-    });
-
-  if (!eventData || !eventData.id) {
-    notFound();
+  if (!event) {
+    return notFound();
   }
 
-  const descriptionMarkup = {
-    __html: eventData.description || '',
-  };
-
   return (
-    <AppContainer user={userAuth}>
-      <EventDetail
-        id={eventData.id}
-        title={eventData.name}
-        descriptionMarkup={descriptionMarkup}
-        slug={eventData.slug}
-        host={eventData.host}
-        startTime={eventData.startTime}
-        status={eventData.status}
-        thumbnailUrl={eventData.thumbnailUrl}
-        createdBy={eventData.createdBy}
-        roomId={eventData.roomId || ''}
-      />
+    <AppContainer user={user}>
+      <EventDetail event={event} status="public" />
     </AppContainer>
   );
 }

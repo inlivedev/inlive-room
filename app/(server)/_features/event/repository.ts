@@ -9,7 +9,7 @@ import {
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
-import { User } from '../user/schema';
+import { User, users } from '../user/schema';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
@@ -18,22 +18,38 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async getEventBySlug(slug: string): Promise<selectEvent | undefined> {
+  async getEventBySlug(slug: string) {
     const data = await db.query.events.findFirst({
+      with: {
+        host: {
+          columns: {
+            id: true,
+            name: true,
+            pictureUrl: true,
+          },
+        },
+      },
       where: and(eq(events.slug, slug), isNull(events.deletedAt)),
     });
 
-    if (data) return data as selectEvent;
-    else return undefined;
+    return data;
   }
 
-  async getEventById(id: number): Promise<selectEvent | undefined> {
+  async getEventById(id: number) {
     const data = await db.query.events.findFirst({
+      with: {
+        host: {
+          columns: {
+            id: true,
+            name: true,
+            pictureUrl: true,
+          },
+        },
+      },
       where: and(eq(events.id, id), isNull(events.deletedAt)),
     });
 
-    if (data) return data as selectEvent;
-    else return undefined;
+    return data;
   }
 
   /**
@@ -51,9 +67,10 @@ export class EventRepo implements iEventRepo {
     }
 
     const filter = sql`
-    ${events.createdBy} = ${userID} AND(
-    (${events.status} = ${'published'} AND ${events.endTime} >= NOW()) 
-    OR ${events.status} = ${'cancelled'} 
+    ${events.createdBy} = ${userID} AND
+    ${events.deletedAt} IS NULL AND
+    ((${events.status} = ${'published'} AND ${events.endTime} >= NOW())
+    OR ${events.status} = ${'cancelled'}
     OR ${events.status} = ${'draft'})`;
 
     const res = await db.query.events.findMany({
@@ -229,14 +246,6 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async updateEventBySlug(userId: number, slug: string, event: insertEvent) {
-    return await db
-      .update(events)
-      .set(event)
-      .where(and(eq(events.slug, slug), eq(events.createdBy, userId)))
-      .returning();
-  }
-
   async registerParticipant(participant: typeof insertParticipant) {
     const res = await db.insert(participants).values(participant).returning();
 
@@ -308,7 +317,54 @@ export class EventRepo implements iEventRepo {
       per_page: limit,
       total_record: res.total,
     };
-    return { data: res.registeree, meta };
+
+    const data = res.registeree.map((user) => {
+      return {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        createdAt: user.created_at,
+      };
+    });
+
+    return { data: data, meta };
+  }
+
+  async getEventParticipantsByEventId(eventId: number) {
+    const res = await db.query.participant.findMany({
+      where: eq(participants.eventID, eventId),
+    });
+
+    return res;
+  }
+
+  async getParticipantById(id: number) {
+    return await db.query.participant.findFirst({
+      where: eq(participants.id, id),
+    });
+  }
+
+  async getEventHostByEventId(eventId: number) {
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, eventId),
+    });
+
+    if (typeof event !== 'undefined' && event.createdBy !== null) {
+      return await db.query.users.findFirst({
+        where: eq(users.id, event.createdBy),
+      });
+    }
+
+    return undefined;
+  }
+
+  async updateParticipantCount(eventId: number) {
+    return await db
+      .update(participants)
+      .set({ updateCount: sql`${participants.updateCount} + 1` })
+      .where(eq(participants.eventID, eventId))
+      .returning();
   }
 
   async getParticipantByUniqueURL(eventID: number, uniqueURL: string) {

@@ -3,7 +3,7 @@ import Header from '@/_shared/components/header/header';
 
 export default function ConferenceExit() {
   return (
-    <div className="min-viewport-height mx-auto flex w-full max-w-5xl flex-col px-4">
+    <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-col px-4">
       <Header logoText="inLive Room" logoHref="/" />
       <main className="flex-1 pt-8 text-center">
         <h2 className="text-3xl font-medium md:text-4xl">You left the Room</h2>

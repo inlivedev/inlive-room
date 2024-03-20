@@ -54,14 +54,17 @@ export async function POST(
       newParticipant
     );
 
+    const host = await eventRepo.getEventHostByEventId(existingEvent.id);
+
+    if (!host) {
+      return NextResponse.json({
+        code: 404,
+        message: 'Event host is not found',
+      });
+    }
+
     if (isMailerEnabled()) {
-      SendEventInvitationEmail(
-        newParticipant.firstName,
-        newParticipant.lastName,
-        newParticipant.email,
-        existingEvent,
-        registeredParticipant.joinID
-      );
+      SendEventInvitationEmail(registeredParticipant, existingEvent, host);
     }
 
     return NextResponse.json(

@@ -242,7 +242,7 @@ export default function EventForm({
       ).toISOString();
 
       const posterImage = imageData.imageBlob
-        ? await compressImage(imageData.imageBlob, 280, 560, 0.8)
+        ? await compressImage(imageData.imageBlob, 320, 640, 0.8)
         : null;
 
       if (action === 'create-as-publish') {
@@ -428,7 +428,7 @@ export default function EventForm({
         step={15}
       />
       <div className="bg-zinc-900">
-        <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col  px-4">
+        <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
           <Header logoText="inLive Room" logoHref="/" />
           <main className="flex-1">
             {!user ? (
@@ -633,7 +633,7 @@ export default function EventForm({
                               Support PNG, JPG, JPEG, WEBP
                             </p>
                             <p className="mt-1 text-xs">
-                              560 x 280. Aspect ratio 2:1
+                              640 x 320. Aspect ratio 2:1
                             </p>
                             <input
                               id="file-input"

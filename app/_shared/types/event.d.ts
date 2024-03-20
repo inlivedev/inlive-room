@@ -1,9 +1,12 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
 import { selectEvent } from '@/(server)/_features/event/schema';
+import { selectUser } from '@/(server)/_features/user/schema';
 import { PageMeta } from './types';
 
 export declare namespace EventType {
-  type Event = selectEvent;
+  type Event = selectEvent & {
+    host?: selectUser;
+  };
 
   type DetailEventResponse = FetcherResponse & {
     message: string;
@@ -37,6 +40,20 @@ export declare namespace EventType {
       event: Event;
       participant: RegisteredParticipant;
     };
+  };
+
+  type RegistereeParticipant = {
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    createdAt: Date;
+  };
+
+  type RegistereeParticipantResponse = FetcherResponse & {
+    message: string;
+    data: RegistereeParticipant[];
+    meta: PageMeta;
   };
 
   type ListEventsResponse = FetcherResponse & {
