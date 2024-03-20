@@ -1,5 +1,11 @@
 import { serial, text, integer, pgTable, timestamp } from 'drizzle-orm/pg-core';
-import { type InferInsertModel, type InferSelectModel, sql } from 'drizzle-orm';
+import {
+  type InferInsertModel,
+  type InferSelectModel,
+  sql,
+  relations,
+} from 'drizzle-orm';
+import { events } from '../event/schema';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -14,7 +20,12 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+export const usersRelations = relations(users, ({ many }) => ({
+  events: many(events),
+}));
+
 export type User = InferSelectModel<typeof users>;
+export type selectUser = typeof users.$inferSelect;
 export type InsertUser = Omit<
   InferInsertModel<typeof users>,
   'id' | 'createdAt'

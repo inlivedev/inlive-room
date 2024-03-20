@@ -1,20 +1,37 @@
-import { selectEvent } from '@/(server)/_features/event/schema';
-import { generateID } from '@/(server)/_shared/utils/generateid';
+import {
+  selectEvent,
+  selectParticipant,
+} from '@/(server)/_features/event/schema';
+import { User } from '@/(server)/_features/user/schema';
 
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
-export function GenerateIcal(event: selectEvent, timezone: string) {
+// reference: https://www.rfc-editor.org/rfc/rfc5545
+export function GenerateIcal(
+  event: selectEvent,
+  timezone: string,
+  host: User,
+  participant: selectParticipant
+) {
   const { eventDate, eventTime, DTSTAMP, DTSTART, DTEND } = generateDateTime(
     event,
     timezone
   );
+
+  let eventStatus = 'CONFIRMED';
+  let eventMethod = 'REQUEST';
+
+  if (event.status === 'cancelled') {
+    eventStatus = 'CANCELLED';
+    eventMethod = 'CANCEL';
+  }
 
   const eventDesc = `Hi there!\\n
   Thanks for registering for our upcoming webinar!\\n
   We're excited to have you join us to learn more about\\n
   \\n
   ${event.name}\\n
-  Hosted by ${event.host}\\n
+  Hosted by ${host.name}\\n
   \\n
   ${eventDate} - ${eventTime}\\n
   \\n
@@ -27,7 +44,7 @@ export function GenerateIcal(event: selectEvent, timezone: string) {
   return `BEGIN:VCALENDAR
 VERSION:2.0
 CALSCALE:GREGORIAN
-METHOD:REQUEST
+METHOD:${eventMethod}
 PRODID:-//inLive//inLive//EN
 BEGIN:VTIMEZONE
 TZID:Asia/Jakarta
@@ -42,16 +59,17 @@ DTSTART:19700101T000000
 END:STANDARD
 END:VTIMEZONE
 BEGIN:VEVENT
-UID:${generateID(12)}
+UID:${event.uuid}
 DTSTAMP;TZID=${timezone}:${DTSTAMP}
 DTSTART;TZID=${timezone}:${DTSTART}
 DTEND;TZID=${timezone}:${DTEND}
 SUMMARY:${event.name}
-ORGANIZER:${event.host}
-ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTIONRSVP=TRUE:CN=${
-    event.host
-  }:MAILTO:example@example.com
+ORGANIZER;CN=${host.name}:mailto:${host.email}
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${participant.firstName} ${participant.lastName};X-NUM-GUESTS=0:mailto:${participant.email}
 URL;VALUE=URI:${PUBLIC_URL}/events/${event.slug}
+X-INLIVE-ROOM:${PUBLIC_URL}/rooms/${event.roomId}
+SEQUENCE:${participant.updateCount}
+STATUS:${eventStatus}
 DESCRIPTION:${eventDesc}
 END:VEVENT
 END:VCALENDAR`;

@@ -72,10 +72,11 @@ export default function EventDetail({
             <h2 className="text-wrap text-2xl font-bold tracking-wide text-zinc-100 lg:text-[42px] lg:leading-[52px]">
               {event.name}
             </h2>
-            <b className="mt-4 block font-medium text-zinc-300 lg:mt-6">
-              Hosted by {event.host}
-            </b>
-
+            {typeof event.host?.name === 'string' ? (
+              <b className="mt-4 block font-medium text-zinc-300 lg:mt-6">
+                Hosted by {event.host.name}
+              </b>
+            ) : null}
             <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:gap-10">
               <div className="lg:order-2 lg:flex-1">
                 <div className="flex w-full flex-col gap-6 rounded-2xl lg:sticky lg:top-6 lg:ml-auto lg:max-w-[440px] lg:bg-zinc-950/25 lg:p-8 lg:ring-1 lg:ring-zinc-800">

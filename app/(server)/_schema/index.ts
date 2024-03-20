@@ -1,9 +1,12 @@
-import { users } from '@/(server)/_features/user/schema';
+import { users, usersRelations } from '@/(server)/_features/user/schema';
 import { rooms } from '@/(server)/_features/room/schema';
 import {
   events,
   participant,
   eventHasParticipant,
+  eventsRelation,
+  eventHasParticipantRelation,
+  participantRelation,
 } from '../_features/event/schema';
 import { earlyAccessInvitees } from '@/(server)/_features/early-access-invitee/schema';
 import { activitiesLog } from '../_features/activity-log/schema';
@@ -19,4 +22,16 @@ const models = {
   activitiesLog,
 };
 
-export default models;
+const relations = {
+  eventsRelation,
+  eventHasParticipantRelation,
+  participantRelation,
+  usersRelations,
+};
+
+const schema = {
+  ...models,
+  ...relations,
+};
+
+export default schema;
