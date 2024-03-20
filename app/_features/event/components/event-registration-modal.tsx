@@ -18,7 +18,7 @@ import { useNavigate } from '@/_shared/hooks/use-navigate';
 type EventRegistrationModalProps = {
   title: string;
   slug: string;
-  startTime: Date;
+  startTime: string | Date;
 };
 
 export default function EventRegistrationModal({

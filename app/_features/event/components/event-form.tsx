@@ -384,6 +384,12 @@ export default function EventForm({
     [navigateTo, existingEvent, imageData]
   );
 
+  const eventDateString = new Date(eventDate).toLocaleDateString('en-GB', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  });
+
   return (
     <>
       {existingEvent && existingEvent.status == 'draft' && (
@@ -673,18 +679,7 @@ export default function EventForm({
                                 })
                               );
                             }}
-                            value={
-                              user
-                                ? new Date(eventDate).toLocaleDateString(
-                                    'en-GB',
-                                    {
-                                      month: 'short',
-                                      day: '2-digit',
-                                      year: 'numeric',
-                                    }
-                                  )
-                                : ''
-                            }
+                            value={user ? eventDateString : ''}
                           />
                           <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
                             <CalendarIcon />

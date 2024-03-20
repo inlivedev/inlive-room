@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { EventType } from '@/_shared/types/event';
 import { StatusPublished, StatusDraft, StatusCancelled } from './event-status';
 import Link from 'next/link';
@@ -6,13 +7,20 @@ import Image from 'next/image';
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export function EventCard({ event }: { event: EventType.Event }) {
-  const eventTime = new Date(event.startTime).toLocaleString('en-US', {
-    month: 'short',
-    day: '2-digit',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+  const [eventTime, setEventTime] = useState('');
+
+  useEffect(() => {
+    const eventTime = new Date(event.startTime).toLocaleString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    setEventTime(eventTime);
+  }, [event]);
+
   const imagePath = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';

@@ -17,13 +17,17 @@ const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 export default function EventDetail({
   event,
   status,
+  startDateWithYear,
+  startDateWithoutYear,
   startTime,
   endTime,
 }: {
   event: EventType.Event;
   status: 'draft' | 'public';
-  startTime: Date;
-  endTime: Date;
+  startDateWithoutYear: string;
+  startDateWithYear: string;
+  startTime: string;
+  endTime: string;
 }) {
   const descriptionMarkup = {
     __html: event.description || '',
@@ -32,31 +36,6 @@ export default function EventDetail({
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
-
-  const startDateWithoutYear = startTime.toLocaleString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const startDateWithYear = startTime.toLocaleString('en-GB', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-
-  const startTimeText = startTime.toLocaleString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-
-  const endTimeText = endTime.toLocaleString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
 
   return (
     <div className="bg-zinc-900">
@@ -94,7 +73,7 @@ export default function EventDetail({
                           {startDateWithYear}
                         </b>
                         <div className="mt-0.5 text-zinc-300">
-                          {startTimeText} to {endTimeText}
+                          {startTime} to {endTime}
                         </div>
                       </div>
                     </div>
@@ -108,7 +87,7 @@ export default function EventDetail({
                       </span>
                       <div>
                         <b className="font-semibold text-zinc-100">
-                          Online event
+                          Online webinar
                         </b>
                         <div className="mt-0.5 text-zinc-300">
                           Attendees will receive a link
@@ -134,7 +113,7 @@ export default function EventDetail({
                           No participant limit
                         </b>
                         <div className="mt-0.5 text-zinc-300">
-                          Anyone can freely join this event
+                          Anyone can freely join this webinar
                         </div>
                       </div>
                     </div>
@@ -197,7 +176,7 @@ function PublicAction({
   startTime,
 }: {
   event: EventType.Event;
-  startTime: Date;
+  startTime: string;
 }) {
   const EventRegistrationModal = dynamic(
     () => import('@/_features/event/components/event-registration-modal')

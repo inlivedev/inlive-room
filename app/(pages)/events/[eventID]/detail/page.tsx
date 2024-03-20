@@ -106,11 +106,65 @@ export default async function Page({ params: { eventID } }: PageProps) {
       },
     });
 
-  const registerees = registereesResponse.data || [];
-  const totalRegisterees = registereesResponse.meta.total_record || 0;
+  const registerees =
+    registereesResponse.data.map((registeree) => {
+      const name = `${registeree.firstName} ${registeree.lastName}`;
 
-  const startTime = new Date(event.startTime);
-  const endTime = new Date(event.endTime);
+      const registeredDate = registeree.createdAt.toLocaleDateString('en-GB', {
+        month: 'long',
+        day: '2-digit',
+        year: 'numeric',
+      });
+
+      const registeredTime = registeree.createdAt.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+
+      const registeredAt = `${registeredDate}, ${registeredTime}`;
+
+      return {
+        id: registeree.id,
+        name: name,
+        email: registeree.email,
+        registeredAt: registeredAt,
+      };
+    }) || [];
+
+  const eventStartTime = new Date(event.startTime);
+  const eventEndTime = new Date(event.endTime);
+
+  const startDateWithoutYear = eventStartTime.toLocaleString('en-GB', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const startDateWithYear = eventStartTime.toLocaleString('en-GB', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const startTime = eventStartTime.toLocaleString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const endTime = eventEndTime.toLocaleString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const createdDate = new Date(event.createdAt).toLocaleDateString('en-GB', {
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
+  });
 
   return (
     <AppContainer user={user}>
@@ -118,6 +172,8 @@ export default async function Page({ params: { eventID } }: PageProps) {
         <EventDetail
           event={event}
           status="draft"
+          startDateWithoutYear={startDateWithoutYear}
+          startDateWithYear={startDateWithYear}
           startTime={startTime}
           endTime={endTime}
         />
@@ -125,7 +181,9 @@ export default async function Page({ params: { eventID } }: PageProps) {
         <EventDetailDashboard
           event={event}
           registerees={registerees}
-          totalRegisterees={totalRegisterees}
+          startDateWithYear={startDateWithYear}
+          startTime={startTime}
+          createdDate={createdDate}
         />
       )}
     </AppContainer>

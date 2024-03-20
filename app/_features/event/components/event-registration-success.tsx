@@ -7,7 +7,8 @@ import Link from 'next/link';
 type EventRegistrationSuccessProps = {
   participantName: string;
   title: string;
-  startTime: Date;
+  startDate: string;
+  startTime: string;
   slug: string;
 };
 
@@ -15,20 +16,9 @@ export default function EventRegistrationSuccess({
   participantName,
   title,
   startTime,
+  startDate,
   slug,
 }: EventRegistrationSuccessProps) {
-  const eventStartDate = new Date(startTime).toLocaleDateString('en-GB', {
-    month: 'long',
-    day: '2-digit',
-    year: 'numeric',
-  });
-
-  const eventStartTime = new Date(startTime).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-
   return (
     <div className="bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
@@ -53,7 +43,7 @@ export default function EventRegistrationSuccess({
                   And don’t forget to mark your calendar at:
                   <br />
                   <b className="font-semibold">
-                    {eventStartDate}, {eventStartTime}
+                    {startDate}, {startTime}
                   </b>
                 </p>
                 <p className="mt-4">
