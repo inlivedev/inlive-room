@@ -101,14 +101,16 @@ export class RoomService {
       enableVAD: true,
     });
 
-    if (clientResponse && clientResponse.code === 409) {
-      Sentry.captureMessage(
-        `Failed to create client ID. The client ID already exists`,
-        'error'
-      );
-      throw new Error(
-        'Failed to create client ID. The client ID already exists'
-      );
+    if (clientResponse && clientResponse.code === 409 && clientID) {
+      const existingClient = await this._sdk.getClient(roomData.id, clientID);
+
+      const data: Participant = {
+        clientID: existingClient.data.clientId,
+        name: existingClient.data.clientName,
+        roomID: roomData.id,
+      };
+
+      return data;
     }
 
     if (!clientResponse || !clientResponse.ok) {
