@@ -386,9 +386,9 @@ export default function EventForm({
   );
 
   const eventDateString = useFormattedDateTime(eventDate, 'en-GB', {
-    month: 'short',
-    day: '2-digit',
     year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 
   return (
