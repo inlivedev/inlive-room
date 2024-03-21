@@ -2,6 +2,7 @@ import type { FetcherResponse } from '@/_shared/utils/fetcher';
 import {
   insertParticipant,
   selectEvent,
+  selectParticipant,
 } from '@/(server)/_features/event/schema';
 import { selectUser } from '@/(server)/_features/user/schema';
 import { PageMeta } from './types';
@@ -39,8 +40,8 @@ export declare namespace EventType {
   type RegisterParticipantResponse = FetcherResponse & {
     message: string;
     data: {
-      event: Event;
-      participant: Omit<insertParticipant, 'clientId'>;
+      event: Omit<Event, 'roomId'>;
+      participant: selectParticipant;
     };
   };
 

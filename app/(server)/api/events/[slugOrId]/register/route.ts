@@ -69,7 +69,7 @@ export async function POST(
     }
 
     const data: EventType.RegisterParticipantResponse['data'] = {
-      event: existingEvent,
+      event: omit(existingEvent, 'roomId'),
       participant: registeredParticipant,
     };
 
