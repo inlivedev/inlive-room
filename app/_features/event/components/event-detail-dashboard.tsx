@@ -253,19 +253,14 @@ function RegistereeItem({
 }) {
   const name = `${registeree.firstName} ${registeree.lastName}`;
 
-  const registeredDate = useFormattedDateTime(registeree.createdAt, 'en-GB', {
-    month: 'long',
-    day: '2-digit',
+  const registeredAt = useFormattedDateTime(registeree.createdAt, 'en-GB', {
     year: 'numeric',
-  });
-
-  const registeredTime = useFormattedDateTime(registeree.createdAt, 'en-US', {
+    month: 'short',
+    day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
-
-  const registeredAt = `${registeredDate}, ${registeredTime}`;
 
   return (
     <tr>
