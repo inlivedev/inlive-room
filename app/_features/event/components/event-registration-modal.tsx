@@ -14,7 +14,7 @@ import type { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
-import { useFormattedDate } from '@/_shared/hooks/use-formatted-date';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 export default function EventRegistrationModal({
   event: eventData,
@@ -135,13 +135,13 @@ export default function EventRegistrationModal({
     }
   };
 
-  const eventStartDate = useFormattedDate(eventData.startTime, 'en-GB', {
+  const eventStartDate = useFormattedDateTime(eventData.startTime, 'en-GB', {
     month: 'long',
     day: '2-digit',
     year: 'numeric',
   });
 
-  const eventStartTime = useFormattedDate(eventData.startTime, 'en-US', {
+  const eventStartTime = useFormattedDateTime(eventData.startTime, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,

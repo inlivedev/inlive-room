@@ -2,7 +2,7 @@ import type { EventType } from '@/_shared/types/event';
 import { StatusPublished, StatusDraft, StatusCancelled } from './event-status';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useFormattedDate } from '@/_shared/hooks/use-formatted-date';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -11,7 +11,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
-  const eventTime = useFormattedDate(event.startTime, 'en-US', {
+  const eventTime = useFormattedDateTime(event.startTime, 'en-US', {
     month: 'short',
     day: '2-digit',
     hour: 'numeric',
