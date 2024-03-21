@@ -15,6 +15,7 @@ import Footer from '@/_shared/components/footer/footer';
 import Link from 'next/link';
 import type { EventType } from '@/_shared/types/event';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { webShare } from '@/_shared/utils/web-share';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
@@ -206,7 +207,7 @@ function PublicAction({
           <b className="text flex items-center text-base font-semibold uppercase tracking-wide text-white">
             Free
           </b>
-          <ShareDropdown slug={event.slug} />
+          <ShareDropdown title={event.name} slug={event.slug} />
           <div className="flex-auto">
             <Button
               className="w-full rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
@@ -221,7 +222,7 @@ function PublicAction({
   );
 }
 
-function ShareDropdown({ slug }: { slug: string }) {
+function ShareDropdown({ title, slug }: { title: string; slug: string }) {
   const {
     active: copiedActive,
     setActive: setCopiedActive,
@@ -230,7 +231,6 @@ function ShareDropdown({ slug }: { slug: string }) {
 
   const handleCopyLink = async (text = '') => {
     const success = await copyToClipboard(text);
-
     if (success) {
       setCopiedActive();
       setTimeout(() => {
@@ -241,17 +241,22 @@ function ShareDropdown({ slug }: { slug: string }) {
     }
   };
 
+  const supportWebShare =
+    typeof window?.navigator?.canShare !== 'undefined' &&
+    typeof window?.navigator?.share !== 'undefined';
+
   const onShareOptionSelected = async (selectedKey: Key) => {
     if (selectedKey === 'copy') {
       await handleCopyLink(`${APP_ORIGIN}/events/${slug}`);
-    } else if (selectedKey === 'share') {
-      //
+    } else if (selectedKey === 'share' && supportWebShare) {
+      const shareTitle = `Webinar — ${title} — inLive Room`;
+      await webShare(`${APP_ORIGIN}/events/${slug}`, shareTitle);
     }
   };
 
   return (
     <Dropdown
-      className="w-40 min-w-0 ring-1 ring-zinc-800"
+      className="w-36 min-w-0 ring-1 ring-zinc-800"
       closeOnSelect={false}
     >
       <DropdownTrigger>
@@ -277,20 +282,17 @@ function ShareDropdown({ slug }: { slug: string }) {
               <span>{copiedActive ? 'Copied!' : 'Copy link'}</span>
             </div>
           </DropdownItem>,
-          <DropdownItem key="share" textValue="Share via">
-            <div className="flex items-center gap-2 text-sm">
-              <span>
-                <ShareIcon width={20} height={20} />
-              </span>
-              <span>Share via</span>
-            </div>
-          </DropdownItem>,
           // @ts-ignore
-          // event.status === 'share' ? (
-          //   <DropdownItem key="share">
-          //     <span className="text-zinc-200">Share via</span>
-          //   </DropdownItem>
-          // ) : undefined,
+          supportWebShare ? (
+            <DropdownItem key="share" textValue="Share via">
+              <div className="flex items-center gap-2 text-sm">
+                <span>
+                  <ShareIcon width={20} height={20} />
+                </span>
+                <span>Share via</span>
+              </div>
+            </DropdownItem>
+          ) : undefined,
         ]}
       </DropdownMenu>
     </Dropdown>
