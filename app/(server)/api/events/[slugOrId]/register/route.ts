@@ -1,4 +1,4 @@
-import { isError } from 'lodash-es';
+import { isError, omit } from 'lodash-es';
 import { NextResponse } from 'next/server';
 import { eventRepo } from '../../../_index';
 import { insertParticipant } from '@/(server)/_features/event/schema';
@@ -7,6 +7,7 @@ import {
   isMailerEnabled,
 } from '@/(server)/_shared/mailer/mailer';
 import { generateID } from '@/(server)/_shared/utils/generateid';
+import { EventType } from '@/_shared/types/event';
 
 type RegisterParticipant = {
   firstName: string;
@@ -67,11 +68,17 @@ export async function POST(
       SendEventInvitationEmail(registeredParticipant, existingEvent, host);
     }
 
+    const data: EventType.RegisterParticipantResponse['data'] = {
+      event: existingEvent,
+      participant: registeredParticipant,
+    };
+
     return NextResponse.json(
       {
         code: 200,
         message: 'Registered Successfully',
-        data: registeredParticipant,
+        data: data,
+        ok: true,
       },
       { status: 200 }
     );
