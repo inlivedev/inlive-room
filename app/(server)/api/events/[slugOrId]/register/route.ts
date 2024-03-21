@@ -41,7 +41,7 @@ export async function POST(
       });
     }
 
-    const newParticipant: typeof insertParticipant = {
+    const newParticipant: insertParticipant = {
       firstName: body.firstName,
       lastName: body.lastName,
       email: body.email,
