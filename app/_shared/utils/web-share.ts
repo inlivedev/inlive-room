@@ -1,4 +1,4 @@
-export const webShare = async (url = '', title = '') => {
+export const webShare = async (url = '', title = '', text = '') => {
   return new Promise<boolean>(async (resolve) => {
     try {
       if (
@@ -6,11 +6,11 @@ export const webShare = async (url = '', title = '') => {
         typeof window?.navigator?.share !== 'undefined' &&
         url.trim().length > 0
       ) {
-        if (!navigator.canShare({ url, title })) {
+        if (!navigator.canShare({ url, title, text })) {
           resolve(false);
         }
 
-        await navigator.share({ url, title });
+        await navigator.share({ url, title, text });
       } else {
         resolve(false);
       }
