@@ -141,6 +141,13 @@
       "when": 1710837055830,
       "tag": "0019_move_update_count",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1710919963136,
+      "tag": "0020_remove_participant_junction_table",
+      "breakpoints": true
     }
   ]
 }
