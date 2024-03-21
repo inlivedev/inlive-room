@@ -2,6 +2,7 @@ export const webShare = async (url = '', title = '', text = '') => {
   return new Promise<boolean>(async (resolve) => {
     try {
       if (
+        typeof window !== 'undefined' &&
         typeof window?.navigator?.canShare !== 'undefined' &&
         typeof window?.navigator?.share !== 'undefined' &&
         url.trim().length > 0

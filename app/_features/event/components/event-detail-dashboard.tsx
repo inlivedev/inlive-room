@@ -280,6 +280,7 @@ function MoreDropdown({
   const { isOpen, onOpenChange, onClose } = useDisclosure();
 
   const supportWebShare =
+    typeof window !== 'undefined' &&
     typeof window?.navigator?.canShare !== 'undefined' &&
     typeof window?.navigator?.share !== 'undefined';
 

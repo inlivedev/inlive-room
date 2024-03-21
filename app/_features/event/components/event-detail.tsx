@@ -242,6 +242,7 @@ function ShareDropdown({ title, slug }: { title: string; slug: string }) {
   };
 
   const supportWebShare =
+    typeof window !== 'undefined' &&
     typeof window?.navigator?.canShare !== 'undefined' &&
     typeof window?.navigator?.share !== 'undefined';
 
