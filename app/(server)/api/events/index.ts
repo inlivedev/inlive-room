@@ -18,6 +18,8 @@ export function GenerateIcal(
     timezone
   );
 
+  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?joinID=${participant.joinID}`;
+
   let eventStatus = 'CONFIRMED';
   let eventMethod = 'REQUEST';
 
@@ -38,7 +40,7 @@ export function GenerateIcal(
   Don't forget to mark your calendar on that date, see you there!\\n
   \\n
   About event : ${PUBLIC_URL}/events/${event.slug}\\n
-  Join the event : ${PUBLIC_URL}/rooms/${event.roomId}`;
+  Join the event : ${roomURL}`;
 
   // eslint-disable-next-line prettier/prettier
   return `BEGIN:VCALENDAR

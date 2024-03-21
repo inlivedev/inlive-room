@@ -35,11 +35,9 @@ export interface iEventRepo {
       })
     | undefined
   >;
-  getEventParticipantsByEventId(eventId: number): Promise<
-    {
-      participant: selectParticipant;
-    }[]
-  >;
+  getEventParticipantsByEventId(
+    eventId: number
+  ): Promise<selectParticipant[] | undefined>;
   getParticipantById(id: number): Promise<selectParticipant | undefined>;
   getEventHostByEventId(eventId: number): Promise<selectUser | undefined>;
 }
@@ -103,17 +101,12 @@ export class EventService implements iEventService {
       return;
     }
 
-    if (participants.length == 0) {
+    if (!participants || participants.length == 0) {
       return;
     }
 
     for (const participant of participants) {
-      SendEventRescheduledEmail(
-        participant.participant,
-        newEvent,
-        oldEvent,
-        host
-      );
+      SendEventRescheduledEmail(participant, newEvent, oldEvent, host);
     }
   }
 
@@ -126,12 +119,12 @@ export class EventService implements iEventService {
       return;
     }
 
-    if (!event || participants.length == 0) {
+    if (!event || !participants || participants.length == 0) {
       return;
     }
 
     for (const participant of participants) {
-      SendEventCancelledEmail(participant.participant, event, host);
+      SendEventCancelledEmail(participant, event, host);
     }
   }
 

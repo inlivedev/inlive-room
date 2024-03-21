@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
+import { eventRepo } from '@/(server)/api/_index';
 
 export interface Room {
   id: string;
@@ -17,9 +18,9 @@ export interface Participant {
 }
 
 export interface iRoomRepo {
-  addRoom(room: typeof insertRoom): Promise<typeof selectRoom>;
-  getRoomById(id: string): Promise<Room | undefined>;
-  updateRoomById(room: Room): Promise<Room | undefined>;
+  addRoom(room: insertRoom): Promise<selectRoom>;
+  getRoomById(id: string): Promise<insertRoom | undefined>;
+  updateRoomById(room: Room): Promise<insertRoom | undefined>;
   isPersistent(): boolean;
 }
 
@@ -33,7 +34,12 @@ export class RoomService {
     this._datachannels = ['chat', 'moderator'];
   }
 
-  async createClient(roomId: string, clientName: string, clientID?: string) {
+  async createClient(
+    roomId: string,
+    clientName: string,
+    clientID?: string,
+    joinID?: string
+  ): Promise<Participant> {
     if (!this._roomRepo.isPersistent()) {
       const clientResponse = await this._sdk.createClient(roomId, {
         clientName: clientName,
@@ -77,20 +83,36 @@ export class RoomService {
       throw new Error('Room not found');
     }
 
+    const event = await eventRepo.getByRoomID(roomData.id);
+
+    if (event && joinID) {
+      const participant = await eventRepo.getParticipantByJoinID(
+        event.id,
+        joinID
+      );
+
+      if (participant) {
+        clientID = participant?.clientId;
+        clientName = participant?.firstName + ' ' + participant?.lastName;
+      }
+    }
+
     const clientResponse = await this._sdk.createClient(roomData.id, {
       clientId: clientID,
       clientName: clientName,
       enableVAD: true,
     });
 
-    if (clientResponse && clientResponse.code === 409) {
-      Sentry.captureMessage(
-        `Failed to create client ID. The client ID already exists`,
-        'error'
-      );
-      throw new Error(
-        'Failed to create client ID. The client ID already exists'
-      );
+    if (clientResponse && clientResponse.code === 409 && clientID) {
+      const existingClient = await this._sdk.getClient(roomData.id, clientID);
+
+      const data: Participant = {
+        clientID: existingClient.data.clientId,
+        name: existingClient.data.clientName,
+        roomID: roomData.id,
+      };
+
+      return data;
     }
 
     if (!clientResponse || !clientResponse.ok) {
@@ -141,7 +163,7 @@ export class RoomService {
   async createRoom(
     userID: number,
     type: 'event' | 'meeting'
-  ): Promise<typeof selectRoom> {
+  ): Promise<selectRoom> {
     let retries = 0;
     const maxRetries = 3;
 

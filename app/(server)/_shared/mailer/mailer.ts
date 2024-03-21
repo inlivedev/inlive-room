@@ -44,13 +44,13 @@ export async function SendEventInvitationEmail(
 
   const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
-
+  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?joinID=${participant.joinID}`;
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
     to: participant.email,
     subject: `Your invitation URL for ${event.name}`,
-    'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
+    'v:room-url': roomURL,
     'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
     'v:event-name': event.name,
     'v:event-description': event.description,
@@ -185,6 +185,8 @@ export async function SendEventRescheduledEmail(
     username: 'api',
   });
 
+  const roomURL = `${PUBLIC_URL}/rooms/${newEvent.roomId}?joinID=${participant.joinID}`;
+
   const oldEventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
     timeZone: 'Asia/Jakarta',
@@ -213,7 +215,7 @@ export async function SendEventRescheduledEmail(
     from: 'inLive Room Events <notification@inlive.app>',
     to: participant.email,
     subject: `Your event ${oldEvent.name} has been rescheduled`,
-    'v:room-url': `${PUBLIC_URL}/rooms/${newEvent.roomId}`,
+    'v:room-url': roomURL,
     'v:event-url': `${PUBLIC_URL}/events/${newEvent.slug}`,
     'v:new-event-name': newEvent.name,
     'v:new-event-description': newEvent.description,

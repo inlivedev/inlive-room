@@ -2,11 +2,9 @@ import { users, usersRelations } from '@/(server)/_features/user/schema';
 import { rooms } from '@/(server)/_features/room/schema';
 import {
   events,
+  eventsRelations,
   participant,
-  eventHasParticipant,
-  eventsRelation,
-  eventHasParticipantRelation,
-  participantRelation,
+  participantRelations,
 } from '../_features/event/schema';
 import { earlyAccessInvitees } from '@/(server)/_features/early-access-invitee/schema';
 import { activitiesLog } from '../_features/activity-log/schema';
@@ -16,17 +14,15 @@ const models = {
   users,
   rooms,
   events,
-  eventHasParticipant,
   participant,
   earlyAccessInvitees,
   activitiesLog,
 };
 
 const relations = {
-  eventsRelation,
-  eventHasParticipantRelation,
-  participantRelation,
   usersRelations,
+  participantRelations,
+  eventsRelations,
 };
 
 const schema = {

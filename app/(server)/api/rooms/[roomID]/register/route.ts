@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 interface RegisterClientRequest {
   uid?: string;
   name?: string;
+  joinID?: string;
 }
 
 export async function POST(
@@ -25,7 +26,8 @@ export async function POST(
     const clientData = await roomService.createClient(
       params.roomID,
       reqBody.name,
-      reqBody.uid
+      reqBody.uid,
+      reqBody.joinID
     );
 
     return NextResponse.json(

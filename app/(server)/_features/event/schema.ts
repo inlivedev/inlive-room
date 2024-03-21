@@ -1,17 +1,17 @@
-import { relations } from 'drizzle-orm';
 import {
   pgTable,
   timestamp,
   text,
   uuid,
   integer,
-  primaryKey,
   serial,
-  jsonb,
   pgEnum,
+  char,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
 import { users } from '../user/schema';
+import { relations } from 'drizzle-orm';
 
 export const statusEnum = pgEnum('event_status_enum', [
   'draft',
@@ -39,64 +39,46 @@ export const events = pgTable('events', {
   status: statusEnum('status').notNull().default('draft'),
 });
 
-export const eventsRelation = relations(events, ({ many, one }) => ({
-  eventsToParticipant: many(eventHasParticipant),
-  room: one(rooms, {
-    fields: [events.roomId],
-    references: [rooms.id],
+// Participant Table
+export const participant = pgTable(
+  'events_participant',
+  {
+    id: serial('id').primaryKey(),
+    clientId: text('client_id').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    firstName: text('first_name').notNull(),
+    lastName: text('last_name').notNull(),
+    email: text('email').notNull(),
+    description: text('description'),
+    eventID: integer('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    joinID: char('join_id', {
+      length: 12,
+    }).notNull(),
+    updateCount: integer('update_count').notNull().default(0),
+  },
+  (table) => {
+    return {
+      unique: unique().on(table.clientId, table.eventID),
+    };
+  }
+);
+
+export const participantRelations = relations(participant, ({ one }) => ({
+  event: one(events, {
+    fields: [participant.eventID],
+    references: [events.id],
   }),
+}));
+
+export const eventsRelations = relations(events, ({ many, one }) => ({
+  participants: many(participant),
   host: one(users, {
     fields: [events.createdBy],
     references: [users.id],
   }),
 }));
-
-// Participant Table
-export const participant = pgTable('events_participant', {
-  id: serial('id').primaryKey(),
-  clientId: text('client_id').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  email: text('email').notNull(),
-  description: text('description'),
-  updateCount: integer('update_count').notNull().default(0),
-  data: jsonb('data'),
-});
-
-export const participantRelation = relations(participant, ({ many }) => ({
-  eventsToParticipant: many(eventHasParticipant),
-}));
-
-// Junction Table
-export const eventHasParticipant = pgTable(
-  'events_to_participant',
-  {
-    eventId: integer('event_id')
-      .notNull()
-      .references(() => events.id, { onDelete: 'cascade' }),
-    participantId: integer('participant_id')
-      .notNull()
-      .references(() => participant.id),
-  },
-  (table) => ({
-    pk: primaryKey(table.eventId, table.participantId),
-  })
-);
-
-export const eventHasParticipantRelation = relations(
-  eventHasParticipant,
-  ({ one }) => ({
-    event: one(events, {
-      fields: [eventHasParticipant.eventId],
-      references: [events.id],
-    }),
-    participant: one(participant, {
-      fields: [eventHasParticipant.participantId],
-      references: [participant.id],
-    }),
-  })
-);
 
 export type insertEvent = typeof events.$inferInsert;
 export type selectEvent = typeof events.$inferSelect;
@@ -107,6 +89,3 @@ export type eventStatusEnum = 'draft' | 'published' | 'cancelled';
 
 export const insertParticipant = participant.$inferInsert;
 export const selectParticipant = participant.$inferSelect;
-
-export const insertEventsToParticipant = eventHasParticipant.$inferInsert;
-export const selectEventsToParticipant = eventHasParticipant.$inferSelect;

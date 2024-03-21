@@ -1,19 +1,19 @@
-import { isError } from 'lodash-es';
+import { isError, omit } from 'lodash-es';
 import { NextResponse } from 'next/server';
 import { eventRepo } from '../../../_index';
 import { insertParticipant } from '@/(server)/_features/event/schema';
-import { generateID } from '@/(server)/_shared/utils/generateid';
 import {
   SendEventInvitationEmail,
   isMailerEnabled,
 } from '@/(server)/_shared/mailer/mailer';
+import { generateID } from '@/(server)/_shared/utils/generateid';
+import { EventType } from '@/_shared/types/event';
 
 type RegisterParticipant = {
   firstName: string;
   lastName: string;
   email: string;
   description: string;
-  data?: Map<string, string>;
 };
 
 export async function POST(
@@ -42,17 +42,17 @@ export async function POST(
     }
 
     const newParticipant: typeof insertParticipant = {
-      clientId: generateID(8),
       firstName: body.firstName,
       lastName: body.lastName,
       email: body.email,
       description: body.description,
-      data: body.data,
+      clientId: generateID(12),
+      eventID: existingEvent.id,
+      joinID: generateID(12),
     };
 
     const registeredParticipant = await eventRepo.registerParticipant(
-      newParticipant,
-      existingEvent.id
+      newParticipant
     );
 
     const host = await eventRepo.getEventHostByEventId(existingEvent.id);
@@ -65,18 +65,20 @@ export async function POST(
     }
 
     if (isMailerEnabled()) {
-      SendEventInvitationEmail(
-        registeredParticipant.participant,
-        existingEvent,
-        host
-      );
+      SendEventInvitationEmail(registeredParticipant, existingEvent, host);
     }
+
+    const data: EventType.RegisterParticipantResponse['data'] = {
+      event: omit(existingEvent, 'roomId'),
+      participant: registeredParticipant,
+    };
 
     return NextResponse.json(
       {
         code: 200,
         message: 'Registered Successfully',
-        data: registeredParticipant,
+        data: data,
+        ok: true,
       },
       { status: 200 }
     );

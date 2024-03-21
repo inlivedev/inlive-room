@@ -9,5 +9,5 @@ export const rooms = pgTable('rooms', {
   meta: jsonb('meta'),
 });
 
-export const selectRoom = rooms.$inferSelect;
-export const insertRoom = rooms.$inferInsert;
+export type selectRoom = typeof rooms.$inferSelect;
+export type insertRoom = typeof rooms.$inferInsert;
