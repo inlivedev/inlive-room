@@ -309,7 +309,7 @@ function MoreDropdown({
     } else if (selectedKey === 'share' && supportWebShare) {
       const shareTitle = `Webinar — ${title} — inLive Room`;
       await webShare(eventURL, shareTitle);
-    } else if (selectedKey === 'cancel-event') {
+    } else if (selectedKey === 'cancel') {
       onClose();
       document.dispatchEvent(new CustomEvent('open:event-cancel-modal'));
     }
@@ -344,7 +344,7 @@ function MoreDropdown({
           ) : undefined,
           // @ts-ignore
           status === 'published' ? (
-            <DropdownItem key="cancel-event" textValue="Cancel event">
+            <DropdownItem key="cancel" textValue="Cancel event">
               <span className="text-red-400">Cancel Event</span>
             </DropdownItem>
           ) : undefined,
