@@ -1,16 +1,25 @@
 'use client';
 
+import { type Key } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { Button } from '@nextui-org/react';
+import {
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
 import Link from 'next/link';
 import type { EventType } from '@/_shared/types/event';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { webShare } from '@/_shared/utils/web-share';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
+import type { SVGElementPropsType } from '@/_shared/types/types';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -182,25 +191,6 @@ function PublicAction({
     () => import('@/_features/event/components/event-registration-modal')
   );
 
-  const {
-    active: copiedActive,
-    setActive: setCopiedActive,
-    setInActive: setCopiedInActive,
-  } = useToggle(false);
-
-  const handleCopyLink = async (text = '') => {
-    const success = await copyToClipboard(text);
-
-    if (success) {
-      setCopiedActive();
-      setTimeout(() => {
-        setCopiedInActive();
-      }, 2000);
-    } else {
-      alert('Failed to copy link');
-    }
-  };
-
   const openRegisterEventForm = () => {
     document.dispatchEvent(new CustomEvent('open:event-registration-modal'));
   };
@@ -217,12 +207,7 @@ function PublicAction({
           <b className="text flex items-center text-base font-semibold uppercase tracking-wide text-white">
             Free
           </b>
-          <Button
-            className="flex min-w-0 items-center gap-2 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600"
-            onClick={() => handleCopyLink(`${APP_ORIGIN}/events/${event.slug}`)}
-          >
-            {copiedActive ? 'Copied!' : 'Copy link'}
-          </Button>
+          <ShareDropdown title={event.name} slug={event.slug} />
           <div className="flex-auto">
             <Button
               className="w-full rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
@@ -234,5 +219,112 @@ function PublicAction({
         </div>
       </div>
     </>
+  );
+}
+
+function ShareDropdown({ title, slug }: { title: string; slug: string }) {
+  const {
+    active: copiedActive,
+    setActive: setCopiedActive,
+    setInActive: setCopiedInActive,
+  } = useToggle(false);
+
+  const handleCopyLink = async (text = '') => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopiedActive();
+      setTimeout(() => {
+        setCopiedInActive();
+      }, 2000);
+    } else {
+      alert('Failed to copy link');
+    }
+  };
+
+  const supportWebShare =
+    typeof window?.navigator?.canShare !== 'undefined' &&
+    typeof window?.navigator?.share !== 'undefined';
+
+  const onShareOptionSelected = async (selectedKey: Key) => {
+    if (selectedKey === 'copy') {
+      await handleCopyLink(`${APP_ORIGIN}/events/${slug}`);
+    } else if (selectedKey === 'share' && supportWebShare) {
+      const shareTitle = `Webinar — ${title} — inLive Room`;
+      await webShare(`${APP_ORIGIN}/events/${slug}`, shareTitle);
+    }
+  };
+
+  return (
+    <Dropdown className="min-w-36 ring-1 ring-zinc-800" closeOnSelect={false}>
+      <DropdownTrigger>
+        <Button className="min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600">
+          Share
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        disallowEmptySelection
+        onAction={onShareOptionSelected}
+        aria-label="Share options"
+      >
+        {[
+          <DropdownItem key="copy" textValue="Copy link">
+            <div className="flex items-center gap-2 text-sm">
+              <span>
+                {copiedActive ? (
+                  <CheckIcon width={20} height={20} />
+                ) : (
+                  <LinkIcon width={20} height={20} />
+                )}
+              </span>
+              <span>{copiedActive ? 'Copied!' : 'Copy link'}</span>
+            </div>
+          </DropdownItem>,
+          // @ts-ignore
+          supportWebShare ? (
+            <DropdownItem key="share" textValue="Share via">
+              <div className="flex items-center gap-2 text-sm">
+                <span>
+                  <ShareIcon width={20} height={20} />
+                </span>
+                <span>Share via</span>
+              </div>
+            </DropdownItem>
+          ) : undefined,
+        ]}
+      </DropdownMenu>
+    </Dropdown>
+  );
+}
+
+function CheckIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" {...props}>
+      <path
+        fill="currentColor"
+        d="M104 196a12.2 12.2 0 0 1-8.5-3.5l-56-56a12 12 0 0 1 17-17L104 167L207.5 63.5a12 12 0 0 1 17 17l-112 112a12.2 12.2 0 0 1-8.5 3.5Z"
+      />
+    </svg>
+  );
+}
+
+function LinkIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" {...props}>
+      <path
+        fill="currentColor"
+        d="m85.6 153.4l67.9-67.8a12 12 0 0 1 16.9 16.9l-67.9 67.9a12 12 0 0 1-16.9 0a12 12 0 0 1 0-17Zm50.9 17l-28.3 28.3a36 36 0 0 1-50.9-50.9l28.3-28.3a12 12 0 0 0 0-17a12.2 12.2 0 0 0-17 0l-28.3 28.3a60 60 0 0 0 84.9 84.9l28.2-28.3a12 12 0 0 0 0-17a11.9 11.9 0 0 0-16.9 0Zm79.2-130.1a60.1 60.1 0 0 0-84.9 0l-28.3 28.3a12.2 12.2 0 0 0 0 17a12 12 0 0 0 17 0l28.3-28.3a36 36 0 1 1 50.9 50.9l-28.3 28.3a12.1 12.1 0 0 0 8.5 20.5a11.7 11.7 0 0 0 8.5-3.6l28.3-28.2a60 60 0 0 0 0-84.9Z"
+      />
+    </svg>
+  );
+}
+
+function ShareIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="currentColor"
+        d="m13.576 17.271l-5.11-2.787a3.5 3.5 0 1 1 0-4.968l5.11-2.787a3.5 3.5 0 1 1 .958 1.755l-5.11 2.787a3.514 3.514 0 0 1 0 1.457l5.11 2.788a3.5 3.5 0 1 1-.958 1.755"
+      />
+    </svg>
   );
 }
