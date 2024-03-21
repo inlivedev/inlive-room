@@ -18,8 +18,11 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async getEventBySlug(slug: string) {
+  async getEventBySlug(slug: string, includeRoomID?: boolean) {
+    includeRoomID = includeRoomID === undefined ? false : includeRoomID;
+
     const data = await db.query.events.findFirst({
+      columns: includeRoomID ? { roomId: true } : undefined,
       with: {
         host: {
           columns: {
@@ -35,8 +38,11 @@ export class EventRepo implements iEventRepo {
     return data;
   }
 
-  async getEventById(id: number) {
+  async getEventById(id: number, includeRoomID?: boolean) {
+    includeRoomID = includeRoomID === undefined ? false : includeRoomID;
+
     const data = await db.query.events.findFirst({
+      columns: includeRoomID ? { roomId: true } : undefined,
       with: {
         host: {
           columns: {

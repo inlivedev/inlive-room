@@ -9,7 +9,10 @@ import {
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
-  getEventById(id: number): Promise<
+  getEventById(
+    id: number,
+    includeRoomID?: boolean
+  ): Promise<
     | (selectEvent & {
         host:
           | {
@@ -22,7 +25,10 @@ export interface iEventRepo {
       })
     | undefined
   >;
-  getEventBySlug(slug: string): Promise<
+  getEventBySlug(
+    slug: string,
+    includeRoomID?: boolean
+  ): Promise<
     | (selectEvent & {
         host:
           | {
@@ -62,9 +68,9 @@ export class EventService implements iEventService {
     let event: selectEvent | undefined;
 
     if (!isNaN(Number(slugOrId))) {
-      event = await this.repo.getEventById(Number(slugOrId));
+      event = await this.repo.getEventById(Number(slugOrId), true);
     } else {
-      event = await this.repo.getEventBySlug(slugOrId);
+      event = await this.repo.getEventBySlug(slugOrId, true);
     }
 
     if (!event) {
