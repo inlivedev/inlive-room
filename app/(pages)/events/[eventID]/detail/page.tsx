@@ -110,13 +110,15 @@ export default async function Page({ params: { eventID } }: PageProps) {
     registereesResponse.data.map((registeree) => {
       const name = `${registeree.firstName} ${registeree.lastName}`;
 
-      const registeredDate = registeree.createdAt.toLocaleDateString('en-GB', {
+      const registeredCreatedAt = new Date(registeree.createdAt);
+
+      const registeredDate = registeredCreatedAt.toLocaleDateString('en-GB', {
         month: 'long',
         day: '2-digit',
         year: 'numeric',
       });
 
-      const registeredTime = registeree.createdAt.toLocaleTimeString('en-US', {
+      const registeredTime = registeredCreatedAt.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
