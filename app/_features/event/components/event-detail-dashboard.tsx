@@ -1,6 +1,6 @@
 'use client';
 
-import { type Key, useCallback } from 'react';
+import { type Key } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -9,6 +9,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  useDisclosure,
 } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Footer from '@/_shared/components/footer/footer';
@@ -18,6 +19,7 @@ import {
 } from '@/_features/event/components/event-status';
 import type { EventType } from '@/_shared/types/event';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
+import { webShare } from '@/_shared/utils/web-share';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import CancelEventModal from './event-cancel-modal';
 import type { SVGElementPropsType } from '@/_shared/types/types';
@@ -44,39 +46,9 @@ export default function EventDetailDashboard({
   startTime: string;
   createdDate: string;
 }) {
-  const {
-    active: copiedActive,
-    setActive: setCopiedActive,
-    setInActive: setCopiedInActive,
-  } = useToggle(false);
-
-  const handleCopyLink = async (text = '') => {
-    const success = await copyToClipboard(text);
-
-    if (success) {
-      setCopiedActive();
-      setTimeout(() => {
-        setCopiedInActive();
-      }, 2000);
-    } else {
-      alert('Failed to copy link');
-    }
-  };
-
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
-
-  const onMoreActionSelection = useCallback(
-    async (selectedKey: Key) => {
-      if (selectedKey === 'public-view') {
-        window.open(`/events/${event.slug}`, '_blank');
-      } else if (selectedKey === 'cancel-event') {
-        document.dispatchEvent(new CustomEvent('open:event-cancel-modal'));
-      }
-    },
-    [event]
-  );
 
   return (
     <div className="bg-zinc-900">
@@ -123,7 +95,17 @@ export default function EventDetailDashboard({
                   {event.status === 'published' ? (
                     <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:border-0 lg:bg-transparent lg:p-0">
                       <div className="flex items-center justify-center gap-4">
-                        <div className="flex-auto">
+                        <div className="flex-1 lg:order-2 lg:flex-auto">
+                          <Button
+                            as={Link}
+                            href={`/events/${event.slug}`}
+                            target="_blank"
+                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:text-sm"
+                          >
+                            View Event Page
+                          </Button>
+                        </div>
+                        <div className="flex-1 lg:order-1 lg:flex-auto">
                           <Button
                             as={Link}
                             href={`/rooms/${event.roomId}`}
@@ -133,44 +115,14 @@ export default function EventDetailDashboard({
                             Join Webinar
                           </Button>
                         </div>
-                        <div>
-                          <Button
-                            className="h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:text-sm"
-                            onClick={() =>
-                              handleCopyLink(
-                                `${APP_ORIGIN}/events/${event.slug}`
-                              )
-                            }
-                          >
-                            {copiedActive ? 'Copied!' : 'Copy link'}
-                          </Button>
-                        </div>
                       </div>
                     </div>
                   ) : null}
-                  <Dropdown className="ring-1 ring-zinc-800/70">
-                    <DropdownTrigger>
-                      <Button className="h-9 min-w-0 rounded-md bg-transparent px-4 py-2  text-white hover:bg-zinc-800 active:bg-zinc-700 lg:bg-zinc-800 lg:hover:bg-zinc-700 lg:active:bg-zinc-600">
-                        <MoreIcon className="h-4 w-4" />
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      disallowEmptySelection
-                      onAction={onMoreActionSelection}
-                    >
-                      {[
-                        <DropdownItem key="public-view">
-                          <span className="text-zinc-200">View Event</span>
-                        </DropdownItem>,
-                        // @ts-ignore
-                        event.status === 'published' ? (
-                          <DropdownItem key="cancel-event">
-                            <span className="text-red-400">Cancel Event</span>
-                          </DropdownItem>
-                        ) : undefined,
-                      ]}
-                    </DropdownMenu>
-                  </Dropdown>
+                  <MoreDropdown
+                    title={event.name}
+                    slug={event.slug}
+                    status={event.status}
+                  />
                 </div>
               </div>
               <div className="border-b border-zinc-800 py-4 lg:py-6">
@@ -313,5 +265,91 @@ function MoreIcon(props: SVGElementPropsType) {
         clipRule="evenodd"
       ></path>
     </svg>
+  );
+}
+
+function MoreDropdown({
+  title,
+  slug,
+  status,
+}: {
+  title: string;
+  slug: string;
+  status: 'draft' | 'published' | 'cancelled';
+}) {
+  const { isOpen, onOpenChange, onClose } = useDisclosure();
+
+  const supportWebShare =
+    typeof window?.navigator?.canShare !== 'undefined' &&
+    typeof window?.navigator?.share !== 'undefined';
+
+  const {
+    active: copiedActive,
+    setActive: setCopiedActive,
+    setInActive: setCopiedInActive,
+  } = useToggle(false);
+
+  const handleCopyLink = async (text = '') => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopiedActive();
+      setTimeout(() => {
+        setCopiedInActive();
+      }, 2000);
+    } else {
+      alert('Failed to copy link');
+    }
+  };
+
+  const onMoreActionSelection = async (selectedKey: Key) => {
+    const eventURL = `${APP_ORIGIN}/events/${slug}`;
+
+    if (selectedKey === 'copy') {
+      await handleCopyLink(eventURL);
+    } else if (selectedKey === 'share' && supportWebShare) {
+      const shareTitle = `Webinar — ${title} — inLive Room`;
+      await webShare(eventURL, shareTitle);
+    } else if (selectedKey === 'cancel-event') {
+      onClose();
+      document.dispatchEvent(new CustomEvent('open:event-cancel-modal'));
+    }
+  };
+
+  return (
+    <Dropdown
+      className="ring-1 ring-zinc-800"
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      closeOnSelect={false}
+    >
+      <DropdownTrigger>
+        <Button className="h-9 min-w-0 rounded-md bg-transparent px-4 py-2 text-white hover:bg-zinc-800 active:bg-zinc-700 lg:bg-zinc-800 lg:hover:bg-zinc-700 lg:active:bg-zinc-600">
+          <MoreIcon className="h-4 w-4" />
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        disallowEmptySelection
+        onAction={onMoreActionSelection}
+        aria-label="More options"
+      >
+        {[
+          <DropdownItem key="copy" textValue="Copy link">
+            <span>{copiedActive ? 'Copied!' : 'Copy Event URL'}</span>
+          </DropdownItem>,
+          // @ts-ignore
+          supportWebShare ? (
+            <DropdownItem key="share" textValue="Share event">
+              <span className="text-zinc-200">Share Event</span>
+            </DropdownItem>
+          ) : undefined,
+          // @ts-ignore
+          status === 'published' ? (
+            <DropdownItem key="cancel-event" textValue="Cancel event">
+              <span className="text-red-400">Cancel Event</span>
+            </DropdownItem>
+          ) : undefined,
+        ]}
+      </DropdownMenu>
+    </Dropdown>
   );
 }
