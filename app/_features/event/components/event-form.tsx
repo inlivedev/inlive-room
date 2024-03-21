@@ -24,6 +24,7 @@ import { compressImage } from '@/_shared/utils/compress-image';
 import { ActionType, ImageCropperModal, ImageState } from './image-cropper';
 import { StatusPublished, StatusDraft, StatusCancelled } from './event-status';
 import CancelEventModal from './event-cancel-modal';
+import { useFormattedDate } from '@/_shared/hooks/use-formatted-date';
 
 const DeleteEventModal = dynamic(() => import('./event-delete-modal'));
 const DatePickerModal = dynamic(() => import('./event-date-picker'));
@@ -384,7 +385,7 @@ export default function EventForm({
     [navigateTo, existingEvent, imageData]
   );
 
-  const eventDateString = new Date(eventDate).toLocaleDateString('en-GB', {
+  const eventDateString = useFormattedDate(eventDate, 'en-GB', {
     month: 'short',
     day: '2-digit',
     year: 'numeric',

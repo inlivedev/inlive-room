@@ -130,7 +130,7 @@ export default function EventDetail({
                   {status === 'draft' ? (
                     <DraftAction event={event} />
                   ) : (
-                    <PublicAction event={event} startTime={startTime} />
+                    <PublicAction event={event} />
                   )}
                 </div>
               </div>
@@ -180,13 +180,7 @@ function DraftAction({ event }: { event: EventType.Event }) {
   );
 }
 
-function PublicAction({
-  event,
-  startTime,
-}: {
-  event: EventType.Event;
-  startTime: string;
-}) {
+function PublicAction({ event }: { event: EventType.Event }) {
   const EventRegistrationModal = dynamic(
     () => import('@/_features/event/components/event-registration-modal')
   );
@@ -197,11 +191,7 @@ function PublicAction({
 
   return (
     <>
-      <EventRegistrationModal
-        title={event.name}
-        slug={event.slug}
-        startTime={startTime}
-      />
+      <EventRegistrationModal event={event} />
       <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:bg-transparent lg:px-0 lg:py-6">
         <div className="flex items-center justify-center gap-4">
           <b className="text flex items-center text-base font-semibold uppercase tracking-wide text-white">
