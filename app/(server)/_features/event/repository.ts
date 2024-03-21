@@ -246,7 +246,7 @@ export class EventRepo implements iEventRepo {
     return data[0];
   }
 
-  async registerParticipant(participant: typeof insertParticipant) {
+  async registerParticipant(participant: insertParticipant) {
     const res = await db.insert(participants).values(participant).returning();
 
     return res[0];
