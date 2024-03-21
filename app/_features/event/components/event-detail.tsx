@@ -20,23 +20,16 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import type { SVGElementPropsType } from '@/_shared/types/types';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export default function EventDetail({
   event,
   status,
-  startDateWithYear,
-  startDateWithoutYear,
-  startTime,
-  endTime,
 }: {
   event: EventType.Event;
   status: 'draft' | 'public';
-  startDateWithoutYear: string;
-  startDateWithYear: string;
-  startTime: string;
-  endTime: string;
 }) {
   const descriptionMarkup = {
     __html: event.description || '',
@@ -45,6 +38,31 @@ export default function EventDetail({
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
+
+  const startDateWithoutYear = useFormattedDateTime(event.startTime, 'en-GB', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const startDateWithYear = useFormattedDateTime(event.startTime, 'en-GB', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const startTime = useFormattedDateTime(event.startTime, 'en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const endTime = useFormattedDateTime(event.endTime, 'en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
 
   return (
     <div className="bg-zinc-900">

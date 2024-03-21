@@ -4,6 +4,7 @@ import { EventType } from '@/_shared/types/event';
 import { selectEvent } from '@/(server)/_features/event/schema';
 import { useEffect, useState } from 'react';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 export function EventStatCard({ event }: { event: selectEvent }) {
   const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
@@ -29,7 +30,7 @@ export function EventStatCard({ event }: { event: selectEvent }) {
     fetchStat();
   }, [event]);
 
-  const eventTime = new Date(event.startTime).toLocaleString('en-US', {
+  const eventTime = useFormattedDateTime(event.startTime, 'en-US', {
     month: 'short',
     day: '2-digit',
     hour: 'numeric',
