@@ -297,7 +297,7 @@ function MoreDropdown({
         setCopiedInActive();
       }, 2000);
     } else {
-      alert('Failed to copy link');
+      alert('Failed to copy URL');
     }
   };
 
@@ -333,8 +333,8 @@ function MoreDropdown({
         aria-label="More options"
       >
         {[
-          <DropdownItem key="copy" textValue="Copy link">
-            <span>{copiedActive ? 'Copied!' : 'Copy Event URL'}</span>
+          <DropdownItem key="copy" textValue="Copy event link">
+            <span>{copiedActive ? 'Copied!' : 'Copy Event Link'}</span>
           </DropdownItem>,
           // @ts-ignore
           supportWebShare ? (
