@@ -38,23 +38,22 @@ export default function EventDetailDashboard({
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
-  const startDateWithYear = useFormattedDateTime(event.startTime, 'en-GB', {
-    weekday: 'long',
+  const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
+    year: 'numeric',
     month: 'long',
     day: 'numeric',
-    year: 'numeric',
   });
 
-  const startTime = useFormattedDateTime(event.startTime, 'en-US', {
+  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
 
   const createdDate = useFormattedDateTime(event.createdAt, 'en-GB', {
-    month: 'long',
-    day: '2-digit',
     year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
 
   return (
@@ -158,7 +157,7 @@ export default function EventDetailDashboard({
                       {event.name}
                     </h3>
                     <span className="mt-2 inline-block text-sm font-medium text-zinc-500">
-                      {startDateWithYear}, {startTime}
+                      {startDate}, {startTime}
                     </span>
                   </div>
                 </div>

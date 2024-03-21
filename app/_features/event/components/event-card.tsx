@@ -13,7 +13,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
 
   const eventTime = useFormattedDateTime(event.startTime, 'en-GB', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',

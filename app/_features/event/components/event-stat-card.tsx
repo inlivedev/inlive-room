@@ -30,9 +30,10 @@ export function EventStatCard({ event }: { event: selectEvent }) {
     fetchStat();
   }, [event]);
 
-  const eventTime = useFormattedDateTime(event.startTime, 'en-US', {
+  const eventTime = useFormattedDateTime(event.startTime, 'en-GB', {
+    year: 'numeric',
     month: 'short',
-    day: '2-digit',
+    day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
