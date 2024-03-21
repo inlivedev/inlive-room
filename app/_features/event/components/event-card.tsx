@@ -11,9 +11,10 @@ export function EventCard({ event }: { event: EventType.Event }) {
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
-  const eventTime = useFormattedDateTime(event.startTime, 'en-US', {
-    month: 'short',
-    day: '2-digit',
+  const eventTime = useFormattedDateTime(event.startTime, 'en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
