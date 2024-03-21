@@ -20,23 +20,16 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import type { SVGElementPropsType } from '@/_shared/types/types';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export default function EventDetail({
   event,
   status,
-  startDateWithYear,
-  startDateWithoutYear,
-  startTime,
-  endTime,
 }: {
   event: EventType.Event;
   status: 'draft' | 'public';
-  startDateWithoutYear: string;
-  startDateWithYear: string;
-  startTime: string;
-  endTime: string;
 }) {
   const descriptionMarkup = {
     __html: event.description || '',
@@ -46,6 +39,25 @@ export default function EventDetail({
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
+  const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  });
+
+  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const endTime = useFormattedDateTime(event.endTime, 'en-GB', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
   return (
     <div className="bg-zinc-900">
       <div className="min-viewport-height mx-auto flex max-w-7xl flex-col px-4">
@@ -53,9 +65,7 @@ export default function EventDetail({
         <main className="flex-1">
           <div className="pb-28 lg:pb-0">
             <div className="mb-0.5 flex items-center gap-4 lg:mb-0">
-              <b className="font-semibold text-zinc-200">
-                {startDateWithoutYear}
-              </b>
+              <b className="font-semibold text-zinc-200">{startDate}</b>
             </div>
             <h2 className="text-wrap text-2xl font-bold tracking-wide text-zinc-100 lg:text-[42px] lg:leading-[52px]">
               {event.name}
@@ -79,7 +89,7 @@ export default function EventDetail({
                       </span>
                       <div>
                         <b className="font-semibold text-zinc-100">
-                          {startDateWithYear}
+                          {startDate}
                         </b>
                         <div className="mt-0.5 text-zinc-300">
                           {startTime} to {endTime}
@@ -130,7 +140,7 @@ export default function EventDetail({
                   {status === 'draft' ? (
                     <DraftAction event={event} />
                   ) : (
-                    <PublicAction event={event} startTime={startTime} />
+                    <PublicAction event={event} />
                   )}
                 </div>
               </div>
@@ -180,13 +190,7 @@ function DraftAction({ event }: { event: EventType.Event }) {
   );
 }
 
-function PublicAction({
-  event,
-  startTime,
-}: {
-  event: EventType.Event;
-  startTime: string;
-}) {
+function PublicAction({ event }: { event: EventType.Event }) {
   const EventRegistrationModal = dynamic(
     () => import('@/_features/event/components/event-registration-modal')
   );
@@ -197,11 +201,7 @@ function PublicAction({
 
   return (
     <>
-      <EventRegistrationModal
-        title={event.name}
-        slug={event.slug}
-        startTime={startTime}
-      />
+      <EventRegistrationModal event={event} />
       <div className="fixed bottom-0 left-0 z-20 w-full border-t border-zinc-700 bg-zinc-900 px-4 pb-6 pt-4 lg:relative lg:z-0 lg:w-auto lg:bg-transparent lg:px-0 lg:py-6">
         <div className="flex items-center justify-center gap-4">
           <b className="text flex items-center text-base font-semibold uppercase tracking-wide text-white">

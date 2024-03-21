@@ -106,87 +106,14 @@ export default async function Page({ params: { eventID } }: PageProps) {
       },
     });
 
-  const registerees =
-    registereesResponse.data.map((registeree) => {
-      const name = `${registeree.firstName} ${registeree.lastName}`;
-
-      const registeredCreatedAt = new Date(registeree.createdAt);
-
-      const registeredDate = registeredCreatedAt.toLocaleDateString('en-GB', {
-        month: 'long',
-        day: '2-digit',
-        year: 'numeric',
-      });
-
-      const registeredTime = registeredCreatedAt.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
-
-      const registeredAt = `${registeredDate}, ${registeredTime}`;
-
-      return {
-        id: registeree.id,
-        name: name,
-        email: registeree.email,
-        registeredAt: registeredAt,
-      };
-    }) || [];
-
-  const eventStartTime = new Date(event.startTime);
-  const eventEndTime = new Date(event.endTime);
-
-  const startDateWithoutYear = eventStartTime.toLocaleString('en-GB', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const startDateWithYear = eventStartTime.toLocaleString('en-GB', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-
-  const startTime = eventStartTime.toLocaleString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-
-  const endTime = eventEndTime.toLocaleString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-
-  const createdDate = new Date(event.createdAt).toLocaleDateString('en-GB', {
-    month: 'long',
-    day: '2-digit',
-    year: 'numeric',
-  });
+  const registerees = registereesResponse.data || [];
 
   return (
     <AppContainer user={user}>
       {event.status === 'draft' ? (
-        <EventDetail
-          event={event}
-          status="draft"
-          startDateWithoutYear={startDateWithoutYear}
-          startDateWithYear={startDateWithYear}
-          startTime={startTime}
-          endTime={endTime}
-        />
+        <EventDetail event={event} status="draft" />
       ) : (
-        <EventDetailDashboard
-          event={event}
-          registerees={registerees}
-          startDateWithYear={startDateWithYear}
-          startTime={startTime}
-          createdDate={createdDate}
-        />
+        <EventDetailDashboard event={event} registerees={registerees} />
       )}
     </AppContainer>
   );

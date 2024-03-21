@@ -10,22 +10,17 @@ import {
   useDisclosure,
 } from '@nextui-org/react';
 import * as Sentry from '@sentry/nextjs';
+import type { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';
-import type { EventType } from '@/_shared/types/event';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
-
-type EventRegistrationModalProps = {
-  title: string;
-  slug: string;
-  startTime: string | Date;
-};
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 export default function EventRegistrationModal({
-  title,
-  slug,
-  startTime,
-}: EventRegistrationModalProps) {
+  event: eventData,
+}: {
+  event: EventType.Event;
+}) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { navigateTo } = useNavigate();
@@ -91,9 +86,12 @@ export default function EventRegistrationModal({
 
         try {
           const response: EventType.RegisterParticipantResponse =
-            await InternalApiFetcher.post(`/api/events/${slug}/register`, {
-              body: JSON.stringify(body),
-            });
+            await InternalApiFetcher.post(
+              `/api/events/${eventData.slug}/register`,
+              {
+                body: JSON.stringify(body),
+              }
+            );
 
           if (!response || !response.ok) {
             throw new Error(
@@ -106,7 +104,7 @@ export default function EventRegistrationModal({
             `${response.data.participant.firstName} ${response.data.participant.lastName}`.trim();
 
           const redirectPath = new URL(
-            `/events/${slug}/registration-success?name=${participantName}`,
+            `/events/${eventData.slug}/registration-success?name=${participantName}`,
             window.location.origin
           ).href;
 
@@ -137,13 +135,11 @@ export default function EventRegistrationModal({
     }
   };
 
-  const eventStartDate = new Date(startTime).toLocaleDateString('en-GB', {
-    month: 'long',
-    day: '2-digit',
+  const startTime = useFormattedDateTime(eventData.startTime, 'en-GB', {
     year: 'numeric',
-  });
-
-  const eventStartTime = new Date(startTime).toLocaleTimeString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -157,10 +153,10 @@ export default function EventRegistrationModal({
             <h2 className="text-xl font-bold text-zinc-100 ">
               Event registration
             </h2>
-            <p className="mt-3 text-sm font-semibold text-zinc-200">{title}</p>
-            <p className="mt-1 text-sm text-zinc-200">
-              {eventStartDate} at {eventStartTime}
+            <p className="mt-3 text-sm font-semibold text-zinc-200">
+              {eventData.name}
             </p>
+            <p className="mt-1 text-sm text-zinc-200">{startTime}</p>
             <form className="mt-10" onSubmit={onSubmitEventRegistration}>
               <div>
                 <div className="mb-3">

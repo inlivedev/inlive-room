@@ -23,32 +23,38 @@ import { webShare } from '@/_shared/utils/web-share';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import CancelEventModal from './event-cancel-modal';
 import type { SVGElementPropsType } from '@/_shared/types/types';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
-
-type Registree = {
-  id: number;
-  name: string;
-  email: string;
-  registeredAt: string;
-};
 
 export default function EventDetailDashboard({
   event,
   registerees,
-  startDateWithYear,
-  startTime,
-  createdDate,
 }: {
   event: EventType.Event;
-  registerees: Registree[];
-  startDateWithYear: string;
-  startTime: string;
-  createdDate: string;
+  registerees: EventType.RegistereeParticipant[];
 }) {
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
+
+  const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const createdDate = useFormattedDateTime(event.createdAt, 'en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   return (
     <div className="bg-zinc-900">
@@ -151,7 +157,7 @@ export default function EventDetailDashboard({
                       {event.name}
                     </h3>
                     <span className="mt-2 inline-block text-sm font-medium text-zinc-500">
-                      {startDateWithYear}, {startTime}
+                      {startDate}, {startTime}
                     </span>
                   </div>
                 </div>
@@ -208,20 +214,10 @@ export default function EventDetailDashboard({
                       {registerees.length > 0 ? (
                         registerees.map((registeree) => {
                           return (
-                            <tr key={`${registeree.id}-${registeree.email}`}>
-                              <th
-                                scope="row"
-                                className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
-                              >
-                                {registeree.name}
-                              </th>
-                              <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                                {registeree.email}
-                              </td>
-                              <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-                                {registeree.registeredAt}
-                              </td>
-                            </tr>
+                            <RegistereeItem
+                              key={`${registeree.id}-${registeree.email}`}
+                              registeree={registeree}
+                            />
                           );
                         })
                       ) : (
@@ -247,6 +243,40 @@ export default function EventDetailDashboard({
         </div>
       </div>
     </div>
+  );
+}
+
+function RegistereeItem({
+  registeree,
+}: {
+  registeree: EventType.RegistereeParticipant;
+}) {
+  const name = `${registeree.firstName} ${registeree.lastName}`;
+
+  const registeredAt = useFormattedDateTime(registeree.createdAt, 'en-GB', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  return (
+    <tr>
+      <th
+        scope="row"
+        className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 font-medium text-zinc-200 lg:p-6"
+      >
+        {name}
+      </th>
+      <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
+        {registeree.email}
+      </td>
+      <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
+        {registeredAt}
+      </td>
+    </tr>
   );
 }
 

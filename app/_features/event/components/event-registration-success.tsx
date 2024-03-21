@@ -3,22 +3,26 @@
 import { Button } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import Link from 'next/link';
-
-type EventRegistrationSuccessProps = {
-  participantName: string;
-  title: string;
-  startDate: string;
-  startTime: string;
-  slug: string;
-};
+import type { EventType } from '@/_shared/types/event';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 
 export default function EventRegistrationSuccess({
   participantName,
-  title,
-  startTime,
-  startDate,
-  slug,
-}: EventRegistrationSuccessProps) {
+  event,
+}: {
+  participantName: string;
+  event: EventType.Event;
+}) {
+  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
   return (
     <div className="bg-zinc-900 text-zinc-200">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
@@ -37,14 +41,12 @@ export default function EventRegistrationSuccess({
                 <p className="mt-4">
                   You&#39;re successfully registered to this event:
                   <br />
-                  <b className="font-semibold">{title}</b>
+                  <b className="font-semibold">{event.name}</b>
                 </p>
                 <p className="mt-4">
                   And don’t forget to mark your calendar at:
                   <br />
-                  <b className="font-semibold">
-                    {startDate}, {startTime}
-                  </b>
+                  <b className="font-semibold">{startTime}</b>
                 </p>
                 <p className="mt-4">
                   We&#39;ve sent you an invitation email with all the details
@@ -63,7 +65,7 @@ export default function EventRegistrationSuccess({
           <div className="text-center lg:text-left">
             <Button
               as={Link}
-              href={`/events/${slug}`}
+              href={`/events/${event.slug}`}
               variant="flat"
               className="rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
             >
