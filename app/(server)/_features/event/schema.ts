@@ -86,6 +86,3 @@ export type insertParticipant = typeof participant.$inferInsert;
 export type selectParticipant = typeof participant.$inferSelect;
 
 export type eventStatusEnum = 'draft' | 'published' | 'cancelled';
-
-export const insertParticipant = participant.$inferInsert;
-export const selectParticipant = participant.$inferSelect;

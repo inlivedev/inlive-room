@@ -8,7 +8,7 @@ const persistentData = process.env.PERSISTENT_DATA || false;
 
 export class RoomRepo implements iRoomRepo {
   // Function to create a new room
-  async addRoom(roomData: typeof insertRoom) {
+  async addRoom(roomData: insertRoom) {
     const data = await db.insert(rooms).values(roomData).returning();
     return data[0];
   }
