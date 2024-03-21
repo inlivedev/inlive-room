@@ -135,13 +135,11 @@ export default function EventRegistrationModal({
     }
   };
 
-  const eventStartDate = useFormattedDateTime(eventData.startTime, 'en-GB', {
-    month: 'long',
-    day: '2-digit',
+  const startTime = useFormattedDateTime(eventData.startTime, 'en-GB', {
     year: 'numeric',
-  });
-
-  const eventStartTime = useFormattedDateTime(eventData.startTime, 'en-US', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -158,9 +156,7 @@ export default function EventRegistrationModal({
             <p className="mt-3 text-sm font-semibold text-zinc-200">
               {eventData.name}
             </p>
-            <p className="mt-1 text-sm text-zinc-200">
-              {eventStartDate} at {eventStartTime}
-            </p>
+            <p className="mt-1 text-sm text-zinc-200">{startTime}</p>
             <form className="mt-10" onSubmit={onSubmitEventRegistration}>
               <div>
                 <div className="mb-3">

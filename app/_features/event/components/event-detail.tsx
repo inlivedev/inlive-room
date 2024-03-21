@@ -39,26 +39,20 @@ export default function EventDetail({
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
-  const startDateWithoutYear = useFormattedDateTime(event.startTime, 'en-GB', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const startDateWithYear = useFormattedDateTime(event.startTime, 'en-GB', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
+  const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
     year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
   });
 
-  const startTime = useFormattedDateTime(event.startTime, 'en-US', {
+  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
 
-  const endTime = useFormattedDateTime(event.endTime, 'en-US', {
+  const endTime = useFormattedDateTime(event.endTime, 'en-GB', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -71,9 +65,7 @@ export default function EventDetail({
         <main className="flex-1">
           <div className="pb-28 lg:pb-0">
             <div className="mb-0.5 flex items-center gap-4 lg:mb-0">
-              <b className="font-semibold text-zinc-200">
-                {startDateWithoutYear}
-              </b>
+              <b className="font-semibold text-zinc-200">{startDate}</b>
             </div>
             <h2 className="text-wrap text-2xl font-bold tracking-wide text-zinc-100 lg:text-[42px] lg:leading-[52px]">
               {event.name}
@@ -97,7 +89,7 @@ export default function EventDetail({
                       </span>
                       <div>
                         <b className="font-semibold text-zinc-100">
-                          {startDateWithYear}
+                          {startDate}
                         </b>
                         <div className="mt-0.5 text-zinc-300">
                           {startTime} to {endTime}
