@@ -367,7 +367,7 @@ export class EventRepo implements iEventRepo {
       .returning();
   }
 
-  async getParticipantByUniqueURL(eventID: number, uniqueURL: string) {
+  async getParticipantByJoinID(eventID: number, uniqueURL: string) {
     const res = await db.query.participant.findFirst({
       where: and(
         eq(participants.joinID, uniqueURL),
@@ -378,7 +378,7 @@ export class EventRepo implements iEventRepo {
     return res;
   }
 
-  async getByRoomID(id: string) {
+  async getByRoomID(id: string): Promise<selectEvent | undefined> {
     const res = await db.query.events.findFirst({
       where: eq(events.roomId, id),
     });

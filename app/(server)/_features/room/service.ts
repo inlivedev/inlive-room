@@ -83,15 +83,17 @@ export class RoomService {
       throw new Error('Room not found');
     }
 
-    if (roomData.meta.type === 'event' && joinID) {
-      const event = await eventRepo.getByRoomID(roomData.id);
+    const event = await eventRepo.getByRoomID(roomData.id);
 
-      if (event) {
-        const participant = await eventRepo.getParticipantByUniqueURL(
-          event.id,
-          joinID
-        );
+    if (event && joinID) {
+      const participant = await eventRepo.getParticipantByJoinID(
+        event.id,
+        joinID
+      );
+
+      if (participant) {
         clientID = participant?.clientId;
+        clientName = participant?.firstName + ' ' + participant?.lastName;
       }
     }
 
