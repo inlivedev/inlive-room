@@ -72,8 +72,12 @@ export const participantRelations = relations(participant, ({ one }) => ({
   }),
 }));
 
-export const eventsRelations = relations(events, ({ many }) => ({
+export const eventsRelations = relations(events, ({ many, one }) => ({
   participants: many(participant),
+  host: one(users, {
+    fields: [events.createdBy],
+    references: [users.id],
+  }),
 }));
 
 export type insertEvent = typeof events.$inferInsert;
