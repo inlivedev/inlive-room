@@ -255,10 +255,7 @@ function ShareDropdown({ title, slug }: { title: string; slug: string }) {
   };
 
   return (
-    <Dropdown
-      className="w-36 min-w-0 ring-1 ring-zinc-800"
-      closeOnSelect={false}
-    >
+    <Dropdown className="min-w-36 ring-1 ring-zinc-800" closeOnSelect={false}>
       <DropdownTrigger>
         <Button className="min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600">
           Share

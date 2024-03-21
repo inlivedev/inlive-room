@@ -317,7 +317,7 @@ function MoreDropdown({
 
   return (
     <Dropdown
-      className="ring-1 ring-zinc-800"
+      className="min-w-40 ring-1 ring-zinc-800"
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       closeOnSelect={false}
