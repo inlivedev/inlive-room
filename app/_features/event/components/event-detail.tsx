@@ -65,60 +65,51 @@ export default function EventDetail({
         <main className="flex-1">
           <div className="pb-28 lg:pb-0">
             <div className="mb-0.5 flex items-center gap-4 lg:mb-0">
-              <b className="font-semibold text-zinc-200">{startDate}</b>
+              <b className="h-6 font-semibold text-zinc-200">{startDate}</b>
             </div>
             <h2 className="text-wrap text-2xl font-bold tracking-wide text-zinc-100 lg:text-[42px] lg:leading-[52px]">
               {event.name}
             </h2>
             {typeof event.host?.name === 'string' ? (
-              <b className="mt-4 block font-medium text-zinc-300 lg:mt-6">
+              <b className="mt-3 block text-sm font-medium text-zinc-300 lg:mt-6 lg:text-base">
                 Hosted by {event.host.name}
               </b>
             ) : null}
             <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:gap-10">
               <div className="lg:order-2 lg:flex-1">
                 <div className="flex w-full flex-col gap-6 rounded-2xl lg:sticky lg:top-6 lg:ml-auto lg:max-w-[440px] lg:bg-zinc-950/25 lg:p-8 lg:ring-1 lg:ring-zinc-800">
-                  <div className="flex flex-col gap-4 lg:gap-6">
-                    <div className="flex items-center gap-4 rounded-lg text-sm">
-                      <span className="rounded-lg bg-zinc-700/60 p-2">
-                        <ClockFillIcon
-                          width={24}
-                          height={24}
-                          className="text-zinc-100"
-                        />
+                  <div className="flex flex-col gap-x-10 gap-y-5 sm:flex-row sm:flex-wrap lg:flex-col lg:flex-nowrap lg:gap-6">
+                    <div className="flex items-center gap-4 rounded-lg">
+                      <span className="rounded-lg bg-zinc-700/60 p-2.5">
+                        <ClockFillIcon className="h-5 w-5 text-zinc-100" />
                       </span>
                       <div>
-                        <b className="font-semibold text-zinc-100">
+                        <b className="block h-5 text-sm font-semibold text-zinc-100">
                           {startDate}
                         </b>
-                        <div className="mt-0.5 text-zinc-300">
+                        <div className="mt-0.5 block h-5 text-sm text-zinc-300">
                           {startTime} to {endTime}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 rounded-lg text-sm">
-                      <span className="rounded-lg bg-zinc-700/60 p-2">
-                        <CameraOnIcon
-                          width={24}
-                          height={24}
-                          className="text-zinc-100"
-                        />
+                    <div className="flex items-center gap-4 rounded-lg">
+                      <span className="rounded-lg bg-zinc-700/60 p-2.5">
+                        <CameraOnIcon className="h-5 w-5 text-zinc-100" />
                       </span>
                       <div>
-                        <b className="font-semibold text-zinc-100">
+                        <b className="block text-sm font-semibold text-zinc-100">
                           Online webinar
                         </b>
-                        <div className="mt-0.5 text-zinc-300">
+                        <div className="mt-0.5 block text-sm text-zinc-300">
                           Attendees will receive a link
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 rounded-lg text-sm">
-                      <span className="rounded-lg bg-zinc-700/60 p-2">
+                    <div className="flex items-center gap-4 rounded-lg">
+                      <span className="rounded-lg bg-zinc-700/60 p-2.5">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
+                          className="h-5 w-5 text-zinc-100"
                           viewBox="0 0 24 24"
                         >
                           <path
@@ -128,10 +119,10 @@ export default function EventDetail({
                         </svg>
                       </span>
                       <div>
-                        <b className="font-semibold text-zinc-100">
+                        <b className="block text-sm font-semibold text-zinc-100">
                           No participant limit
                         </b>
-                        <div className="mt-0.5 text-zinc-300">
+                        <div className="mt-0.5 block text-sm text-zinc-300">
                           Anyone can freely join this webinar
                         </div>
                       </div>
