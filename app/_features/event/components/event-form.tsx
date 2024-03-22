@@ -229,7 +229,7 @@ export default function EventForm({
       const startTime = new Date(
         data.eventDate.setHours(
           data.eventStartTime.hour,
-          data.eventEndTime.minute,
+          data.eventStartTime.minute,
           0
         )
       ).toISOString();
