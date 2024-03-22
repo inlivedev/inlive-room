@@ -21,6 +21,7 @@ import ClockFillIcon from '@/_shared/components/icons/clock-fill-icon';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import type { SVGElementPropsType } from '@/_shared/types/types';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
+import { StatusDraft } from './event-status';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -64,6 +65,11 @@ export default function EventDetail({
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex-1">
           <div className="pb-28 lg:pb-0">
+            {status === 'draft' ? (
+              <div className="mb-3">
+                <StatusDraft />
+              </div>
+            ) : null}
             <div className="mb-0.5 flex items-center gap-4 lg:mb-0">
               <b className="h-6 font-semibold text-zinc-200">{startDate}</b>
             </div>
