@@ -148,6 +148,13 @@
       "when": 1710919963136,
       "tag": "0020_remove_participant_junction_table",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1711090418507,
+      "tag": "0021_remove_joinID",
+      "breakpoints": true
     }
   ]
 }

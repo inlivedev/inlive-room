@@ -37,8 +37,7 @@ export class RoomService {
   async createClient(
     roomId: string,
     clientName: string,
-    clientID?: string,
-    joinID?: string
+    clientID?: string
   ): Promise<Participant> {
     if (!this._roomRepo.isPersistent()) {
       const clientResponse = await this._sdk.createClient(roomId, {
@@ -81,20 +80,6 @@ export class RoomService {
         'error'
       );
       throw new Error('Room not found');
-    }
-
-    const event = await eventRepo.getByRoomID(roomData.id);
-
-    if (event && joinID) {
-      const participant = await eventRepo.getParticipantByJoinID(
-        event.id,
-        joinID
-      );
-
-      if (participant) {
-        clientID = participant?.clientId;
-        clientName = participant?.firstName + ' ' + participant?.lastName;
-      }
     }
 
     const clientResponse = await this._sdk.createClient(roomData.id, {

@@ -18,7 +18,7 @@ export function GenerateIcal(
     timezone
   );
 
-  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?joinID=${participant.joinID}`;
+  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
 
   let eventStatus = 'CONFIRMED';
   let eventMethod = 'REQUEST';

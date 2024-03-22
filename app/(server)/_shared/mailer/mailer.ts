@@ -44,7 +44,7 @@ export async function SendEventInvitationEmail(
 
   const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
-  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?joinID=${participant.joinID}`;
+  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
@@ -185,7 +185,7 @@ export async function SendEventRescheduledEmail(
     username: 'api',
   });
 
-  const roomURL = `${PUBLIC_URL}/rooms/${newEvent.roomId}?joinID=${participant.joinID}`;
+  const roomURL = `${PUBLIC_URL}/rooms/${newEvent.roomId}?clientID=${participant.clientId}`;
 
   const oldEventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
