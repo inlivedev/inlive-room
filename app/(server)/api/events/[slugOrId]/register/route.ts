@@ -48,7 +48,6 @@ export async function POST(
       description: body.description,
       clientId: generateID(12),
       eventID: existingEvent.id,
-      joinID: generateID(12),
     };
 
     const registeredParticipant = await eventRepo.registerParticipant(
