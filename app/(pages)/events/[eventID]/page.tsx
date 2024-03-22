@@ -83,7 +83,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   const event = await eventService.getEventBySlugOrID(eventID, undefined);
 
-  if (!event) {
+  if (!event || event.status === 'draft') {
     return notFound();
   }
 
