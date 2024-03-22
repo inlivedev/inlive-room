@@ -359,7 +359,7 @@ export default function EventForm({
 
         if (response.ok) {
           if (publish) {
-            navigateTo(`/events/${response.data.slug}`);
+            navigateTo(`/events/${response.data.slug}/detail`);
           } else {
             navigateTo(`/events`);
           }
@@ -376,7 +376,7 @@ export default function EventForm({
         );
 
         if (response.ok) {
-          navigateTo(`/events/${response.data.slug}`);
+          navigateTo(`/events/${response.data.slug}/detail`);
         } else {
           alert('Failed to save the changes, please try again later');
         }
