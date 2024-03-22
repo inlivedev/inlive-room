@@ -63,6 +63,8 @@ export function MetadataProvider({
     clientSDK.on(
       RoomEvent.STREAM_AVAILABLE,
       async ({ stream: availableStream }: { stream: ParticipantStream }) => {
+        console.log('STREAM_AVAILABLE', availableStream);
+
         if (
           availableStream.source === 'screen' &&
           availableStream.origin === 'local'
