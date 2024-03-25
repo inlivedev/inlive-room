@@ -44,7 +44,7 @@ export default function EventDetailDashboard({
     day: 'numeric',
   });
 
-  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
+  const startTime = useFormattedDateTime(event.startTime, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -157,7 +157,8 @@ export default function EventDetailDashboard({
                       {event.name}
                     </h3>
                     <span className="mt-2 inline-block text-sm font-medium text-zinc-500">
-                      {startDate}, {startTime}
+                      <span>{startDate}</span>,&nbsp;
+                      <span className="lowercase">{startTime}</span>
                     </span>
                   </div>
                 </div>
@@ -253,10 +254,13 @@ function RegistereeItem({
 }) {
   const name = `${registeree.firstName} ${registeree.lastName}`;
 
-  const registeredAt = useFormattedDateTime(registeree.createdAt, 'en-GB', {
+  const registeredDate = useFormattedDateTime(registeree.createdAt, 'en-GB', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+  });
+
+  const registeredTime = useFormattedDateTime(registeree.createdAt, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -274,7 +278,8 @@ function RegistereeItem({
         {registeree.email}
       </td>
       <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-        {registeredAt}
+        <span>{registeredDate}</span>,&nbsp;
+        <span className="lowercase">{registeredTime}</span>
       </td>
     </tr>
   );

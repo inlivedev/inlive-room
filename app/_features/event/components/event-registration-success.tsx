@@ -13,11 +13,14 @@ export default function EventRegistrationSuccess({
   participantName: string;
   event: EventType.Event;
 }) {
-  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
+  const eventDate = useFormattedDateTime(event.startTime, 'en-GB', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'long',
+  });
+
+  const eventTime = useFormattedDateTime(event.startTime, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -46,7 +49,10 @@ export default function EventRegistrationSuccess({
                 <p className="mt-4">
                   And don’t forget to mark your calendar at:
                   <br />
-                  <b className="font-semibold">{startTime}</b>
+                  <b className="font-semibold">
+                    <span>{eventDate}</span>&nbsp;at&nbsp;
+                    <span className="lowercase">{eventTime}</span>
+                  </b>
                 </p>
                 <p className="mt-4">
                   We&#39;ve sent you an invitation email with all the details
