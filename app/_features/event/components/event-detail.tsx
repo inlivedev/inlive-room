@@ -47,13 +47,13 @@ export default function EventDetail({
     weekday: 'long',
   });
 
-  const startTime = useFormattedDateTime(event.startTime, 'en-GB', {
+  const startTime = useFormattedDateTime(event.startTime, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
 
-  const endTime = useFormattedDateTime(event.endTime, 'en-GB', {
+  const endTime = useFormattedDateTime(event.endTime, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -93,7 +93,7 @@ export default function EventDetail({
                         <b className="block h-5 text-sm font-semibold text-zinc-100">
                           {startDate}
                         </b>
-                        <div className="mt-0.5 block h-5 text-sm text-zinc-300">
+                        <div className="mt-0.5 block h-5 text-sm lowercase text-zinc-300">
                           {startTime} to {endTime}
                         </div>
                       </div>

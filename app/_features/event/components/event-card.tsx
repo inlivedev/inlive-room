@@ -11,10 +11,13 @@ export function EventCard({ event }: { event: EventType.Event }) {
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
     : '/images/webinar/webinar-no-image-placeholder.png';
 
-  const eventTime = useFormattedDateTime(event.startTime, 'en-GB', {
+  const eventDate = useFormattedDateTime(event.startTime, 'en-GB', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+  });
+
+  const eventTime = useFormattedDateTime(event.startTime, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -60,7 +63,8 @@ export function EventCard({ event }: { event: EventType.Event }) {
           </h3>
           <div className="mt-4">
             <span className="text-sm font-medium text-zinc-500">
-              {eventTime}
+              <span>{eventDate}</span>,&nbsp;
+              <span className="lowercase">{eventTime}</span>
             </span>
           </div>
         </div>

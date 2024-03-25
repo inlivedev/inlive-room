@@ -30,10 +30,13 @@ export function EventStatCard({ event }: { event: selectEvent }) {
     fetchStat();
   }, [event]);
 
-  const eventTime = useFormattedDateTime(event.startTime, 'en-GB', {
+  const eventDate = useFormattedDateTime(event.startTime, 'en-GB', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+  });
+
+  const eventTime = useFormattedDateTime(event.startTime, 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -64,11 +67,9 @@ export function EventStatCard({ event }: { event: selectEvent }) {
           <div className="flex flex-col justify-between sm:order-1">
             <h3 className="text-lg font-medium text-zinc-300">{event.name}</h3>
             <div className="mt-1">
-              <span
-                className="text-sm font-medium text-zinc-500"
-                suppressHydrationWarning
-              >
-                {eventTime}
+              <span className="text-sm font-medium text-zinc-500">
+                <span>{eventDate}</span>,&nbsp;
+                <span className="lowercase">{eventTime}</span>
               </span>
             </div>
           </div>
