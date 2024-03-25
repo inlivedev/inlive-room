@@ -55,7 +55,7 @@ function WelcomeStep({ setNext }: { setNext: () => void }) {
         <div className="p-6 text-sm text-zinc-300 md:px-6 md:py-2">
           <p>
             Hey there! <br />
-            Welcome to your inLive Event dashboard.
+            Welcome to your inLive Room for Event dashboard.
           </p>
           <p className="mt-5 text-pretty">
             This is where you&apos;ll manage all your webinar events. We&apos;ve
