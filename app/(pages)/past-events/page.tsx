@@ -56,7 +56,7 @@ export default async function Page({
   }
 
   const page = searchParams['page'] ? parseInt(searchParams['page']) : 1;
-  const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 5;
+  const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 10;
   const token = cookies().get('token')?.value ?? '';
   const today = new Date();
 
@@ -76,9 +76,18 @@ export default async function Page({
   const events = eventResponse.data || [];
   const meta = eventResponse.meta;
 
+  let validPagination = false;
+  if (page <= meta.total_page) {
+    validPagination = true;
+  }
+
   return (
     <AppContainer user={user}>
-      <PastEvents events={events} meta={meta} />
+      <PastEvents
+        events={events}
+        meta={meta}
+        validPagination={validPagination}
+      />
     </AppContainer>
   );
 }
