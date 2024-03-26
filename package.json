@@ -15,7 +15,7 @@
     "migrate": "ts-node ./migrate.ts"
   },
   "dependencies": {
-    "@inlivedev/inlive-js-sdk": "^0.15.4",
+    "@inlivedev/inlive-js-sdk": "^0.16.0",
     "@nextui-org/react": "^2.2.9",
     "@sentry/nextjs": "^7.70.0",
     "compressorjs": "^1.2.1",
