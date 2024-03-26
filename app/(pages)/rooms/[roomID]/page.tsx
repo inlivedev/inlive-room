@@ -116,11 +116,11 @@ export default async function Page({ searchParams }: PageProps) {
     });
   });
 
-  const codecPreferences = hubRoomResponse?.data?.codecPreferences || [];
+  const codecPreferences = hubRoomResponse?.data?.options.codecs || [];
   const bitrateConfig = {
-    highBitrate: hubRoomResponse?.data?.bitrates.videoHigh || 0,
-    midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
-    lowBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
+    highBitrate: hubRoomResponse?.data?.options.bitrates.videoHigh || 0,
+    midBitrate: hubRoomResponse?.data?.options.bitrates.videoMid || 0,
+    lowBitrate: hubRoomResponse?.data?.options.bitrates.videoLow || 0,
   };
   const roomType = roomData.meta ? roomData.meta.type : 'meeting';
 
