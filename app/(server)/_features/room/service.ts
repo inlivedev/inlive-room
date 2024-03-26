@@ -236,7 +236,7 @@ export class RoomService {
       if (remoteRoom.ok) {
         room = {
           id: remoteRoom.data.id,
-          name: remoteRoom.data.roomName,
+          name: remoteRoom.data.name,
           createdBy: 0,
         } as Room;
       }
