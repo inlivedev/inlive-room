@@ -1,5 +1,6 @@
+/* eslint-disable prettier/prettier */
 import { db } from '@/(server)/_shared/database/database';
-import { iEventRepo } from './service';
+import { AllParticipants, iEventRepo } from './service';
 import {
   events,
   insertEvent,
@@ -10,6 +11,7 @@ import {
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { User, users } from '../user/schema';
+import { activitiesLog } from '../activity-log/schema';
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
@@ -373,5 +375,100 @@ export class EventRepo implements iEventRepo {
     });
 
     return res;
+  }
+
+  async getAllParticipantsByEventId(
+    eventId: number,
+    limit: number,
+    page: number
+  ): Promise<{
+    data: AllParticipants;
+    meta: PageMeta;
+  } | undefined> {
+
+    if(page < 1) {
+      page = 1;
+    }
+
+    if (limit < 1) {
+      limit = 10;
+    }
+
+    const subQueryConnectedClient = db
+      .select()
+      .from(activitiesLog)
+      .innerJoin(
+        events,
+        eq(events.roomId, sql`${activitiesLog.meta} ->> 'roomID'`)
+      )
+      .where(eq(events.id, eventId))
+      .as('ConnectedClientsLog');
+
+    // Removes the duplicates clientID
+    const subQueryUniqueConnectedClient = db
+      .selectDistinctOn([sql`${subQueryConnectedClient.activities_logs.meta} ->> 'clientID'`], {
+        clientID:
+          sql<string>`${subQueryConnectedClient.activities_logs.meta} ->> 'clientID'`.as(
+            'clientID'
+          ),
+        name: sql<string>`${subQueryConnectedClient.activities_logs.meta} ->> 'name'`.as(
+          'name'
+        ),
+      })
+      .from(subQueryConnectedClient)
+      .as('UniqueConnectedClients');
+
+    // TODO : Query the alias for same clientID with same name
+    // subQueryGetAlias
+
+    // add the isRegistered and isJoined field and email
+    const finalQuery = await db
+      .select({
+        clientID: subQueryUniqueConnectedClient.clientID,
+        name: sql<string>`
+        CASE
+          WHEN ${participants.firstName} IS NULL THEN ${subQueryUniqueConnectedClient.name}
+          ELSE CONCAT_WS(' ', ${participants.firstName}, ${participants.lastName})
+        END
+          `.as('name'),
+        email: participants.email,
+        isRegistered: sql<boolean>`
+        CASE
+          WHEN ${participants.clientId} IS NULL THEN ${false}
+          ELSE ${true}
+        END
+        `.as('isRegistered'),
+        isJoined: sql<boolean>`
+        CASE
+          WHEN (${participants.clientId} IS NOT NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) 
+            OR (${participants.clientId} IS NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) THEN ${true}
+          ELSE ${false}
+        END
+        `.as('isJoined'),
+      })
+      .from(subQueryUniqueConnectedClient)
+      .fullJoin(
+        participants,
+        eq(participants.clientId, subQueryUniqueConnectedClient.clientID)
+      ).as('participants')
+
+    const {data , meta} = await db.transaction(async (tx) => {
+      const data = await tx.select().from(finalQuery)
+        .limit(limit)
+        .offset((page - 1) * limit);
+
+      const total = await tx.select({ total: count() }).from(finalQuery);
+
+      const meta : PageMeta = {
+        current_page: page,
+        total_page: Math.ceil(total[0].total / limit) || 1,
+        per_page: limit,
+        total_record: total[0].total
+      }
+
+      return { data, meta };
+    })
+
+    return { data, meta };
   }
 }

@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/nextjs';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
-import { eventRepo } from '@/(server)/api/_index';
 
 export interface Room {
   id: string;
