@@ -116,12 +116,6 @@ export default async function Page({ searchParams }: PageProps) {
     });
   });
 
-  const codecPreferences = hubRoomResponse?.data?.codecPreferences || [];
-  const bitrateConfig = {
-    highBitrate: hubRoomResponse?.data?.bitrates.videoHigh || 0,
-    midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
-    lowBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
-  };
   const roomType = roomData.meta ? roomData.meta.type : 'meeting';
 
   return (
@@ -132,8 +126,6 @@ export default async function Page({ searchParams }: PageProps) {
         roomType={roomType}
         isModerator={isModerator}
         debug={debug}
-        codecPreferences={codecPreferences}
-        bitrateConfig={bitrateConfig}
       />
     </AppContainer>
   );
