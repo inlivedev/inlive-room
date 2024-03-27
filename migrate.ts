@@ -33,10 +33,11 @@ async function main() {
     output: process.stdout,
   });
 
+  console.log(`Migrating to ${DB_HOST} on Database ${DB_NAME}`);
+
   rl.question('Are you sure you want to migrate? (y/n) ', async (answer) => {
     if (answer.toLowerCase() === 'y') {
       console.log('Migrating Started');
-      console.log(`Migrating to ${DB_HOST} on Database ${DB_NAME}`);
       await migrate(db, { migrationsFolder: './migrations' });
       console.log('Migration Finish');
       process.exit();
