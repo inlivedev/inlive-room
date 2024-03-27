@@ -167,7 +167,7 @@ export class RoomService {
 
       for (const datachannel of this._datachannels) {
         const channelResponse = await this._sdk.createDataChannel(
-          roomResp.data.roomId,
+          roomResp.data.id,
           datachannel,
           true
         );
@@ -183,7 +183,7 @@ export class RoomService {
 
       if (!this._roomRepo.isPersistent()) {
         return {
-          id: roomResp.data.roomId,
+          id: roomResp.data.id,
           createdBy: userID,
           meta: { type },
           name: '',
@@ -193,7 +193,7 @@ export class RoomService {
 
       try {
         const room = await this._roomRepo.addRoom({
-          id: roomResp.data.roomId,
+          id: roomResp.data.id,
           createdBy: userID,
           meta: { type },
         });
@@ -234,8 +234,8 @@ export class RoomService {
       const remoteRoom = await this._sdk.getRoom(roomId);
       if (remoteRoom.ok) {
         room = {
-          id: remoteRoom.data.roomId,
-          name: remoteRoom.data.roomName,
+          id: remoteRoom.data.id,
+          name: remoteRoom.data.name,
           createdBy: 0,
         } as Room;
       }

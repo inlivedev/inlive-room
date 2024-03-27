@@ -27,12 +27,6 @@ type PeerProviderProps = {
   roomID: string;
   client: ClientType.ClientData;
   debug: boolean;
-  codecPreferences: string[];
-  bitrateConfig: {
-    highBitrate: number;
-    midBitrate: number;
-    lowBitrate: number;
-  };
 };
 
 export function PeerProvider({
@@ -40,8 +34,6 @@ export function PeerProvider({
   roomID,
   client,
   debug = false,
-  codecPreferences = [],
-  bitrateConfig,
 }: PeerProviderProps) {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [connectionState, setConnectionState] =
@@ -63,7 +55,7 @@ export function PeerProvider({
         setPeer(null);
       }
     };
-  }, [roomID, client, peer, codecPreferences, bitrateConfig]);
+  }, [roomID, client, peer]);
 
   useEffect(() => {
     const peerConnection = peer?.getPeerConnection();

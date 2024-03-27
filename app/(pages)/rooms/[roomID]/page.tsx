@@ -104,24 +104,13 @@ export default async function Page({ searchParams }: PageProps) {
     }
   };
 
-  const hubRoomPromise = serverSDK.getRoom(roomData.id);
-
-  const [hubRoomResponse] = await Promise.allSettled([
-    hubRoomPromise,
-    setModeratorMetaPromise(),
-  ]).then((results) => {
+  await Promise.allSettled([setModeratorMetaPromise()]).then((results) => {
     return results.map((result) => {
       if (result.status === 'fulfilled') return result.value;
       return null;
     });
   });
 
-  const codecPreferences = hubRoomResponse?.data?.codecPreferences || [];
-  const bitrateConfig = {
-    highBitrate: hubRoomResponse?.data?.bitrates.videoHigh || 0,
-    midBitrate: hubRoomResponse?.data?.bitrates.videoMid || 0,
-    lowBitrate: hubRoomResponse?.data?.bitrates.videoLow || 0,
-  };
   const roomType = roomData.meta ? roomData.meta.type : 'meeting';
 
   return (
@@ -132,8 +121,6 @@ export default async function Page({ searchParams }: PageProps) {
         roomType={roomType}
         isModerator={isModerator}
         debug={debug}
-        codecPreferences={codecPreferences}
-        bitrateConfig={bitrateConfig}
       />
     </AppContainer>
   );
