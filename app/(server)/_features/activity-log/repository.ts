@@ -43,7 +43,7 @@ export const aggregateRoomDuration = async (
   }
 };
 
-export const countJoinedUser = async (roomID: string) => {
+export const countRegisteredParticipant = async (roomID: string) => {
   const res = await db
     .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
     .from(activitiesLog)
@@ -58,7 +58,7 @@ export const countJoinedUser = async (roomID: string) => {
   return res[0];
 };
 
-export const countJoinedGuest = async (roomID: string) => {
+export const countGuestParticipant = async (roomID: string) => {
   const res = await db
     .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
     .from(activitiesLog)

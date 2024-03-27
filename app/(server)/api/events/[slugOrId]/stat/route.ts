@@ -3,8 +3,8 @@ import { eventRepo, eventService } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import {
-  countJoinedGuest,
-  countJoinedUser,
+  countGuestParticipant,
+  countRegisteredParticipant,
 } from '@/(server)/_features/activity-log/repository';
 
 export async function GET(
@@ -82,8 +82,10 @@ export async function GET(
     const countRegistirees = (
       await eventRepo.countRegistiree(existingEvent?.id)
     ).value;
-    const countUser = (await countJoinedUser(existingEvent.roomId)).value;
-    const countGuest = (await countJoinedGuest(existingEvent.roomId)).value;
+    const countUser = (await countRegisteredParticipant(existingEvent.roomId))
+      .value;
+    const countGuest = (await countGuestParticipant(existingEvent.roomId))
+      .value;
     const totalJoined = countGuest + countUser;
 
     const percentageJoined =
@@ -93,18 +95,27 @@ export async function GET(
     const percentageGuest =
       countGuest > 0 && totalJoined > 0 ? (countGuest / totalJoined) * 100 : 0;
 
+    const registeredAttendance =
+      await eventRepo.getParticipantAttendancePercentage(existingEvent?.id);
+
+    console.log(registeredAttendance);
+
     return NextResponse.json({
       code: 200,
       data: {
         registeredUsers: countRegistirees || 0,
+        totalJoined: countGuest + countUser || 0,
         joinedUsers: countUser || 0,
         joinedGuests: countGuest || 0,
         percentageJoined:
           percentageJoined > 0 ? percentageJoined.toFixed(2) : 0,
         percentageGuest: percentageGuest > 0 ? percentageGuest.toFixed(2) : 0,
+        percentageRegisteredJoined: registeredAttendance.attendedCount || 0,
+        registeredAttenance: registeredAttendance || [],
       },
     });
   } catch (error) {
+    console.log(error);
     const response = {
       code: 500,
       message: 'an error has occured on our side please try again later',
