@@ -98,8 +98,6 @@ export async function GET(
     const registeredAttendance =
       await eventRepo.getParticipantAttendancePercentage(existingEvent?.id);
 
-    console.log(registeredAttendance);
-
     return NextResponse.json({
       code: 200,
       data: {

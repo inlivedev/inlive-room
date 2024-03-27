@@ -502,9 +502,12 @@ export class EventRepo implements iEventRepo {
           combined_logs: sql<z.infer<typeof RoomDurationMeta>[]>`ARRAY_AGG(meta ORDER BY ${activitiesLog.meta} ->> 'joinTime')`.as('combined_logs')
         })
         .from(activitiesLog)
-        .innerJoin(participant, eq(sql<object[]>`${activitiesLog.meta} ->> 'roomID'`, event.roomId))
-        .where(sql`${activitiesLog.meta} ->> 'roomID' = ${event.roomId} AND ${activitiesLog.name} = 'RoomDuration'`).groupBy(sql`${activitiesLog.meta} ->> 'clientID'`)
-
+        .innerJoin(
+            participant, 
+            and(
+              eq(sql<object[]>`${activitiesLog.meta} ->> 'roomID'`, event.roomId),
+              eq(sql<string>`${activitiesLog.meta} ->> 'clientID'`, sql<string>`${participant.clientId}`)))
+        .groupBy(sql<string>`${activitiesLog.meta} ->> 'clientID'`);
       return { participants: registeredParticipants, event };
     })
 
