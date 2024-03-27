@@ -6,6 +6,7 @@ import {
   countGuestParticipant,
   countRegisteredParticipant,
 } from '@/(server)/_features/activity-log/repository';
+import { EventType } from '@/_shared/types/event';
 
 export async function GET(
   request: NextRequest,
@@ -82,35 +83,50 @@ export async function GET(
     const countRegistirees = (
       await eventRepo.countRegistiree(existingEvent?.id)
     ).value;
-    const countUser = (await countRegisteredParticipant(existingEvent.roomId))
+    const countRegisteredJoin = (
+      await countRegisteredParticipant(existingEvent.roomId)
+    ).value;
+    const countGuestJoin = (await countGuestParticipant(existingEvent.roomId))
       .value;
-    const countGuest = (await countGuestParticipant(existingEvent.roomId))
-      .value;
-    const totalJoined = countGuest + countUser;
-
-    const percentageJoined =
-      totalJoined > 0 && countRegistirees > 0
-        ? (totalJoined / countRegistirees) * 100
-        : 0;
-    const percentageGuest =
-      countGuest > 0 && totalJoined > 0 ? (countGuest / totalJoined) * 100 : 0;
+    const totalJoined = countGuestJoin + countRegisteredJoin;
 
     const registeredAttendance =
       await eventRepo.getParticipantAttendancePercentage(existingEvent?.id);
 
+    const data: EventType.Stat['data'] = {
+      count: {
+        registeree: countRegistirees || 0,
+
+        totalJoined: totalJoined,
+        registereeJoin: countRegisteredJoin || 0,
+        guestsJoin: countGuestJoin || 0,
+
+        registeredAttendance: registeredAttendance.attendedCount || 0,
+      },
+      percentage: {
+        guestCountJoin: ((countGuestJoin / totalJoined) * 100).toFixed(2),
+        registeredCountJoin: (
+          (countRegisteredJoin / totalJoined) *
+          100
+        ).toFixed(2),
+        registeredCountRegisteree: (
+          (countRegisteredJoin / countRegistirees) *
+          100
+        ).toFixed(2),
+        registeredAttendCountJoin: (
+          (registeredAttendance.attendedCount / totalJoined) *
+          100
+        ).toFixed(2),
+        registeredAttendCountRegisteree: (
+          (registeredAttendance.attendedCount / countRegistirees) *
+          100
+        ).toFixed(2),
+      },
+    };
+
     return NextResponse.json({
       code: 200,
-      data: {
-        registeredUsers: countRegistirees || 0,
-        totalJoined: countGuest + countUser || 0,
-        joinedUsers: countUser || 0,
-        joinedGuests: countGuest || 0,
-        percentageJoined:
-          percentageJoined > 0 ? percentageJoined.toFixed(2) : 0,
-        percentageGuest: percentageGuest > 0 ? percentageGuest.toFixed(2) : 0,
-        percentageRegisteredJoined: registeredAttendance.attendedCount || 0,
-        registeredAttenance: registeredAttendance || [],
-      },
+      data: data,
     });
   } catch (error) {
     console.log(error);
