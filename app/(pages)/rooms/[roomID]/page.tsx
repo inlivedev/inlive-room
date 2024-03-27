@@ -104,12 +104,7 @@ export default async function Page({ searchParams }: PageProps) {
     }
   };
 
-  const hubRoomPromise = serverSDK.getRoom(roomData.id);
-
-  const [hubRoomResponse] = await Promise.allSettled([
-    hubRoomPromise,
-    setModeratorMetaPromise(),
-  ]).then((results) => {
+  await Promise.allSettled([setModeratorMetaPromise()]).then((results) => {
     return results.map((result) => {
       if (result.status === 'fulfilled') return result.value;
       return null;
