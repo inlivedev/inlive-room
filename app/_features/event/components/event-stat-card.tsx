@@ -5,6 +5,8 @@ import { selectEvent } from '@/(server)/_features/event/schema';
 import { useEffect, useState } from 'react';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
+import { Button, Tooltip } from '@nextui-org/react';
+import InfoIcon from '@/_shared/components/icons/info-icon';
 
 export function EventStatCard({ event }: { event: selectEvent }) {
   const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
@@ -86,39 +88,56 @@ export function EventStatCard({ event }: { event: selectEvent }) {
             <>
               <StatList>
                 <StatItem
-                  name="Registered users"
-                  value={
-                    stat.data.registeredUsers ? stat.data.registeredUsers : 'NA'
-                  }
+                  name="Registered Participants"
+                  value={stat.data.count.registeree}
                 />
                 <StatItem
-                  name="Joined users"
-                  value={
-                    stat.data.joinedGuests && stat.data.joinedUsers
-                      ? stat.data.joinedGuests + stat.data.joinedUsers
-                      : 'NA'
-                  }
+                  name="Total Participants"
+                  value={stat.data.count.totalJoined}
                 />
                 <StatItem
-                  name="Joined as guest"
-                  value={stat.data.joinedGuests ? stat.data.joinedGuests : 'NA'}
+                  name="Participants from Registration"
+                  value={stat.data.count.registereeJoin}
                 />
                 <StatItem
-                  name="Percentage joined"
-                  value={
-                    stat.data.percentageJoined
-                      ? `${stat.data.percentageJoined}%`
-                      : 'NA'
-                  }
+                  name="Participants as Guest"
+                  value={stat.data.count.guestsJoin}
+                />
+
+                <StatItem
+                  name="Registration Attendances"
+                  value={stat.data.count.registeredAttendance}
+                  message="Participant from registration that attend more than 80% of total event duration"
+                />
+
+                <StatItem
+                  name="Percentage Joined from Registration"
+                  value={`${
+                    stat.data.percentage.registeredCountRegisteree || 0
+                  } %`}
                 />
                 <StatItem
-                  name="Percentage guest"
-                  value={
-                    stat.data.percentageGuest
-                      ? `${stat.data.percentageGuest}%`
-                      : 'NA'
-                  }
+                  name="Percentage Joined from Total Participants"
+                  value={`${stat.data.percentage.registeredCountJoin || 0} %`}
+                ></StatItem>
+                <StatItem
+                  name="Percentage Joined as Guest"
+                  value={`${stat.data.percentage.guestCountJoin || 0} %`}
                 />
+
+                <StatItem
+                  name="Percentage Registered Attendances with Total Participants"
+                  value={`${
+                    stat.data.percentage.registeredAttendCountJoin || 0
+                  } %`}
+                ></StatItem>
+
+                <StatItem
+                  name="Percentage Registered Attendances"
+                  value={`${
+                    stat.data.percentage.registeredAttendCountRegisteree || 0
+                  } %`}
+                ></StatItem>
               </StatList>
             </>
           ) : (
@@ -138,15 +157,32 @@ function StatList({ children }: { children?: React.ReactNode }) {
   return <ul className="grid grid-cols-2 gap-8 md:grid-cols-4">{children}</ul>;
 }
 
-function StatItem({ name, value }: { name: string; value: number | string }) {
+function StatItem({
+  name,
+  value,
+  message,
+}: {
+  name: string;
+  value: number | string;
+  message?: string;
+}) {
   return (
     <li>
-      <dl className="flex flex-col gap-1">
-        <dt className="text-sm font-semibold text-zinc-400">{name}</dt>
-        <dd className="text-2xl font-semibold tabular-nums leading-6 text-zinc-200">
-          {value}
-        </dd>
-      </dl>
+      <div className="flex flex-row justify-between gap-2">
+        <dl className="flex flex-col gap-1">
+          <dt className="text-sm font-semibold text-zinc-400">{name}</dt>
+          <dd className="text-2xl font-semibold tabular-nums leading-6 text-zinc-200">
+            {value}
+          </dd>
+        </dl>
+        {message && (
+          <Tooltip content={message}>
+            <Button isIconOnly size="sm">
+              <InfoIcon />
+            </Button>
+          </Tooltip>
+        )}
+      </div>
     </li>
   );
 }

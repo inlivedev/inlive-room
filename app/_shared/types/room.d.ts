@@ -1,5 +1,5 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
-import type { Room, Participant } from '@/(server)/_features/room/service';
+import type { Room, Client } from '@/(server)/_features/room/service';
 
 export declare namespace RoomType {
   type RoomData = Room;
@@ -16,11 +16,11 @@ export declare namespace RoomType {
 
   type CreateClientResponse = FetcherResponse & {
     message: string;
-    data: Participant;
+    data: Client;
   };
 
-  type ParticipantResponse = FetcherResponse & {
+  type RegisteredParticipantsResponse = FetcherResponse & {
     message: string;
-    data: Participant[];
+    data: Client[];
   };
 }

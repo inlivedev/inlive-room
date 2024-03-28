@@ -32,7 +32,7 @@ export default function EventDetailDashboard({
   registerees,
 }: {
   event: EventType.Event;
-  registerees: EventType.RegistereeParticipant[];
+  registerees: EventType.Registeree[];
 }) {
   const thumbnailUrl = event.thumbnailUrl
     ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
@@ -247,11 +247,7 @@ export default function EventDetailDashboard({
   );
 }
 
-function RegistereeItem({
-  registeree,
-}: {
-  registeree: EventType.RegistereeParticipant;
-}) {
+function RegistereeItem({ registeree }: { registeree: EventType.Registeree }) {
   const name = `${registeree.firstName} ${registeree.lastName}`;
 
   const registeredDate = useFormattedDateTime(registeree.createdAt, 'en-GB', {

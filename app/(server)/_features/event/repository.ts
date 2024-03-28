@@ -1,15 +1,33 @@
+/* eslint-disable prettier/prettier */
 import { db } from '@/(server)/_shared/database/database';
-import { iEventRepo } from './service';
+import { Participant, iEventRepo } from './service';
 import {
   events,
   insertEvent,
   insertParticipant,
+  participant,
   participant as participants,
   selectEvent,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { User, users } from '../user/schema';
+import { activitiesLog } from '../activity-log/schema';
+import { z } from 'zod';
+import { ArrayRoomDurationMeta, RoomDurationMeta } from '@/(server)/api/user/activity/route';
+
+type participantAttendances = {
+  participant: {
+    clientID: string;
+    joinDuration: number;
+    isAttended: boolean;
+  }[],
+  attendedCount: number;
+  totalCount: number;
+  eventDuration: number;
+}
+
+
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
@@ -133,9 +151,8 @@ export class EventRepo implements iEventRepo {
 
     if (isStartAfter && isStartBefore) {
       whereQuery.push(
-        sql`${
-          events.startTime
-        } BETWEEN ${isStartAfter.toISOString()} AND ${isStartBefore.toISOString()}`
+        sql`${events.startTime
+          } BETWEEN ${isStartAfter.toISOString()} AND ${isStartBefore.toISOString()}`
       );
     } else if (isStartAfter) {
       whereQuery.push(
@@ -149,9 +166,8 @@ export class EventRepo implements iEventRepo {
 
     if (isEndAfter && isEndBefore) {
       whereQuery.push(
-        sql`${
-          events.endTime
-        } BETWEEN ${isEndAfter.toISOString()} AND ${isEndBefore.toISOString()}`
+        sql`${events.endTime
+          } BETWEEN ${isEndAfter.toISOString()} AND ${isEndBefore.toISOString()}`
       );
     } else if (isEndAfter) {
       whereQuery.push(sql`${events.endTime} >= ${isEndAfter.toISOString()}`);
@@ -374,4 +390,192 @@ export class EventRepo implements iEventRepo {
 
     return res;
   }
+
+  async getAllParticipantsByEventId(
+    eventId: number,
+    limit: number,
+    page: number
+  ): Promise<{
+    data: Participant[];
+    meta: PageMeta;
+  } | undefined> {
+
+    if (page < 1) {
+      page = 1;
+    }
+
+    if (limit < 1) {
+      limit = 10;
+    }
+
+    const subQueryConnectedClient = db
+      .select()
+      .from(activitiesLog)
+      .innerJoin(
+        events,
+        eq(events.roomId, sql`${activitiesLog.meta} ->> 'roomID'`)
+      )
+      .where(eq(events.id, eventId))
+      .as('ConnectedClientsLog');
+
+    // Removes the duplicates clientID
+    const subQueryUniqueConnectedClient = db
+      .selectDistinctOn([sql`${subQueryConnectedClient.activities_logs.meta} ->> 'clientID'`], {
+        clientID:
+          sql<string>`${subQueryConnectedClient.activities_logs.meta} ->> 'clientID'`.as(
+            'clientID'
+          ),
+        name: sql<string>`${subQueryConnectedClient.activities_logs.meta} ->> 'name'`.as(
+          'name'
+        ),
+      })
+      .from(subQueryConnectedClient)
+      .as('UniqueConnectedClients');
+
+    // TODO : Query the alias for same clientID with same name
+    // subQueryGetAlias
+
+    // add the isRegistered and isJoined field and email
+    const finalQuery = await db
+      .select({
+        clientID: subQueryUniqueConnectedClient.clientID,
+        name: sql<string>`
+        CASE
+          WHEN ${participants.firstName} IS NULL THEN ${subQueryUniqueConnectedClient.name}
+          ELSE CONCAT_WS(' ', ${participants.firstName}, ${participants.lastName})
+        END
+          `.as('name'),
+        email: participants.email,
+        isRegistered: sql<boolean>`
+        CASE
+          WHEN ${participants.clientId} IS NULL THEN ${false}
+          ELSE ${true}
+        END
+        `.as('isRegistered'),
+        isJoined: sql<boolean>`
+        CASE
+          WHEN (${participants.clientId} IS NOT NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) 
+            OR (${participants.clientId} IS NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) THEN ${true}
+          ELSE ${false}
+        END
+        `.as('isJoined'),
+      })
+      .from(subQueryUniqueConnectedClient)
+      .fullJoin(
+        participants,
+        eq(participants.clientId, subQueryUniqueConnectedClient.clientID)
+      ).as('participants')
+
+    const { data, meta } = await db.transaction(async (tx) => {
+      const data = await tx.select().from(finalQuery)
+        .limit(limit)
+        .offset((page - 1) * limit);
+
+      const total = await tx.select({ total: count() }).from(finalQuery);
+
+      const meta: PageMeta = {
+        current_page: page,
+        total_page: Math.ceil(total[0].total / limit) || 1,
+        per_page: limit,
+        total_record: total[0].total
+      }
+
+      return { data, meta };
+    })
+
+    return { data, meta };
+  }
+
+  async getParticipantAttendancePercentage(eventId: number): Promise<participantAttendances> {
+    const { participants, event } = await db.transaction(async (tx) => {
+      const event = await tx.query.events.findFirst({
+        where: eq(events.id, eventId)
+      })
+
+      if (!event) {
+        throw new Error('Event not found');
+      }
+
+      const registeredParticipants = await tx
+        .select({
+          clientID: sql<string>`${activitiesLog.meta} ->> 'clientID'`.as('clientID'),
+          combined_logs: sql<z.infer<typeof RoomDurationMeta>[]>`ARRAY_AGG(meta ORDER BY ${activitiesLog.meta} ->> 'joinTime')`.as('combined_logs')
+        })
+        .from(activitiesLog)
+        .innerJoin(
+            participant, 
+            and(
+              eq(sql<object[]>`${activitiesLog.meta} ->> 'roomID'`, event.roomId),
+              eq(sql<string>`${activitiesLog.meta} ->> 'clientID'`, sql<string>`${participant.clientId}`)))
+        .groupBy(sql<string>`${activitiesLog.meta} ->> 'clientID'`);
+      return { participants: registeredParticipants, event };
+    })
+
+    const eventDuration = (event.endTime.getTime() - event.startTime.getTime())/1000;
+
+    const participantAttendance = participants.map((participant) => {
+      const parsedLogs = ArrayRoomDurationMeta.parse(participant.combined_logs)
+      const totalDuration = getTotalJoinDuration(parsedLogs, event.endTime)/1000;
+      const isAttended = ((totalDuration / eventDuration) * 100) > 80;
+      return {
+        clientID: participant.clientID,
+        joinDuration: totalDuration,
+        isAttended,
+      }
+    })
+
+    const attendedCount = participantAttendance.filter((participant) => participant.isAttended).length;
+    const totalCount = participantAttendance.length;
+
+    return {
+      participant: participantAttendance,
+      attendedCount,
+      totalCount,
+      eventDuration
+    }
+
+  }
+
 }
+
+
+function getTotalJoinDuration(intervals: z.infer<typeof RoomDurationMeta>[], sessionEndTime: Date): number {
+  // Sort intervals by joinTime
+  intervals.sort((a, b) => a.joinTime.getTime() - b.joinTime.getTime());
+
+  let totalDuration = 0;
+  let currentEndTime: number | null = null;
+
+  for (const interval of intervals) {
+    // Check if interval is within session end time
+    const validJoinTime = interval.joinTime <= sessionEndTime;
+    const validLeaveTime = interval.leaveTime <= sessionEndTime;
+
+    if (validJoinTime && validLeaveTime) {
+      if (currentEndTime === null || interval.joinTime.getTime() >= currentEndTime) {
+        // No overlap, add duration
+        totalDuration += interval.duration;
+      } else if (interval.leaveTime.getTime() > (currentEndTime || 0)) {
+        // Overlap, add only the additional duration beyond the current end time
+        totalDuration += interval.leaveTime.getTime() - (currentEndTime || 0);
+      }
+      // Update currentEndTime
+      currentEndTime = Math.max(currentEndTime || 0, interval.leaveTime.getTime());
+    } else if (validJoinTime && !validLeaveTime) {
+      // Partial overlap
+      if (currentEndTime === null || interval.joinTime.getTime() >= currentEndTime) {
+        // No overlap, add duration until session end time
+        totalDuration += sessionEndTime.getTime() - interval.joinTime.getTime();
+      } else {
+        // Overlap, add only the additional duration until session end time
+        totalDuration += sessionEndTime.getTime() - (currentEndTime || 0);
+      }
+      // No need to process further intervals if we've reached session end time
+      break;
+    }
+    // Ignore intervals outside session end time
+  }
+
+  return totalDuration;
+}
+

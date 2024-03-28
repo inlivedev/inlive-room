@@ -25,12 +25,27 @@ const sql = postgres(connectionString, Option);
 
 const db = drizzle(sql);
 
+import * as readline from 'readline';
+
 async function main() {
-  console.log('Migrating Started');
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
   console.log(`Migrating to ${DB_HOST} on Database ${DB_NAME}`);
-  await migrate(db, { migrationsFolder: './migrations' });
-  console.log('Migration Finish');
-  process.exit();
+
+  rl.question('Are you sure you want to migrate? (y/n) ', async (answer) => {
+    if (answer.toLowerCase() === 'y') {
+      console.log('Migrating Started');
+      await migrate(db, { migrationsFolder: './migrations' });
+      console.log('Migration Finish');
+      process.exit();
+    } else {
+      console.log('Migration cancelled');
+      rl.close();
+    }
+  });
 }
 
 // Call the async function to start your script

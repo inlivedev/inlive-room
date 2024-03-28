@@ -1,7 +1,8 @@
 import { db } from '@/(server)/_shared/database/database';
 import { activitiesLog, type InsertActivityLog } from './schema';
 import { RoomType } from '@/_shared/types/room';
-import { count, countDistinct, sql, type SQL } from 'drizzle-orm';
+import { countDistinct, eq, sql, type SQL, isNull, and } from 'drizzle-orm';
+import { participant } from '../event/schema';
 
 export const addLog = async (data: InsertActivityLog) => {
   const res = await db.insert(activitiesLog).values(data).returning();
@@ -42,24 +43,42 @@ export const aggregateRoomDuration = async (
   }
 };
 
-export const countJoinedUser = async (roomID: string) => {
+export const countRegisteredParticipant = async (roomID: string) => {
   const res = await db
-    .select({ value: countDistinct(activitiesLog.createdBy) })
+    .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
     .from(activitiesLog)
-    .where(
-      sql`${activitiesLog.meta} ->> 'roomID' = ${roomID} AND ${activitiesLog.createdBy} IS NOT NULL`
+    .innerJoin(
+      participant,
+      and(
+        eq(sql`${activitiesLog.meta} ->> 'clientID'`, participant.clientId),
+        eq(sql`${activitiesLog.meta} ->> 'roomID'`, roomID)
+      )
     );
 
   return res[0];
 };
 
-export const countJoinedGuest = async (roomID: string) => {
+export const countGuestParticipant = async (roomID: string) => {
   const res = await db
-    .select({ value: count() })
+    .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
     .from(activitiesLog)
-    .where(
-      sql`${activitiesLog.meta} ->> 'roomID' = ${roomID} AND ${activitiesLog.createdBy} IS NULL`
-    );
+    .fullJoin(
+      participant,
+      and(
+        eq(sql`${activitiesLog.meta} ->> 'clientID'`, participant.clientId),
+        eq(sql`${activitiesLog.meta} ->> 'roomID'`, roomID)
+      )
+    )
+    .where(isNull(participant.clientId));
+
+  return res[0];
+};
+
+export const countParticipants = async (roomID: string) => {
+  const res = await db
+    .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
+    .from(activitiesLog)
+    .where(sql`${activitiesLog.meta} ->> 'roomID' = ${roomID}`);
 
   return res[0];
 };

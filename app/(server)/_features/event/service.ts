@@ -6,6 +6,26 @@ import {
   SendEventCancelledEmail,
   SendEventRescheduledEmail,
 } from '@/(server)/_shared/mailer/mailer';
+import { PageMeta } from '@/_shared/types/types';
+
+/**
+ * Type used to represent all type of participant in an event
+ *
+ * This means a registered participants , that joined or not and
+ * guest participant
+ *
+ * it's used for the the event details page
+ * https://www.figma.com/proto/wjeG4AE78OXVZNxjWl09yn/inlive-room?node-id=1411-4390&t=X9WZ14pNuG2M6rKG-0&page-id=214%3A591&starting-point-node-id=245%3A519
+ */
+export type Participant = {
+  clientID: string;
+  name: string;
+  email?: string | null;
+  isRegistered: boolean;
+  isJoined: boolean;
+  isAttended?: boolean;
+  joinDuration?: number;
+};
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
@@ -40,6 +60,17 @@ export interface iEventRepo {
   ): Promise<selectParticipant[] | undefined>;
   getParticipantById(id: number): Promise<selectParticipant | undefined>;
   getEventHostByEventId(eventId: number): Promise<selectUser | undefined>;
+  getAllParticipantsByEventId(
+    eventId: number,
+    limit: number,
+    page: number
+  ): Promise<
+    | {
+        data: Participant[];
+        meta: PageMeta;
+      }
+    | undefined
+  >;
 }
 
 export interface EventParticipant {
