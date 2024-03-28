@@ -1,10 +1,13 @@
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { eventRepo, roomRepo } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 
-export async function POST({ params }: { params: { slugOrId: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { slugOrId: string } }
+) {
   const slugOrId = params.slugOrId;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
