@@ -69,16 +69,15 @@ export async function GET(
 
     return NextResponse.json(
       {
-        data: res?.data,
-        meta: res?.meta,
+        data: res.data,
+        meta: res.meta,
         message: 'success',
         ok: true,
       },
       { status: 200 }
     );
   } catch (e) {
-    // Sentry.captureException(e);
-    console.log(e);
+    Sentry.captureException(e);
     return NextResponse.json(
       {
         code: 500,

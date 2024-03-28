@@ -17,14 +17,14 @@ import { PageMeta } from '@/_shared/types/types';
  * it's used for the the event details page
  * https://www.figma.com/proto/wjeG4AE78OXVZNxjWl09yn/inlive-room?node-id=1411-4390&t=X9WZ14pNuG2M6rKG-0&page-id=214%3A591&starting-point-node-id=245%3A519
  */
-export type AllParticipants = {
+export type Participant = {
   clientID: string;
   name: string;
   email?: string | null;
   isRegistered: boolean;
   isJoined: boolean;
   joinedAt?: Date;
-}[];
+};
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
@@ -65,7 +65,7 @@ export interface iEventRepo {
     page: number
   ): Promise<
     | {
-        data: AllParticipants;
+        data: Participant[];
         meta: PageMeta;
       }
     | undefined

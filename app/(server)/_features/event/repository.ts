@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { db } from '@/(server)/_shared/database/database';
-import { AllParticipants, iEventRepo } from './service';
+import { Participant, iEventRepo } from './service';
 import {
   events,
   insertEvent,
@@ -396,7 +396,7 @@ export class EventRepo implements iEventRepo {
     limit: number,
     page: number
   ): Promise<{
-    data: AllParticipants;
+    data: Participant[];
     meta: PageMeta;
   } | undefined> {
 

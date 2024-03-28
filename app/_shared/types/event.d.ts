@@ -1,11 +1,11 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
 import {
-  insertParticipant,
   selectEvent,
   selectParticipant,
 } from '@/(server)/_features/event/schema';
 import { selectUser } from '@/(server)/_features/user/schema';
 import { PageMeta } from './types';
+import { Participant } from '@/(server)/_features/event/service';
 
 export declare namespace EventType {
   type Event = selectEvent & {
@@ -66,7 +66,13 @@ export declare namespace EventType {
     };
   };
 
-  type RegistereeParticipant = {
+  export type GetParticipantsResponse = FetcherResponse & {
+    message: string;
+    data: Participant[];
+    meta: PageMeta;
+  };
+
+  type Registeree = {
     id: number;
     email: string;
     firstName: string;
@@ -74,9 +80,9 @@ export declare namespace EventType {
     createdAt: Date;
   };
 
-  type RegistereeParticipantResponse = FetcherResponse & {
+  type GetRegistereeResponse = FetcherResponse & {
     message: string;
-    data: RegistereeParticipant[];
+    data: Registeree[];
     meta: PageMeta;
   };
 

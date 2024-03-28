@@ -99,7 +99,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   const token = cookies().get('token')?.value ?? '';
 
-  const registereesResponse: EventType.RegistereeParticipantResponse =
+  const registereesResponse: EventType.GetRegistereeResponse =
     await InternalApiFetcher.get(`/api/events/${eventID}/details/registeree`, {
       headers: {
         Cookie: `token=${token}`,

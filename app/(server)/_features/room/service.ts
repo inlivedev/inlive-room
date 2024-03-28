@@ -10,7 +10,7 @@ export interface Room {
   meta: { [key: string]: any };
 }
 
-export interface Participant {
+export interface Client {
   clientID: string;
   name: string;
   roomID: string | null;
@@ -37,7 +37,7 @@ export class RoomService {
     roomId: string,
     clientName: string,
     clientID?: string
-  ): Promise<Participant> {
+  ): Promise<Client> {
     if (!this._roomRepo.isPersistent()) {
       const clientResponse = await this._sdk.createClient(roomId, {
         clientName: clientName,
@@ -90,7 +90,7 @@ export class RoomService {
     if (clientResponse && clientResponse.code === 409 && clientID) {
       const existingClient = await this._sdk.getClient(roomData.id, clientID);
 
-      const data: Participant = {
+      const data: Client = {
         clientID: existingClient.data.clientId,
         name: existingClient.data.clientName,
         roomID: roomData.id,
@@ -109,7 +109,7 @@ export class RoomService {
       );
     }
 
-    const data: Participant = {
+    const data: Client = {
       clientID: clientResponse.data.clientId,
       name: clientResponse.data.clientName,
       roomID: roomId,
@@ -122,7 +122,7 @@ export class RoomService {
     roomID: string,
     clientID: string,
     name: string
-  ): Promise<Participant> {
+  ): Promise<Client> {
     const updateResp = await this._sdk.setClientName(roomID, clientID, name);
 
     if (!updateResp || !updateResp.ok) {
