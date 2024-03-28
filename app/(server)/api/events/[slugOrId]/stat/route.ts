@@ -93,7 +93,7 @@ export async function GET(
     const registeredAttendance =
       await eventRepo.getParticipantAttendancePercentage(existingEvent?.id);
 
-    const data: EventType.Stat['data'] = {
+    const data: EventType.GetStatsResponse['data'] = {
       count: {
         registeree: countRegistirees || 0,
 
