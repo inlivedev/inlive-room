@@ -141,16 +141,16 @@ export function EventStatCard({
                   } %`}
                 />
                 <StatItem
-                  name="Percentage Joined from Total Participants"
+                  name="Percentage Registered & Joined with Total Participants"
                   value={`${stat.data.percentage.registeredCountJoin || 0} %`}
                 ></StatItem>
                 <StatItem
-                  name="Percentage Joined as Guest"
+                  name="Percentage Joined as Guest with Total Participant"
                   value={`${stat.data.percentage.guestCountJoin || 0} %`}
                 />
 
                 <StatItem
-                  name="Percentage Registered Attendances with Total Participants"
+                  name="Percentage Registered & Attendded with Total Participants"
                   value={`${
                     stat.data.percentage.registeredAttendCountJoin || 0
                   } %`}
