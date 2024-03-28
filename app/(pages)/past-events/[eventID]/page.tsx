@@ -3,6 +3,7 @@ import EventPastDashboard from '@/_features/event/components/event-past-dashboar
 import AppContainer from '@/_shared/components/containers/app-container';
 import HTTPError from '@/_shared/components/errors/http-error';
 import { AuthType } from '@/_shared/types/auth';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 type PageProps = {
