@@ -17,7 +17,7 @@ import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
 export default function ButtonLeave() {
-  const { clientID } = useClientContext();
+  const { clientID, roomID } = useClientContext();
   const { datachannels } = useDataChannelContext();
   const { streams } = useParticipantContext();
   const { isModerator, roomType } = useMetadataContext();
@@ -77,10 +77,14 @@ export default function ButtonLeave() {
               },
             })
           );
+
+          if (roomType === 'event') {
+            navigator.sendBeacon(`/api/rooms/${roomID}/end`);
+          }
         }
       }
     },
-    [clientID, datachannels, isModerator, roomType, streams]
+    [clientID, datachannels, isModerator, roomID, roomType, streams]
   );
 
   return (

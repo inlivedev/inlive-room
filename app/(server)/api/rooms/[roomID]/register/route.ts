@@ -1,5 +1,6 @@
 import { roomService } from '@/(server)/api/_index';
 import { NextResponse, type NextRequest } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 
 interface RegisterClientRequest {
   uid?: string;
@@ -38,6 +39,8 @@ export async function POST(
       { status: 200 }
     );
   } catch (error) {
+    Sentry.captureException(error);
+
     if (error instanceof Error) {
       const response = {
         code: 500,
