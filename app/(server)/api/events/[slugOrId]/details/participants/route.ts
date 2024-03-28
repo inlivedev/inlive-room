@@ -67,6 +67,28 @@ export async function GET(
       );
     }
 
+    const registeredAttendanceMap = new Map<
+      string,
+      { isAttended: boolean; joinDuration: number }
+    >();
+    const registeredAttendance =
+      await eventRepo.getParticipantAttendancePercentage(event.id);
+    registeredAttendance.participant.forEach((participant) => {
+      registeredAttendanceMap.set(participant.clientID, {
+        isAttended: participant.isAttended,
+        joinDuration: participant.joinDuration,
+      });
+    });
+
+    res.data.forEach((participant) => {
+      participant.isAttended = registeredAttendanceMap.get(
+        participant.clientID
+      )?.isAttended;
+      participant.joinDuration = registeredAttendanceMap.get(
+        participant.clientID
+      )?.joinDuration;
+    });
+
     return NextResponse.json(
       {
         data: res.data,

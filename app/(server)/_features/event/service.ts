@@ -23,7 +23,8 @@ export type Participant = {
   email?: string | null;
   isRegistered: boolean;
   isJoined: boolean;
-  joinedAt?: Date;
+  isAttended?: boolean;
+  joinDuration?: number;
 };
 
 export interface iEventRepo {
