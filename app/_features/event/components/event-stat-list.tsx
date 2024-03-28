@@ -48,7 +48,16 @@ export default function PastEvents({
               <>
                 <ul className="flex flex-col gap-10">
                   {events.map((event) => {
-                    return <EventStatCard key={event.id} event={event} />;
+                    return (
+                      <li key={event.id}>
+                        <EventStatCard
+                          showEvent
+                          key={event.id}
+                          event={event}
+                          showButton
+                        />
+                      </li>
+                    );
                   })}
                 </ul>
                 {previousPage || nextPage ? (

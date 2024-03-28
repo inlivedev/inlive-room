@@ -8,10 +8,20 @@ import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 import { Button, Tooltip } from '@nextui-org/react';
 import InfoIcon from '@/_shared/components/icons/info-icon';
 
-export function EventStatCard({ event }: { event: selectEvent }) {
+export function EventStatCard({
+  event,
+  showEvent = true,
+  showButton = true,
+}: {
+  event: selectEvent;
+  showEvent: boolean;
+  showButton: boolean;
+}) {
   const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
-  const [stat, setStat] = useState<undefined | EventType.Stat>(undefined);
+  const [stat, setStat] = useState<undefined | EventType.GetStatsResponse>(
+    undefined
+  );
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
@@ -23,7 +33,7 @@ export function EventStatCard({ event }: { event: selectEvent }) {
 
       InternalApiFetcher.get(`/api/events/${event.id}/stat`, {
         method: 'GET',
-      }).then((stat: EventType.Stat) => {
+      }).then((stat: EventType.GetStatsResponse) => {
         setStat(stat);
         setIsPending(false);
       });
@@ -45,39 +55,53 @@ export function EventStatCard({ event }: { event: selectEvent }) {
   });
 
   return (
-    <li>
-      <div className="flex flex-col gap-4 rounded-3xl border border-zinc-800 p-5 px-4 sm:p-5">
+    <div>
+      <div
+        className={`flex flex-col gap-4 ${
+          showEvent ? 'rounded-3xl border border-zinc-800 p-5 px-4 sm:p-5' : ''
+        } `}
+      >
         {/* Header */}
-        <div className="flex w-full flex-col gap-5 sm:flex-row sm:justify-between">
-          <div className="max-w-none sm:order-2 sm:max-w-60 md:max-w-40">
-            <Image
-              referrerPolicy="no-referrer"
-              src={
-                event.thumbnailUrl
-                  ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
-                  : '/images/webinar/webinar-no-image-placeholder.png'
-              }
-              alt={`Thumbnail image of `}
-              loading="lazy"
-              width={160}
-              height={80}
-              style={{ objectFit: 'cover' }}
-              className="w-full rounded"
-              unoptimized
-            />
-          </div>
-          <div className="flex flex-col justify-between sm:order-1">
-            <h3 className="text-lg font-medium text-zinc-300">{event.name}</h3>
-            <div className="mt-1">
-              <span className="text-sm font-medium text-zinc-500">
-                <span>{eventDate}</span>,&nbsp;
-                <span className="lowercase">{eventTime}</span>
-              </span>
+        {showEvent && (
+          <div className="flex w-full flex-col gap-5 sm:flex-row sm:justify-between">
+            <div className="max-w-none sm:order-2 sm:max-w-60 md:max-w-40">
+              <Image
+                referrerPolicy="no-referrer"
+                src={
+                  event.thumbnailUrl
+                    ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
+                    : '/images/webinar/webinar-no-image-placeholder.png'
+                }
+                alt={`Thumbnail image of `}
+                loading="lazy"
+                width={160}
+                height={80}
+                style={{ objectFit: 'cover' }}
+                className="w-full rounded"
+                unoptimized
+              />
+            </div>
+            <div className="flex flex-col justify-between sm:order-1">
+              <h3 className="text-lg font-medium text-zinc-300">
+                {event.name}
+              </h3>
+              <div className="mt-1">
+                <span className="text-sm font-medium text-zinc-500">
+                  <span>{eventDate}</span>,&nbsp;
+                  <span className="lowercase">{eventTime}</span>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
         {/* Content */}
-        <div className="w-full border-t border-zinc-800 pb-2 pt-4">
+        <div
+          className={`w-full ${
+            showEvent ? 'border-t' : ''
+          } border-zinc-800 pb-2 pt-4`}
+        >
+          {' '}
           {isPending ? (
             <div className="text-center">
               <span className="text-sm font-medium text-zinc-500">
@@ -117,16 +141,16 @@ export function EventStatCard({ event }: { event: selectEvent }) {
                   } %`}
                 />
                 <StatItem
-                  name="Percentage Joined from Total Participants"
+                  name="Percentage Registered & Joined with Total Participants"
                   value={`${stat.data.percentage.registeredCountJoin || 0} %`}
                 ></StatItem>
                 <StatItem
-                  name="Percentage Joined as Guest"
+                  name="Percentage Joined as Guest with Total Participant"
                   value={`${stat.data.percentage.guestCountJoin || 0} %`}
                 />
 
                 <StatItem
-                  name="Percentage Registered Attendances with Total Participants"
+                  name="Percentage Registered & Attendded with Total Participants"
                   value={`${
                     stat.data.percentage.registeredAttendCountJoin || 0
                   } %`}
@@ -148,8 +172,18 @@ export function EventStatCard({ event }: { event: selectEvent }) {
             </div>
           )}
         </div>
+
+        {showButton && (
+          <div className="start-end flex w-full border-t border-zinc-700 pb-6 pt-4">
+            <Button className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm">
+              <a href={`/past-events/${event.slug}`} target="_blank">
+                View Detailed Stats
+              </a>
+            </Button>
+          </div>
+        )}
       </div>
-    </li>
+    </div>
   );
 }
 

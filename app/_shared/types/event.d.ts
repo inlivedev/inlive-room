@@ -17,7 +17,7 @@ export declare namespace EventType {
     data: Event;
   };
 
-  type Stat = FetcherResponse & {
+  type GetStatsResponse = FetcherResponse & {
     data: {
       count: {
         registeree: number;
@@ -71,6 +71,8 @@ export declare namespace EventType {
     data: Participant[];
     meta: PageMeta;
   };
+
+  export type EventParticipant = Participant;
 
   type Registeree = {
     id: number;
