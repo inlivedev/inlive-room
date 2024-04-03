@@ -336,7 +336,7 @@ function ShareIcon(props: SVGElementPropsType) {
 function ErrorMessage({ errorStatus }: { errorStatus?: string }) {
   if (errorStatus === StatusNoClientID) {
     return (
-      <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-blue-900/25 px-4 py-3 text-center text-blue-300 sm:px-6">
+      <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-red-900/25 px-4 py-3 text-center text-red-300 sm:px-6">
         <p className="text-pretty">
           Oops! You&apos;ve got to register for the event before joining.
           <br />
@@ -347,7 +347,7 @@ function ErrorMessage({ errorStatus }: { errorStatus?: string }) {
     );
   } else if (errorStatus === StatusInvalidClientID) {
     return (
-      <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-blue-900/25 px-4 py-3 text-center text-blue-300 sm:px-6">
+      <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-red-900/25 px-4 py-3 text-center text-red-300 sm:px-6">
         <p className="text-pretty">
           Oops! It looks like You&apos;re using an invalid unique link to access
           the event rooms.
