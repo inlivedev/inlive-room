@@ -361,6 +361,12 @@ export class EventRepo implements iEventRepo {
     });
   }
 
+  async getParticipantByClientId(clientId: string) {
+    return await db.query.participant.findFirst({
+      where: eq(participants.clientId, clientId),
+    });
+  }
+
   async getEventHostByEventId(eventId: number) {
     const event = await db.query.events.findFirst({
       where: eq(events.id, eventId),

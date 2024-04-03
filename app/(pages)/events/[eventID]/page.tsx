@@ -75,6 +75,9 @@ export const generateMetadata = async ({
 export default async function Page({ params: { eventID } }: PageProps) {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
+  const searchParams = new URLSearchParams();
+
+  const error = searchParams.get('error') || undefined;
 
   const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
@@ -89,7 +92,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   return (
     <AppContainer user={user}>
-      <EventDetail event={event} status="public" />
+      <EventDetail event={event} status="public" errorStatus={error} />
     </AppContainer>
   );
 }

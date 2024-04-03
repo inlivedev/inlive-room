@@ -5,6 +5,13 @@ import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import { customAlphabet } from 'nanoid';
+import { redirect } from 'next/navigation';
+import { eventRepo } from '@/(server)/api/_index';
+import {
+  StatusInvalidClientID,
+  StatusNoClientID,
+} from '@/_features/event/components/event-detail';
+import type { EventType } from '@/_shared/types/event';
 
 const registerClient = async (
   roomID: string,
@@ -20,14 +27,7 @@ const registerClient = async (
         }),
       });
 
-    const data = response.data || {};
-
-    const client: ClientType.ClientData = {
-      clientID: data.clientID || '',
-      clientName: data.name || clientName,
-    };
-
-    return client;
+    return response;
   } catch (error) {
     Sentry.captureException(error, {
       extra: {
@@ -70,8 +70,8 @@ const generateName = (name = '') => {
 };
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
-  return async (request: NextRequest, event: NextFetchEvent) => {
-    const response = await middleware(request, event);
+  return async (request: NextRequest, nextEvent: NextFetchEvent) => {
+    const response = await middleware(request, nextEvent);
     const splitPath = request.nextUrl.pathname.split('/');
 
     if (response && splitPath[1] === 'rooms' && splitPath.length === 3) {
@@ -103,6 +103,17 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       };
 
       if (roomData) {
+        let event: EventType.Event | undefined = undefined;
+        if (roomData.meta.type === 'event') {
+          event = await eventRepo.getByRoomID(roomData.id);
+        }
+
+        if (roomData.meta.type === 'event' && !clientID) {
+          if (event) {
+            redirect(`/events/${event?.slug}?error=${StatusNoClientID}`);
+          }
+        }
+
         const clientName = getClientName(request, response);
         const newName = generateName(clientName);
         const registeredClient = await registerClient(
@@ -110,7 +121,15 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           newName,
           clientID
         );
-        client = registeredClient || client;
+
+        if (registeredClient?.code === 403 && roomData.meta.type === 'event') {
+          redirect(`/events/${event?.slug}?error=${StatusInvalidClientID}`);
+        }
+
+        client = {
+          clientID: registeredClient?.data?.clientID || '',
+          clientName: registeredClient?.data?.name || clientName,
+        };
       }
 
       response.headers.set('user-client', JSON.stringify(client));

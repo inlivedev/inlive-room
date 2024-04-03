@@ -2,6 +2,8 @@ import * as Sentry from '@sentry/nextjs';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
+import { eventRepo } from '@/(server)/api/_index';
+import { errorEventNotFound, errorParticipantNotFound } from './errors';
 
 export interface Room {
   id: string;
@@ -79,6 +81,21 @@ export class RoomService {
         'error'
       );
       throw new Error('Room not found');
+    }
+
+    if (roomData.meta.type === 'event') {
+      if (!clientID) throw new Error('Client ID is required for event room');
+      const event = await eventRepo.getByRoomID(roomData.id);
+
+      if (!event) throw errorEventNotFound;
+
+      const participant = await eventRepo.getParticipantByClientId(clientID);
+
+      if (!participant) throw errorParticipantNotFound;
+
+      if (participant.eventID !== event.id) {
+        throw errorParticipantNotFound;
+      }
     }
 
     const clientResponse = await this._sdk.createClient(roomData.id, {
