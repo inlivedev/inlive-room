@@ -42,7 +42,7 @@ type InputsType = {
     hour: number;
     minute: number;
   };
-  availableSlots: number;
+  maximumSlots: number;
 };
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
@@ -113,20 +113,20 @@ export default function EventForm({
       eventDate: defaultEventDate,
       eventStartTime: defaultEventStartTime,
       eventEndTime: defaultEventEndTime,
-      availableSlots: 50,
+      maximumSlots: 50,
     },
   });
 
-  const availableSlots = useWatch({
+  const maximumSlots = useWatch({
     control,
-    name: 'availableSlots',
+    name: 'maximumSlots',
   });
 
   useEffect(() => {
-    if (availableSlots > 100) {
-      setValue('availableSlots', 100);
+    if (maximumSlots > 100) {
+      setValue('maximumSlots', 100);
     }
-  }, [availableSlots, setValue]);
+  }, [maximumSlots, setValue]);
 
   const eventDate = useWatch({
     control,
@@ -353,6 +353,7 @@ export default function EventForm({
         endTime: endTime,
         status: publish ? 'published' : 'draft',
         deleteImage: deleteImage,
+        maximumSlots: maximumSlots,
       };
 
       const formData = new FormData();
@@ -783,7 +784,7 @@ export default function EventForm({
                             min={10}
                             max={100}
                             className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-400  shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
-                            {...register('availableSlots', {
+                            {...register('maximumSlots', {
                               max: 100,
                               min: 10,
                               required: true,
@@ -792,14 +793,14 @@ export default function EventForm({
                               },
                             })}
                           />
-                          {errors.availableSlots ? (
+                          {errors.maximumSlots ? (
                             <>
-                              {errors.availableSlots.type === 'min' ? (
+                              {errors.maximumSlots.type === 'min' ? (
                                 <div className="mx-1 mt-1 text-xs font-medium text-red-400">
                                   Minimum number of participants is 10
                                 </div>
                               ) : null}
-                              {errors.availableSlots.type === 'max' ? (
+                              {errors.maximumSlots.type === 'max' ? (
                                 <div className="mx-1 mt-1 text-xs font-medium text-red-400">
                                   Maximum number of participants is 100
                                 </div>
