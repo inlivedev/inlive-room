@@ -104,16 +104,29 @@ export default function EventRegistrationModal({
             `${response.data.participant.firstName} ${response.data.participant.lastName}`.trim();
 
           const redirectPath = new URL(
-            `/events/${eventData.slug}/registration-success?name=${participantName}`,
+            `/events/${eventData.slug}/registration-success`,
             window.location.origin
-          ).href;
+          );
+
+          redirectPath.searchParams.append('name', participantName);
+          if (response.data.event.roomId) {
+            redirectPath.searchParams.append(
+              'roomID',
+              response.data.event.roomId
+            );
+
+            redirectPath.searchParams.append(
+              'clientID',
+              response.data.participant.clientId
+            );
+          }
 
           onClose();
           setFirstNameInput('');
           setLastNameInput('');
           setEmailInput('');
           setIsSubmitting(false);
-          navigateTo(redirectPath);
+          navigateTo(redirectPath.href);
         } catch (error) {
           Sentry.captureException(error, {
             extra: {

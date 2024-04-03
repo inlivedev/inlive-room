@@ -92,7 +92,6 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
 
         roomData = roomResponse?.data ? roomResponse.data : null;
         eventData = roomResponse?.meta?.event || null;
-        console.log(eventData);
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
