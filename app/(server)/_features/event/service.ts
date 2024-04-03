@@ -7,6 +7,7 @@ import {
   SendEventRescheduledEmail,
 } from '@/(server)/_shared/mailer/mailer';
 import { PageMeta } from '@/_shared/types/types';
+import { EventType } from '@/_shared/types/event';
 
 /**
  * Type used to represent all type of participant in an event
@@ -29,32 +30,8 @@ export type Participant = {
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
-  getEventById(id: number): Promise<
-    | (selectEvent & {
-        host:
-          | {
-              name: string;
-              id: number;
-              pictureUrl: string | null;
-            }
-          | null
-          | undefined;
-      })
-    | undefined
-  >;
-  getEventBySlug(slug: string): Promise<
-    | (selectEvent & {
-        host:
-          | {
-              name: string;
-              id: number;
-              pictureUrl: string | null;
-            }
-          | null
-          | undefined;
-      })
-    | undefined
-  >;
+  getEventById(id: number): Promise<EventType.Event | undefined>;
+  getEventBySlug(slug: string): Promise<EventType.Event | undefined>;
   getEventParticipantsByEventId(
     eventId: number
   ): Promise<selectParticipant[] | undefined>;

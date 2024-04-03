@@ -6,7 +6,6 @@ import {
   integer,
   serial,
   pgEnum,
-  char,
   unique,
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
@@ -37,6 +36,7 @@ export const events = pgTable('events', {
   thumbnailUrl: text('thumbnail_url'),
   deletedAt: timestamp('deleted_at'),
   status: statusEnum('status').notNull().default('draft'),
+  maximumSlots: integer('available_slots').default(50),
 });
 
 // Participant Table

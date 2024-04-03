@@ -41,6 +41,15 @@ export async function POST(
       });
     }
 
+    if (existingEvent.maximumSlots) {
+      if (existingEvent.availableSlots && existingEvent.availableSlots <= 0) {
+        return NextResponse.json({
+          code: 400,
+          message: 'Event is full',
+        });
+      }
+    }
+
     const newParticipant: insertParticipant = {
       firstName: body.firstName,
       lastName: body.lastName,

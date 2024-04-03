@@ -126,10 +126,24 @@ export default function EventDetail({
                       </span>
                       <div>
                         <b className="block text-sm font-semibold text-zinc-100">
-                          No participant limit
+                          {event.maximumSlots
+                            ? `Limited Slots`
+                            : `No Participant Limit`}
                         </b>
                         <div className="mt-0.5 block text-sm text-zinc-300">
-                          Anyone can freely join this webinar
+                          {event.maximumSlots ? (
+                            event.availableSlots ? (
+                              <p>
+                                {' '}
+                                <span> {event.availableSlots} slots left</span>,
+                                register before {`it's`} full{' '}
+                              </p>
+                            ) : (
+                              `This webinar is full`
+                            )
+                          ) : (
+                            `Anyone can freely join this webinar`
+                          )}
                         </div>
                       </div>
                     </div>
@@ -209,6 +223,13 @@ function PublicAction({ event }: { event: EventType.Event }) {
             <Button
               className="w-full rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
               onClick={openRegisterEventForm}
+              isDisabled={
+                event.maximumSlots &&
+                event.availableSlots &&
+                event.availableSlots > 0
+                  ? false
+                  : true
+              }
             >
               Register to Attend
             </Button>

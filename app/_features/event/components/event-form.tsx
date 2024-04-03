@@ -42,6 +42,7 @@ type InputsType = {
     hour: number;
     minute: number;
   };
+  availableSlots: number;
 };
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
@@ -112,8 +113,20 @@ export default function EventForm({
       eventDate: defaultEventDate,
       eventStartTime: defaultEventStartTime,
       eventEndTime: defaultEventEndTime,
+      availableSlots: 50,
     },
   });
+
+  const availableSlots = useWatch({
+    control,
+    name: 'availableSlots',
+  });
+
+  useEffect(() => {
+    if (availableSlots > 100) {
+      setValue('availableSlots', 100);
+    }
+  }, [availableSlots, setValue]);
 
   const eventDate = useWatch({
     control,
@@ -755,6 +768,44 @@ export default function EventForm({
                           <span className="pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-transparent text-zinc-400">
                             <ClockFillIcon />
                           </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex w-full sm:flex-row">
+                      <div className="basis-full sm:basis-1/3">
+                        <label className="mb-1 block text-sm font-medium text-zinc-200">
+                          Participant Slot{' '}
+                          <span className="font-normal">{`(Max : 100)`}</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min={10}
+                            max={100}
+                            className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-400  shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                            {...register('availableSlots', {
+                              max: 100,
+                              min: 10,
+                              required: true,
+                              validate: (value) => {
+                                return value >= 10 && value <= 100;
+                              },
+                            })}
+                          />
+                          {errors.availableSlots ? (
+                            <>
+                              {errors.availableSlots.type === 'min' ? (
+                                <div className="mx-1 mt-1 text-xs font-medium text-red-400">
+                                  Minimum number of participants is 10
+                                </div>
+                              ) : null}
+                              {errors.availableSlots.type === 'max' ? (
+                                <div className="mx-1 mt-1 text-xs font-medium text-red-400">
+                                  Maximum number of participants is 100
+                                </div>
+                              ) : null}
+                            </>
+                          ) : null}
                         </div>
                       </div>
                     </div>
