@@ -269,9 +269,8 @@ export async function SendEventRescheduledEmail(
 }
 
 export async function SendEventManualInvitationEmail(
-  email: string,
-  event?: selectEvent,
-  host?: selectUser
+  event: selectEvent,
+  email: string
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
@@ -279,12 +278,17 @@ export async function SendEventManualInvitationEmail(
     username: 'api',
   });
 
-  const html = render(EventManualInvitation({}), { pretty: true });
+  const html = render(
+    EventManualInvitation({
+      event,
+    }),
+    { pretty: true }
+  );
 
   mailer.messages.create(MAILER_DOMAIN, {
     html: html,
     from: 'inLive Room Events <notification@inlive.app>',
     to: email,
-    subject: `You've been invited to a Webinar`,
+    subject: `Webinar Invitation: ${event.name}`,
   });
 }

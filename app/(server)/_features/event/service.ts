@@ -4,9 +4,11 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import { selectUser } from '../user/schema';
 import {
   SendEventCancelledEmail,
+  SendEventManualInvitationEmail,
   SendEventRescheduledEmail,
 } from '@/(server)/_shared/mailer/mailer';
 import { PageMeta } from '@/_shared/types/types';
+import { EventType } from '@/_shared/types/event';
 
 /**
  * Type used to represent all type of participant in an event
@@ -29,32 +31,8 @@ export type Participant = {
 
 export interface iEventRepo {
   addEvent(eventData: insertEvent): Promise<selectEvent>;
-  getEventById(id: number): Promise<
-    | (selectEvent & {
-        host:
-          | {
-              name: string;
-              id: number;
-              pictureUrl: string | null;
-            }
-          | null
-          | undefined;
-      })
-    | undefined
-  >;
-  getEventBySlug(slug: string): Promise<
-    | (selectEvent & {
-        host:
-          | {
-              name: string;
-              id: number;
-              pictureUrl: string | null;
-            }
-          | null
-          | undefined;
-      })
-    | undefined
-  >;
+  getEventById(id: number): Promise<EventType.Event | undefined>;
+  getEventBySlug(slug: string): Promise<EventType.Event | undefined>;
   getEventParticipantsByEventId(
     eventId: number
   ): Promise<selectParticipant[] | undefined>;
@@ -90,7 +68,7 @@ export class EventService implements iEventService {
   }
 
   async getEventBySlugOrID(slugOrId: string, userId?: number) {
-    let event: selectEvent | undefined;
+    let event: EventType.Event | undefined;
 
     if (!isNaN(Number(slugOrId))) {
       event = await this.repo.getEventById(Number(slugOrId));
@@ -169,5 +147,9 @@ export class EventService implements iEventService {
     }
 
     return false;
+  }
+
+  async sendManualEmailInvitation(event: EventType.Event, email: string) {
+    SendEventManualInvitationEmail(event, email);
   }
 }
