@@ -31,11 +31,9 @@ export default function EventManualInvitation({
 }: {
   event?: EventType.Event;
 }) {
-  // const eventImage = event.thumbnailUrl
-  //   ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
-  //   : `${APP_ORIGIN}/images/webinar/webinar-no-image-placeholder.png`;
-
-  const eventImage = `https://dev-room.inlive.app/static/assets/images/events/26/poster.webp`
+  const eventImage = event.thumbnailUrl
+    ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
+    : `${APP_ORIGIN}/images/webinar/webinar-no-image-placeholder.png`;
 
   const startDate = Intl.DateTimeFormat('en-GB', {
     year: 'numeric',
@@ -75,7 +73,7 @@ export default function EventManualInvitation({
               <Row>
                 <Column>
                   <div style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                    <Img src={`https://room.inlive.app/images/favicon/icon-192.png`}
+                    <Img src={`${APP_ORIGIN}/images/favicon/icon-192.png`}
                       width={24}
                       height={24}></Img>
                   </div>
