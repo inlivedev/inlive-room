@@ -41,8 +41,6 @@ export default function EventInviteModal({ slug }: { slug: string }) {
 
   const OnSendEmails = useCallback(async () => {
     setIsSubmitting(true);
-    console.log(methods.getValues('emails'));
-    console.log(methods.formState);
     const emailForm = methods.getValues('emails');
 
     emailForm.forEach((email, idx) => {
@@ -51,7 +49,9 @@ export default function EventInviteModal({ slug }: { slug: string }) {
       }
     });
 
-    const emails = emailForm.map((email) => email.email);
+    const emails = emailForm
+      .map((email) => email.email)
+      .filter((email) => email !== '');
     try {
       const response = await fetch(`/api/events/${slug}/invite`, {
         method: 'POST',
@@ -62,6 +62,8 @@ export default function EventInviteModal({ slug }: { slug: string }) {
       });
       if (response.ok) {
         onClose();
+        if (errorMessage) setErrorMessage(null);
+        methods.reset();
       }
     } catch (error) {
       console.error(error);
@@ -69,7 +71,7 @@ export default function EventInviteModal({ slug }: { slug: string }) {
     }
     setIsSubmitting(false);
     setErrorMessage('An error occurred while sending emails');
-  }, [methods, onClose, remove, slug]);
+  }, [errorMessage, methods, onClose, remove, slug]);
 
   const onAddMultitpleEmails = useCallback(() => {
     const newEmails = methods.getValues('csvEmails').split(',');
@@ -100,6 +102,7 @@ export default function EventInviteModal({ slug }: { slug: string }) {
 
   const closeModal = useCallback(() => {
     methods.reset();
+    setErrorMessage(null);
     onClose();
   }, [methods, onClose]);
 
@@ -117,7 +120,7 @@ export default function EventInviteModal({ slug }: { slug: string }) {
             </ModalHeader>
             <ModalBody className="flex flex-col gap-2">
               {errorMessage && (
-                <p className="bg-red-900/25 px-4 py-3 text-xs font-medium text-red-300">
+                <p className="rounded bg-red-900/25 px-4 py-3 text-xs font-medium text-red-300">
                   {errorMessage}
                 </p>
               )}
