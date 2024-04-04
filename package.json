@@ -18,6 +18,7 @@
   "dependencies": {
     "@inlivedev/inlive-js-sdk": "^0.17.0",
     "@nextui-org/react": "^2.2.9",
+    "@react-email/components": "0.0.16",
     "@sentry/nextjs": "^7.70.0",
     "compressorjs": "^1.2.1",
     "drizzle-orm": "^0.29.3",
@@ -35,6 +36,7 @@
     "react-cropper": "^2.3.3",
     "react-datepicker": "6.0.0",
     "react-dom": "18.2.0",
+    "react-email": "^2.1.1",
     "react-hook-form": "^7.51.0",
     "zod": "^3.22.4"
   },
