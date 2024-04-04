@@ -1,4 +1,4 @@
-import { Html, Tailwind, Body, Img, Head, Font, Container, Button, Section, Row, Column } from '@react-email/components';
+import { Html, Tailwind, Body, Img, Head, Font, Container, Button,  Row, Column } from '@react-email/components';
 import { EventType } from '@/_shared/types/event';
 import * as React from "react";
 

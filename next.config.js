@@ -4,6 +4,13 @@ const { withSentryConfig } = require('@sentry/nextjs');
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: false,
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@react-email/components',
+      '@react-email/render',
+      '@react-email/tailwind',
+    ],
+  },
 };
 
 module.exports = withSentryConfig(
