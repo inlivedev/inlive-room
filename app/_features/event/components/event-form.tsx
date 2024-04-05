@@ -43,6 +43,7 @@ type InputsType = {
     minute: number;
   };
   maximumSlots: number;
+  isLimitSlot: boolean;
 };
 
 const reducer = (state: ImageState, action: ActionType): ImageState => {
@@ -105,7 +106,8 @@ export default function EventForm({
     handleSubmit,
     setValue,
     control,
-    formState: { errors },
+    watch,
+    formState: { errors, isValid },
   } = useForm<InputsType>({
     mode: 'onTouched',
     disabled: !user,
@@ -114,6 +116,7 @@ export default function EventForm({
       eventStartTime: defaultEventStartTime,
       eventEndTime: defaultEventEndTime,
       maximumSlots: 50,
+      isLimitSlot: true,
     },
   });
 
@@ -121,6 +124,8 @@ export default function EventForm({
     control,
     name: 'maximumSlots',
   });
+
+  const isLimitSlot = watch('isLimitSlot');
 
   useEffect(() => {
     if (maximumSlots > 100) {
@@ -232,6 +237,7 @@ export default function EventForm({
         | 'update-as-publish'
         | 'update-as-draft';
       const action = submitter.getAttribute('data-action') as Action;
+      const maximumSlots = data.isLimitSlot ? data.maximumSlots : 0;
 
       const eventTitle = data.eventTitle;
       const eventDescription = data.eventDescription.replace(
@@ -269,6 +275,7 @@ export default function EventForm({
           posterImage,
           publish: true,
           newData: true,
+          maximumSlots,
         });
       } else if (action === 'create-as-draft') {
         await saveChanges({
@@ -280,6 +287,7 @@ export default function EventForm({
           posterImage,
           publish: false,
           newData: true,
+          maximumSlots,
         });
       } else if (action === 'update-as-publish') {
         await saveChanges({
@@ -291,6 +299,7 @@ export default function EventForm({
           posterImage,
           publish: true,
           newData: false,
+          maximumSlots,
         });
       } else if (action === 'update-as-draft') {
         await saveChanges({
@@ -302,6 +311,7 @@ export default function EventForm({
           posterImage,
           publish: false,
           newData: false,
+          maximumSlots,
         });
       }
 
@@ -334,6 +344,7 @@ export default function EventForm({
       posterImage,
       publish = false,
       newData = true,
+      maximumSlots,
     }: {
       eventTitle: string;
       eventDescription: string;
@@ -343,6 +354,7 @@ export default function EventForm({
       posterImage: Blob | null;
       publish: boolean;
       newData: boolean;
+      maximumSlots: number;
     }) => {
       const deleteImage = newData || imageData.imagePreview ? false : true;
 
@@ -396,7 +408,7 @@ export default function EventForm({
         }
       }
     },
-    [navigateTo, existingEvent, imageData]
+    [imageData.imagePreview, navigateTo, existingEvent?.id]
   );
 
   const eventDateString = useFormattedDateTime(eventDate, 'en-GB', {
@@ -772,8 +784,27 @@ export default function EventForm({
                         </div>
                       </div>
                     </div>
-                    <div className="flex w-full sm:flex-row">
-                      <div className="basis-full sm:basis-1/3">
+                    <div className="flex w-full flex-col items-center justify-center gap-4 sm:flex-row">
+                      <label
+                        htmlFor="isLimitSlot"
+                        className="order-1 block h-[40px] w-full flex-1 cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-400 shadow-sm outline-none  ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800 sm:order-2 sm:mt-[20px]"
+                      >
+                        <input
+                          type="checkbox"
+                          id="isLimitSlot"
+                          className="mr-2"
+                          checked={isLimitSlot}
+                          {...register('isLimitSlot', {
+                            onChange: () => {
+                              setValue('isLimitSlot', !isLimitSlot);
+                            },
+                            disabled: !user,
+                          })}
+                        />
+                        Limit the number of participants
+                      </label>
+
+                      <div className="w-full flex-1">
                         <label className="mb-1 block text-sm font-medium text-zinc-200">
                           Participant Slot{' '}
                           <span className="font-normal">{`(Max : 100)`}</span>
@@ -788,6 +819,7 @@ export default function EventForm({
                               max: 100,
                               min: 10,
                               required: true,
+                              disabled: !watch('isLimitSlot') || !user,
                               validate: (value) => {
                                 return value >= 10 && value <= 100;
                               },
