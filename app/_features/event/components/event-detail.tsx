@@ -25,12 +25,17 @@ import { StatusDraft } from './event-status';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
+export const StatusNoClientID = 'noClientID';
+export const StatusInvalidClientID = 'invalidClientID';
+
 export default function EventDetail({
   event,
   status,
+  errorStatus,
 }: {
   event: EventType.Event;
   status: 'draft' | 'public';
+  errorStatus?: string;
 }) {
   const descriptionMarkup = {
     __html: event.description || '',
@@ -63,6 +68,7 @@ export default function EventDetail({
     <div className="bg-zinc-900">
       <div className="min-viewport-height mx-auto flex max-w-7xl flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
+        {errorStatus ? <ErrorMessage errorStatus={errorStatus} /> : null}
         <main className="flex-1">
           <div className="pb-28 lg:pb-0">
             {status === 'draft' ? (
@@ -346,4 +352,30 @@ function ShareIcon(props: SVGElementPropsType) {
       />
     </svg>
   );
+}
+
+function ErrorMessage({ errorStatus }: { errorStatus?: string }) {
+  if (errorStatus === StatusNoClientID) {
+    return (
+      <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-red-900/25 px-4 py-3 text-center text-red-300 sm:px-6">
+        <p className="text-pretty">
+          Oops! You&apos;ve got to register for the event before joining.
+          <br />
+        </p>
+        Once You&apos;ve registered, keep an eye on your email for the unique
+        join link
+      </div>
+    );
+  } else if (errorStatus === StatusInvalidClientID) {
+    return (
+      <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-red-900/25 px-4 py-3 text-center text-red-300 sm:px-6">
+        <p className="text-pretty">
+          Oops! It looks like You&apos;re using an invalid unique link to access
+          the event rooms.
+          <br />
+        </p>
+        Please double-check your email for the correct link.
+      </div>
+    );
+  }
 }

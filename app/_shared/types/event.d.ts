@@ -62,7 +62,7 @@ export declare namespace EventType {
   type RegisterParticipantResponse = FetcherResponse & {
     message: string;
     data: {
-      event: Omit<Event, 'roomId'>;
+      event: Partial<Event>;
       participant: selectParticipant;
     };
   };

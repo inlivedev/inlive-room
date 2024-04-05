@@ -24,6 +24,7 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import CancelEventModal from './event-cancel-modal';
 import type { SVGElementPropsType } from '@/_shared/types/types';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
+import EventInviteModal from './event-invite-modal';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -59,6 +60,7 @@ export default function EventDetailDashboard({
   return (
     <div className="bg-zinc-900">
       <CancelEventModal slug={event.slug} />
+      <EventInviteModal slug={event.slug} />
       <div className="min-viewport-height mx-auto flex max-w-7xl flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex-1">
@@ -162,6 +164,17 @@ export default function EventDetailDashboard({
                     </span>
                   </div>
                 </div>
+                <Button
+                  onClick={() =>
+                    document.dispatchEvent(
+                      new CustomEvent('open:event-invite-modal')
+                    )
+                  }
+                  target="_blank"
+                  className="mt-2 h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:text-sm"
+                >
+                  Invite Participants
+                </Button>
               </div>
               <div className="flex flex-col gap-1 py-3 sm:flex-row sm:gap-8 lg:py-5">
                 <div className="text-sm font-medium text-zinc-400">

@@ -1,9 +1,15 @@
-import type { NextFetchEvent, NextMiddleware, NextRequest } from 'next/server';
+import {
+  NextResponse,
+  type NextFetchEvent,
+  type NextMiddleware,
+  type NextRequest,
+} from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
+import type { EventType } from '@/_shared/types/event';
 import { customAlphabet } from 'nanoid';
 
 const registerClient = async (
@@ -20,14 +26,7 @@ const registerClient = async (
         }),
       });
 
-    const data = response.data || {};
-
-    const client: ClientType.ClientData = {
-      clientID: data.clientID || '',
-      clientName: data.name || clientName,
-    };
-
-    return client;
+    return response;
   } catch (error) {
     Sentry.captureException(error, {
       extra: {
@@ -70,14 +69,14 @@ const generateName = (name = '') => {
 };
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
-  return async (request: NextRequest, event: NextFetchEvent) => {
-    const response = await middleware(request, event);
+  return async (request: NextRequest, nextEvent: NextFetchEvent) => {
+    const response = await middleware(request, nextEvent);
     const splitPath = request.nextUrl.pathname.split('/');
 
     if (response && splitPath[1] === 'rooms' && splitPath.length === 3) {
       const roomID = splitPath[2];
       let roomData: RoomType.RoomData | null = null;
-
+      let eventData: EventType.Event | null = null;
       const clientID = request.nextUrl.searchParams.get('clientID');
 
       try {
@@ -87,6 +86,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           });
 
         roomData = roomResponse?.data ? roomResponse.data : null;
+        eventData = roomResponse?.meta?.event || null;
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
@@ -103,6 +103,15 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       };
 
       if (roomData) {
+        if (roomData.meta.type === 'event' && !clientID && eventData) {
+          if (eventData) {
+            const url = request.nextUrl.clone();
+            url.pathname = `/events/${eventData.slug}`;
+            url.searchParams.append('error', 'noClientID');
+            return NextResponse.redirect(url);
+          }
+        }
+
         const clientName = getClientName(request, response);
         const newName = generateName(clientName);
         const registeredClient = await registerClient(
@@ -110,7 +119,18 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           newName,
           clientID
         );
-        client = registeredClient || client;
+
+        if (registeredClient?.code === 403 && roomData.meta.type === 'event') {
+          const url = request.nextUrl.clone();
+          url.pathname = `/events/${eventData?.slug}`;
+          url.searchParams.append('error', 'invalidClientID');
+          return NextResponse.redirect(url);
+        }
+
+        client = {
+          clientID: registeredClient?.data?.clientID || '',
+          clientName: registeredClient?.data?.name || clientName,
+        };
       }
 
       response.headers.set('user-client', JSON.stringify(client));

@@ -10,6 +10,7 @@ type PageProps = {
   params: {
     eventID: string;
   };
+  searchParams: { [key: string]: string };
 };
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
@@ -72,9 +73,14 @@ export const generateMetadata = async ({
   };
 };
 
-export default async function Page({ params: { eventID } }: PageProps) {
+export default async function Page({
+  params: { eventID },
+  searchParams,
+}: PageProps) {
   const headersList = headers();
   const userAuthHeader = headersList.get('user-auth');
+
+  const error = searchParams.error;
 
   const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
@@ -89,7 +95,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
 
   return (
     <AppContainer user={user}>
-      <EventDetail event={event} status="public" />
+      <EventDetail event={event} status="public" errorStatus={error} />
     </AppContainer>
   );
 }

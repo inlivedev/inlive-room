@@ -4,6 +4,7 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import { selectUser } from '../user/schema';
 import {
   SendEventCancelledEmail,
+  SendEventManualInvitationEmail,
   SendEventRescheduledEmail,
 } from '@/(server)/_shared/mailer/mailer';
 import { PageMeta } from '@/_shared/types/types';
@@ -67,7 +68,7 @@ export class EventService implements iEventService {
   }
 
   async getEventBySlugOrID(slugOrId: string, userId?: number) {
-    let event: selectEvent | undefined;
+    let event: EventType.Event | undefined;
 
     if (!isNaN(Number(slugOrId))) {
       event = await this.repo.getEventById(Number(slugOrId));
@@ -146,5 +147,9 @@ export class EventService implements iEventService {
     }
 
     return false;
+  }
+
+  async sendManualEmailInvitation(event: EventType.Event, email: string) {
+    SendEventManualInvitationEmail(event, email);
   }
 }

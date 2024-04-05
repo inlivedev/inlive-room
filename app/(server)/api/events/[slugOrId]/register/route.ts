@@ -21,6 +21,7 @@ export async function POST(
   { params }: { params: { slugOrId: string } }
 ) {
   const slug = params.slugOrId;
+  const currentTime = new Date();
 
   try {
     const body = (await request.json()) as RegisterParticipant;
@@ -77,7 +78,10 @@ export async function POST(
     }
 
     const data: EventType.RegisterParticipantResponse['data'] = {
-      event: omit(existingEvent, 'roomId'),
+      event:
+        currentTime.getTime() > existingEvent.startTime.getTime()
+          ? existingEvent
+          : omit(existingEvent, 'roomId'),
       participant: registeredParticipant,
     };
 
