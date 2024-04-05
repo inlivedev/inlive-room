@@ -1,6 +1,7 @@
 import { roomService } from '@/(server)/api/_index';
 import { NextResponse, type NextRequest } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
+import { Error403, Error404 } from '@/(server)/_features/room/errors';
 
 interface RegisterClientRequest {
   uid?: string;
@@ -40,8 +41,21 @@ export async function POST(
     );
   } catch (error) {
     Sentry.captureException(error);
-
     if (error instanceof Error) {
+      if (Error404.includes(error)) {
+        return NextResponse.json(
+          { code: 404, message: error.message },
+          { status: 404 }
+        );
+      }
+
+      if (Error403.includes(error)) {
+        return NextResponse.json(
+          { code: 403, message: error.message },
+          { status: 403 }
+        );
+      }
+
       const response = {
         code: 500,
         message: error.message,

@@ -36,6 +36,8 @@ export default async function Page({
     await InternalApiFetcher.get(`/api/events/${eventID}`);
 
   const participantName = searchParams.name;
+  const roomID = searchParams.roomID;
+  const clientID = searchParams.clientID;
 
   if (!eventData || !eventData.id || !participantName) {
     notFound();
@@ -46,6 +48,8 @@ export default async function Page({
       <EventRegistrationSuccess
         participantName={participantName}
         event={eventData}
+        roomID={roomID}
+        clientID={clientID}
       />
     </AppContainer>
   );

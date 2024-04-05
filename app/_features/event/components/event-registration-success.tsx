@@ -9,9 +9,13 @@ import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 export default function EventRegistrationSuccess({
   participantName,
   event,
+  roomID,
+  clientID,
 }: {
   participantName: string;
   event: EventType.Event;
+  roomID?: string;
+  clientID?: string;
 }) {
   const eventDate = useFormattedDateTime(event.startTime, 'en-GB', {
     year: 'numeric',
@@ -39,32 +43,46 @@ export default function EventRegistrationSuccess({
               <h2 className="mt-8 text-2xl font-bold text-zinc-100 lg:text-3xl">
                 You’re in! Get ready to join.
               </h2>
-              <div className="text-sm lg:text-base">
+              <div className="w-full text-sm lg:text-base">
                 <p className="mt-4">Congratulations, {participantName}! 🎉</p>
                 <p className="mt-4">
                   You&#39;re successfully registered to this event:
                   <br />
                   <b className="font-semibold">{event.name}</b>
                 </p>
-                <p className="mt-4">
-                  And don’t forget to mark your calendar at:
-                  <br />
-                  <b className="font-semibold">
-                    <span>{eventDate}</span>&nbsp;at&nbsp;
-                    <span className="lowercase">{eventTime}</span>
-                  </b>
-                </p>
-                <p className="mt-4">
-                  We&#39;ve sent you an invitation email with all the details
-                  you need to know. Check your inbox, or if you can&#39;t find
-                  it, take a peek in your spam folder.
-                </p>
-                <p className="mt-4">
-                  In the meantime, spread the word and invite your friends to
-                  join with you!
-                  <br />
-                  The more, the merrier.
-                </p>
+
+                {roomID ? (
+                  <Button
+                    as={Link}
+                    href={`/rooms/${roomID}?clientID=${clientID}`}
+                    className="mt-4 w-full rounded-md bg-red-700 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+                  >
+                    Join the event
+                  </Button>
+                ) : (
+                  <div>
+                    <p className="mt-4">
+                      And don’t forget to mark your calendar at:
+                      <br />
+                      <b className="font-semibold">
+                        <span>{eventDate}</span>&nbsp;at&nbsp;
+                        <span className="lowercase">{eventTime}</span>
+                      </b>
+                    </p>
+
+                    <p className="mt-4">
+                      We&#39;ve sent you an invitation email with all the
+                      details you need to know. Check your inbox, or if you
+                      can&#39;t find it, take a peek in your spam folder.
+                    </p>
+                    <p className="mt-4">
+                      In the meantime, spread the word and invite your friends
+                      to join with you!
+                      <br />
+                      The more, the merrier.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
