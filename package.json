@@ -16,7 +16,7 @@
     "db:studio": "npx drizzle-kit studio"
   },
   "dependencies": {
-    "@inlivedev/inlive-js-sdk": "^0.17.1",
+    "@inlivedev/inlive-js-sdk": "^0.17.2",
     "@nextui-org/react": "^2.2.9",
     "@react-email/components": "0.0.16",
     "@sentry/nextjs": "^7.70.0",
