@@ -103,7 +103,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       };
 
       if (roomData) {
-        if (roomData.meta.type === 'event' && !clientID) {
+        if (roomData.meta.type === 'event' && !clientID && eventData) {
           if (eventData) {
             const url = request.nextUrl.clone();
             url.pathname = `/events/${eventData.slug}`;

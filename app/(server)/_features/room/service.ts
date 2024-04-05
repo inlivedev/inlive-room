@@ -84,17 +84,17 @@ export class RoomService {
     }
 
     if (roomData.meta.type === 'event') {
-      if (!clientID) throw new Error('Client ID is required for event room');
       const event = await eventRepo.getByRoomID(roomData.id);
+      if (event) {
+        if (!clientID) throw new Error('Client ID is required for event room');
 
-      if (!event) throw errorEventNotFound;
+        const participant = await eventRepo.getParticipantByClientId(clientID);
 
-      const participant = await eventRepo.getParticipantByClientId(clientID);
+        if (!participant) throw errorParticipantNotFound;
 
-      if (!participant) throw errorParticipantNotFound;
-
-      if (participant.eventID !== event.id) {
-        throw errorParticipantNotFound;
+        if (participant.eventID !== event.id) {
+          throw errorParticipantNotFound;
+        }
       }
     }
 
