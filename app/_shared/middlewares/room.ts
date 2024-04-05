@@ -9,13 +9,8 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
-import { customAlphabet } from 'nanoid';
-import { redirect } from 'next/navigation';
-import {
-  StatusInvalidClientID,
-  StatusNoClientID,
-} from '@/_features/event/components/event-detail';
 import type { EventType } from '@/_shared/types/event';
+import { customAlphabet } from 'nanoid';
 
 const registerClient = async (
   roomID: string,
@@ -112,7 +107,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           if (eventData) {
             const url = request.nextUrl.clone();
             url.pathname = `/events/${eventData.slug}`;
-            url.searchParams.append('error', StatusNoClientID);
+            url.searchParams.append('error', 'noClientID');
             return NextResponse.redirect(url);
           }
         }
@@ -128,7 +123,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         if (registeredClient?.code === 403 && roomData.meta.type === 'event') {
           const url = request.nextUrl.clone();
           url.pathname = `/events/${eventData?.slug}`;
-          url.searchParams.append('error', StatusInvalidClientID);
+          url.searchParams.append('error', 'invalidClientID');
           return NextResponse.redirect(url);
         }
 
