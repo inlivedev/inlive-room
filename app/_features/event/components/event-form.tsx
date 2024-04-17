@@ -107,7 +107,7 @@ export default function EventForm({
     setValue,
     control,
     watch,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<InputsType>({
     mode: 'onTouched',
     disabled: !user,
@@ -365,7 +365,7 @@ export default function EventForm({
         endTime: endTime,
         status: publish ? 'published' : 'draft',
         deleteImage: deleteImage,
-        maximumSlots: maximumSlots,
+        maximumSlots: isLimitSlot ? maximumSlots : undefined,
       };
 
       const formData = new FormData();
