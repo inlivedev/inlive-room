@@ -27,6 +27,7 @@ const updateEventSchema = z.object({
   description: z.string(),
   status: z.enum(['draft', 'published', 'cancelled']),
   deleteImage: z.boolean().optional(),
+  maximumSlots: z.number().max(100).int().optional(),
 });
 
 export async function GET(
@@ -266,6 +267,7 @@ export async function PUT(
       createdBy: oldEvent.createdBy,
       roomId: oldEvent.roomId,
       status: updateEventMeta.status,
+      maximumSlots: updateEventMeta.maximumSlots || null,
     };
 
     if (!ALLOW_EDIT_CANCELLED_EVENT) {

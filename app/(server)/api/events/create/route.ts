@@ -110,7 +110,7 @@ export async function POST(req: Request) {
       description: eventDesc,
       createdBy: user.id,
       roomId: eventRoom?.id,
-      maximumSlots: eventMeta.maximumSlots,
+      maximumSlots: eventMeta.maximumSlots || null,
     };
 
     const createdEvent = await eventService.createEvent(Event);
