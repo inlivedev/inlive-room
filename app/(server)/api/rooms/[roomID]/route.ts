@@ -24,7 +24,10 @@ export async function GET(
       });
     }
 
-    if (existingRoom.meta.type === 'event') {
+    if (
+      typeof existingRoom.meta !== 'undefined' &&
+      existingRoom.meta.type === 'event'
+    ) {
       event = await eventRepo.getByRoomID(existingRoom.id);
     }
 
