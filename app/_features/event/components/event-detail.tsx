@@ -145,7 +145,9 @@ export default function EventDetail({
                                 register before {`it's`} full{' '}
                               </p>
                             ) : (
-                              `This webinar is full`
+                              <p className="text-red-500">
+                                This webinar is full
+                              </p>
                             )
                           ) : (
                             `Anyone can freely join this webinar`
