@@ -23,7 +23,9 @@ const dummyEvent: EventType.Event = {
   host: {
     name: 'Host Name',
     email: ''
-  }
+  },
+  maximumSlots: 100,
+  availableSlots:40
 }
 
 export default function EventManualInvitation({
