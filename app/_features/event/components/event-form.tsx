@@ -97,6 +97,9 @@ export default function EventForm({
         minute: 0,
       };
 
+  const defaultMaximumSlots = existingEvent?.maximumSlots || 50;
+  const defaultIsLimitSlot = existingEvent?.maximumSlots ? true : false;
+
   // Constant for event
   const openStartTimePickerEvent = 'open:event-start-time-picker-modal';
   const openEndTimePickerEvent = 'open:event-end-time-picker-modal';
@@ -115,8 +118,8 @@ export default function EventForm({
       eventDate: defaultEventDate,
       eventStartTime: defaultEventStartTime,
       eventEndTime: defaultEventEndTime,
-      maximumSlots: 50,
-      isLimitSlot: true,
+      maximumSlots: defaultMaximumSlots,
+      isLimitSlot: defaultIsLimitSlot,
     },
   });
 
@@ -794,9 +797,6 @@ export default function EventForm({
                           id="isLimitSlot"
                           className="mr-2"
                           checked={isLimitSlot}
-                          defaultChecked={
-                            existingEvent?.maximumSlots ? true : false
-                          }
                           {...register('isLimitSlot', {
                             onChange: () => {
                               setValue('isLimitSlot', !isLimitSlot);
@@ -817,7 +817,7 @@ export default function EventForm({
                             type="number"
                             min={10}
                             max={100}
-                            defaultValue={existingEvent?.maximumSlots || 50}
+                            defaultValue={defaultMaximumSlots}
                             className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-400  shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
                             {...register('maximumSlots', {
                               max: 100,
