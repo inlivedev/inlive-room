@@ -40,7 +40,7 @@ export function EventCard({ event }: { event: EventType.Event }) {
           }
         })()}
         <p className="text-xs font-medium tracking-[0.275px] text-zinc-500">
-          Free • Join without register
+          Free
         </p>
       </div>
       <div className="mt-5 flex flex-col gap-5 sm:flex-row md:flex-col lg:flex-row">
