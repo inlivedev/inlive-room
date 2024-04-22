@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "available_slots" integer DEFAULT 50;

@@ -37,37 +37,67 @@ export class EventRepo implements iEventRepo {
   }
 
   async getEventBySlug(slug: string) {
-    const data = await db.query.events.findFirst({
-      with: {
-        host: {
-          columns: {
-            id: true,
-            name: true,
-            pictureUrl: true,
+    const event = await db.transaction(async (tx) => {
+      const data = await db.query.events.findFirst({
+        with: {
+          host: {
+            columns: {
+              id: true,
+              name: true,
+              pictureUrl: true,
+            },
           },
         },
-      },
-      where: and(eq(events.slug, slug), isNull(events.deletedAt)),
-    });
+        where: and(eq(events.slug, slug), isNull(events.deletedAt)),
+      });
 
-    return data;
+      if (!data) {
+        return undefined;
+      }
+
+        const countRegistered = data.maximumSlots? (await tx.select({
+          count: count(),
+        }).from(participants).where(eq(participants.eventID, data.id)))[0] : {count: 0};
+
+        return {
+          ...data,
+          availableSlots: data.maximumSlots ? data.maximumSlots - countRegistered.count : undefined,
+        };
+      })
+
+    return event;
   }
 
   async getEventById(id: number) {
-    const data = await db.query.events.findFirst({
-      with: {
-        host: {
-          columns: {
-            id: true,
-            name: true,
-            pictureUrl: true,
+    const event = await db.transaction(async (tx) => {
+      const data = await db.query.events.findFirst({
+        with: {
+          host: {
+            columns: {
+              id: true,
+              name: true,
+              pictureUrl: true,
+            },
           },
         },
-      },
-      where: and(eq(events.id, id), isNull(events.deletedAt)),
-    });
+        where: and(eq(events.id, id), isNull(events.deletedAt)),
+      });
 
-    return data;
+      if (!data) {
+        return undefined;
+      }
+
+      const countRegistered = data.maximumSlots? (await tx.select({
+        count: count(),
+      }).from(participants).where(eq(participants.eventID, data.id)))[0] : {count: 0};
+
+      return {
+        ...data,
+        availableSlots: data.maximumSlots ? data.maximumSlots - countRegistered.count : undefined,
+      };
+    })
+    
+    return event;
   }
 
   /**

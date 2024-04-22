@@ -15,6 +15,7 @@ const CreateEventSchema = z.object({
   endTime: z.string().datetime({ offset: true }),
   description: z.string(),
   status: z.enum(['draft', 'published']),
+  maximumSlots: z.number().max(100).int().optional(),
 });
 
 const EVENT_TRIAL_COUNT = parseInt(
@@ -50,7 +51,6 @@ export async function POST(req: Request) {
         ? new Date(eventStartTime.getTime() + (60 * 60 * 1000) / 2)
         : new Date(eventMeta.endTime);
     const eventDesc = eventMeta.description;
-    const eventHost = user.name;
 
     eventStartTime.setUTCSeconds(0);
     eventStartTime.setUTCMilliseconds(0);
@@ -110,6 +110,7 @@ export async function POST(req: Request) {
       description: eventDesc,
       createdBy: user.id,
       roomId: eventRoom?.id,
+      maximumSlots: eventMeta.maximumSlots || null,
     };
 
     const createdEvent = await eventService.createEvent(Event);

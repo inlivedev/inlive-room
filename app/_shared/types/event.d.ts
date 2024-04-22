@@ -10,6 +10,7 @@ import { Participant } from '@/(server)/_features/event/service';
 export declare namespace EventType {
   type Event = selectEvent & {
     host?: Partial<selectUser> | null;
+    availableSlots?: number;
   };
 
   type DetailEventResponse = FetcherResponse & {
