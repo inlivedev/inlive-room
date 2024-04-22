@@ -497,9 +497,9 @@ export class EventRepo implements iEventRepo {
         `.as('isJoined'),
       })
       .from(subQueryUniqueConnectedClient)
-      .fullJoin(
+      .leftJoin(
         participants,
-        eq(participants.clientId, subQueryUniqueConnectedClient.clientID)
+        and(eq(participants.clientId, subQueryUniqueConnectedClient.clientID),eq(participants.eventID, eventId))
       ).as('participants')
 
     const { data, meta } = await db.transaction(async (tx) => {
