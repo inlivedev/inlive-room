@@ -365,7 +365,7 @@ export default function EventForm({
         endTime: endTime,
         status: publish ? 'published' : 'draft',
         deleteImage: deleteImage,
-        maximumSlots: isLimitSlot ? maximumSlots : undefined,
+        maximumSlots: isLimitSlot ? Number(maximumSlots) : undefined,
       };
 
       const formData = new FormData();
@@ -408,7 +408,7 @@ export default function EventForm({
         }
       }
     },
-    [imageData.imagePreview, navigateTo, existingEvent?.id]
+    [imageData.imagePreview, isLimitSlot, navigateTo, existingEvent?.id]
   );
 
   const eventDateString = useFormattedDateTime(eventDate, 'en-GB', {
