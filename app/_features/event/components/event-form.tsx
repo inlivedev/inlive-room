@@ -784,10 +784,10 @@ export default function EventForm({
                         </div>
                       </div>
                     </div>
-                    <div className="flex w-full flex-col items-center justify-center gap-4 sm:flex-row">
+                    <div className="flex w-full flex-col justify-center gap-4 sm:flex-row">
                       <label
                         htmlFor="isLimitSlot"
-                        className="order-1 block h-[40px] w-full flex-1 cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-400 shadow-sm outline-none  ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800 sm:order-2 sm:mt-[20px]"
+                        className="order-1 block h-[40px] w-full flex-1 cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-400 shadow-sm outline-none  ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800 sm:order-2 sm:mt-[1.5rem]"
                       >
                         <input
                           type="checkbox"
@@ -821,7 +821,9 @@ export default function EventForm({
                               required: true,
                               disabled: !watch('isLimitSlot') || !user,
                               validate: (value) => {
-                                return value >= 10 && value <= 100;
+                                return (
+                                  isLimitSlot && value >= 10 && value <= 100
+                                );
                               },
                             })}
                           />
@@ -835,6 +837,11 @@ export default function EventForm({
                               {errors.maximumSlots.type === 'max' ? (
                                 <div className="mx-1 mt-1 text-xs font-medium text-red-400">
                                   Maximum number of participants is 100
+                                </div>
+                              ) : null}
+                              {errors.maximumSlots.type === 'required' ? (
+                                <div className="mx-1 mt-1 text-xs font-medium text-red-400">
+                                  Please fill out this field
                                 </div>
                               ) : null}
                             </>
