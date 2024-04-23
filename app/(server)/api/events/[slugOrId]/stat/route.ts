@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import {
   countGuestParticipant,
+  countParticipants,
   countRegisteredParticipant,
 } from '@/(server)/_features/activity-log/repository';
 import { EventType } from '@/_shared/types/event';
@@ -80,47 +81,36 @@ export async function GET(
       );
     }
 
-    const countRegistirees = (
-      await eventRepo.countRegistiree(existingEvent?.id)
-    ).value;
-    const countRegisteredJoin = (
-      await countRegisteredParticipant(existingEvent.roomId)
-    ).value;
-    const countGuestJoin = (await countGuestParticipant(existingEvent.roomId))
+    const registered = (await eventRepo.countRegistiree(existingEvent?.id))
       .value;
-    const totalJoined = countGuestJoin + countRegisteredJoin;
-
-    const registeredAttendance =
-      await eventRepo.getParticipantAttendancePercentage(existingEvent?.id);
+    const attended = (await countRegisteredParticipant(existingEvent.roomId))
+      .value;
+    const registeredAttendance = await eventRepo.getFullyAttendedParticipant(
+      existingEvent?.id,
+      80
+    );
+    const guest = (await countGuestParticipant(existingEvent.roomId)).value;
+    const total = (await countParticipants(existingEvent.roomId)).value;
 
     const data: EventType.GetStatsResponse['data'] = {
       count: {
-        registeree: countRegistirees || 0,
-
-        totalJoined: totalJoined,
-        registereeJoin: countRegisteredJoin || 0,
-        guestsJoin: countGuestJoin || 0,
-
-        registeredAttendance: registeredAttendance.attendedCount || 0,
+        registered: registered || 0,
+        totalJoined: total,
+        attended: attended || 0,
+        fullyAttended: registeredAttendance.attendedCount || 0,
+        guest: guest || 0,
       },
       percentage: {
-        guestCountJoin: ((countGuestJoin / totalJoined) * 100).toFixed(2),
-        registeredCountJoin: (
-          (countRegisteredJoin / totalJoined) *
-          100
-        ).toFixed(2),
-        registeredCountRegisteree: (
-          (countRegisteredJoin / countRegistirees) *
-          100
-        ).toFixed(2),
-        registeredAttendCountJoin: (
-          (registeredAttendance.attendedCount / totalJoined) *
-          100
-        ).toFixed(2),
-        registeredAttendCountRegisteree: (
-          (registeredAttendance.attendedCount / countRegistirees) *
-          100
-        ).toFixed(2),
+        attended: `${
+          registered ? ((attended / registered) * 100).toFixed(1) : '0'
+        }`,
+        fullyAttended: `${
+          registered
+            ? ((registeredAttendance.attendedCount / registered) * 100).toFixed(
+                1
+              )
+            : '0'
+        }`,
       },
     };
 

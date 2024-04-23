@@ -7,6 +7,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 import { Button, Tooltip } from '@nextui-org/react';
 import InfoIcon from '@/_shared/components/icons/info-icon';
+import Link from 'next/link';
 
 export function EventStatCard({
   event,
@@ -112,55 +113,24 @@ export function EventStatCard({
             <>
               <StatList>
                 <StatItem
-                  name="Registered Participants"
-                  value={stat.data.count.registeree}
+                  name="Registered"
+                  value={stat.data.count.registered}
                 />
+                <StatItem name="Attended" value={stat.data.count.attended} />
                 <StatItem
-                  name="Total Participants"
-                  value={stat.data.count.totalJoined}
-                />
-                <StatItem
-                  name="Participants from Registration"
-                  value={stat.data.count.registereeJoin}
-                />
-                <StatItem
-                  name="Participants as Guest"
-                  value={stat.data.count.guestsJoin}
+                  name="Fully Attended"
+                  value={stat.data.count.fullyAttended}
                 />
 
                 <StatItem
-                  name="Registration Attendances"
-                  value={stat.data.count.registeredAttendance}
-                  message="Participant from registration that attend more than 80% of total event duration"
-                />
-
-                <StatItem
-                  name="Percentage Joined from Registration"
-                  value={`${
-                    stat.data.percentage.registeredCountRegisteree || 0
-                  } %`}
-                />
-                <StatItem
-                  name="Percentage Registered & Joined with Total Participants"
-                  value={`${stat.data.percentage.registeredCountJoin || 0} %`}
-                ></StatItem>
-                <StatItem
-                  name="Percentage Joined as Guest with Total Participant"
-                  value={`${stat.data.percentage.guestCountJoin || 0} %`}
-                />
-
-                <StatItem
-                  name="Percentage Registered & Attendded with Total Participants"
-                  value={`${
-                    stat.data.percentage.registeredAttendCountJoin || 0
-                  } %`}
+                  name="Percentage Attended"
+                  value={`${stat.data.percentage.attended || 0} %`}
                 ></StatItem>
 
                 <StatItem
-                  name="Percentage Registered Attendances"
-                  value={`${
-                    stat.data.percentage.registeredAttendCountRegisteree || 0
-                  } %`}
+                  name="Percentage Fully Attended"
+                  value={`${stat.data.percentage.fullyAttended || 0} %`}
+                  message="≥ 80% session duration"
                 ></StatItem>
               </StatList>
             </>
@@ -175,10 +145,13 @@ export function EventStatCard({
 
         {showButton && (
           <div className="start-end flex w-full border-t border-zinc-700 pb-6 pt-4">
-            <Button className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm">
-              <a href={`/past-events/${event.slug}`} target="_blank">
-                View Detailed Stats
-              </a>
+            <Button
+              as={Link}
+              href={`/past-events/${event.slug}`}
+              target="_blank"
+              className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm"
+            >
+              View Detailed Stats
             </Button>
           </div>
         )}

@@ -21,30 +21,18 @@ export declare namespace EventType {
   type GetStatsResponse = FetcherResponse & {
     data: {
       count: {
-        registeree: number;
-        registereeJoin: number;
-        guestsJoin: number;
-        totalJoined: number;
-        registeredAttendance: number;
+        registered: number;
+        attended: number;
+        fullyAttended: number;
 
-        // TODO
-        // guestsAttendance
-        // AllParticipantAttendance
+        // Guest is no longer able to join to event room, for old event only
+        guest?: number;
+        totalJoined?: number;
       };
 
       percentage: {
-        guestCountJoin: string; //countGuestJoin : countAllParticipantJoin
-
-        registeredCountJoin: string; //countRegisteredJoin : countAllParticipantJoin
-        registeredCountRegisteree: string; // countRegisteredJoin : countRegisteree
-
-        registeredAttendCountJoin: string; // countRegisteredAttendance : countAllParticipantJoin
-        registeredAttendCountRegisteree: string; // countRegisteredAttendance : countRegisteree
-
-        // TODO
-        // registeredAttendCountAttendance // countRegisteredAttendance : countAllParticipantAttendance
-        // guestAttendCountAttendance // countGuestAttendance : countAllParticipantAttendance
-        // guestAttendCountJoin // countGuestAttendance : countAllParticipantJoin
+        attended?: string;
+        fullyAttended?: string;
       };
     };
   };
