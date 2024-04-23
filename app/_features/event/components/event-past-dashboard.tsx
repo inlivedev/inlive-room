@@ -266,13 +266,13 @@ function ParticipantTable({ eventID }: { eventID: string | number }) {
                     scope="col"
                     className="whitespace-nowrap px-3 py-2 text-xs font-medium lg:px-6 lg:py-3"
                   >
-                    Join
+                    Attend
                   </th>
                   <th
                     scope="col"
                     className="whitespace-nowrap px-3 py-2 text-xs font-medium lg:px-6 lg:py-3"
                   >
-                    Attend
+                    Fully Attended
                   </th>
                 </tr>
               </thead>
@@ -340,25 +340,19 @@ function ParticipantItem({
         {participant.email}
       </td>
       <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-        <BooleanItem isTrue={participant.isRegistered}></BooleanItem>
+        {participant.isRegistered ? (
+          <BooleanItem isTrue={participant.isRegistered}></BooleanItem>
+        ) : (
+          <GuestIcon />
+        )}
       </td>
       <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
         <BooleanItem isTrue={participant.isJoined}></BooleanItem>
       </td>
       <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
-        {participant.isRegistered ? (
-          BooleanItem({ isTrue: participant.isAttended || false })
-        ) : (
-          <Tooltip content="Attendance for Guests Coming Soon">
-            <Button
-              isIconOnly
-              size="sm"
-              className="bg-zinc-900  ring-1 ring-zinc-800 hover:bg-zinc-900"
-            >
-              <InfoIcon className="stroke-zinc-300" />
-            </Button>
-          </Tooltip>
-        )}
+        {participant.isRegistered
+          ? BooleanItem({ isTrue: participant.isAttended || false })
+          : null}
       </td>
     </tr>
   );
@@ -370,6 +364,14 @@ function BooleanItem({ isTrue }: { isTrue: boolean }) {
       <span className={isTrue ? 'text-green-800' : 'text-red-800'}>•</span>
 
       {isTrue ? 'Yes' : 'No'}
+    </div>
+  );
+}
+
+function GuestIcon() {
+  return (
+    <div className="flex h-fit w-fit gap-2 rounded-md px-2 py-1 ring-1 ring-zinc-800">
+      Guest
     </div>
   );
 }

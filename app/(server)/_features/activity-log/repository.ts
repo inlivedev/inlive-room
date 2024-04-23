@@ -62,14 +62,19 @@ export const countGuestParticipant = async (roomID: string) => {
   const res = await db
     .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
     .from(activitiesLog)
-    .fullJoin(
+    .leftJoin(
       participant,
       and(
         eq(sql`${activitiesLog.meta} ->> 'clientID'`, participant.clientId),
         eq(sql`${activitiesLog.meta} ->> 'roomID'`, roomID)
       )
     )
-    .where(isNull(participant.clientId));
+    .where(
+      and(
+        isNull(participant.clientId),
+        eq(sql`${activitiesLog.meta} ->> 'roomID'`, roomID)
+      )
+    );
 
   return res[0];
 };
