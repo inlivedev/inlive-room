@@ -160,7 +160,7 @@
       "idx": 22,
       "version": "5",
       "when": 1712133340588,
-      "tag": "0022_safe_annihilus",
+      "tag": "0022_add_event_slots",
       "breakpoints": true
     }
   ]
