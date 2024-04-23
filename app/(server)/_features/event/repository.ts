@@ -522,7 +522,15 @@ export class EventRepo implements iEventRepo {
     return { data, meta };
   }
 
-  async getParticipantAttendancePercentage(eventId: number): Promise<participantAttendances> {
+  /**
+   * Get the list of participants that fully attended the event based on the percentage of the event duration
+   * 
+   * 
+   * @param eventId the eventID
+   * @param percentage percentage value to be counted as fully attended (0-100)
+   * @returns list of participant that satisfy the percentage condition
+   */
+  async getFullyAttendedParticipant(eventId: number,percentage:number): Promise<participantAttendances> {
     const { participants, event } = await db.transaction(async (tx) => {
       const event = await tx.query.events.findFirst({
         where: eq(events.id, eventId)
@@ -551,8 +559,8 @@ export class EventRepo implements iEventRepo {
 
     const participantAttendance = participants.map((participant) => {
       const parsedLogs = ArrayRoomDurationMeta.parse(participant.combined_logs)
-      const totalDuration = getTotalJoinDuration(parsedLogs, event.endTime)/1000;
-      const isAttended = ((totalDuration / eventDuration) * 100) > 80;
+      const totalDuration = getTotalJoinDuration(parsedLogs,event.startTime, event.endTime)/1000;
+      const isAttended = ((totalDuration / eventDuration) * 100) > percentage;
       return {
         clientID: participant.clientID,
         joinDuration: totalDuration,
@@ -575,7 +583,7 @@ export class EventRepo implements iEventRepo {
 }
 
 
-function getTotalJoinDuration(intervals: z.infer<typeof RoomDurationMeta>[], sessionEndTime: Date): number {
+function getTotalJoinDuration(intervals: z.infer<typeof RoomDurationMeta>[], sessionStartTime: Date, sessionEndTime: Date): number {
   // Sort intervals by joinTime
   intervals.sort((a, b) => a.joinTime.getTime() - b.joinTime.getTime());
 
@@ -583,8 +591,8 @@ function getTotalJoinDuration(intervals: z.infer<typeof RoomDurationMeta>[], ses
   let currentEndTime: number | null = null;
 
   for (const interval of intervals) {
-    // Check if interval is within session end time
-    const validJoinTime = interval.joinTime <= sessionEndTime;
+    // Check if interval is within session start and end time
+    const validJoinTime = interval.joinTime >= sessionStartTime && interval.joinTime <= sessionEndTime;
     const validLeaveTime = interval.leaveTime <= sessionEndTime;
 
     if (validJoinTime && validLeaveTime) {
@@ -609,7 +617,7 @@ function getTotalJoinDuration(intervals: z.infer<typeof RoomDurationMeta>[], ses
       // No need to process further intervals if we've reached session end time
       break;
     }
-    // Ignore intervals outside session end time
+    // Ignore intervals outside session start and end time
   }
 
   return totalDuration;
