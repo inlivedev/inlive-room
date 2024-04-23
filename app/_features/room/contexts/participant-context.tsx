@@ -11,22 +11,26 @@ export type ParticipantVideo = {
   readonly source: 'media' | 'screen';
   readonly mediaStream: MediaStream;
   readonly videoElement: HTMLVideoElement;
+  audioLevel: number;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
+  readonly addEventListener: (
+    type: string,
+    listener: (event: CustomEvent) => void
+  ) => void;
+  readonly removeEventListener: (
+    type: string,
+    listener: (event: CustomEvent) => void
+  ) => void;
 };
 
 export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 
-const createParticipantVideo = (
-  stream: ParticipantStream
-): ParticipantVideo => {
-  const participantVideo: ParticipantVideo = {
-    ...stream,
-    videoElement: document.createElement('video'),
-  };
+const createParticipantVideo = (stream: any): ParticipantVideo => {
+  stream.videoElement = document.createElement('video');
 
-  participantVideo.videoElement.srcObject = stream.mediaStream;
+  stream.videoElement.srcObject = stream.mediaStream;
 
-  return participantVideo;
+  return stream;
 };
 
 const defaultValue = {
@@ -50,7 +54,7 @@ export function ParticipantProvider({
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
-    const onMediaInputTurnedOn = ((event: CustomEvent) => {
+    const onMediaInputTurnedOn = ((event: CustomEventInit) => {
       const detail = event.detail || {};
       const mediaInput = detail.mediaInput;
 
@@ -68,8 +72,16 @@ export function ParticipantProvider({
 
   useEffect(() => {
     clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
+      const video = createParticipantVideo(data.stream);
+      data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
+        // reordering the streams based on voice activity
+        const audioLevel = e.detail.audioLevel;
+
+        // call setStreams with the new streams order
+      });
+
       setStreams((prevState) => {
-        return [...prevState, createParticipantVideo(data.stream)];
+        return [...prevState, video];
       });
     });
 
