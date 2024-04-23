@@ -445,25 +445,31 @@ export class EventRepo implements iEventRepo {
     }
 
     const subQueryConnectedClient = db
-      .select()
+      .select(
+        {
+          meta: activitiesLog.meta,
+          eventID : events.id
+        }
+      )
       .from(activitiesLog)
       .innerJoin(
         events,
-        eq(events.roomId, sql`${activitiesLog.meta} ->> 'roomID'`)
+        and(eq(events.roomId, sql`${activitiesLog.meta} ->> 'roomID'`),eq(activitiesLog.name,"RoomDuration"))
       )
       .where(eq(events.id, eventId))
       .as('ConnectedClientsLog');
 
     // Removes the duplicates clientID
     const subQueryUniqueConnectedClient = db
-      .selectDistinctOn([sql`${subQueryConnectedClient.activities_logs.meta} ->> 'clientID'`], {
+      .selectDistinctOn([sql`${subQueryConnectedClient.meta} ->> 'clientID'`], {
         clientID:
-          sql<string>`${subQueryConnectedClient.activities_logs.meta} ->> 'clientID'`.as(
+          sql<string>`${subQueryConnectedClient.meta} ->> 'clientID'`.as(
             'clientID'
           ),
-        name: sql<string>`${subQueryConnectedClient.activities_logs.meta} ->> 'name'`.as(
+        name: sql<string>`${subQueryConnectedClient.meta} ->> 'name'`.as(
           'name'
         ),
+        eventID: subQueryConnectedClient.eventID,
       })
       .from(subQueryConnectedClient)
       .as('UniqueConnectedClients');
@@ -471,35 +477,38 @@ export class EventRepo implements iEventRepo {
     // TODO : Query the alias for same clientID with same name
     // subQueryGetAlias
 
+    const participantMatchEventID = db.select().from(participants).where(eq(participants.eventID, eventId)).as('participantEventID');
+
     // add the isRegistered and isJoined field and email
     const finalQuery = await db
       .select({
         clientID: subQueryUniqueConnectedClient.clientID,
         name: sql<string>`
         CASE
-          WHEN ${participants.firstName} IS NULL THEN ${subQueryUniqueConnectedClient.name}
-          ELSE CONCAT_WS(' ', ${participants.firstName}, ${participants.lastName})
+          WHEN ${participantMatchEventID.firstName} IS NULL THEN ${subQueryUniqueConnectedClient.name}
+          ELSE CONCAT_WS(' ', ${participantMatchEventID.firstName}, ${participantMatchEventID.lastName})
         END
           `.as('name'),
-        email: participants.email,
+        email: participantMatchEventID.email,
         isRegistered: sql<boolean>`
         CASE
-          WHEN ${participants.clientId} IS NULL THEN ${false}
+          WHEN ${participantMatchEventID.clientId} IS NULL THEN ${false}
           ELSE ${true}
         END
         `.as('isRegistered'),
         isJoined: sql<boolean>`
         CASE
-          WHEN (${participants.clientId} IS NOT NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) 
-            OR (${participants.clientId} IS NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) THEN ${true}
+          WHEN (${participantMatchEventID.clientId} IS NOT NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) 
+            OR (${participantMatchEventID.clientId} IS NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) THEN ${true}
           ELSE ${false}
         END
         `.as('isJoined'),
+        eventID : sql<number>` COALESCE(${participantMatchEventID.eventID},${subQueryUniqueConnectedClient.eventID})`.as('eventID')
       })
       .from(subQueryUniqueConnectedClient)
-      .leftJoin(
-        participants,
-        and(eq(participants.clientId, subQueryUniqueConnectedClient.clientID),eq(participants.eventID, eventId))
+      .fullJoin(
+        participantMatchEventID,
+        eq(participantMatchEventID.clientId, subQueryUniqueConnectedClient.clientID)
       ).as('participants')
 
     const { data, meta } = await db.transaction(async (tx) => {
