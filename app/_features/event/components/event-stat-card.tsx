@@ -119,6 +119,7 @@ export function EventStatCard({
                 <StatItem name="Attended" value={stat.data.count.attended} />
                 <StatItem
                   name="Fully Attended"
+                  message="≥ 80% session duration"
                   value={stat.data.count.fullyAttended}
                 />
 
@@ -130,7 +131,6 @@ export function EventStatCard({
                 <StatItem
                   name="Percentage Fully Attended"
                   value={`${stat.data.percentage.fullyAttended || 0} %`}
-                  message="≥ 80% session duration"
                 ></StatItem>
               </StatList>
             </>
