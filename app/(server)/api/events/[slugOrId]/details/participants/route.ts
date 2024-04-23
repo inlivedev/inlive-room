@@ -71,8 +71,10 @@ export async function GET(
       string,
       { isAttended: boolean; joinDuration: number }
     >();
-    const registeredAttendance =
-      await eventRepo.getParticipantAttendancePercentage(event.id);
+    const registeredAttendance = await eventRepo.getFullyAttendedParticipant(
+      event.id,
+      80
+    );
     registeredAttendance.participant.forEach((participant) => {
       registeredAttendanceMap.set(participant.clientID, {
         isAttended: participant.isAttended,
@@ -81,7 +83,7 @@ export async function GET(
     });
 
     res.data.forEach((participant) => {
-      participant.isAttended = registeredAttendanceMap.get(
+      participant.isFullyAttended = registeredAttendanceMap.get(
         participant.clientID
       )?.isAttended;
       participant.joinDuration = registeredAttendanceMap.get(
