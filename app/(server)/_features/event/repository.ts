@@ -9,7 +9,7 @@ import {
   participant as participants,
   selectEvent,
 } from './schema';
-import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
+import { DBQueryConfig, SQL, and, count, eq, isNull,  sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { User, users } from '../user/schema';
 import { activitiesLog } from '../activity-log/schema';
@@ -569,7 +569,7 @@ export class EventRepo implements iEventRepo {
     const participantAttendance = participants.map((participant) => {
       const parsedLogs = ArrayRoomDurationMeta.parse(participant.combined_logs)
       const totalDuration = getTotalJoinDuration(parsedLogs,event.startTime, event.endTime)/1000;
-      const isAttended = ((totalDuration / eventDuration) * 100) > percentage;
+      const isAttended = ((totalDuration / eventDuration) * 100) >= percentage;
       return {
         clientID: participant.clientID,
         joinDuration: totalDuration,
