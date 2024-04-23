@@ -83,7 +83,7 @@ export async function GET(
     });
 
     res.data.forEach((participant) => {
-      participant.isFullyAttended = registeredAttendanceMap.get(
+      participant.isAttended = registeredAttendanceMap.get(
         participant.clientID
       )?.isAttended;
       participant.joinDuration = registeredAttendanceMap.get(

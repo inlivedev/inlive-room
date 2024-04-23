@@ -351,7 +351,7 @@ function ParticipantItem({
       </td>
       <td className="min-w-52 max-w-80 truncate whitespace-nowrap p-3 text-zinc-400 lg:p-6">
         {participant.isRegistered
-          ? BooleanItem({ isTrue: participant.isFullyAttended || false })
+          ? BooleanItem({ isTrue: participant.isAttended || false })
           : null}
       </td>
     </tr>
