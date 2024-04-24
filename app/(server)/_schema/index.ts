@@ -8,6 +8,7 @@ import {
 } from '../_features/event/schema';
 import { earlyAccessInvitees } from '@/(server)/_features/early-access-invitee/schema';
 import { activitiesLog } from '../_features/activity-log/schema';
+import { scheduledJobs } from '../_features/job/schema';
 
 // export all schema here so we can utilize using the drizzle query
 const models = {
@@ -17,6 +18,7 @@ const models = {
   participant,
   earlyAccessInvitees,
   activitiesLog,
+  scheduledJobs,
 };
 
 const relations = {
