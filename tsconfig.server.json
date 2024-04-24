@@ -3,7 +3,12 @@
     "compilerOptions": {
       "module": "commonjs",
       "outDir": "dist",
-      "noEmit": false
+      "noEmit": false,
+      "paths": {
+        "@/*": ["./app/*"]
+      },
+      "moduleResolution": "node",
+      
     },
-    "include": ["./server.ts"],
+    "include": ["./server.ts", "./app/**/*.ts"],
   }

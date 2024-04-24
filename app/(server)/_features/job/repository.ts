@@ -2,7 +2,9 @@ import { db } from '@/(server)/_shared/database/database';
 import { SQL, and, eq, inArray, lt, sql } from 'drizzle-orm';
 import { ScheduledJobs, scheduledJobs } from './schema';
 
-export const getScheduledJobs = async (type: string) => {
+export const getScheduledJobs = async (
+  type: string
+): Promise<ScheduledJobs[]> => {
   const jobs = db.transaction(async (tx) => {
     const jobs = await tx.query.scheduledJobs.findMany({
       where: and(

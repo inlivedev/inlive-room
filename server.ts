@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from 'express';
+import { runCronJobs } from './app/(server)/_shared/cron/cron';
 import next from 'next';
 
 const hostname = 'localhost';
@@ -7,6 +8,8 @@ const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, hostname, port });
 const requestHandler = app.getRequestHandler();
+
+runCronJobs();
 
 app.prepare().then(() => {
   const server = express();
