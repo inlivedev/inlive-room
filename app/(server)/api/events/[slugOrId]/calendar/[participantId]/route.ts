@@ -1,7 +1,7 @@
+import { GenerateIcal } from '@/(server)/_shared/icalendar/ical';
 import { eventService } from '@/(server)/api/_index';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
-import { GenerateIcal } from '../../..';
 
 export async function GET(
   _: Request,
