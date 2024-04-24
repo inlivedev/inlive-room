@@ -29,9 +29,11 @@ export const events = pgTable('events', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   description: text('description'),
-  createdBy: integer('created_by').references(() => users.id, {
-    onDelete: 'set null',
-  }),
+  createdBy: integer('created_by')
+    .references(() => users.id, {
+      onDelete: 'set null',
+    })
+    .notNull(),
   roomId: text('room_id').references(() => rooms.id, { onDelete: 'set null' }),
   thumbnailUrl: text('thumbnail_url'),
   deletedAt: timestamp('deleted_at'),

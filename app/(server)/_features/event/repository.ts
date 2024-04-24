@@ -8,10 +8,11 @@ import {
   participant,
   participant as participants,
   selectEvent,
+  selectParticipant,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull,  sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
-import { User, users } from '../user/schema';
+import { users } from '../user/schema';
 import { activitiesLog } from '../activity-log/schema';
 import { z } from 'zod';
 import { ArrayRoomDurationMeta, RoomDurationMeta } from '@/(server)/api/user/activity/route';
@@ -77,6 +78,7 @@ export class EventRepo implements iEventRepo {
               id: true,
               name: true,
               pictureUrl: true,
+              email: true,
             },
           },
         },
@@ -329,32 +331,38 @@ export class EventRepo implements iEventRepo {
   }
 
   async getRegisteredParticipants(
-    slug: string,
-    createdBy: User['id'],
+    id: number,
+    paginate=true,
     limit = 10,
-    page = 1
+    page = 1,
   ) {
     const res = await db.transaction(async (tx) => {
-      const registeree = await tx
-        .select({
-          first_name: participants.firstName,
-          last_name: participants.lastName,
-          email: participants.email,
-          id: participants.id,
-          created_at: participants.createdAt,
-        })
+      const registereeQuery = tx
+        .select()
         .from(participants)
         .innerJoin(events, eq(participants.eventID, events.id))
-        .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
+        .where(and(eq(events.id, id)));
+
+        let res : selectParticipant[]
+
+        if (paginate) {
+          res = (await registereeQuery.limit(limit).offset((page - 1) * limit)).map((res) => {
+            return res.events_participant
+          });
+        }else{
+          res  = (await registereeQuery).map((res) => {
+            return res.events_participant
+          })
+        }
 
       const total = await tx
         .select({ total: count() })
         .from(participants)
         .innerJoin(events, eq(participants.eventID, events.id))
-        .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
+        .where(and(eq(events.id, id)));
       total[0].total = total[0].total || 0;
 
-      return { total: total[0].total, registeree };
+      return { total: total[0].total, registeree: res };
     });
 
     const meta: PageMeta = {
@@ -364,17 +372,7 @@ export class EventRepo implements iEventRepo {
       total_record: res.total,
     };
 
-    const data = res.registeree.map((user) => {
-      return {
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        createdAt: user.created_at,
-      };
-    });
-
-    return { data: data, meta };
+    return { data: res.registeree, meta };
   }
 
   async getEventParticipantsByEventId(eventId: number) {

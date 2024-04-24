@@ -1,5 +1,5 @@
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
-import { eventRepo } from '@/(server)/api/_index';
+import { eventRepo, eventService } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
@@ -39,9 +39,31 @@ export async function GET(
       );
     }
 
+    const event = await eventService.getEventBySlugOrID(slugOrId);
+
+    if (!event) {
+      return NextResponse.json(
+        {
+          code: 404,
+          message: 'event not found',
+        },
+        { status: 404 }
+      );
+    }
+
+    if (event?.createdBy !== user.id) {
+      return NextResponse.json(
+        {
+          code: 403,
+          message: 'forbidden',
+        },
+        { status: 403 }
+      );
+    }
+
     const res = await eventRepo.getRegisteredParticipants(
-      slugOrId,
-      user.id,
+      event.id,
+      true,
       limit,
       page
     );
