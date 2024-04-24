@@ -5,10 +5,10 @@ import {
   selectParticipant,
 } from '@/(server)/_features/event/schema';
 import * as Sentry from '@sentry/nextjs';
-import { GenerateIcal } from '@/(server)/api/events';
 import { selectUser } from '@/(server)/_features/user/schema';
 import { render } from '@react-email/render';
 import EventManualInvitation from 'emails/event/EventManualInvitation';
+import { GenerateIcal } from '../icalendar/ical';
 
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
@@ -19,6 +19,8 @@ const ROOM_RESCHED_EMAIL_TEMPLATE =
 const ENABLE_MAILER = process.env.ENABLE_MAILER || false;
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
+export type host = Pick<selectUser, 'name' | 'email' | 'pictureUrl'>;
+
 export function isMailerEnabled() {
   return ENABLE_MAILER === 'true';
 }
@@ -26,7 +28,7 @@ export function isMailerEnabled() {
 export async function SendEventInvitationEmail(
   participant: selectParticipant,
   event: selectEvent,
-  host: selectUser
+  host: host
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
@@ -102,7 +104,7 @@ export async function SendEventInvitationEmail(
 export async function SendEventCancelledEmail(
   participant: selectParticipant,
   event: selectEvent,
-  host: selectUser
+  host: host
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
@@ -179,7 +181,7 @@ export async function SendEventRescheduledEmail(
   participant: selectParticipant,
   newEvent: selectEvent,
   oldEvent: selectEvent,
-  host: selectUser
+  host: host
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
