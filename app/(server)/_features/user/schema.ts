@@ -24,7 +24,6 @@ export const usersRelations = relations(users, ({ many }) => ({
   events: many(events),
 }));
 
-export type User = InferSelectModel<typeof users>;
 export type selectUser = typeof users.$inferSelect;
 export type InsertUser = Omit<
   InferInsertModel<typeof users>,
