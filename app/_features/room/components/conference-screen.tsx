@@ -465,10 +465,13 @@ function VideoScreen({
         stream.videoElement.style.borderColor = 'green';
         stream.videoElement.style.borderWidth = '5px';
         stream.videoElement.style.borderStyle = 'solid';
+        stream.videoElement.style.margin = '-5px';
+        stream.videoElement.style.boxSizing = 'content-box';
       } else {
         stream.videoElement.style.borderColor = 'transparent';
         stream.videoElement.style.borderWidth = '0';
         stream.videoElement.style.borderStyle = 'none';
+        stream.videoElement.style.margin = '0';
       }
     };
 
