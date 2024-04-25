@@ -15,7 +15,7 @@ const dummyEvent: EventType.Event = {
   createdAt: new Date(),
   updatedAt: new Date(),
   description: '',
-  createdBy: null,
+  createdBy: 1,
   roomId: null,
   thumbnailUrl: '',
   deletedAt: null,
