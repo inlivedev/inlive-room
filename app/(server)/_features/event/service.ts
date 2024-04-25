@@ -4,11 +4,11 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import { selectUser } from '../user/schema';
 import {
   SendEventCancelledEmail,
-  SendEventManualInvitationEmail,
   SendEventRescheduledEmail,
 } from '@/(server)/_shared/mailer/mailer';
 import { PageMeta } from '@/_shared/types/types';
 import { EventType } from '@/_shared/types/event';
+import { SendEventManualInvitationEmail } from '@/(server)/_shared/mailer/sendManualInvitation';
 
 /**
  * Type used to represent all type of participant in an event
