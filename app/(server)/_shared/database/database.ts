@@ -13,11 +13,8 @@ const Option: postgres.Options<Record<string, postgres.PostgresType>> = {
   user: DB_USER,
   pass: DB_PASS,
   database: DB_NAME,
+  port: DB_PORT,
 };
-
-if (process.env.NEXT_PUBLIC_APP_ENV == 'development') {
-  Option.port = DB_PORT;
-}
 
 const queryClient = postgres(Option);
 
