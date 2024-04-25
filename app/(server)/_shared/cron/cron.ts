@@ -3,12 +3,14 @@ import {
   batchUpdateJobStatus,
   getScheduledJobs,
 } from '@/(server)/_features/job/repository';
-import { eventRepo } from '@/(server)/api/_index';
 import {
   SendEventCancelledEmail,
   SendEventRescheduledEmail,
 } from '../mailer/mailer';
 import { ScheduledJobs } from '@/(server)/_features/job/schema';
+import { EventRepo } from '@/(server)/_features/event/repository';
+
+const eventRepo = new EventRepo();
 
 const sendEventUpdateEmailsJob = new CronJob(
   '*/15 * * * *',
