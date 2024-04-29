@@ -169,6 +169,13 @@
       "when": 1714065902998,
       "tag": "0023_add_participant_role",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1714367384035,
+      "tag": "0024_unique_email_per_event",
+      "breakpoints": true
     }
   ]
 }

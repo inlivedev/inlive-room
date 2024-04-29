@@ -62,7 +62,8 @@ export const participant = pgTable(
   },
   (table) => {
     return {
-      unique: unique().on(table.clientId, table.eventID),
+      uniqueClientID: unique().on(table.clientId, table.eventID),
+      uniqueEmail: unique().on(table.email, table.eventID),
     };
   }
 );
