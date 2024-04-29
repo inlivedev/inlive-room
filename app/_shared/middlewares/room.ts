@@ -11,6 +11,8 @@ import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import type { EventType } from '@/_shared/types/event';
 import { customAlphabet } from 'nanoid';
+import { cookies } from 'next/headers';
+import { eventRepo } from '@/(server)/api/_index';
 
 const registerClient = async (
   roomID: string,
@@ -77,7 +79,10 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       const roomID = splitPath[2];
       let roomData: RoomType.RoomData | null = null;
       let eventData: EventType.Event | null = null;
-      const clientID = request.nextUrl.searchParams.get('clientID');
+      let client: ClientType.ClientData = {
+        clientID: request.nextUrl.searchParams.get('clientID') || '',
+        clientName: '',
+      };
 
       try {
         const roomResponse: RoomType.CreateGetRoomResponse =
@@ -87,6 +92,26 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
 
         roomData = roomResponse?.data ? roomResponse.data : null;
         eventData = roomResponse?.meta?.event || null;
+        const requestToken = cookies().get('token');
+        if (requestToken && eventData) {
+          const userResp: AuthType.CurrentAuthResponse =
+            await InternalApiFetcher.get('/api/auth/current', {
+              headers: {
+                Authorization: `Bearer ${requestToken.value}`,
+              },
+              cache: 'no-cache',
+            });
+
+          if (userResp.data?.email && eventData?.id) {
+            const participant = await eventRepo.getEventParticipantByEmail(
+              userResp.data?.email,
+              eventData?.id
+            );
+
+            client.clientID = participant?.clientId || '';
+            client.clientName = participant?.firstName || '';
+          }
+        }
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
@@ -97,16 +122,11 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         console.error(error);
       }
 
-      let client: ClientType.ClientData = {
-        clientID: '',
-        clientName: '',
-      };
-
       if (roomData) {
         if (
           typeof roomData.meta !== 'undefined' &&
           roomData.meta.type === 'event' &&
-          !clientID &&
+          !client.clientID &&
           eventData
         ) {
           if (eventData) {
@@ -122,7 +142,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         const registeredClient = await registerClient(
           roomID,
           newName,
-          clientID
+          client.clientID
         );
 
         if (registeredClient?.code === 403 && roomData.meta.type === 'event') {
