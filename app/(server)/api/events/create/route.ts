@@ -8,6 +8,7 @@ import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-
 import { whitelistFeature } from '@/_shared/utils/flag';
 import * as z from 'zod';
 import { selectRoom } from '@/(server)/_features/room/schema';
+import { generateID } from '@/(server)/_shared/utils/generateid';
 
 const CreateEventSchema = z.object({
   name: z.string().max(255),
@@ -138,6 +139,16 @@ export async function POST(req: Request) {
         { status: 201 }
       );
     }
+
+    // Register Event Creator as Participant
+    eventRepo.registerParticipant({
+      clientId: generateID(12),
+      firstName: user.name,
+      lastName: '',
+      email: user.email,
+      eventID: createdEvent.id,
+      roleID: 2,
+    });
 
     return NextResponse.json({
       code: 201,
