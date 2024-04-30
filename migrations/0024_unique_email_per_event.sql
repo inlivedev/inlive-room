@@ -1,22 +1,9 @@
-WITH duplicates_email_cte AS (
-    SELECT 
-        event_id,
-        email,
-        ROW_NUMBER() OVER (PARTITION BY event_id, email ORDER BY event_id) AS row_num
-    FROM 
-        events_participant
-)
-DELETE FROM 
-    events_participant
-WHERE 
-    (event_id, email) IN (
-        SELECT 
-            event_id,
-            email
-        FROM 
-            duplicates_email_cte
-        WHERE 
-            row_num > 1
-    );
+
+-- Remove duplicate email registered into the same event
+DELETE FROM "events_participant" ep1 
+USING "events_participant" ep2
+WHERE ep1.email = ep2.email 
+  AND ep1.event_id = ep2.event_id 
+  AND ep1.id > ep2.id;
 
 ALTER TABLE "events_participant" ADD CONSTRAINT "events_participant_email_event_id_unique" UNIQUE("email","event_id");
