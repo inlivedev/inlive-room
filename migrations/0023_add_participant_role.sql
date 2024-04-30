@@ -24,5 +24,5 @@ JOIN "users" u ON e.created_by = u.id
 WHERE NOT EXISTS (
     SELECT 1
     FROM "events_participant" ep
-    WHERE ep.email = u.email
+    WHERE ep.email = u.email AND ep.event_id = e.id 
 );
