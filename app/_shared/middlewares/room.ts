@@ -149,7 +149,11 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           clientID
         );
 
-        if (registeredClient?.code === 403 && roomData.meta.type === 'event') {
+        if (
+          registeredClient?.code === 403 &&
+          roomData.meta.type === 'event' &&
+          eventData
+        ) {
           const url = request.nextUrl.clone();
           url.pathname = `/events/${eventData?.slug}`;
           url.searchParams.append('error', 'invalidClientID');

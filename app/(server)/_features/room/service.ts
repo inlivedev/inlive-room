@@ -295,12 +295,12 @@ export class RoomService {
           );
         }
       }
+    }
 
-      if (room.meta.type === 'event') {
-        const event = await eventRepo.getByRoomID(room.id);
+    if (room && room.meta.type === 'event') {
+      const event = await eventRepo.getByRoomID(room.id);
 
-        return { room, event };
-      }
+      return { room, event };
     }
 
     return { room, event: undefined };
