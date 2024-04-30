@@ -47,6 +47,11 @@ export declare namespace EventType {
     description: string;
   };
 
+  type ParticipantResponse = FetcherResponse & {
+    message: string;
+    data: RegisteredParticipant;
+  };
+
   type RegisterParticipantResponse = FetcherResponse & {
     message: string;
     data: {
