@@ -8,6 +8,7 @@ import {
   participant,
   participant as participants,
   selectEvent,
+  selectParticipant,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull,  sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -402,10 +403,33 @@ export class EventRepo implements iEventRepo {
     });
   }
 
-  async getEventParticipantByEmail(email: string, eventID : number) {
-    return await db.query.participant.findFirst({
-      where: and(eq(participants.email, email), eq(participants.eventID, eventID)),
-    });
+
+  async getEventParticipantByEmail(email: string, eventID: number): Promise<selectParticipant | undefined>;
+  async getEventParticipantByEmail(email: string, eventSlug: string): Promise<selectParticipant | undefined>;
+
+  async getEventParticipantByEmail(email: string, eventIDorSlug: number | string): Promise<selectParticipant | undefined> {
+    if (typeof eventIDorSlug === 'number') {
+      return await db.query.participant.findFirst({
+        where: and(eq(participants.email, email), eq(participants.eventID, eventIDorSlug)),
+      });
+    }
+
+    if(typeof eventIDorSlug === 'string'){
+      const res = await db.select(
+        {
+          participants : participants,
+        }
+      ).from(participants).innerJoin(events, eq(participants.eventID, events.id)).where(
+        and(
+          eq(participants.email, email),
+          eq(events.slug, eventIDorSlug)
+        )
+      ).limit(1);
+
+      return res[0].participants
+    }
+
+    throw new Error('Invalid eventIDorSlug');
   }
 
   async getEventHostByEventId(eventId: number) {
