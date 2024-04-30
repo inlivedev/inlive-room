@@ -460,13 +460,30 @@ function VideoScreen({
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const callbackVoiceActivity = () => {
+      if (stream.audioLevel > 0) {
+        stream.videoElement.style.borderColor = 'green';
+        stream.videoElement.style.borderWidth = '5px';
+        stream.videoElement.style.borderStyle = 'solid';
+        stream.videoElement.style.margin = '-5px';
+        stream.videoElement.style.boxSizing = 'content-box';
+      } else {
+        stream.videoElement.style.borderColor = 'transparent';
+        stream.videoElement.style.borderWidth = '0';
+        stream.videoElement.style.borderStyle = 'none';
+        stream.videoElement.style.margin = '0';
+      }
+    };
+
     if (stream.origin === 'remote') {
       peer?.observeVideo(stream.videoElement);
+      stream.addEventListener('voiceactivity', callbackVoiceActivity);
     }
 
     return () => {
       if (stream.origin === 'remote') {
         peer?.unobserveVideo(stream.videoElement);
+        stream.removeEventListener('voiceactivity', callbackVoiceActivity);
       }
     };
   }, [peer, stream]);

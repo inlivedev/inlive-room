@@ -48,7 +48,11 @@ export const DataChannelProvider = ({
       });
     };
 
-    peerConnection.addEventListener('datachannel', onPeerDataChannelAdded);
+    peerConnection.addEventListener('datachannel', (e) => {
+      if (e.channel.label !== 'internal') {
+        onPeerDataChannelAdded(e);
+      }
+    });
 
     return () => {
       peerConnection.removeEventListener('datachannel', onPeerDataChannelAdded);
