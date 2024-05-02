@@ -220,7 +220,7 @@ const orderByPinned = (
   streams: ParticipantVideo[],
   pinnedStreams: string[]
 ) => {
-  return streams.slice().sort((streamA, streamB) => {
+  return streams.sort((streamA, streamB) => {
     const indexA = pinnedStreams.indexOf(streamA.id);
     const indexB = pinnedStreams.indexOf(streamB.id);
 
@@ -231,7 +231,7 @@ const orderByPinned = (
 };
 
 const orderBySpotlight = (streams: ParticipantVideo[]) => {
-  return streams.slice().sort((streamA, streamB) => {
+  return streams.sort((streamA, streamB) => {
     return Number(streamB.spotlight) - Number(streamA.spotlight);
   });
 };
