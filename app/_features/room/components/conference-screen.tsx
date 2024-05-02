@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, Key, useEffect, useRef, useState, memo } from 'react';
+import { useCallback, Key, useEffect, useRef, useState } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -421,7 +421,7 @@ function OverlayScreen({
             {[
               <DropdownItem key="local-spotlight">
                 <div className="flex items-center gap-1">
-                  <span>Spotlight participant</span>
+                  <span>Spotlight for myself</span>
                   {stream.spotlight ? (
                     <span>
                       <CheckIcon width={16} height={16} />
@@ -431,7 +431,7 @@ function OverlayScreen({
               </DropdownItem>,
               <DropdownItem key="local-pinned">
                 <div className="flex items-center gap-1">
-                  <span>Pin participant</span>
+                  <span>Pin for myself</span>
                   {stream.pinned ? (
                     <span>
                       <CheckIcon width={16} height={16} />
