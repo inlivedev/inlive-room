@@ -5,7 +5,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@nextui-org/react';
-import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import {
+  SubmitHandler,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from 'react-hook-form';
 import { useCallback, useState } from 'react';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import DatePicker from 'react-datepicker';
@@ -13,8 +18,21 @@ import '../event/styles/date-picker.css';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import MailPlus from '@/_shared/components/icons/mail-plus-icon';
 import XFillIcon from '@/_shared/components/icons/x-fill-icon';
+import { useAuthContext } from '@/_shared/contexts/auth';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { EventType } from '@/_shared/types/event';
+
+type InputsType = {
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  csvEmails: string;
+  emails: { email: string; id: string | undefined }[];
+};
 
 export default function MeetingScheduleForm() {
+  const { user } = useAuthContext();
   const today = new Date();
   const startTime = new Date();
 
@@ -23,24 +41,102 @@ export default function MeetingScheduleForm() {
   endTime.setHours(startTime.getHours() + 1);
   endTime.setMinutes(0, 0, 0);
 
-  const { register, setValue, control, formState, getValues, resetField } =
-    useForm<{
-      title: string;
-      date: string;
-      startTime: string;
-      endTime: string;
-      csvEmails: string;
-      emails: { email: string; id: string | undefined }[];
-    }>({
-      defaultValues: {
-        date: parseDateToString(today),
-        startTime: parseTimeDateToString(startTime),
-        endTime: parseTimeDateToString(endTime),
-        csvEmails: '',
-        emails: [],
-      },
-      mode: 'all',
-    });
+  const {
+    register,
+    setValue,
+    control,
+    formState,
+    getValues,
+    resetField,
+    handleSubmit,
+    reset,
+  } = useForm<InputsType>({
+    defaultValues: {
+      date: parseDateToString(today),
+      startTime: parseTimeDateToString(startTime),
+      endTime: parseTimeDateToString(endTime),
+      csvEmails: '',
+      emails: [],
+      title: user ? user.name + ' Meeting' : '',
+    },
+    mode: 'onTouched',
+  });
+
+  const [displayError, setDisplayError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit: SubmitHandler<InputsType> = async (data, event) => {
+    try {
+      setIsSubmitting(true);
+      const emails = data.emails.map((email) => email.email);
+      const startTime = parseStringDateToDate(data.date);
+
+      startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
+      startTime.setMinutes(parseTimeStringToDate(data.startTime).getMinutes());
+
+      const endTime = startTime;
+      endTime.setHours(parseTimeStringToDate(data.endTime).getHours());
+      endTime.setMinutes(parseTimeStringToDate(data.endTime).getMinutes());
+
+      const bodyData = {
+        name: data.title,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        description: '',
+        status: 'published',
+        type: 'meeting',
+        maximumSlots: data.emails.length,
+      };
+
+      const formData = new FormData();
+
+      formData.append('data', JSON.stringify(bodyData));
+
+      const createEventResp: EventType.CreateEventResponse =
+        await InternalApiFetcher.post('/events/create', {
+          body: formData,
+          headers: undefined,
+        });
+
+      try {
+        const event = createEventResp.data;
+        const body = { emails: data.emails };
+
+        const inviteParticipantResp = await retryRequest(
+          await InternalApiFetcher.post(
+            `/events/${event.id}/invite-participant`,
+            {
+              body: JSON.stringify(body),
+              headers: {
+                contentType: 'application/json',
+              },
+            }
+          ),
+          3
+        );
+
+        if (inviteParticipantResp.ok) {
+          reset();
+          document.dispatchEvent(
+            new CustomEvent('close:schedule-meeting-modal')
+          );
+        }
+
+        // Create request to invite participant
+      } catch (error) {
+        console.error(error);
+      }
+
+      // Create request to invite participant
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  register('emails', {
+    required: 'Please add at least one email address',
+    validate: (emails) => emails.length > 0,
+  });
 
   const selectedDate = parseStringDateToDate(
     useWatch({ control, name: 'date' })
@@ -54,7 +150,13 @@ export default function MeetingScheduleForm() {
     useWatch({ control, name: 'endTime' })
   );
 
-  const { fields, append, remove } = useFieldArray({
+  const selectedEmails = useWatch({ control, name: 'emails' });
+
+  const {
+    fields: emails,
+    append,
+    remove,
+  } = useFieldArray({
     control,
     name: 'emails',
   });
@@ -95,7 +197,16 @@ export default function MeetingScheduleForm() {
 
   return (
     <div>
-      <form className="flex flex-col gap-2">
+      <form
+        className="flex flex-col gap-2"
+        id="scheduleForm"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        {selectedEmails.length < 1 && displayError && (
+          <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
+            Please input atleast one email address
+          </p>
+        )}
         <div>
           <label htmlFor="title">Title</label>
           <input
@@ -289,11 +400,11 @@ export default function MeetingScheduleForm() {
           )}
         </div>
 
-        {fields.length > 0 && (
+        {emails.length > 0 && (
           <div className="max-h-60 overflow-x-hidden overflow-y-scroll rounded-md ring-1 ring-zinc-800">
             <table className="w-full rounded-md ">
               <tbody className="">
-                {fields.map((email, index) => (
+                {emails.map((email, index) => (
                   <tr
                     key={email.id}
                     className="
@@ -320,6 +431,7 @@ export default function MeetingScheduleForm() {
         <div className="mt-4 flex flex-row gap-2">
           <Button
             onPress={() => {
+              reset();
               document.dispatchEvent(
                 new CustomEvent('close:schedule-meeting-modal')
               );
@@ -328,9 +440,14 @@ export default function MeetingScheduleForm() {
           >
             Cancel
           </Button>
+
           <Button
             type="submit"
+            form="scheduleForm"
             className="w-full rounded-md bg-red-700  text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm"
+            onPress={() => {
+              setDisplayError(true);
+            }}
           >
             Schedule
           </Button>
@@ -411,4 +528,19 @@ function parseTimeDateToString(date: Date) {
     .getMinutes()
     .toString()
     .padStart(2, '0')}`;
+}
+
+async function retryRequest(
+  requestFunction: () => Promise<any>,
+  maxRetries: number
+) {
+  const response = await requestFunction();
+
+  if (response.ok) {
+    return response;
+  } else if (maxRetries === 0) {
+    throw new Error('Request failed after maximum retries');
+  } else {
+    return retryRequest(requestFunction, maxRetries - 1);
+  }
 }
