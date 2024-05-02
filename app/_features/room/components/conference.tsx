@@ -14,6 +14,33 @@ import HiddenView from './hidden-view';
 const WebinarView = () => {
   const { streams } = useParticipantContext();
   const { currentLayout } = useMetadataContext();
+  const spotlightStream = streams[0];
+
+  if (spotlightStream && spotlightStream.spotlight) {
+    const hiddenStreams = streams.slice(1);
+
+    if (spotlightStream.origin === 'local') {
+      return (
+        <>
+          <SpotlightView streamA={spotlightStream} />
+          <HiddenView streams={hiddenStreams} />
+        </>
+      );
+    }
+
+    const localStreamIndex = hiddenStreams.findIndex((stream) => {
+      return stream.origin === 'local' && stream.source === 'media';
+    });
+
+    const localStream = hiddenStreams.splice(localStreamIndex, 1)[0];
+
+    return (
+      <>
+        <SpotlightView streamA={spotlightStream} streamB={localStream} />
+        <HiddenView streams={hiddenStreams} />
+      </>
+    );
+  }
 
   if (currentLayout === 'presentation') {
     return <WebinarPresentationLayout streams={streams} />;
@@ -29,15 +56,15 @@ const WebinarView = () => {
 const MeetingView = () => {
   const { streams } = useParticipantContext();
   const { currentLayout } = useMetadataContext();
-  const firstStream = streams[0];
+  const spotlightStream = streams[0];
 
-  if (firstStream && firstStream.spotlight) {
+  if (spotlightStream && spotlightStream.spotlight) {
     const hiddenStreams = streams.slice(1);
 
-    if (firstStream.origin === 'local') {
+    if (spotlightStream.origin === 'local') {
       return (
         <>
-          <SpotlightView streamA={firstStream} />
+          <SpotlightView streamA={spotlightStream} />
           <HiddenView streams={hiddenStreams} />
         </>
       );
@@ -51,7 +78,7 @@ const MeetingView = () => {
 
     return (
       <>
-        <SpotlightView streamA={firstStream} streamB={localStream} />
+        <SpotlightView streamA={spotlightStream} streamB={localStream} />
         <HiddenView streams={hiddenStreams} />
       </>
     );
