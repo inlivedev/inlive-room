@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, Key, useEffect, useRef, useState, memo } from 'react';
+import { useCallback, Key, useEffect, useRef, useState } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -18,15 +18,9 @@ import { clientSDK } from '@/_shared/utils/sdk';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
+import CheckIcon from '@/_shared/components/icons/check-icon';
 
-export default memo(ConferenceScreen, (prevProps, nextProps) => {
-  return (
-    Object.is(prevProps.stream, nextProps.stream) &&
-    prevProps.hidden === nextProps.hidden
-  );
-});
-
-function ConferenceScreen({
+export default function ConferenceScreen({
   stream,
   hidden = false,
 }: {
@@ -157,7 +151,25 @@ function OverlayScreen({
 
   const onMoreSelection = useCallback(
     async (key: Key) => {
-      if (key === 'set-speaker') {
+      if (key === 'local-spotlight') {
+        document.dispatchEvent(
+          new CustomEvent('active:local-spotlight', {
+            detail: {
+              active: !stream.spotlight,
+              id: stream.id,
+            },
+          })
+        );
+      } else if (key === 'local-pinned') {
+        document.dispatchEvent(
+          new CustomEvent('active:local-pinned', {
+            detail: {
+              active: !stream.pinned,
+              id: stream.id,
+            },
+          })
+        );
+      } else if (key === 'set-speaker') {
         if (!isModerator) return;
 
         try {
@@ -394,39 +406,60 @@ function OverlayScreen({
               <XFillIcon className="h-4 w-4" />
             </Button>
           )}
-        {isModerator &&
-          clientID !== stream.clientId &&
-          stream.source === 'media' &&
-          roomType === 'event' &&
-          currentLayout === 'speaker' && (
-            <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
-              <DropdownTrigger>
-                <Button
-                  isIconOnly
-                  size="sm"
-                  variant="light"
-                  className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
-                >
-                  <MoreIcon className="h-4 w-4" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="More options"
-                onAction={onMoreSelection}
-              >
-                {speakerClientIDs.includes(stream.clientId) ? (
-                  <DropdownItem key="set-regular-participant">
-                    Set as a regular participant
-                  </DropdownItem>
-                ) : (
-                  <DropdownItem key="set-speaker">
-                    Set as a speaker
-                  </DropdownItem>
-                )}
-              </DropdownMenu>
-            </Dropdown>
-          )}
-
+        <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
+          <DropdownTrigger>
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
+            >
+              <MoreIcon className="h-4 w-4" />
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
+            {[
+              <DropdownItem key="local-spotlight">
+                <div className="flex items-center gap-1">
+                  <span>Spotlight for myself</span>
+                  {stream.spotlight ? (
+                    <span>
+                      <CheckIcon width={16} height={16} />
+                    </span>
+                  ) : null}
+                </div>
+              </DropdownItem>,
+              <DropdownItem key="local-pinned">
+                <div className="flex items-center gap-1">
+                  <span>Pin for myself</span>
+                  {stream.pinned ? (
+                    <span>
+                      <CheckIcon width={16} height={16} />
+                    </span>
+                  ) : null}
+                </div>
+              </DropdownItem>,
+              // @ts-ignore
+              isModerator &&
+              clientID !== stream.clientId &&
+              stream.source === 'media' &&
+              roomType === 'event' &&
+              currentLayout === 'speaker'
+                ? [
+                    speakerClientIDs.includes(stream.clientId) ? (
+                      <DropdownItem key="set-regular-participant">
+                        Set as a regular participant
+                      </DropdownItem>
+                    ) : (
+                      <DropdownItem key="set-speaker">
+                        Set as a speaker
+                      </DropdownItem>
+                    ),
+                  ]
+                : undefined,
+            ]}
+          </DropdownMenu>
+        </Dropdown>
         <div className="flex">
           <div
             className={`max-w-full truncate rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100`}
