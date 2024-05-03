@@ -15,6 +15,6 @@ export default meta
 type Story = StoryObj<typeof MeetingScheduleForm>
 
 export const Primary: Story = {
-    render: () => <MeetingScheduleForm includeHeader={false} />,
+    render: () => <MeetingScheduleForm />,
   };
   
