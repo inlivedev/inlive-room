@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@inlivedev/inlive-js-sdk": "^0.18.0",
-    "@nextui-org/react": "^2.2.9",
+    "@nextui-org/react": "^2.3.6",
     "@react-email/components": "0.0.16",
     "@sentry/nextjs": "^7.70.0",
     "compressorjs": "^1.2.1",
