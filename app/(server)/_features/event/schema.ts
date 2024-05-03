@@ -7,6 +7,7 @@ import {
   serial,
   pgEnum,
   unique,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
 import { users } from '../user/schema';
@@ -37,6 +38,9 @@ export const events = pgTable('events', {
   deletedAt: timestamp('deleted_at'),
   status: statusEnum('status').notNull().default('draft'),
   maximumSlots: integer('available_slots').default(50),
+  categoryID: integer('category_id')
+    .references(() => eventCategory.id)
+    .notNull(),
 });
 
 // Participant Table
@@ -54,6 +58,7 @@ export const participant = pgTable(
       .notNull()
       .references(() => events.id, { onDelete: 'cascade' }),
     updateCount: integer('update_count').notNull().default(0),
+    isInvited: boolean('is_invited').default(false),
   },
   (table) => {
     return {
@@ -61,6 +66,11 @@ export const participant = pgTable(
     };
   }
 );
+
+export const eventCategory = pgTable('event_category', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+});
 
 export const participantRelations = relations(participant, ({ one }) => ({
   event: one(events, {
@@ -71,6 +81,10 @@ export const participantRelations = relations(participant, ({ one }) => ({
 
 export const eventsRelations = relations(events, ({ many, one }) => ({
   participants: many(participant),
+  category: one(eventCategory, {
+    fields: [events.categoryID],
+    references: [eventCategory.id],
+  }),
   host: one(users, {
     fields: [events.createdBy],
     references: [users.id],
