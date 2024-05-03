@@ -2,7 +2,7 @@ import {
   selectEvent,
   selectParticipant,
 } from '@/(server)/_features/event/schema';
-import { User } from '@/(server)/_features/user/schema';
+import { EventType } from '@/_shared/types/event';
 
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
@@ -10,7 +10,7 @@ const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 export function GenerateIcal(
   event: selectEvent,
   timezone: string,
-  host: User,
+  host: EventType.Host,
   participant: selectParticipant
 ) {
   const { eventDate, eventTime, DTSTAMP, DTSTART, DTEND } = generateDateTime(

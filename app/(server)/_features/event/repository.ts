@@ -31,8 +31,7 @@ type participantAttendances = {
 
 export class EventRepo implements iEventRepo {
   async addEvent(event: insertEvent) {
-    const data = await db.insert(events).values(event).returning();
-
+    const data = await db.insert(events).values(event).returning()
     return data[0];
   }
 
@@ -45,6 +44,7 @@ export class EventRepo implements iEventRepo {
               id: true,
               name: true,
               pictureUrl: true,
+              email: true,
             },
           },
         },
@@ -77,6 +77,7 @@ export class EventRepo implements iEventRepo {
               id: true,
               name: true,
               pictureUrl: true,
+              email: true,
             },
           },
         },
@@ -293,7 +294,7 @@ export class EventRepo implements iEventRepo {
   }
 
   async registerParticipant(participant: insertParticipant) {
-    const res = await db.insert(participants).values(participant).returning();
+    const res = await db.insert(participants).values(participant).onConflictDoNothing().returning()
 
     return res[0];
   }

@@ -9,6 +9,8 @@ import { GenerateIcal } from '@/(server)/api/events';
 import { selectUser } from '@/(server)/_features/user/schema';
 import { render } from '@react-email/render';
 import EventManualInvitation from 'emails/event/EventManualInvitation';
+import { EventType } from '@/_shared/types/event';
+import EmailScheduledMeeting from 'emails/event/EventScheduleMeeting';
 
 const MAILER_API_KEY = process.env.MAILER_API_KEY || '';
 const MAILER_DOMAIN = process.env.MAILER_DOMAIN || '';
@@ -270,6 +272,7 @@ export async function SendEventRescheduledEmail(
 
 export async function SendEventManualInvitationEmail(
   event: selectEvent,
+  host: EventType.Host,
   email: string
 ) {
   const mg = new Mailgun(formData);
@@ -280,7 +283,55 @@ export async function SendEventManualInvitationEmail(
 
   const html = render(
     EventManualInvitation({
-      event,
+      event: {
+        name: event.name,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        thumbnailUrl: event.thumbnailUrl,
+        slug: event.slug,
+      },
+      host: {
+        name: host.name,
+      },
+    }),
+    { pretty: true }
+  );
+
+  mailer.messages.create(MAILER_DOMAIN, {
+    html: html,
+    from: 'inLive Room Events <notification@inlive.app>',
+    to: email,
+    subject: `Webinar Invitation: ${event.name}`,
+  });
+}
+
+export async function SendScheduledMeetinEmail(
+  event: selectEvent,
+  host: EventType.Host,
+  participant: selectParticipant,
+  email: string
+) {
+  const mg = new Mailgun(formData);
+  const mailer = mg.client({
+    key: MAILER_API_KEY,
+    username: 'api',
+  });
+
+  const html = render(
+    EmailScheduledMeeting({
+      event: {
+        name: event.name,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        slug: event.slug,
+        roomID: event.roomId || '',
+      },
+      host: {
+        name: host.name,
+      },
+      participant: {
+        clientId: participant.clientId,
+      },
     }),
     { pretty: true }
   );

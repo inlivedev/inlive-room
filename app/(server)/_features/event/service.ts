@@ -1,11 +1,17 @@
 import { eventRepo, iEventService } from '@/(server)/api/_index';
-import { insertEvent, selectEvent, selectParticipant } from './schema';
+import {
+  insertEvent,
+  insertParticipant,
+  selectEvent,
+  selectParticipant,
+} from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { selectUser } from '../user/schema';
 import {
   SendEventCancelledEmail,
   SendEventManualInvitationEmail,
   SendEventRescheduledEmail,
+  SendScheduledMeetinEmail,
 } from '@/(server)/_shared/mailer/mailer';
 import { PageMeta } from '@/_shared/types/types';
 import { EventType } from '@/_shared/types/event';
@@ -149,7 +155,31 @@ export class EventService implements iEventService {
     return false;
   }
 
-  async sendManualEmailInvitation(event: EventType.Event, email: string) {
-    SendEventManualInvitationEmail(event, email);
+  async inviteParticipant(event: EventType.Event, email: string) {
+    // register into participant table
+    const newParticipant: insertParticipant = {
+      firstName: '',
+      lastName: '',
+      email: email,
+      description: '',
+      clientId: generateID(12),
+      eventID: event.id,
+    };
+
+    const participant = await eventRepo.registerParticipant(newParticipant);
+
+    if (!event.host) {
+      return;
+    }
+
+    // if event is webinar
+    if (event.categoryID == 1) {
+      SendEventManualInvitationEmail(event, event.host, email);
+    }
+
+    // scheduled meeting
+    if (event.categoryID == 2) {
+      SendScheduledMeetinEmail(event, event.host, participant, email);
+    }
   }
 }
