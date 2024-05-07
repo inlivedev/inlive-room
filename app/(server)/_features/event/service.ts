@@ -164,6 +164,7 @@ export class EventService implements iEventService {
       description: '',
       clientId: generateID(12),
       eventID: event.id,
+      isInvited: true,
     };
 
     const participant = await eventRepo.registerParticipant(newParticipant);

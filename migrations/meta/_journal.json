@@ -183,6 +183,13 @@
       "when": 1715065398654,
       "tag": "0025_add_default_role",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1715071642981,
+      "tag": "0026_add_event_category",
+      "breakpoints": true
     }
   ]
 }
