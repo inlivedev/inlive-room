@@ -2,11 +2,10 @@
 
 import Header from '@/_shared/components/header/header';
 import { EventType } from '@/_shared/types/event';
-import { Button, Image, Tab, Tabs, Tooltip } from '@nextui-org/react';
+import { Button, Image, Tab, Tabs } from '@nextui-org/react';
 import Link from 'next/link';
 import { StatusPublished, StatusCancelled } from './event-status';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
-import InfoIcon from '@/_shared/components/icons/info-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useCallback, useEffect, useState } from 'react';
 import ChevronLeft from '@/_shared/components/icons/chevron-left';
