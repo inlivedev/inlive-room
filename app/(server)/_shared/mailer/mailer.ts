@@ -317,6 +317,9 @@ export async function SendScheduledMeetinEmail(
     username: 'api',
   });
 
+  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
+  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+
   const html = render(
     EmailScheduledMeeting({
       event: {
@@ -341,5 +344,13 @@ export async function SendScheduledMeetinEmail(
     from: 'inLive Room Events <notification@inlive.app>',
     to: email,
     subject: `Webinar Invitation: ${event.name}`,
+    inline: {
+      data: iCalendarBuffer,
+      filename: 'invite.ics',
+      contentType:
+        'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+      contentDisposition: 'inline; filename=invite.ics',
+      contentTransferEncoding: 'base64',
+    },
   });
 }
