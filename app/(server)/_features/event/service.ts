@@ -75,9 +75,10 @@ export class EventService implements iEventService {
 
   async getEventBySlugOrID(slugOrId: string, userId?: number) {
     let event: EventType.Event | undefined;
+    const isnum = /^\d+$/.test(slugOrId);
 
-    if (!isNaN(Number(slugOrId))) {
-      event = await this.repo.getEventById(Number(slugOrId));
+    if (isnum) {
+      event = await this.repo.getEventById(parseInt(slugOrId));
     } else {
       event = await this.repo.getEventBySlug(slugOrId);
     }
