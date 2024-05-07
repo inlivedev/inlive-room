@@ -4,15 +4,43 @@ import ConferenceTopBar from '@/_features/room/components/conference-top-bar';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import MeetingOneOnOneLayout from './meeting-one-on-one-layout';
+import SpotlightView from './spotlight-view';
 import MeetingPresentationLayout from './meeting-presentation-layout';
 import GalleryLayout from './gallery-layout';
 import WebinarSpeakerLayout from './webinar-speaker-layout';
 import WebinarPresentationLayout from './webinar-presentation-layout';
+import HiddenView from './hidden-view';
 
-const WebinarRoomLayout = () => {
+const WebinarView = () => {
   const { streams } = useParticipantContext();
   const { currentLayout } = useMetadataContext();
+  const spotlightStream = streams[0];
+
+  if (spotlightStream && spotlightStream.spotlight) {
+    const hiddenStreams = streams.slice(1);
+
+    if (spotlightStream.origin === 'local') {
+      return (
+        <>
+          <SpotlightView streamA={spotlightStream} />
+          <HiddenView streams={hiddenStreams} />
+        </>
+      );
+    }
+
+    const localStreamIndex = hiddenStreams.findIndex((stream) => {
+      return stream.origin === 'local' && stream.source === 'media';
+    });
+
+    const localStream = hiddenStreams.splice(localStreamIndex, 1)[0];
+
+    return (
+      <>
+        <SpotlightView streamA={spotlightStream} streamB={localStream} />
+        <HiddenView streams={hiddenStreams} />
+      </>
+    );
+  }
 
   if (currentLayout === 'presentation') {
     return <WebinarPresentationLayout streams={streams} />;
@@ -25,16 +53,48 @@ const WebinarRoomLayout = () => {
   return <GalleryLayout streams={streams} />;
 };
 
-const MeetingRoomLayout = () => {
+const MeetingView = () => {
   const { streams } = useParticipantContext();
   const { currentLayout } = useMetadataContext();
+  const spotlightStream = streams[0];
 
-  if (currentLayout === 'presentation') {
-    return <MeetingPresentationLayout streams={streams} />;
+  if (spotlightStream && spotlightStream.spotlight) {
+    const hiddenStreams = streams.slice(1);
+
+    if (spotlightStream.origin === 'local') {
+      return (
+        <>
+          <SpotlightView streamA={spotlightStream} />
+          <HiddenView streams={hiddenStreams} />
+        </>
+      );
+    }
+
+    const localStreamIndex = hiddenStreams.findIndex((stream) => {
+      return stream.origin === 'local' && stream.source === 'media';
+    });
+
+    const localStream = hiddenStreams.splice(localStreamIndex, 1)[0];
+
+    return (
+      <>
+        <SpotlightView streamA={spotlightStream} streamB={localStream} />
+        <HiddenView streams={hiddenStreams} />
+      </>
+    );
   }
 
   if (streams.length === 2 && currentLayout === 'gallery') {
-    return <MeetingOneOnOneLayout streams={streams} />;
+    const localStream = streams.find((stream) => stream.origin === 'local');
+    const remoteStream = streams.find((stream) => stream.origin === 'remote');
+
+    if (remoteStream && localStream) {
+      return <SpotlightView streamA={remoteStream} streamB={localStream} />;
+    }
+  }
+
+  if (currentLayout === 'presentation') {
+    return <MeetingPresentationLayout streams={streams} />;
   }
 
   return <GalleryLayout streams={streams} />;
@@ -46,7 +106,7 @@ export default function Conference({ roomType }: { roomType: string }) {
       <div className="viewport-height grid grid-rows-[40px,1fr,72px] overflow-y-hidden">
         <ConferenceTopBar />
         <div className="px-4 pb-4">
-          {roomType === 'event' ? <WebinarRoomLayout /> : <MeetingRoomLayout />}
+          {roomType === 'event' ? <WebinarView /> : <MeetingView />}
         </div>
         <div>
           <ConferenceActionsBar />

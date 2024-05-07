@@ -11,6 +11,7 @@ import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import type { EventType } from '@/_shared/types/event';
 import { customAlphabet } from 'nanoid';
+import { cookies } from 'next/headers';
 
 const registerClient = async (
   roomID: string,
@@ -77,7 +78,11 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       const roomID = splitPath[2];
       let roomData: RoomType.RoomData | null = null;
       let eventData: EventType.Event | null = null;
-      const clientID = request.nextUrl.searchParams.get('clientID');
+      let clientID = request.nextUrl.searchParams.get('clientID');
+      let client: ClientType.ClientData = {
+        clientID: '',
+        clientName: '',
+      };
 
       try {
         const roomResponse: RoomType.CreateGetRoomResponse =
@@ -97,19 +102,35 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         console.error(error);
       }
 
-      let client: ClientType.ClientData = {
-        clientID: '',
-        clientName: '',
-      };
-
       if (roomData) {
+        let newName = '';
+
         if (
           typeof roomData.meta !== 'undefined' &&
           roomData.meta.type === 'event' &&
-          !clientID &&
           eventData
         ) {
-          if (eventData) {
+          const requestToken = cookies().get('token');
+          if (requestToken) {
+            const clientData: EventType.ParticipantResponse =
+              await InternalApiFetcher.get(
+                `/api/events/${eventData.id}/client`,
+                {
+                  headers: {
+                    Cookie: `token=${requestToken.value}`,
+                  },
+                  cache: 'no-cache',
+                }
+              );
+
+            if (clientData?.data) {
+              clientID = clientData.data.clientId;
+              newName =
+                clientData.data.firstName + ' ' + clientData.data.lastName;
+            }
+          }
+
+          if (!clientID) {
             const url = request.nextUrl.clone();
             url.pathname = `/events/${eventData.slug}`;
             url.searchParams.append('error', 'noClientID');
@@ -117,15 +138,22 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           }
         }
 
-        const clientName = getClientName(request, response);
-        const newName = generateName(clientName);
+        if (!newName) {
+          const clientName = getClientName(request, response);
+          newName = generateName(clientName);
+        }
+
         const registeredClient = await registerClient(
           roomID,
           newName,
           clientID
         );
 
-        if (registeredClient?.code === 403 && roomData.meta.type === 'event') {
+        if (
+          registeredClient?.code === 403 &&
+          roomData.meta.type === 'event' &&
+          eventData
+        ) {
           const url = request.nextUrl.clone();
           url.pathname = `/events/${eventData?.slug}`;
           url.searchParams.append('error', 'invalidClientID');
@@ -134,7 +162,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
 
         client = {
           clientID: registeredClient?.data?.clientID || '',
-          clientName: registeredClient?.data?.name || clientName,
+          clientName: registeredClient?.data?.name || newName,
         };
       }
 

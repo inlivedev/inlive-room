@@ -11,7 +11,9 @@ export type ParticipantVideo = {
   readonly source: 'media' | 'screen';
   readonly mediaStream: MediaStream;
   readonly videoElement: HTMLVideoElement;
-  audioLevel: number;
+  readonly audioLevel: number;
+  pinned: boolean;
+  spotlight: boolean;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
   readonly addEventListener: (
     type: string,
@@ -27,9 +29,9 @@ export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 
 const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.videoElement = document.createElement('video');
-
   stream.videoElement.srcObject = stream.mediaStream;
-
+  stream.pinned = false;
+  stream.spotlight = false;
   return stream;
 };
 
@@ -51,6 +53,7 @@ export function ParticipantProvider({
   const { clientID, clientName } = useClientContext();
   const { peer } = usePeerContext();
   const [streams, setStreams] = useState<ParticipantVideo[]>([]);
+  const [pinnedStreams, setPinnedStreams] = useState<string[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
@@ -63,12 +66,109 @@ export function ParticipantProvider({
       }
     }) as EventListener;
 
+    const onActiveLocalSpotlight = ((event: CustomEventInit) => {
+      const detail = event.detail || {};
+      const streamID = detail.id;
+      const active = detail.active;
+
+      const currentStream = streams.find((stream) => stream.id === streamID);
+      if (!currentStream) return;
+
+      if (active === true) {
+        const currentSpotlight = streams.find(
+          (stream) => stream.spotlight === true
+        );
+
+        setStreams((prevState) => {
+          return prevState.map((stream) => {
+            if (stream.id === currentSpotlight?.id) {
+              stream.spotlight = false;
+            }
+            if (stream.id === currentStream.id) {
+              stream.spotlight = true;
+            }
+            return stream;
+          });
+        });
+      } else if (active === false) {
+        setStreams((prevState) => {
+          return prevState.map((stream) => {
+            if (stream.id === currentStream.id) {
+              stream.spotlight = false;
+            }
+            return stream;
+          });
+        });
+      }
+    }) as EventListener;
+
+    const onActiveLocalPinned = ((event: CustomEventInit) => {
+      const detail = event.detail || {};
+      const streamID = detail.id;
+      const active = detail.active;
+
+      const currentStream = streams.find((stream) => stream.id === streamID);
+      if (!currentStream) return;
+
+      if (active === true) {
+        setPinnedStreams((prevState) => {
+          const pinned = [...prevState];
+          const indexOf = pinned.indexOf(currentStream.id);
+
+          if (indexOf > -1) {
+            pinned.splice(indexOf, 1);
+            pinned.push(currentStream.id);
+          } else {
+            pinned.push(currentStream.id);
+          }
+
+          return pinned;
+        });
+
+        setStreams((prevState) => {
+          return prevState.map((stream) => {
+            if (stream.id === currentStream.id) {
+              stream.pinned = true;
+            }
+            return stream;
+          });
+        });
+      } else if (active === false) {
+        setPinnedStreams((prevState) => {
+          const pinned = [...prevState];
+          const indexOf = pinned.indexOf(currentStream.id);
+
+          if (indexOf > -1) {
+            pinned.splice(indexOf, 1);
+          }
+
+          return pinned;
+        });
+
+        setStreams((prevState) => {
+          return prevState.map((stream) => {
+            if (stream.id === currentStream.id) {
+              stream.pinned = false;
+            }
+            return stream;
+          });
+        });
+      }
+    }) as EventListener;
+
     document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
+    document.addEventListener('active:local-spotlight', onActiveLocalSpotlight);
+    document.addEventListener('active:local-pinned', onActiveLocalPinned);
 
     return () => {
       document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
+      document.removeEventListener(
+        'active:local-spotlight',
+        onActiveLocalSpotlight
+      );
+      document.removeEventListener('active:local-pinned', onActiveLocalPinned);
     };
-  }, []);
+  }, [streams]);
 
   useEffect(() => {
     clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
@@ -107,9 +207,31 @@ export function ParticipantProvider({
     }
   }, [peer, localStream, clientID, clientName]);
 
+  const newStreams = orderBySpotlight(orderByPinned(streams, pinnedStreams));
+
   return (
-    <ParticipantContext.Provider value={{ streams }}>
+    <ParticipantContext.Provider value={{ streams: newStreams }}>
       {children}
     </ParticipantContext.Provider>
   );
 }
+
+const orderByPinned = (
+  streams: ParticipantVideo[],
+  pinnedStreams: string[]
+) => {
+  return streams.sort((streamA, streamB) => {
+    const indexA = pinnedStreams.indexOf(streamA.id);
+    const indexB = pinnedStreams.indexOf(streamB.id);
+
+    return (
+      (indexA > -1 ? indexA : Infinity) - (indexB > -1 ? indexB : Infinity)
+    );
+  });
+};
+
+const orderBySpotlight = (streams: ParticipantVideo[]) => {
+  return streams.sort((streamA, streamB) => {
+    return Number(streamB.spotlight) - Number(streamA.spotlight);
+  });
+};

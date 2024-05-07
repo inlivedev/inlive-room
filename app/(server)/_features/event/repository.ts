@@ -8,6 +8,7 @@ import {
   participant,
   participant as participants,
   selectEvent,
+  selectParticipant,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, isNull,  sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -335,7 +336,7 @@ export class EventRepo implements iEventRepo {
     limit = 10,
     page = 1
   ) {
-    const res = await db.transaction(async (tx) => {
+    const res = await db.transaction(async (tx) => { 
       const registeree = await tx
         .select({
           first_name: participants.firstName,
@@ -346,7 +347,12 @@ export class EventRepo implements iEventRepo {
         })
         .from(participants)
         .innerJoin(events, eq(participants.eventID, events.id))
-        .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
+        .where(
+          and(
+            eq(events.slug, slug), 
+            eq(events.createdBy, createdBy),
+            eq(participants.roleID,1))   
+        )
 
       const total = await tx
         .select({ total: count() })
@@ -396,6 +402,35 @@ export class EventRepo implements iEventRepo {
     return await db.query.participant.findFirst({
       where: eq(participants.clientId, clientId),
     });
+  }
+
+
+  async getEventParticipantByEmail(email: string, eventID: number): Promise<selectParticipant | undefined>;
+  async getEventParticipantByEmail(email: string, eventSlug: string): Promise<selectParticipant | undefined>;
+
+  async getEventParticipantByEmail(email: string, eventIDorSlug: number | string): Promise<selectParticipant | undefined> {
+    if (typeof eventIDorSlug === 'number') {
+      return await db.query.participant.findFirst({
+        where: and(eq(participants.email, email), eq(participants.eventID, eventIDorSlug)),
+      });
+    }
+
+    if(typeof eventIDorSlug === 'string'){
+      const res = await db.select(
+        {
+          participants : participants,
+        }
+      ).from(participants).innerJoin(events, eq(participants.eventID, events.id)).where(
+        and(
+          eq(participants.email, email),
+          eq(events.slug, eventIDorSlug)
+        )
+      ).limit(1);
+
+      return res[0].participants
+    }
+
+    throw new Error('Invalid eventIDorSlug');
   }
 
   async getEventHostByEventId(eventId: number) {
@@ -478,7 +513,15 @@ export class EventRepo implements iEventRepo {
     // TODO : Query the alias for same clientID with same name
     // subQueryGetAlias
 
-    const participantMatchEventID = db.select().from(participants).where(eq(participants.eventID, eventId)).as('participantEventID');
+    const participantMatchEventID = db.
+    select().
+    from(participants).
+    where(
+      and(
+        eq(participants.eventID, eventId),
+        eq(participant.roleID,1))
+        ).
+    as('participantEventID');
 
     // add the isRegistered and isJoined field and email
     const finalQuery = await db

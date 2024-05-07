@@ -5,6 +5,8 @@ import {
   eventsRelations,
   participant,
   participantRelations,
+  participantRole,
+  roleRelations,
 } from '../_features/event/schema';
 import { earlyAccessInvitees } from '@/(server)/_features/early-access-invitee/schema';
 import { activitiesLog } from '../_features/activity-log/schema';
@@ -17,12 +19,14 @@ const models = {
   participant,
   earlyAccessInvitees,
   activitiesLog,
+  participantRole,
 };
 
 const relations = {
   usersRelations,
   participantRelations,
   eventsRelations,
+  roleRelations,
 };
 
 const schema = {
