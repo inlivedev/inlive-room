@@ -4,6 +4,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Spinner,
 } from '@nextui-org/react';
 import {
   SubmitHandler,
@@ -64,11 +65,19 @@ export default function MeetingScheduleForm() {
 
   const [displayError, setDisplayError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined
+  );
 
-  const onSubmit: SubmitHandler<InputsType> = async (data, event) => {
-    try {
+  const onSubmit: SubmitHandler<InputsType> = async (data, e) => {
+    const submitEvent = e as React.SyntheticEvent<HTMLFormElement, SubmitEvent>;
+
+    const submitter = submitEvent.nativeEvent.submitter;
+
+    if (submitter && !isSubmitting) {
       setIsSubmitting(true);
-      const emails = data.emails.map((email) => email.email);
+      setDisplayError(true);
+
       const startTime = parseStringDateToDate(data.date);
 
       startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
@@ -93,44 +102,42 @@ export default function MeetingScheduleForm() {
       formData.append('data', JSON.stringify(bodyData));
 
       const createEventResp: EventType.CreateEventResponse =
-        await InternalApiFetcher.post('/events/create', {
+        await InternalApiFetcher.post('/api/events/create', {
           body: formData,
           headers: undefined,
         });
 
-      try {
-        const event = createEventResp.data;
-        const body = { emails: data.emails };
-
-        const inviteParticipantResp = await retryRequest(
-          await InternalApiFetcher.post(
-            `/events/${event.id}/invite-participant`,
-            {
-              body: JSON.stringify(body),
-              headers: {
-                contentType: 'application/json',
-              },
-            }
-          ),
-          3
-        );
-
-        if (inviteParticipantResp.ok) {
-          reset();
-          document.dispatchEvent(
-            new CustomEvent('close:schedule-meeting-modal')
-          );
-        }
-
-        // Create request to invite participant
-      } catch (error) {
-        console.error(error);
+      if (!createEventResp.ok) {
+        console.log(createEventResp.message);
+        setErrorMessage('Failed to create meeting please try again later');
       }
 
-      // Create request to invite participant
-    } catch (error) {
-      console.error(error);
+      const event = createEventResp.data;
+      const body = { emails: data.emails.map((email) => email.email) };
+
+      const inviteParticipantResp = await InternalApiFetcher.post(
+        `/api/events/${event.id}/invite`,
+        {
+          body: JSON.stringify(body),
+          headers: {
+            contentType: 'ap  plication/json',
+          },
+        }
+      );
+
+      console.log(JSON.stringify(inviteParticipantResp));
+      if (!inviteParticipantResp.ok) {
+        console.log(inviteParticipantResp.message);
+        setErrorMessage('Failed to invite user, please try again later');
+      }
+
+      if (inviteParticipantResp.ok) {
+        reset();
+        document.dispatchEvent(new CustomEvent('close:schedule-meeting-modal'));
+      }
     }
+
+    setIsSubmitting(false);
   };
 
   register('emails', {
@@ -205,6 +212,12 @@ export default function MeetingScheduleForm() {
         {selectedEmails.length < 1 && displayError && (
           <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
             Please input atleast one email address
+          </p>
+        )}
+
+        {displayError && errorMessage && (
+          <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
+            {errorMessage}
           </p>
         )}
         <div>
@@ -445,11 +458,22 @@ export default function MeetingScheduleForm() {
             type="submit"
             form="scheduleForm"
             className="w-full rounded-md bg-red-700  text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm"
-            onPress={() => {
-              setDisplayError(true);
-            }}
+            isDisabled={isSubmitting}
           >
-            Schedule
+            {isSubmitting ? (
+              <div className="flex gap-2">
+                <Spinner
+                  classNames={{
+                    circle1: 'border-b-zinc-200',
+                    circle2: 'border-b-zinc-200',
+                    wrapper: 'w-4 h-4',
+                  }}
+                />
+                <span>Scheduling</span>
+              </div>
+            ) : (
+              <span>Schedule</span>
+            )}
           </Button>
         </div>
       </form>
