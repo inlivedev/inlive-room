@@ -70,7 +70,7 @@ export async function POST(
 
       const emails = sendInviteEmailSchema.parse(reqJSON);
       emails.emails.forEach((email) => {
-        eventService.sendManualEmailInvitation(event, email);
+        eventService.inviteParticipant(event, email);
       });
     } catch (e) {
       return NextResponse.json(

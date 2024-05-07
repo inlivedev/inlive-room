@@ -8,8 +8,10 @@ import { PageMeta } from './types';
 import { Participant } from '@/(server)/_features/event/service';
 
 export declare namespace EventType {
+  type Host = Pick<selectUser, 'name' | 'email' | 'pictureUrl' | 'id'>;
+
   type Event = selectEvent & {
-    host?: Partial<selectUser> | null;
+    host?: Host | null;
     availableSlots?: number;
   };
 
@@ -94,5 +96,10 @@ export declare namespace EventType {
       limit: number;
     };
     message: string;
+  };
+
+  type CreateEventResponse = FetcherResponse & {
+    message: string;
+    data: Event;
   };
 }

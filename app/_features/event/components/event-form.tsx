@@ -369,6 +369,7 @@ export default function EventForm({
         status: publish ? 'published' : 'draft',
         deleteImage: deleteImage,
         maximumSlots: isLimitSlot ? Number(maximumSlots) : undefined,
+        type: 'event',
       };
 
       const formData = new FormData();

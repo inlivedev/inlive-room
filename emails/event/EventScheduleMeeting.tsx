@@ -1,47 +1,42 @@
-import { Html, Tailwind, Body, Img, Head, Font, Container, Button,  Row, Column } from '@react-email/components';
+import { Html, Tailwind, Body, Img, Head, Font, Container, Button, Row, Column } from '@react-email/components';
+import { EventType } from '@/_shared/types/event';
 import * as React from "react";
 
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
 const dummyEvent = {
-  name: 'Dummy Event',
-  slug: 'dummy-event',
+  name: 'Meeting',
   startTime: new Date(),
-  endTime: new Date(new Date().setHours(new Date().getHours() + 2)),
-  description: '',
-  createdBy: null,
-  roomId: null,
-  thumbnailUrl: '',
+  endTime: new Date(),
   host: {
-    name: 'Host Name',
-    email: '',
-    id: 1,
-    pictureUrl: '',
+    name: 'Host Name'
   },
+  roomID: 'room-id',
+  slug: 'Meeting'
 }
 
-type ManualInvitationMeta = {
+type ScheduledMeetingMeta = {
   event: {
     name: string;
     startTime: Date;
     endTime: Date;
-    thumbnailUrl: string | null;
+    roomID: string;
     slug: string;
-  }
+  },
   host: {
     name: string;
   };
+  participant: {
+    clientId: string;
+  }
 }
 
-export default function EventManualInvitation({
+export default function EmailScheduledMeeting({
   event = dummyEvent,
-  host = dummyEvent.host
-}: ManualInvitationMeta) {
-  const eventImage = event.thumbnailUrl
-    ? `${APP_ORIGIN}/static${event.thumbnailUrl}`
-    : `${APP_ORIGIN}/images/webinar/webinar-no-image-placeholder.png`;
-
+  participant,
+  host
+}: ScheduledMeetingMeta) {
   const startDate = Intl.DateTimeFormat('en-GB', {
     year: 'numeric',
     month: 'long',
@@ -94,7 +89,7 @@ export default function EventManualInvitation({
                 <Column
                   align='right'>
                   <h1 className="font-medium text-zinc-400 text-[14px]">
-                    inLive Event Invitation
+                    inLive Meeting Invitation
                   </h1>
                 </Column>
               </Row>
@@ -105,19 +100,20 @@ export default function EventManualInvitation({
                 Hi there!
               </h2>
               <h2 className=' font-semibold text-[14px] text-zinc-100'>
-                You've been personally invited to the following Webinar
+                {host.name} has scheduled a meeting with you.
               </h2>
 
               <div className='border border-solid border-zinc-800 rounded-md p-2 gap-2'>
-                <Img src={eventImage}
-                  className='w-full rounded' />
                 <div className='bg-zinc-950/25 rounded gap-2 p-2'>
 
-                  <div>
-                    <b className="block text-[14px] font-semibold text-zinc-100 py-4">
-                      {event.name}
-                    </b>
-                  </div>
+
+                  {event.name.trim() != '' && (
+                    <div>
+                      <b className="block text-[14px] font-semibold text-zinc-100 py-4">
+                        {event.name}
+                      </b>
+                    </div>
+                  )}
 
                   <div className='py-2'>
                     <b className="block text-[12px] font-semibold text-zinc-100">
@@ -142,8 +138,8 @@ export default function EventManualInvitation({
 
               <Button
                 className="rounded-md bg-red-800 py-2 text-[14px] antialiase text-zinc-100 w-full text-center justify-center mt-2"
-                href={`${APP_ORIGIN}/events/${event.slug}`}>
-                View Event Details
+                href={`${APP_ORIGIN}/rooms/${event.roomID}?clientID=${participant.clientId}`}>
+                Join Meeting
               </Button>
 
             </div>

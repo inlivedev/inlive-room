@@ -45,3 +45,4 @@ app/(server)/api/test
 
 /dist
 /storage
+*storybook.log
