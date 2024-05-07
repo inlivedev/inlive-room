@@ -295,7 +295,15 @@ export class EventRepo implements iEventRepo {
   }
 
   async registerParticipant(participant: insertParticipant) {
-    const res = await db.insert(participants).values(participant).onConflictDoNothing().returning()
+    const res = await db.insert(participants).values(participant).onConflictDoUpdate(
+      {
+        target: participants.email,
+        set:{
+          firstName : participant.firstName,
+          lastName : participant.lastName,
+        }
+      }
+    ).returning()
 
     return res[0];
   }
