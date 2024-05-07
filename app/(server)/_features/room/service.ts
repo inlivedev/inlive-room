@@ -257,7 +257,7 @@ export class RoomService {
         } as Room;
       }
 
-      return room;
+      return { room, event: undefined };
     }
 
     const roomPromise = this._roomRepo.getRoomById(roomId);
@@ -297,6 +297,12 @@ export class RoomService {
       }
     }
 
-    return room;
+    if (room && room.meta.type === 'event') {
+      const event = await eventRepo.getByRoomID(room.id);
+
+      return { room, event };
+    }
+
+    return { room, event: undefined };
   }
 }

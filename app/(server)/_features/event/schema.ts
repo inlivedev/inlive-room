@@ -54,10 +54,16 @@ export const participant = pgTable(
       .notNull()
       .references(() => events.id, { onDelete: 'cascade' }),
     updateCount: integer('update_count').notNull().default(0),
+    roleID: integer('role_id')
+      .references(() => participantRole.id, {
+        onDelete: 'set null',
+      })
+      .notNull(),
   },
   (table) => {
     return {
-      unique: unique().on(table.clientId, table.eventID),
+      uniqueClientID: unique().on(table.clientId, table.eventID),
+      uniqueEmail: unique().on(table.email, table.eventID),
     };
   }
 );
@@ -74,6 +80,18 @@ export const eventsRelations = relations(events, ({ many, one }) => ({
   host: one(users, {
     fields: [events.createdBy],
     references: [users.id],
+  }),
+}));
+
+export const participantRole = pgTable('participant_role', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+});
+
+export const roleRelations = relations(participantRole, ({ one }) => ({
+  role: one(participant, {
+    fields: [participantRole.id],
+    references: [participant.roleID],
   }),
 }));
 
