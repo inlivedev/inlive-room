@@ -17,7 +17,7 @@ const CreateEventSchema = z.object({
   description: z.string().optional(),
   status: z.enum(['draft', 'published']),
   maximumSlots: z.number().max(100).int().optional(),
-  type: z.enum(['webinar', 'meeting']).optional(),
+  type: z.enum(['webinar', 'meeting']),
 });
 
 const EVENT_TRIAL_COUNT = parseInt(
@@ -81,7 +81,8 @@ export async function POST(req: Request) {
 
     if (
       eventMeta.status == 'published' &&
-      !whitelistFeature.includes('event')
+      !whitelistFeature.includes('event') &&
+      eventMeta.type == 'webinar'
     ) {
       {
         if (!user.whitelistFeature.includes('event')) {
@@ -117,7 +118,7 @@ export async function POST(req: Request) {
       createdBy: user.id,
       roomId: eventRoom?.id,
       maximumSlots: eventMeta.maximumSlots || null,
-      categoryID: eventTypeMap[eventMeta.type || 'webinar'],
+      categoryID: eventTypeMap[eventMeta.type],
     };
 
     const createdEvent = await eventService.createEvent(Event);
