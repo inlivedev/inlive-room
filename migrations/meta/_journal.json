@@ -176,6 +176,13 @@
       "when": 1714367384035,
       "tag": "0024_unique_email_per_event",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1715065398654,
+      "tag": "0025_add_default_role",
+      "breakpoints": true
     }
   ]
 }

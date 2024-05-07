@@ -55,6 +55,7 @@ export const participant = pgTable(
       .references(() => events.id, { onDelete: 'cascade' }),
     updateCount: integer('update_count').notNull().default(0),
     roleID: integer('role_id')
+      .default(1)
       .references(() => participantRole.id, {
         onDelete: 'set null',
       })

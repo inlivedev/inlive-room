@@ -1,0 +1,1 @@
+ALTER TABLE "events_participant" ALTER COLUMN "role_id" SET DEFAULT 1;
