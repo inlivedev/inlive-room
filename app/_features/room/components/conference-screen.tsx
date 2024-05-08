@@ -48,6 +48,7 @@ function OverlayScreen({
   const { roomID, clientID } = useClientContext();
   const {
     speakerClientIDs,
+    spotlights,
     moderatorClientIDs,
     isModerator,
     roomType,
@@ -151,24 +152,38 @@ function OverlayScreen({
 
   const onMoreSelection = useCallback(
     async (key: Key) => {
-      if (key === 'local-spotlight') {
+      if (key === 'pin') {
         document.dispatchEvent(
-          new CustomEvent('active:local-spotlight', {
+          new CustomEvent('set:pin', {
             detail: {
-              active: !stream.spotlight,
+              active: !stream.pin,
               id: stream.id,
             },
           })
         );
-      } else if (key === 'local-pinned') {
-        document.dispatchEvent(
-          new CustomEvent('active:local-pinned', {
-            detail: {
-              active: !stream.pinned,
-              id: stream.id,
+      } else if (key === 'spotlight') {
+        try {
+          if (stream.spotlight) {
+            const newSpotlights = spotlights.filter(
+              (spotlight) => spotlight !== stream.id
+            );
+
+            await clientSDK.setMetadata(roomID, {
+              spotlights: newSpotlights,
+            });
+          } else {
+            await clientSDK.setMetadata(roomID, {
+              spotlights: [...spotlights, stream.id],
+            });
+          }
+        } catch (error) {
+          Sentry.captureException(error, {
+            extra: {
+              message: `API call error when trying to set metadata spotlight`,
             },
-          })
-        );
+          });
+          console.error(error);
+        }
       } else if (key === 'set-speaker') {
         if (!isModerator) return;
 
@@ -419,20 +434,20 @@ function OverlayScreen({
           </DropdownTrigger>
           <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
             {[
-              <DropdownItem key="local-spotlight">
+              <DropdownItem key="pin">
                 <div className="flex items-center gap-1">
-                  <span>Spotlight for myself</span>
-                  {stream.spotlight ? (
+                  <span>Pin for myself</span>
+                  {stream.pin ? (
                     <span>
                       <CheckIcon width={16} height={16} />
                     </span>
                   ) : null}
                 </div>
               </DropdownItem>,
-              <DropdownItem key="local-pinned">
+              <DropdownItem key="spotlight">
                 <div className="flex items-center gap-1">
-                  <span>Pin for myself</span>
-                  {stream.pinned ? (
+                  <span>Spotlight for everyone</span>
+                  {stream.spotlight ? (
                     <span>
                       <CheckIcon width={16} height={16} />
                     </span>

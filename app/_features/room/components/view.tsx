@@ -52,18 +52,19 @@ export default function View({
   return (
     <div className="bg-zinc-900 text-zinc-200">
       <PeerProvider roomID={roomID} client={client} debug={debug}>
-        <ClientProvider roomID={roomID} client={client} roomType={roomType}>
-          <DeviceProvider>
-            <ParticipantProvider>
-              <DataChannelProvider>
-                <ChatProvider>
-                  <EventContainer>
-                    <ChatDrawerMenu />
-                    <MetadataProvider
-                      roomID={roomID}
-                      roomType={roomType}
-                      isModerator={isModerator}
-                    >
+        <DeviceProvider>
+          <MetadataProvider
+            roomID={roomID}
+            roomType={roomType}
+            isModerator={isModerator}
+          >
+            <ClientProvider roomID={roomID} client={client} roomType={roomType}>
+              <ParticipantProvider>
+                <DataChannelProvider>
+                  <ChatProvider>
+                    <EventContainer>
+                      <ChatDrawerMenu />
+
                       {activeView === 'exit' ? (
                         <ConferenceExit />
                       ) : activeView === 'conference' ? (
@@ -71,13 +72,13 @@ export default function View({
                       ) : (
                         <ConferenceLobby roomID={roomID} />
                       )}
-                    </MetadataProvider>
-                  </EventContainer>
-                </ChatProvider>
-              </DataChannelProvider>
-            </ParticipantProvider>
-          </DeviceProvider>
-        </ClientProvider>
+                    </EventContainer>
+                  </ChatProvider>
+                </DataChannelProvider>
+              </ParticipantProvider>
+            </ClientProvider>
+          </MetadataProvider>
+        </DeviceProvider>
       </PeerProvider>
     </div>
   );
