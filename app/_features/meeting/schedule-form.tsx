@@ -226,7 +226,7 @@ export default function MeetingScheduleForm() {
             id="title"
             type="text"
             placeholder="Meeting Title"
-            className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-sm text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+            className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
           />
         </div>
 
@@ -262,7 +262,7 @@ export default function MeetingScheduleForm() {
             </Popover>
             <input
               id="event-date"
-              className="z-10 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm  outline-none disabled:cursor-not-allowed disabled:bg-zinc-800"
+              className="z-10 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm  outline-none disabled:cursor-not-allowed disabled:bg-zinc-800"
               type="text"
               {...register('date')}
               onClick={() => {
@@ -317,7 +317,7 @@ export default function MeetingScheduleForm() {
             </Popover>
             <input
               id="time"
-              className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+              className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px] text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
               type="time"
               onClick={() => {
                 setIsDatePickerOpen(false);
@@ -361,7 +361,7 @@ export default function MeetingScheduleForm() {
             </Popover>
             <input
               id="time"
-              className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-sm  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+              className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
               type="time"
               onClick={() => {
                 setIsDatePickerOpen(false);
@@ -377,7 +377,7 @@ export default function MeetingScheduleForm() {
           <label htmlFor="email">Email</label>
           <div className="relative flex w-full flex-row items-center rounded-md bg-zinc-950 outline-none ring-1 ring-zinc-800 sm:w-auto">
             <input
-              className="flex-1 bg-transparent py-2.5 pl-4 text-sm outline-none"
+              className="flex-1 bg-transparent py-2.5 pl-4 text-[16px] outline-none"
               placeholder="Add multiple email by comma"
               id="email"
               {...register('csvEmails', {
