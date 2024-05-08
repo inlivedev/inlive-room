@@ -11,60 +11,35 @@ import WebinarSpeakerLayout from './webinar-speaker-layout';
 import WebinarPresentationLayout from './webinar-presentation-layout';
 import HiddenView from './hidden-view';
 
-const WebinarView = () => {
-  const { streams } = useParticipantContext();
-  const { currentLayout } = useMetadataContext();
-  const spotlightStream = streams[0];
-
-  if (spotlightStream && spotlightStream.spotlight) {
-    const hiddenStreams = streams.slice(1);
-
-    if (spotlightStream.origin === 'local') {
-      return (
-        <>
-          <SpotlightView streamA={spotlightStream} />
-          <HiddenView streams={hiddenStreams} />
-        </>
-      );
-    }
-
-    const localStreamIndex = hiddenStreams.findIndex((stream) => {
-      return stream.origin === 'local' && stream.source === 'media';
-    });
-
-    const localStream = hiddenStreams.splice(localStreamIndex, 1)[0];
-
-    return (
-      <>
-        <SpotlightView streamA={spotlightStream} streamB={localStream} />
-        <HiddenView streams={hiddenStreams} />
-      </>
-    );
-  }
-
-  if (currentLayout === 'presentation') {
-    return <WebinarPresentationLayout streams={streams} />;
-  }
-
-  if (currentLayout === 'speaker') {
-    return <WebinarSpeakerLayout streams={streams} />;
-  }
-
-  return <GalleryLayout streams={streams} />;
-};
+export default function Conference({ roomType }: { roomType: string }) {
+  return (
+    <>
+      <div className="viewport-height grid grid-rows-[40px,1fr,72px] overflow-y-hidden">
+        <ConferenceTopBar />
+        <div className="px-4 pb-4">
+          {roomType === 'event' ? <WebinarView /> : <MeetingView />}
+        </div>
+        <div>
+          <ConferenceActionsBar />
+        </div>
+      </div>
+    </>
+  );
+}
 
 const MeetingView = () => {
   const { streams } = useParticipantContext();
   const { currentLayout } = useMetadataContext();
-  const spotlightStream = streams[0];
+  const pinnedStream =
+    streams[0]?.pin || streams[0]?.spotlight ? streams[0] : undefined;
 
-  if (spotlightStream && spotlightStream.spotlight) {
+  if (pinnedStream) {
     const hiddenStreams = streams.slice(1);
 
-    if (spotlightStream.origin === 'local') {
+    if (pinnedStream.origin === 'local') {
       return (
         <>
-          <SpotlightView streamA={spotlightStream} />
+          <SpotlightView streamA={pinnedStream} />
           <HiddenView streams={hiddenStreams} />
         </>
       );
@@ -78,7 +53,7 @@ const MeetingView = () => {
 
     return (
       <>
-        <SpotlightView streamA={spotlightStream} streamB={localStream} />
+        <SpotlightView streamA={pinnedStream} streamB={localStream} />
         <HiddenView streams={hiddenStreams} />
       </>
     );
@@ -100,18 +75,45 @@ const MeetingView = () => {
   return <GalleryLayout streams={streams} />;
 };
 
-export default function Conference({ roomType }: { roomType: string }) {
-  return (
-    <>
-      <div className="viewport-height grid grid-rows-[40px,1fr,72px] overflow-y-hidden">
-        <ConferenceTopBar />
-        <div className="px-4 pb-4">
-          {roomType === 'event' ? <WebinarView /> : <MeetingView />}
-        </div>
-        <div>
-          <ConferenceActionsBar />
-        </div>
-      </div>
-    </>
-  );
-}
+const WebinarView = () => {
+  const { streams } = useParticipantContext();
+  const { currentLayout } = useMetadataContext();
+  const pinnedStream =
+    streams[0]?.pin || streams[0]?.spotlight ? streams[0] : undefined;
+
+  if (pinnedStream) {
+    const hiddenStreams = streams.slice(1);
+
+    if (pinnedStream.origin === 'local') {
+      return (
+        <>
+          <SpotlightView streamA={pinnedStream} />
+          <HiddenView streams={hiddenStreams} />
+        </>
+      );
+    }
+
+    const localStreamIndex = hiddenStreams.findIndex((stream) => {
+      return stream.origin === 'local' && stream.source === 'media';
+    });
+
+    const localStream = hiddenStreams.splice(localStreamIndex, 1)[0];
+
+    return (
+      <>
+        <SpotlightView streamA={pinnedStream} streamB={localStream} />
+        <HiddenView streams={hiddenStreams} />
+      </>
+    );
+  }
+
+  if (currentLayout === 'presentation') {
+    return <WebinarPresentationLayout streams={streams} />;
+  }
+
+  if (currentLayout === 'speaker') {
+    return <WebinarSpeakerLayout streams={streams} />;
+  }
+
+  return <GalleryLayout streams={streams} />;
+};

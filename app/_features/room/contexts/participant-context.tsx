@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
+import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 
 export type ParticipantVideo = {
@@ -12,7 +13,7 @@ export type ParticipantVideo = {
   readonly mediaStream: MediaStream;
   readonly videoElement: HTMLVideoElement;
   readonly audioLevel: number;
-  pinned: boolean;
+  pin: boolean;
   spotlight: boolean;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
   readonly addEventListener: (
@@ -30,7 +31,7 @@ export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.videoElement = document.createElement('video');
   stream.videoElement.srcObject = stream.mediaStream;
-  stream.pinned = false;
+  stream.pin = false;
   stream.spotlight = false;
   return stream;
 };
@@ -52,8 +53,8 @@ export function ParticipantProvider({
 }) {
   const { clientID, clientName } = useClientContext();
   const { peer } = usePeerContext();
+  const { spotlights } = useMetadataContext();
   const [streams, setStreams] = useState<ParticipantVideo[]>([]);
-  const [pinnedStreams, setPinnedStreams] = useState<string[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
@@ -66,90 +67,24 @@ export function ParticipantProvider({
       }
     }) as EventListener;
 
-    const onActiveLocalSpotlight = ((event: CustomEventInit) => {
-      const detail = event.detail || {};
-      const streamID = detail.id;
-      const active = detail.active;
-
+    const onPinSet = ((event: CustomEventInit) => {
+      const { id: streamID, active } = event.detail || {};
       const currentStream = streams.find((stream) => stream.id === streamID);
       if (!currentStream) return;
 
       if (active === true) {
-        const currentSpotlight = streams.find(
-          (stream) => stream.spotlight === true
-        );
-
+        const prevPinned = streams[0]?.pin === true ? streams[0] : undefined;
         setStreams((prevState) => {
           return prevState.map((stream) => {
-            if (stream.id === currentSpotlight?.id) {
-              stream.spotlight = false;
-            }
-            if (stream.id === currentStream.id) {
-              stream.spotlight = true;
-            }
+            if (stream.id === prevPinned?.id) stream.pin = false;
+            if (stream.id === currentStream.id) stream.pin = true;
             return stream;
           });
         });
-      } else if (active === false) {
+      } else {
         setStreams((prevState) => {
           return prevState.map((stream) => {
-            if (stream.id === currentStream.id) {
-              stream.spotlight = false;
-            }
-            return stream;
-          });
-        });
-      }
-    }) as EventListener;
-
-    const onActiveLocalPinned = ((event: CustomEventInit) => {
-      const detail = event.detail || {};
-      const streamID = detail.id;
-      const active = detail.active;
-
-      const currentStream = streams.find((stream) => stream.id === streamID);
-      if (!currentStream) return;
-
-      if (active === true) {
-        setPinnedStreams((prevState) => {
-          const pinned = [...prevState];
-          const indexOf = pinned.indexOf(currentStream.id);
-
-          if (indexOf > -1) {
-            pinned.splice(indexOf, 1);
-            pinned.push(currentStream.id);
-          } else {
-            pinned.push(currentStream.id);
-          }
-
-          return pinned;
-        });
-
-        setStreams((prevState) => {
-          return prevState.map((stream) => {
-            if (stream.id === currentStream.id) {
-              stream.pinned = true;
-            }
-            return stream;
-          });
-        });
-      } else if (active === false) {
-        setPinnedStreams((prevState) => {
-          const pinned = [...prevState];
-          const indexOf = pinned.indexOf(currentStream.id);
-
-          if (indexOf > -1) {
-            pinned.splice(indexOf, 1);
-          }
-
-          return pinned;
-        });
-
-        setStreams((prevState) => {
-          return prevState.map((stream) => {
-            if (stream.id === currentStream.id) {
-              stream.pinned = false;
-            }
+            if (stream.id === currentStream.id) stream.pin = false;
             return stream;
           });
         });
@@ -157,18 +92,30 @@ export function ParticipantProvider({
     }) as EventListener;
 
     document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
-    document.addEventListener('active:local-spotlight', onActiveLocalSpotlight);
-    document.addEventListener('active:local-pinned', onActiveLocalPinned);
+    document.addEventListener('set:pin', onPinSet);
 
     return () => {
       document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
-      document.removeEventListener(
-        'active:local-spotlight',
-        onActiveLocalSpotlight
-      );
-      document.removeEventListener('active:local-pinned', onActiveLocalPinned);
+      document.removeEventListener('set:pin', onPinSet);
     };
   }, [streams]);
+
+  useEffect(() => {
+    const onSpotlightSet = () => {
+      setStreams((prevState) => {
+        return prevState.map((stream) => {
+          if (spotlights.includes(stream.id)) {
+            stream.spotlight = true;
+          } else {
+            stream.spotlight = false;
+          }
+          return stream;
+        });
+      });
+    };
+
+    onSpotlightSet();
+  }, [spotlights]);
 
   useEffect(() => {
     clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
@@ -207,7 +154,7 @@ export function ParticipantProvider({
     }
   }, [peer, localStream, clientID, clientName]);
 
-  const newStreams = orderBySpotlight(orderByPinned(streams, pinnedStreams));
+  const newStreams = orderByPinned(streams);
 
   return (
     <ParticipantContext.Provider value={{ streams: newStreams }}>
@@ -216,22 +163,11 @@ export function ParticipantProvider({
   );
 }
 
-const orderByPinned = (
-  streams: ParticipantVideo[],
-  pinnedStreams: string[]
-) => {
+const orderByPinned = (streams: ParticipantVideo[]) => {
   return streams.sort((streamA, streamB) => {
-    const indexA = pinnedStreams.indexOf(streamA.id);
-    const indexB = pinnedStreams.indexOf(streamB.id);
-
     return (
-      (indexA > -1 ? indexA : Infinity) - (indexB > -1 ? indexB : Infinity)
+      Number(streamB.spotlight) - Number(streamA.spotlight) ||
+      Number(streamB.pin) - Number(streamA.pin)
     );
-  });
-};
-
-const orderBySpotlight = (streams: ParticipantVideo[]) => {
-  return streams.sort((streamA, streamB) => {
-    return Number(streamB.spotlight) - Number(streamA.spotlight);
   });
 };

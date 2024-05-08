@@ -13,6 +13,7 @@ const defaultData = {
   previousLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
   currentLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
   speakerClientIDs: [] as string[],
+  spotlights: [] as string[],
 };
 
 const MetadataContext = createContext(defaultData);
