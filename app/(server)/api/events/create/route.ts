@@ -8,19 +8,25 @@ import { writeFiletoLocalStorage } from '@/(server)/_shared/utils/write-file-to-
 import { whitelistFeature } from '@/_shared/utils/flag';
 import * as z from 'zod';
 import { selectRoom } from '@/(server)/_features/room/schema';
+import { generateID } from '@/(server)/_shared/utils/generateid';
 
 const CreateEventSchema = z.object({
   name: z.string().max(255),
   startTime: z.string().datetime({ offset: true }),
   endTime: z.string().datetime({ offset: true }),
-  description: z.string(),
+  description: z.string().optional(),
   status: z.enum(['draft', 'published']),
   maximumSlots: z.number().max(100).int().optional(),
+  type: z.enum(['webinar', 'meeting']),
 });
 
 const EVENT_TRIAL_COUNT = parseInt(
   process.env.NEXT_PUBLIC_EVENT_TRIAL_COUNT || '3'
 );
+const eventTypeMap: Record<string, number> = {
+  webinar: 1,
+  meeting: 2,
+};
 
 export async function POST(req: Request) {
   const cookieStore = cookies();
@@ -75,7 +81,8 @@ export async function POST(req: Request) {
 
     if (
       eventMeta.status == 'published' &&
-      !whitelistFeature.includes('event')
+      !whitelistFeature.includes('event') &&
+      eventMeta.type == 'webinar'
     ) {
       {
         if (!user.whitelistFeature.includes('event')) {
@@ -111,6 +118,7 @@ export async function POST(req: Request) {
       createdBy: user.id,
       roomId: eventRoom?.id,
       maximumSlots: eventMeta.maximumSlots || null,
+      categoryID: eventTypeMap[eventMeta.type],
     };
 
     const createdEvent = await eventService.createEvent(Event);
@@ -138,6 +146,16 @@ export async function POST(req: Request) {
         { status: 201 }
       );
     }
+
+    // Register Event Creator as Participant
+    eventRepo.registerParticipant({
+      clientId: generateID(12),
+      firstName: user.name,
+      lastName: '',
+      email: user.email,
+      eventID: createdEvent.id,
+      roleID: 2,
+    });
 
     return NextResponse.json({
       code: 201,

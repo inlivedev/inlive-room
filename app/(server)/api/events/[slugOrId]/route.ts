@@ -268,6 +268,7 @@ export async function PUT(
       roomId: oldEvent.roomId,
       status: updateEventMeta.status,
       maximumSlots: updateEventMeta.maximumSlots || null,
+      categoryID: oldEvent.categoryID,
     };
 
     if (!ALLOW_EDIT_CANCELLED_EVENT) {

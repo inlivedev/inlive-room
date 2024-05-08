@@ -1,5 +1,4 @@
-import { selectEvent } from '@/(server)/_features/event/schema';
-import { eventRepo, roomService } from '@/(server)/api/_index';
+import { roomService } from '@/(server)/api/_index';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 
@@ -14,28 +13,20 @@ export async function GET(
 ) {
   const roomID = params.roomID;
   try {
-    const existingRoom = await roomService.joinRoom(roomID);
-    let event: selectEvent | undefined = undefined;
+    const { room, event } = await roomService.joinRoom(roomID);
 
-    if (!existingRoom) {
+    if (!room) {
       return NextResponse.json({
         code: 404,
         message: 'Room not found',
       });
     }
 
-    if (
-      typeof existingRoom.meta !== 'undefined' &&
-      existingRoom.meta.type === 'event'
-    ) {
-      event = await eventRepo.getByRoomID(existingRoom.id);
-    }
-
     return NextResponse.json(
       {
         code: 200,
         message: 'Room found',
-        data: existingRoom,
+        data: room,
         meta: {
           event: event,
         },

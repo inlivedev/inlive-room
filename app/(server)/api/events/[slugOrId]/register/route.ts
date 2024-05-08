@@ -1,7 +1,10 @@
 import { isError, omit } from 'lodash-es';
 import { NextResponse } from 'next/server';
 import { eventRepo } from '../../../_index';
-import { insertParticipant } from '@/(server)/_features/event/schema';
+import {
+  insertParticipant,
+  selectParticipant,
+} from '@/(server)/_features/event/schema';
 import {
   SendEventInvitationEmail,
   isMailerEnabled,
@@ -20,13 +23,22 @@ export async function POST(
   request: Request,
   { params }: { params: { slugOrId: string } }
 ) {
-  const slug = params.slugOrId;
+  const slugOrId = params.slugOrId;
   const currentTime = new Date();
+  const isnum = /^\d+$/.test(slugOrId);
+  let existingEvent: EventType.Event | undefined;
 
   try {
+    let participant: selectParticipant | undefined;
     const body = (await request.json()) as RegisterParticipant;
 
-    const existingEvent = await eventRepo.getEventBySlug(slug);
+    if (isnum) {
+      existingEvent = await eventRepo.getEventById(parseInt(slugOrId));
+    } else {
+      existingEvent = await eventRepo.getEventBySlug(slugOrId);
+    }
+
+    existingEvent = await eventRepo.getEventBySlug(slugOrId);
 
     if (!existingEvent) {
       return NextResponse.json({
@@ -58,11 +70,27 @@ export async function POST(
       description: body.description,
       clientId: generateID(12),
       eventID: existingEvent.id,
+      roleID: 1,
     };
 
-    const registeredParticipant = await eventRepo.registerParticipant(
-      newParticipant
+    const previousParticipant = await eventRepo.getEventParticipantByEmail(
+      newParticipant.email,
+      existingEvent.id
     );
+
+    if (previousParticipant && previousParticipant.createdAt) {
+      participant = await eventRepo.updateParticipant({
+        ...newParticipant,
+        id: previousParticipant.id,
+        createdAt: previousParticipant.createdAt,
+        description: previousParticipant.description,
+        updateCount: previousParticipant.updateCount + 1,
+        isInvited: previousParticipant.isInvited,
+        roleID: previousParticipant.roleID,
+      });
+    } else {
+      participant = await eventRepo.registerParticipant(newParticipant);
+    }
 
     const host = await eventRepo.getEventHostByEventId(existingEvent.id);
 
@@ -73,8 +101,16 @@ export async function POST(
       });
     }
 
+    if (!participant) {
+      return NextResponse.json({
+        code: 500,
+        message: 'Failed to register participant',
+        ok: false,
+      });
+    }
+
     if (isMailerEnabled()) {
-      SendEventInvitationEmail(registeredParticipant, existingEvent, host);
+      SendEventInvitationEmail(participant, existingEvent, host);
     }
 
     const data: EventType.RegisterParticipantResponse['data'] = {
@@ -82,7 +118,7 @@ export async function POST(
         currentTime.getTime() > existingEvent.startTime.getTime()
           ? existingEvent
           : omit(existingEvent, 'roomId'),
-      participant: registeredParticipant,
+      participant: participant,
     };
 
     return NextResponse.json(

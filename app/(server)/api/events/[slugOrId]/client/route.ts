@@ -1,20 +1,16 @@
+import { selectParticipant } from '@/(server)/_features/event/schema';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
-import { eventService } from '@/(server)/api/_index';
+import { eventRepo } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 
-const sendInviteEmailSchema = z.object({
-  emails: z.array(z.string().email()),
-});
-
-export async function POST(
+export async function GET(
   request: Request,
   { params }: { params: { slugOrId: string } }
 ) {
   const slugOrId = params.slugOrId;
-  const cookieStore = cookies();
-  const requestToken = cookieStore.get('token');
+  const isnum = /^\d+$/.test(slugOrId);
+  const requestToken = cookies().get('token');
 
   if (!requestToken) {
     return NextResponse.json(
@@ -42,44 +38,28 @@ export async function POST(
   }
 
   try {
-    const event = await eventService.getEventBySlugOrID(slugOrId, user.id);
-    if (!event) {
+    let participant: selectParticipant | undefined;
+    if (isnum) {
+      const eventID = parseInt(slugOrId);
+      participant = await eventRepo.getEventParticipantByEmail(
+        user.email,
+        eventID
+      );
+    } else {
+      participant = await eventRepo.getEventParticipantByEmail(
+        user.email,
+        slugOrId
+      );
+    }
+
+    if (!participant) {
       return NextResponse.json(
         {
           code: 404,
           ok: false,
-          message: 'Event not found',
+          message: 'Participant not found',
         },
         { status: 404 }
-      );
-    }
-
-    if (event.status !== 'published') {
-      return NextResponse.json(
-        {
-          code: 400,
-          ok: false,
-          message: 'Event is not published',
-        },
-        { status: 400 }
-      );
-    }
-
-    try {
-      const reqJSON = await request.json();
-
-      const emails = sendInviteEmailSchema.parse(reqJSON);
-      emails.emails.forEach((email) => {
-        eventService.inviteParticipant(event, email);
-      });
-    } catch (e) {
-      return NextResponse.json(
-        {
-          code: 400,
-          ok: false,
-          message: e,
-        },
-        { status: 400 }
       );
     }
 
@@ -87,12 +67,11 @@ export async function POST(
       {
         code: 200,
         ok: true,
-        message: 'Emails sent successfully',
+        data: participant,
       },
       { status: 200 }
     );
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
     return NextResponse.json(
       {
         code: 500,

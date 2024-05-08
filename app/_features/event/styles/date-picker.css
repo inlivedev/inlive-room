@@ -132,9 +132,46 @@
     @apply gap-1;
 }
 
+.react-datepicker__day{
+    @apply hover:bg-red-700;
+}
 
 
   .react-datepicker__triangle {
     left: 50px;
     position: absolute;
+}
+.react-datepicker-time__header{
+    @apply flex;
+    @apply justify-between;
+    @apply bg-red-700;
+    @apply p-2;
+    @apply rounded;
+    @apply mt-1;
+    @apply mb-2;
+    @apply justify-center;
+    @apply hidden
+}
+
+.react-datepicker__time-list{
+    @apply h-60;
+    @apply overflow-scroll;
+    @apply rounded-md;
+}
+
+.react-datepicker__time-list-item{
+    @apply hover:bg-red-600;
+    @apply p-2;
+    @apply cursor-pointer;
+    @apply rounded-md;
+
+
+}
+
+.react-datepicker__time-list-item--selected{
+    @apply flex;
+    @apply bg-red-800;
+    @apply rounded-md;
+    @apply justify-center;
+
 }
