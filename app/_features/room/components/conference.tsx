@@ -10,6 +10,7 @@ import GalleryLayout from './gallery-layout';
 import WebinarSpeakerLayout from './webinar-speaker-layout';
 import WebinarPresentationLayout from './webinar-presentation-layout';
 import HiddenView from './hidden-view';
+import ConferenceNotification from './ conference-notification';
 
 export default function Conference({ roomType }: { roomType: string }) {
   return (
@@ -39,6 +40,12 @@ const MeetingView = () => {
     if (pinnedStream.origin === 'local') {
       return (
         <>
+          {pinnedStream.spotlight ? (
+            <ConferenceNotification
+              show={true}
+              text="You are currently being spotlighted. Your video is highlighted for everyone."
+            />
+          ) : null}
           <SpotlightView streamA={pinnedStream} />
           <HiddenView streams={hiddenStreams} />
         </>
