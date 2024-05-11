@@ -220,7 +220,7 @@ function OverlayScreen({
         }
       }
     },
-    [roomID, speakerClientIDs, stream, isModerator]
+    [roomID, speakerClientIDs, stream, isModerator, spotlights]
   );
 
   return (
@@ -444,16 +444,21 @@ function OverlayScreen({
                   ) : null}
                 </div>
               </DropdownItem>,
-              <DropdownItem key="spotlight">
-                <div className="flex items-center gap-1">
-                  <span>Spotlight for everyone</span>
-                  {stream.spotlight ? (
-                    <span>
-                      <CheckIcon width={16} height={16} />
-                    </span>
-                  ) : null}
-                </div>
-              </DropdownItem>,
+              // @ts-ignore
+              isModerator
+                ? [
+                    <DropdownItem key="spotlight">
+                      <div className="flex items-center gap-1">
+                        <span>Spotlight for everyone</span>
+                        {stream.spotlight ? (
+                          <span>
+                            <CheckIcon width={16} height={16} />
+                          </span>
+                        ) : null}
+                      </div>
+                    </DropdownItem>,
+                  ]
+                : undefined,
               // @ts-ignore
               isModerator &&
               clientID !== stream.clientId &&
