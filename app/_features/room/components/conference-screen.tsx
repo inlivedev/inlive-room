@@ -12,7 +12,6 @@ import * as Sentry from '@sentry/nextjs';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import type { ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
 import { clientSDK } from '@/_shared/utils/sdk';
 import { useClientContext } from '@/_features/room/contexts/client-context';
@@ -129,27 +128,6 @@ function OverlayScreen({
     };
   }, [peer, stream]);
 
-  const handleRemoveParticipant = useCallback(async () => {
-    if (!isModerator) return;
-
-    const moderatorDataChannel = datachannels.get('moderator');
-
-    const confirmed = confirm(
-      'Are you sure you want to remove this participant?'
-    );
-
-    if (confirmed && moderatorDataChannel) {
-      const message = {
-        type: 'remove-client',
-        data: {
-          clientIDs: [stream.clientId],
-        },
-      };
-
-      moderatorDataChannel.send(JSON.stringify(message));
-    }
-  }, [datachannels, isModerator, stream.clientId]);
-
   const onMoreSelection = useCallback(
     async (key: Key) => {
       if (key === 'pin') {
@@ -218,9 +196,28 @@ function OverlayScreen({
           });
           console.error(error);
         }
+      } else if (key === 'remove-client') {
+        if (!isModerator) return;
+
+        const moderatorDataChannel = datachannels.get('moderator');
+
+        const confirmed = confirm(
+          'Are you sure you want to remove this participant?'
+        );
+
+        if (confirmed && moderatorDataChannel) {
+          const message = {
+            type: 'remove-client',
+            data: {
+              clientIDs: [stream.clientId],
+            },
+          };
+
+          moderatorDataChannel.send(JSON.stringify(message));
+        }
       }
     },
-    [roomID, speakerClientIDs, stream, isModerator, spotlights]
+    [roomID, speakerClientIDs, stream, isModerator, spotlights, datachannels]
   );
 
   return (
@@ -406,21 +403,6 @@ function OverlayScreen({
       ) : null}
       {/* video screen overlay */}
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
-        {isModerator &&
-          stream.origin === 'remote' &&
-          stream.source === 'media' && (
-            <Button
-              isIconOnly
-              size="sm"
-              variant="light"
-              aria-label="Remove this participant"
-              className="absolute left-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
-              title="Remove this participant"
-              onClick={handleRemoveParticipant}
-            >
-              <XFillIcon className="h-4 w-4" />
-            </Button>
-          )}
         <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
           <DropdownTrigger>
             <Button
@@ -475,6 +457,16 @@ function OverlayScreen({
                         Set as a speaker
                       </DropdownItem>
                     ),
+                  ]
+                : undefined,
+              // @ts-ignore
+              isModerator &&
+              stream.origin === 'remote' &&
+              stream.source === 'media'
+                ? [
+                    <DropdownItem key="remove-client">
+                      Remove this participant
+                    </DropdownItem>,
                   ]
                 : undefined,
             ]}
