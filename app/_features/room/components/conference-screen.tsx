@@ -12,13 +12,13 @@ import * as Sentry from '@sentry/nextjs';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import type { ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
 import { clientSDK } from '@/_shared/utils/sdk';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import CheckIcon from '@/_shared/components/icons/check-icon';
+import { type SVGElementPropsType } from '@/_shared/types/types';
 
 export default function ConferenceScreen({
   stream,
@@ -129,27 +129,6 @@ function OverlayScreen({
     };
   }, [peer, stream]);
 
-  const handleRemoveParticipant = useCallback(async () => {
-    if (!isModerator) return;
-
-    const moderatorDataChannel = datachannels.get('moderator');
-
-    const confirmed = confirm(
-      'Are you sure you want to remove this participant?'
-    );
-
-    if (confirmed && moderatorDataChannel) {
-      const message = {
-        type: 'remove-client',
-        data: {
-          clientIDs: [stream.clientId],
-        },
-      };
-
-      moderatorDataChannel.send(JSON.stringify(message));
-    }
-  }, [datachannels, isModerator, stream.clientId]);
-
   const onMoreSelection = useCallback(
     async (key: Key) => {
       if (key === 'pin') {
@@ -218,9 +197,28 @@ function OverlayScreen({
           });
           console.error(error);
         }
+      } else if (key === 'remove-client') {
+        if (!isModerator) return;
+
+        const moderatorDataChannel = datachannels.get('moderator');
+
+        const confirmed = confirm(
+          'Are you sure you want to remove this participant?'
+        );
+
+        if (confirmed && moderatorDataChannel) {
+          const message = {
+            type: 'remove-client',
+            data: {
+              clientIDs: [stream.clientId],
+            },
+          };
+
+          moderatorDataChannel.send(JSON.stringify(message));
+        }
       }
     },
-    [roomID, speakerClientIDs, stream, isModerator]
+    [roomID, speakerClientIDs, stream, isModerator, spotlights, datachannels]
   );
 
   return (
@@ -406,21 +404,6 @@ function OverlayScreen({
       ) : null}
       {/* video screen overlay */}
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
-        {isModerator &&
-          stream.origin === 'remote' &&
-          stream.source === 'media' && (
-            <Button
-              isIconOnly
-              size="sm"
-              variant="light"
-              aria-label="Remove this participant"
-              className="absolute left-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
-              title="Remove this participant"
-              onClick={handleRemoveParticipant}
-            >
-              <XFillIcon className="h-4 w-4" />
-            </Button>
-          )}
         <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
           <DropdownTrigger>
             <Button
@@ -444,16 +427,21 @@ function OverlayScreen({
                   ) : null}
                 </div>
               </DropdownItem>,
-              <DropdownItem key="spotlight">
-                <div className="flex items-center gap-1">
-                  <span>Spotlight for everyone</span>
-                  {stream.spotlight ? (
-                    <span>
-                      <CheckIcon width={16} height={16} />
-                    </span>
-                  ) : null}
-                </div>
-              </DropdownItem>,
+              // @ts-ignore
+              isModerator
+                ? [
+                    <DropdownItem key="spotlight">
+                      <div className="flex items-center gap-1">
+                        <span>Spotlight for everyone</span>
+                        {stream.spotlight ? (
+                          <span>
+                            <CheckIcon width={16} height={16} />
+                          </span>
+                        ) : null}
+                      </div>
+                    </DropdownItem>,
+                  ]
+                : undefined,
               // @ts-ignore
               isModerator &&
               clientID !== stream.clientId &&
@@ -472,22 +460,46 @@ function OverlayScreen({
                     ),
                   ]
                 : undefined,
+              // @ts-ignore
+              isModerator &&
+              stream.origin === 'remote' &&
+              stream.source === 'media'
+                ? [
+                    <DropdownItem key="remove-client">
+                      Remove this participant
+                    </DropdownItem>,
+                  ]
+                : undefined,
             ]}
           </DropdownMenu>
         </Dropdown>
         <div className="flex">
-          <div
-            className={`max-w-full truncate rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100`}
-          >
-            <span>
-              {isHost && stream.origin === 'local'
-                ? '(Host) You'
-                : stream.origin === 'local'
-                ? 'You'
-                : isHost
-                ? `(Host) ${stream.name}`
-                : stream.name}
-            </span>
+          <div className="flex max-w-full items-center gap-2 rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100">
+            {stream.spotlight || stream.pin ? (
+              <div className="flex items-center gap-1">
+                {stream.spotlight && (
+                  <span title="Spotlighted for everyone">
+                    <PersonScreenIcon className="h-3.5 w-3.5" />
+                  </span>
+                )}
+                {stream.pin && (
+                  <span title="Pinned for myself">
+                    <PinIcon className="h-3.5 w-3.5" />
+                  </span>
+                )}
+              </div>
+            ) : null}
+            <div className={`max-w-full truncate`}>
+              <span>
+                {isHost && stream.origin === 'local'
+                  ? '(Host) You'
+                  : stream.origin === 'local'
+                  ? 'You'
+                  : isHost
+                  ? `(Host) ${stream.name}`
+                  : stream.name}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -612,5 +624,27 @@ function VideoScreen({
           : 'grid h-full w-full grid-rows-1 items-center'
       }`}
     ></div>
+  );
+}
+
+function PersonScreenIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" {...props}>
+      <path
+        fill="currentColor"
+        d="M7.715 49.574h40.57c4.899 0 7.36-2.437 7.36-7.265V13.69c0-4.828-2.461-7.265-7.36-7.265H7.715C2.84 6.426.355 8.84.355 13.69v28.62c0 4.851 2.485 7.265 7.36 7.265m20.273-16.71c-4.195 0-7.547-3.563-7.547-8.298c0-4.453 3.352-8.062 7.547-8.062c4.219 0 7.57 3.61 7.57 8.062c0 4.735-3.351 8.297-7.57 8.297m.024 3.679c6.937 0 12.609 2.977 15.703 9.258h-31.43c3.117-6.281 8.766-9.258 15.727-9.258"
+      />
+    </svg>
+  );
+}
+
+function PinIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="currentColor"
+        d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2z"
+      />
+    </svg>
   );
 }

@@ -101,19 +101,6 @@ export function ParticipantProvider({
   }, [streams]);
 
   useEffect(() => {
-    setStreams((prevState) => {
-      return prevState.map((stream) => {
-        if (spotlights.includes(stream.id)) {
-          stream.spotlight = true;
-        } else {
-          stream.spotlight = false;
-        }
-        return stream;
-      });
-    });
-  }, [spotlights]);
-
-  useEffect(() => {
     clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
       const stream = createParticipantVideo(data.stream);
       data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
