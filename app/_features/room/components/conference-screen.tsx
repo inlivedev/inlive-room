@@ -18,6 +18,7 @@ import { useClientContext } from '@/_features/room/contexts/client-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import CheckIcon from '@/_shared/components/icons/check-icon';
+import { type SVGElementPropsType } from '@/_shared/types/types';
 
 export default function ConferenceScreen({
   stream,
@@ -473,18 +474,32 @@ function OverlayScreen({
           </DropdownMenu>
         </Dropdown>
         <div className="flex">
-          <div
-            className={`max-w-full truncate rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100`}
-          >
-            <span>
-              {isHost && stream.origin === 'local'
-                ? '(Host) You'
-                : stream.origin === 'local'
-                ? 'You'
-                : isHost
-                ? `(Host) ${stream.name}`
-                : stream.name}
-            </span>
+          <div className="flex max-w-full items-center gap-2 rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100">
+            {stream.spotlight || stream.pin ? (
+              <div className="flex items-center gap-1">
+                {stream.spotlight && (
+                  <span title="Spotlighted for everyone">
+                    <PersonScreenIcon className="h-3.5 w-3.5" />
+                  </span>
+                )}
+                {stream.pin && (
+                  <span title="Pinned for myself">
+                    <PinIcon className="h-3.5 w-3.5" />
+                  </span>
+                )}
+              </div>
+            ) : null}
+            <div className={`max-w-full truncate`}>
+              <span>
+                {isHost && stream.origin === 'local'
+                  ? '(Host) You'
+                  : stream.origin === 'local'
+                  ? 'You'
+                  : isHost
+                  ? `(Host) ${stream.name}`
+                  : stream.name}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -609,5 +624,27 @@ function VideoScreen({
           : 'grid h-full w-full grid-rows-1 items-center'
       }`}
     ></div>
+  );
+}
+
+function PersonScreenIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" {...props}>
+      <path
+        fill="currentColor"
+        d="M7.715 49.574h40.57c4.899 0 7.36-2.437 7.36-7.265V13.69c0-4.828-2.461-7.265-7.36-7.265H7.715C2.84 6.426.355 8.84.355 13.69v28.62c0 4.851 2.485 7.265 7.36 7.265m20.273-16.71c-4.195 0-7.547-3.563-7.547-8.298c0-4.453 3.352-8.062 7.547-8.062c4.219 0 7.57 3.61 7.57 8.062c0 4.735-3.351 8.297-7.57 8.297m.024 3.679c6.937 0 12.609 2.977 15.703 9.258h-31.43c3.117-6.281 8.766-9.258 15.727-9.258"
+      />
+    </svg>
+  );
+}
+
+function PinIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="currentColor"
+        d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2z"
+      />
+    </svg>
   );
 }
