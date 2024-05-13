@@ -209,12 +209,13 @@ function ScheduleModal() {
   return (
     <Modal
       size="md"
-      placement="auto"
+      placement="top"
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       isKeyboardDismissDisabled
       isDismissable={false}
       hideCloseButton
+      scrollBehavior="inside"
     >
       <ModalBody>
         <ModalContent className="p-2">
