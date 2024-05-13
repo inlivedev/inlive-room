@@ -101,25 +101,8 @@ export function ParticipantProvider({
   }, [streams]);
 
   useEffect(() => {
-    const onSpotlightSet = () => {
-      setStreams((prevState) => {
-        return prevState.map((stream) => {
-          if (spotlights.includes(stream.id)) {
-            stream.spotlight = true;
-          } else {
-            stream.spotlight = false;
-          }
-          return stream;
-        });
-      });
-    };
-
-    onSpotlightSet();
-  }, [spotlights]);
-
-  useEffect(() => {
     clientSDK.on(RoomEvent.STREAM_AVAILABLE, (data) => {
-      const video = createParticipantVideo(data.stream);
+      const stream = createParticipantVideo(data.stream);
       data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
         // reordering the streams based on voice activity
         const audioLevel = e.detail.audioLevel;
@@ -128,7 +111,7 @@ export function ParticipantProvider({
       });
 
       setStreams((prevState) => {
-        return [...prevState, video];
+        return [...prevState, stream];
       });
     });
 
@@ -154,7 +137,7 @@ export function ParticipantProvider({
     }
   }, [peer, localStream, clientID, clientName]);
 
-  const newStreams = orderByPinned(streams);
+  const newStreams = orderByPinned(checkSpotlight(streams, spotlights));
 
   return (
     <ParticipantContext.Provider value={{ streams: newStreams }}>
@@ -162,6 +145,17 @@ export function ParticipantProvider({
     </ParticipantContext.Provider>
   );
 }
+
+const checkSpotlight = (streams: ParticipantVideo[], spotlights: string[]) => {
+  return streams.map((stream) => {
+    if (spotlights.includes(stream.id)) {
+      stream.spotlight = true;
+    } else {
+      stream.spotlight = false;
+    }
+    return stream;
+  });
+};
 
 const orderByPinned = (streams: ParticipantVideo[]) => {
   return streams.sort((streamA, streamB) => {

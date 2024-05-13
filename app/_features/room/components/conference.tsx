@@ -2,7 +2,10 @@
 
 import ConferenceTopBar from '@/_features/room/components/conference-top-bar';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
-import { useParticipantContext } from '@/_features/room/contexts/participant-context';
+import {
+  type ParticipantVideo,
+  useParticipantContext,
+} from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import SpotlightView from './spotlight-view';
 import MeetingPresentationLayout from './meeting-presentation-layout';
@@ -10,28 +13,54 @@ import GalleryLayout from './gallery-layout';
 import WebinarSpeakerLayout from './webinar-speaker-layout';
 import WebinarPresentationLayout from './webinar-presentation-layout';
 import HiddenView from './hidden-view';
+import ConferenceNotification from './ conference-notification';
 
 export default function Conference({ roomType }: { roomType: string }) {
   return (
-    <>
-      <div className="viewport-height grid grid-rows-[40px,1fr,72px] overflow-y-hidden">
-        <ConferenceTopBar />
-        <div className="px-4 pb-4">
-          {roomType === 'event' ? <WebinarView /> : <MeetingView />}
-        </div>
-        <div>
-          <ConferenceActionsBar />
-        </div>
+    <div className="viewport-height grid grid-rows-[40px,auto,1fr,72px] overflow-y-hidden">
+      <ConferenceTopBar />
+      <ParticipantView roomType={roomType} />
+      <div>
+        <ConferenceActionsBar />
       </div>
-    </>
+    </div>
   );
 }
 
-const MeetingView = () => {
+const ParticipantView = ({ roomType }: { roomType: string }) => {
   const { streams } = useParticipantContext();
-  const { currentLayout } = useMetadataContext();
   const pinnedStream =
     streams[0]?.pin || streams[0]?.spotlight ? streams[0] : undefined;
+
+  return (
+    <>
+      <div className="px-4">
+        {pinnedStream?.spotlight && pinnedStream?.origin === 'local' ? (
+          <ConferenceNotification
+            show={true}
+            text="You are currently being spotlighted. Your video is highlighted for everyone."
+          />
+        ) : null}
+      </div>
+      <div className="px-4 pb-4">
+        {roomType === 'event' ? (
+          <WebinarView streams={streams} pinnedStream={pinnedStream} />
+        ) : (
+          <MeetingView streams={streams} pinnedStream={pinnedStream} />
+        )}
+      </div>
+    </>
+  );
+};
+
+const MeetingView = ({
+  streams,
+  pinnedStream,
+}: {
+  streams: ParticipantVideo[];
+  pinnedStream: ParticipantVideo | undefined;
+}) => {
+  const { currentLayout } = useMetadataContext();
 
   if (pinnedStream) {
     const hiddenStreams = streams.slice(1);
@@ -75,11 +104,14 @@ const MeetingView = () => {
   return <GalleryLayout streams={streams} />;
 };
 
-const WebinarView = () => {
-  const { streams } = useParticipantContext();
+const WebinarView = ({
+  streams,
+  pinnedStream,
+}: {
+  streams: ParticipantVideo[];
+  pinnedStream: ParticipantVideo | undefined;
+}) => {
   const { currentLayout } = useMetadataContext();
-  const pinnedStream =
-    streams[0]?.pin || streams[0]?.spotlight ? streams[0] : undefined;
 
   if (pinnedStream) {
     const hiddenStreams = streams.slice(1);
