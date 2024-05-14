@@ -460,7 +460,7 @@ export default function MeetingScheduleForm() {
                 new CustomEvent('close:schedule-meeting-modal')
               );
             }}
-            className="w-full rounded-md bg-zinc-800  text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm"
+            className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
           >
             Cancel
           </Button>
@@ -468,7 +468,7 @@ export default function MeetingScheduleForm() {
           <Button
             type="submit"
             form="scheduleForm"
-            className="w-full rounded-md bg-red-700  text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm"
+            className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
             isDisabled={isSubmitting}
           >
             {isSubmitting ? (
