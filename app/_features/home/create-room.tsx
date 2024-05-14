@@ -56,7 +56,7 @@ export default function CreateRoom() {
 
   const onCreateRoomSelection = useCallback(
     async (key: Key) => {
-      // if (!user || isSubmitting || typeof key !== 'string') return;
+      if (!user || isSubmitting || typeof key !== 'string') return;
 
       setIsSubmitting(true);
 
@@ -84,7 +84,7 @@ export default function CreateRoom() {
         document.dispatchEvent(new CustomEvent('open:schedule-meeting-modal'));
       }
     },
-    [user, isSubmitting, createRoom]
+    [createRoom, isSubmitting, user]
   );
 
   return (
@@ -168,14 +168,14 @@ export default function CreateRoom() {
             </DropdownItem>
           </DropdownMenu>
         </Dropdown>
-        {/* ) : (
-          <Button
-            className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
-            onClick={openSignInModal}
-          >
-            Sign in to try inLive Room
-          </Button>
-        )} */}
+        : (
+        <Button
+          className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
+          onClick={openSignInModal}
+        >
+          Sign in to try inLive Room
+        </Button>
+        )
       </div>
     </section>
   );

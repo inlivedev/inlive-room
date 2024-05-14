@@ -21,7 +21,7 @@ export default function View() {
             </div>
             <div className="flex flex-1 justify-center md:justify-end">
               <div className="w-[400px] md:w-[360px] lg:w-[400px]">
-                {/* <MeetingList events={[]}></MeetingList> */}
+                <MeetingList />
               </div>
             </div>
           </div>
