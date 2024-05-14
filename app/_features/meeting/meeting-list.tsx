@@ -7,23 +7,13 @@ type MeetingListProps = {
 };
 
 export default function MeetingList(eventProps: MeetingListProps) {
-  const currentIndex: number = getCurrentEvents(eventProps.events);
-
   return (
     <div>
-      {eventProps.events.map((event, idx) =>
-        idx === currentIndex ? (
-          <MeetingItem event={event} key={event.id} highlight={true} />
-        ) : (
-          <MeetingItem event={event} key={event.id} />
-        )
-      )}
+      {eventProps.events.map((event) => (
+        <MeetingItem event={event} key={event.id} />
+      ))}
     </div>
   );
-}
-
-function getCurrentEvents(events: selectEvent[]) {
-  return 0;
 }
 
 function MeetingItem({
@@ -38,9 +28,9 @@ function MeetingItem({
       as={Link}
       href={`/events/${event.slug}`}
       target="_blank"
-      className={`flex flex-row items-center justify-between gap-2 rounded-md p-4 text-zinc-300 sm:min-h-16 ${
-        highlight ? 'bg-red-800' : 'bg-zinc-800'
-      } ${highlight ? `z-10 -m-2 -mb-4` : `mt-2`}`}
+      className={`mt-2 flex flex-row items-center justify-between gap-2 rounded-md bg-zinc-800 p-4 text-zinc-300 
+        first:z-10  first:-m-2 first:bg-red-800
+       first:shadow-md sm:min-h-16 sm:first:-mb-4`}
     >
       <p className="text-nowrap">{`${event.startTime.getHours()} : ${event.startTime.getMinutes()}`}</p>
       <h2 className="flex-1 truncate">{event.name}</h2>
