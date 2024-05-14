@@ -90,20 +90,13 @@ export default function CreateRoom() {
   return (
     <section className="md:max-w-xl">
       <ScheduleModal />
-      <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
-        Virtual room for your real-time collaboration
-      </h2>
-      <p className="mt-4 text-pretty text-base text-zinc-400 lg:text-lg">
-        Connect with anyone, anywhere. Host or join in seconds. It&apos;s that
-        simple! Experience real-time messaging, video, and audio for seamless
-        collaboration, all within open-source virtual rooms.
-      </p>
-      <div className="mt-8">
+
+      <div className="">
         {/* {user ? ( */}
         <Dropdown placement="bottom-start" className="ring-1 ring-zinc-800/70">
           <DropdownTrigger>
             <Button
-              className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
+              className="w-30 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
               isDisabled={isSubmitting}
               aria-disabled={isSubmitting}
               disabled={isSubmitting}
@@ -117,10 +110,10 @@ export default function CreateRoom() {
                       wrapper: 'w-4 h-4',
                     }}
                   />
-                  <span>Creating a new room...</span>
+                  <span>Creating...</span>
                 </div>
               ) : (
-                <span>Create a new room</span>
+                <span>New room</span>
               )}
             </Button>
           </DropdownTrigger>
@@ -217,19 +210,17 @@ function ScheduleModal() {
       hideCloseButton
       scrollBehavior="inside"
     >
-      <ModalBody>
-        <ModalContent className="p-2">
-          <ModalHeader className="flex flex-col">
-            <h2>Schedule a Meeting</h2>
-            <p className="text-sm font-normal text-zinc-400">
-              Send a personal email to schedule a meeting
-            </p>
-          </ModalHeader>
-          <ModalBody>
-            <MeetingScheduleForm></MeetingScheduleForm>
-          </ModalBody>
-        </ModalContent>
-      </ModalBody>
+      <ModalContent className="p-2">
+        <ModalHeader className="flex flex-col">
+          <h2>Schedule a Meeting</h2>
+          <p className="text-sm font-normal text-zinc-400">
+            Send a personal email to schedule a meeting
+          </p>
+        </ModalHeader>
+        <ModalBody>
+          <MeetingScheduleForm></MeetingScheduleForm>
+        </ModalBody>
+      </ModalContent>
     </Modal>
   );
 }
