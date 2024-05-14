@@ -5,21 +5,26 @@ import { EventType } from '@/_shared/types/event';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { Button } from '@nextui-org/react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function MeetingList() {
-  const events: EventType.Event[] = [];
+  const [events, setEvents] = useState<EventType.Event[]>([]);
   const now = new Date();
 
-  InternalApiFetcher.get(
-    `/api/events/not-started?&limit=${10}&type=${'webinar'}&start_is_before=${now.toISOString()}&end_is_after=${now.toISOString()}type=${'meeting'}`
-  ).then((response: EventType.ListEventsResponse) => {
-    if (response.data) {
-      events.concat(response.data);
-    }
-  });
+  useEffect(() => {
+    const now = new Date();
+
+    InternalApiFetcher.get(
+      `/api/events?&limit=${10}&start_is_before=${now.toISOString()}&end_is_after=${now.toISOString()}&type=${'meeting'}`
+    ).then((response: EventType.ListEventsResponse) => {
+      if (response.data) {
+        setEvents(response.data);
+      }
+    });
+  }, []);
 
   return (
-    <div>
+    <div className="m-4">
       {(!events || events.length === 0) && (
         <div className="flex w-full flex-col">
           <Button
@@ -66,7 +71,15 @@ function MeetingItem({
         first:z-10  first:-m-2 first:bg-red-800
        first:shadow-md sm:min-h-16 sm:first:-mb-4`}
     >
-      <p className="text-nowrap">{`${event.startTime.getHours()} : ${event.startTime.getMinutes()}`}</p>
+      <p className="text-nowrap">
+        {`${new Date(event.startTime)
+          .getHours()
+          .toString()
+          .padStart(2, '0')} : ${new Date(event.startTime)
+          .getMinutes()
+          .toString()
+          .padStart(2, '0')}`}
+      </p>
       <h2 className="flex-1 truncate">{event.name}</h2>
 
       {ongoing && (

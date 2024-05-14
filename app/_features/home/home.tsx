@@ -11,7 +11,7 @@ export default function View() {
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex flex-1 flex-col justify-center">
-          <div className="flex w-full flex-col gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
+          <div className="flex w-full flex-col items-center gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
             <div className="flex flex-auto flex-col gap-8">
               <Title />
               <div className="flex flex-row gap-2">
@@ -19,10 +19,9 @@ export default function View() {
                 <JoinRoom />
               </div>
             </div>
-            <div className="flex flex-1 justify-center md:justify-end">
-              <div className="w-[400px] md:w-[360px] lg:w-[400px]">
-                <MeetingList />
-              </div>
+
+            <div className="w-[400px] md:w-[360px] lg:w-[400px]">
+              <MeetingList />
             </div>
           </div>
         </main>
