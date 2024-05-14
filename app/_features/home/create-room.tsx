@@ -58,10 +58,9 @@ export default function CreateRoom() {
     async (key: Key) => {
       if (!user || isSubmitting || typeof key !== 'string') return;
 
-      setIsSubmitting(true);
-
       if (key === 'event' || key === 'meeting') {
         try {
+          setIsSubmitting(true);
           const room = await createRoom(key);
           setIsSubmitting(false);
           window.location.href = `/rooms/${room.id}`;
@@ -79,8 +78,6 @@ export default function CreateRoom() {
       }
 
       if (key === 'schedule') {
-        setIsSubmitting(false);
-        console.log('open:schedule-meeting-modal');
         document.dispatchEvent(new CustomEvent('open:schedule-meeting-modal'));
       }
     },
@@ -186,7 +183,6 @@ function ScheduleModal() {
 
   useEffect(() => {
     const openModal = () => {
-      console.log('ModalOpen');
       onOpen();
     };
 
