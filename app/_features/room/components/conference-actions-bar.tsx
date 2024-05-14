@@ -16,7 +16,7 @@ export default function ConferenceActionsBar() {
   }, []);
 
   return (
-    <div className="fixed bottom-0 left-0 z-20 h-[72px] w-full bg-zinc-900">
+    <div className="absolute bottom-0 left-0 z-20 h-[72px] w-full bg-zinc-900">
       <div className="flex h-full w-full items-center justify-center gap-4 px-4 py-1.5 md:py-3 lg:gap-6">
         <div className="flex h-full flex-col justify-center">
           <ButtonMicrophone />

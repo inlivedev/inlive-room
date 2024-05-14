@@ -23,21 +23,29 @@ import type { SVGElementPropsType } from '@/_shared/types/types';
 export default function ConferenceTopBar() {
   const { roomType, isModerator } = useMetadataContext();
   const { streams } = useParticipantContext();
-
   const participants = streams.filter((stream) => stream.source === 'media');
 
   return (
-    <div className="flex items-center justify-between px-4">
+    <div className="flex items-center justify-between px-4 pt-3">
       <div className="flex items-center">
         <ConnectionStatusOverlay></ConnectionStatusOverlay>
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="flex items-center text-xs font-medium tabular-nums text-zinc-400">
-          <span>
-            <UserIcon className="h-5 w-5" />
-          </span>
-          <span className="ml-1.5">{participants.length}</span>
-        </div>
+        <Button
+          className="h-auto min-h-0 min-w-0 gap-2 rounded-xl bg-zinc-700/70 px-2 py-1.5 text-xs font-medium tabular-nums antialiased hover:bg-zinc-600 active:bg-zinc-500"
+          onClick={() =>
+            document.dispatchEvent(
+              new CustomEvent('open:right-drawer-menu', {
+                detail: {
+                  menu: 'participants',
+                },
+              })
+            )
+          }
+        >
+          <PeopleIcon className="h-5 w-5" />
+          <span>{participants.length}</span>
+        </Button>
         {roomType === 'event' && isModerator && <DropdownViewSelection />}
       </div>
     </div>
@@ -73,7 +81,7 @@ function DropdownViewSelection() {
     <Dropdown className="min-w-40 ring-1 ring-zinc-800/70">
       <DropdownTrigger>
         <Button
-          className={`h-7 min-w-0 gap-0 rounded bg-transparent px-2 text-xs font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 active:bg-zinc-700 ${
+          className={`h-auto min-h-0 min-w-0 gap-0 rounded-xl bg-zinc-700/70 px-2 py-1.5 text-xs font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500 ${
             currentLayout === 'presentation'
               ? 'cursor-not-allowed'
               : 'cursor-auto'
@@ -85,11 +93,11 @@ function DropdownViewSelection() {
           <span>
             <GridViewIcon className="h-5 w-5" />
           </span>
-          <span className="ml-1.5 capitalize">
+          <span className="ml-2 capitalize">
             {currentLayout !== 'presentation' ? currentLayout : previousLayout}{' '}
             View
           </span>
-          <span className="ml-1">
+          <span className="ml-2">
             <ChevronDownIcon className="h-3 w-3" />
           </span>
         </Button>
@@ -152,12 +160,12 @@ function ChevronDownIcon(props: SVGElementPropsType) {
   );
 }
 
-function UserIcon(props: SVGElementPropsType) {
+function PeopleIcon(props: SVGElementPropsType) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
       <path
         fill="currentColor"
-        d="M17.754 14a2.249 2.249 0 0 1 2.249 2.25v.918a2.75 2.75 0 0 1-.513 1.598c-1.545 2.164-4.07 3.235-7.49 3.235c-3.421 0-5.944-1.072-7.486-3.236a2.75 2.75 0 0 1-.51-1.596v-.92A2.249 2.249 0 0 1 6.251 14h11.502ZM12 2.005a5 5 0 1 1 0 10a5 5 0 0 1 0-10Z"
+        d="M16 17v2H2v-2s0-4 7-4s7 4 7 4m-3.5-9.5A3.5 3.5 0 1 0 9 11a3.5 3.5 0 0 0 3.5-3.5m3.44 5.5A5.32 5.32 0 0 1 18 17v2h4v-2s0-3.63-6.06-4M15 4a3.39 3.39 0 0 0-1.93.59a5 5 0 0 1 0 5.82A3.39 3.39 0 0 0 15 11a3.5 3.5 0 0 0 0-7Z"
       />
     </svg>
   );
