@@ -65,7 +65,7 @@ function MeetingItem({
   return (
     <Button
       as={Link}
-      href={`/events/${event.slug}`}
+      href={`/rooms/${event.roomId}`}
       target="_blank"
       className={`mt-2 flex flex-row items-center justify-between gap-2 rounded-md bg-zinc-800 p-4 text-zinc-300 
         first:z-10  first:-m-2 first:bg-red-800

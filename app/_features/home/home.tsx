@@ -12,7 +12,7 @@ export default function View() {
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex flex-1 flex-col justify-center">
           <div className="flex w-full flex-col items-center gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
-            <div className="flex flex-auto flex-col gap-8">
+            <div className="flex flex-auto basis-2/3 flex-col gap-8">
               <Title />
               <div className="flex flex-row gap-2">
                 <CreateRoom />
@@ -20,7 +20,7 @@ export default function View() {
               </div>
             </div>
 
-            <div className="w-[400px] md:w-[360px] lg:w-[400px]">
+            <div className="w-[400px] basis-1/3 md:w-[360px] lg:w-[400px]">
               <MeetingList />
             </div>
           </div>
