@@ -48,7 +48,7 @@ export default async function Page({
 
   const eventResponse: EventType.ListEventsResponse =
     await InternalApiFetcher.get(
-      `/api/events/not-started?page=${page}&limit=${limit}`,
+      `/api/events/not-started?page=${page}&limit=${limit}&type=${'webinar'}`,
       {
         headers: {
           Cookie: `token=${token}`,

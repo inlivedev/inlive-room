@@ -17,12 +17,14 @@ export async function GET(req: Request) {
   let endIsAfter = searchParams.get('end_is_after')?.trim();
   let endIsBefore = searchParams.get('end_is_before')?.trim();
   const status = searchParams.getAll('status[]');
+  const type = searchParams.get('type')?.trim();
 
   let isStartAfterParsed: Date | undefined = undefined;
   let isStartBeforeParsed: Date | undefined = undefined;
   let isEndStartAfterParsed: Date | undefined = undefined;
   let isEndBeforeParsed: Date | undefined = undefined;
   let statusParsed: Array<string> | undefined;
+  const typeParsed = z.enum(['webinar', 'meeting']).optional().parse(type);
   try {
     if (startIsAfter) {
       startIsAfter = z.string().datetime().parse(startIsAfter);
@@ -94,7 +96,8 @@ export async function GET(req: Request) {
       isStartAfterParsed,
       isStartBeforeParsed,
       isEndStartAfterParsed,
-      isEndBeforeParsed
+      isEndBeforeParsed,
+      typeParsed
     );
 
     const response: HTTPResponse = {
