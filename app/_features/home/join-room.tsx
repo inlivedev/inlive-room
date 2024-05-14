@@ -19,11 +19,8 @@ export default function JoinRoom() {
   };
 
   return (
-    <form className="rounded-2xl border border-zinc-950 bg-zinc-950/25 p-6 lg:p-8">
-      <p className="text-base font-medium text-zinc-400">
-        Got a room code to join? Put it in here.
-      </p>
-      <div className="mt-4 flex items-center gap-2">
+    <form className="">
+      <div className="flex items-center gap-2">
         <div className="flex-1">
           <input
             className="w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm shadow-sm outline-blue-300 placeholder:text-zinc-500"

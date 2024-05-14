@@ -12,7 +12,7 @@ const DB_NAME = process.env.DB_NAME;
 export default {
   schema: './app/(server)/_features/**/schema.ts',
   out: './migrations',
-  driver: 'pg',
+  dialect: 'postgresql',
   dbCredentials: {
     user: DB_USER,
     host: DB_HOST || '',

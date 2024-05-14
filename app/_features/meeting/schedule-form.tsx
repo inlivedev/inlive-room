@@ -60,7 +60,7 @@ export default function MeetingScheduleForm() {
       emails: [],
       title: user ? user.name + ' Meeting' : '',
     },
-    mode: 'onTouched',
+    mode: 'all',
   });
 
   const [displayError, setDisplayError] = useState(false);
@@ -83,7 +83,7 @@ export default function MeetingScheduleForm() {
       startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
       startTime.setMinutes(parseTimeStringToDate(data.startTime).getMinutes());
 
-      const endTime = startTime;
+      const endTime = parseStringDateToDate(data.endTime);
       endTime.setHours(parseTimeStringToDate(data.endTime).getHours());
       endTime.setMinutes(parseTimeStringToDate(data.endTime).getMinutes());
 
@@ -209,214 +209,225 @@ export default function MeetingScheduleForm() {
         id="scheduleForm"
         onSubmit={handleSubmit(onSubmit)}
       >
-        {selectedEmails.length < 1 && displayError && (
-          <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
-            Please input atleast one email address
-          </p>
-        )}
-
-        {displayError && errorMessage && (
-          <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
-            {errorMessage}
-          </p>
-        )}
-        <div>
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            type="text"
-            placeholder="Meeting Title"
-            className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
-          />
-        </div>
-
-        <label>Time</label>
-
-        <div className="flex flex-row flex-wrap gap-2">
-          {/* datepicker form */}
-          <div className="relative flex w-full flex-row items-center justify-center bg-zinc-950 outline-none ring-1 ring-zinc-800">
-            <Popover
-              placement="bottom"
-              shouldCloseOnInteractOutside={(e) => {
-                return false;
-              }}
-              isOpen={isDatePickerOpen}
-            >
-              <PopoverTrigger>
-                <p className="absolute inset-0 -z-10"></p>
-              </PopoverTrigger>
-              <PopoverContent className="inset max-h-[340px] max-w-[400px] flex-none rounded-md p-2">
-                {/* content */}
-                <DatePicker
-                  selected={new Date(selectedDate)}
-                  onChange={(date) => {
-                    if (date) {
-                      console.log(date);
-                      setValue('date', parseDateToString(date));
-                      setIsDatePickerOpen(false);
-                    }
-                  }}
-                  inline
-                />
-              </PopoverContent>
-            </Popover>
-            <input
-              id="event-date"
-              className="z-10 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm  outline-none disabled:cursor-not-allowed disabled:bg-zinc-800"
-              type="text"
-              {...register('date')}
-              onClick={() => {
-                setIsEndTimeOpen(false);
-                setIsStartTimeOpen(false);
-                setIsDatePickerOpen(!isDatePickerOpen);
-              }}
-            />
-            <Button
-              isIconOnly
-              className="bg-trasnparent r-2 z-10 w-5 flex-none text-zinc-400"
-              onClick={(e) => {
-                setIsEndTimeOpen(false);
-                setIsStartTimeOpen(false);
-                setIsDatePickerOpen(!isDatePickerOpen);
-              }}
-            >
-              <CalendarIcon className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* timepicker form */}
-          <div className="relative flex flex-1 items-center justify-center">
-            <Popover
-              placement="bottom"
-              shouldCloseOnInteractOutside={(e) => {
-                return false;
-              }}
-              isOpen={isStartTimeOpen}
-              className="hidden sm:block"
-            >
-              <PopoverTrigger>
-                <p className="absolute inset-0 -z-10"></p>
-              </PopoverTrigger>
-              <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
-                {/* content */}
-                <DatePicker
-                  selected={selectedStartTime}
-                  showTimeSelect
-                  showTimeSelectOnly
-                  timeIntervals={15}
-                  timeFormat="HH:mm"
-                  onChange={(date) => {
-                    if (date) {
-                      setValue('startTime', parseTimeDateToString(date));
-                      setIsStartTimeOpen(false);
-                    }
-                  }}
-                  inline
-                />
-              </PopoverContent>
-            </Popover>
-            <input
-              id="time"
-              className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px] text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
-              type="time"
-              onClick={() => {
-                setIsDatePickerOpen(false);
-                setIsEndTimeOpen(false);
-                setIsStartTimeOpen(!isStartTimeOpen);
-              }}
-              {...register('startTime')}
-            />
-          </div>
-
-          {/* timepicker form */}
-          <div className="relative flex flex-1 items-center justify-center">
-            <Popover
-              placement="bottom"
-              shouldCloseOnInteractOutside={(e) => {
-                return false;
-              }}
-              isOpen={isEndTimeOpen}
-              className="hidden sm:block"
-            >
-              <PopoverTrigger>
-                <p className="absolute inset-0 -z-10"></p>
-              </PopoverTrigger>
-              <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
-                {/* content */}
-                <DatePicker
-                  selected={selectedEndTime}
-                  showTimeSelect
-                  showTimeSelectOnly
-                  timeIntervals={15}
-                  timeFormat="HH:mm"
-                  onChange={(date) => {
-                    if (date) {
-                      setValue('endTime', parseTimeDateToString(date));
-                      setIsEndTimeOpen(false);
-                    }
-                  }}
-                  inline
-                />
-              </PopoverContent>
-            </Popover>
-            <input
-              id="time"
-              className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
-              type="time"
-              onClick={() => {
-                setIsDatePickerOpen(false);
-                setIsStartTimeOpen(false);
-                setIsEndTimeOpen(!isEndTimeOpen);
-              }}
-              {...register('endTime')}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label htmlFor="email">Email</label>
-          <div className="relative flex w-full flex-row items-center rounded-md bg-zinc-950 outline-none ring-1 ring-zinc-800 sm:w-auto">
-            <input
-              className="flex-1 bg-transparent py-2.5 pl-4 text-[16px] outline-none"
-              placeholder="Add multiple email by comma"
-              id="email"
-              {...register('csvEmails', {
-                pattern:
-                  /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\s*,\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-              })}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  onAddMultitpleEmails();
-                }
-              }}
-            />
-            <Button
-              isDisabled={
-                formState.errors.csvEmails !== undefined ||
-                getValues('csvEmails') === ''
-              }
-              className="
-                rounded-none bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600
-              "
-              onClick={onAddMultitpleEmails}
-              isIconOnly
-            >
-              <MailPlus className=" text-white" width={20} height={20} />
-            </Button>
-          </div>
-          {formState.errors.csvEmails && (
-            <p className="mx-1 mt-1 text-xs font-medium text-red-400">
-              Invalid email address. please make sure to separate emails by
-              commas.
+        <div className="max-h-48 gap-2 overflow-scroll sm:max-h-max">
+          {selectedEmails.length < 1 && displayError && (
+            <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
+              Please input atleast one email address
             </p>
           )}
-        </div>
 
-        {emails.length > 0 && (
-          <div className="max-h-60 overflow-x-hidden overflow-y-scroll rounded-md ring-1 ring-zinc-800">
+          {displayError && errorMessage && (
+            <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
+              {errorMessage}
+            </p>
+          )}
+          <div>
+            <label htmlFor="title">Title</label>
+            <input
+              id="title"
+              type="text"
+              placeholder="Meeting Title"
+              className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+            />
+          </div>
+
+          <label>Time</label>
+
+          <div className="flex flex-row flex-wrap gap-2">
+            {/* datepicker form */}
+            <div className="relative flex w-full flex-row items-center justify-center bg-zinc-950 outline-none ring-1 ring-zinc-800">
+              <Popover
+                placement="bottom"
+                shouldCloseOnInteractOutside={(e) => {
+                  return false;
+                }}
+                isOpen={isDatePickerOpen}
+              >
+                <PopoverTrigger>
+                  <p className="absolute inset-0 -z-10"></p>
+                </PopoverTrigger>
+                <PopoverContent className="inset max-h-[340px] max-w-[400px] flex-none rounded-md p-2">
+                  {/* content */}
+                  <DatePicker
+                    selected={new Date(selectedDate)}
+                    onChange={(date) => {
+                      if (date) {
+                        console.log(date);
+                        setValue('date', parseDateToString(date));
+                        setIsDatePickerOpen(false);
+                      }
+                    }}
+                    inline
+                  />
+                </PopoverContent>
+              </Popover>
+              <input
+                id="event-date"
+                className="z-10 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm  outline-none disabled:cursor-not-allowed disabled:bg-zinc-800"
+                type="text"
+                {...register('date')}
+                onClick={() => {
+                  setIsEndTimeOpen(false);
+                  setIsStartTimeOpen(false);
+                  setIsDatePickerOpen(!isDatePickerOpen);
+                }}
+              />
+              <Button
+                isIconOnly
+                className="bg-trasnparent r-2 z-10 w-5 flex-none text-zinc-400"
+                onClick={(e) => {
+                  setIsEndTimeOpen(false);
+                  setIsStartTimeOpen(false);
+                  setIsDatePickerOpen(!isDatePickerOpen);
+                }}
+              >
+                <CalendarIcon className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* timepicker form */}
+            <div className="relative flex flex-1 items-center justify-center">
+              <Popover
+                placement="bottom"
+                shouldCloseOnInteractOutside={(e) => {
+                  return false;
+                }}
+                isOpen={isStartTimeOpen}
+                className="hidden sm:block"
+              >
+                <PopoverTrigger>
+                  <p className="absolute inset-0 -z-10"></p>
+                </PopoverTrigger>
+                <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
+                  {/* content */}
+                  <DatePicker
+                    selected={selectedStartTime}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={15}
+                    timeFormat="HH:mm"
+                    onChange={(date) => {
+                      if (date) {
+                        setValue('startTime', parseTimeDateToString(date));
+                        setIsStartTimeOpen(false);
+                      }
+                    }}
+                    inline
+                  />
+                </PopoverContent>
+              </Popover>
+              <input
+                id="time"
+                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px] text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                type="time"
+                onClick={() => {
+                  setIsDatePickerOpen(false);
+                  setIsEndTimeOpen(false);
+                  setIsStartTimeOpen(!isStartTimeOpen);
+                }}
+                {...register('startTime')}
+              />
+            </div>
+
+            {/* timepicker form */}
+            <div className="relative flex flex-1 items-center justify-center">
+              <Popover
+                placement="bottom"
+                shouldCloseOnInteractOutside={(e) => {
+                  return false;
+                }}
+                isOpen={isEndTimeOpen}
+                className="hidden sm:block"
+              >
+                <PopoverTrigger>
+                  <p className="absolute inset-0 -z-10"></p>
+                </PopoverTrigger>
+                <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
+                  {/* content */}
+                  <DatePicker
+                    selected={selectedEndTime}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={15}
+                    timeFormat="HH:mm"
+                    onChange={(date) => {
+                      if (date) {
+                        setValue('endTime', parseTimeDateToString(date));
+                        setIsEndTimeOpen(false);
+                      }
+                    }}
+                    inline
+                  />
+                </PopoverContent>
+              </Popover>
+              <input
+                id="time"
+                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                type="time"
+                onClick={() => {
+                  setIsDatePickerOpen(false);
+                  setIsStartTimeOpen(false);
+                  setIsEndTimeOpen(!isEndTimeOpen);
+                }}
+                {...register('endTime')}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email">Email</label>
+            <div className="relative flex w-full flex-row items-center rounded-md bg-zinc-950 outline-none ring-1 ring-zinc-800 sm:w-auto">
+              <input
+                className="flex-1 bg-transparent py-2.5 pl-4 text-[16px] outline-none"
+                placeholder="Add multiple email by comma"
+                id="email"
+                {...register('csvEmails', {
+                  pattern:
+                    /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\s*,\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    onAddMultitpleEmails();
+                  }
+                }}
+              />
+              <Button
+                isDisabled={
+                  formState.errors.csvEmails !== undefined ||
+                  getValues('csvEmails') === ''
+                }
+                className="
+                rounded-none bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600
+              "
+                onClick={onAddMultitpleEmails}
+                isIconOnly
+              >
+                <MailPlus className=" text-white" width={20} height={20} />
+              </Button>
+            </div>
+            {formState.errors.csvEmails && (
+              <p className="mx-1 mt-1 text-xs font-medium text-red-400">
+                Invalid email address. please make sure to separate emails by
+                commas.
+              </p>
+            )}
+          </div>
+
+          <div className="mt-2 max-h-60 overflow-x-hidden overflow-y-scroll rounded-md ring-1 ring-zinc-800">
             <table className="w-full rounded-md ">
               <tbody className="">
+                {emails.length == 0 && (
+                  <tr
+                    className="
+        odd:bg-zinc-800 even:bg-zinc-900 hover:bg-red-800"
+                  >
+                    <td className="p-2 text-center text-sm">
+                      Added email will appear here
+                    </td>
+                  </tr>
+                )}
+
                 {emails.map((email, index) => (
                   <tr
                     key={email.id}
@@ -439,7 +450,7 @@ export default function MeetingScheduleForm() {
               </tbody>
             </table>
           </div>
-        )}
+        </div>
 
         <div className="mt-4 flex flex-row gap-2">
           <Button
