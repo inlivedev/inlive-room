@@ -152,7 +152,8 @@ export class EventRepo implements iEventRepo {
     isStartAfter?: Date,
     isStartBefore?: Date,
     isEndAfter?: Date,
-    isEndBefore?: Date
+    isEndBefore?: Date,
+    category : "webinar"|"meeting" | undefined = undefined
   ) {
     page = page - 1;
 
@@ -213,6 +214,19 @@ export class EventRepo implements iEventRepo {
         statusQuery.push(sql`${events.status} = ${s}`);
       });
     }
+
+    if(category){
+      switch (category) {
+        case 'webinar': 
+          whereQuery.push(sql`${events.categoryID} = ${1}`);
+          break;
+        
+        case 'meeting':
+          whereQuery.push(sql`${events.categoryID} = ${2}`);
+          break;
+      }
+    }
+    
 
     const statusFilter = statusQuery.length
       ? sql.join(statusQuery, sql` OR `)

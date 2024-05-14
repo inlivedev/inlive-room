@@ -81,21 +81,14 @@ export default function CreateRoom() {
         document.dispatchEvent(new CustomEvent('open:schedule-meeting-modal'));
       }
     },
-    [user, isSubmitting, createRoom]
+    [createRoom, isSubmitting, user]
   );
 
   return (
     <section className="md:max-w-xl">
       <ScheduleModal />
-      <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
-        Virtual room for your real-time collaboration
-      </h2>
-      <p className="mt-4 text-pretty text-base text-zinc-400 lg:text-lg">
-        Connect with anyone, anywhere. Host or join in seconds. It&apos;s that
-        simple! Experience real-time messaging, video, and audio for seamless
-        collaboration, all within open-source virtual rooms.
-      </p>
-      <div className="mt-8">
+
+      <div className="">
         {user ? (
           <Dropdown
             placement="bottom-start"
@@ -103,7 +96,7 @@ export default function CreateRoom() {
           >
             <DropdownTrigger>
               <Button
-                className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
+                className="w-30 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
                 isDisabled={isSubmitting}
                 aria-disabled={isSubmitting}
                 disabled={isSubmitting}
@@ -117,10 +110,10 @@ export default function CreateRoom() {
                         wrapper: 'w-4 h-4',
                       }}
                     />
-                    <span>Creating a new room...</span>
+                    <span>Creating...</span>
                   </div>
                 ) : (
-                  <span>Create a new room</span>
+                  <span>New room</span>
                 )}
               </Button>
             </DropdownTrigger>
@@ -143,6 +136,24 @@ export default function CreateRoom() {
                 </div>
               </DropdownItem>
               <DropdownItem
+                key="schedule"
+                classNames={{
+                  wrapper: 'group',
+                }}
+              >
+                <div className="flex justify-between text-sm font-medium text-zinc-200">
+                  <span className="inline-block">Schedule</span>
+                  <div className="inline-flex items-center">
+                    <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
+                      Beta
+                    </span>
+                  </div>
+                </div>
+                <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
+                  Schedule meeting for later
+                </div>
+              </DropdownItem>
+              <DropdownItem
                 key="event"
                 classNames={{
                   wrapper: 'group',
@@ -158,24 +169,6 @@ export default function CreateRoom() {
                 </div>
                 <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
                   Host sessions with large audiences
-                </div>
-              </DropdownItem>
-              <DropdownItem
-                key="schedule"
-                classNames={{
-                  wrapper: 'group',
-                }}
-              >
-                <div className="flex justify-between text-sm font-medium text-zinc-200">
-                  <span className="inline-block">Schedule</span>
-                  <div className="inline-flex items-center">
-                    <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
-                      Beta
-                    </span>
-                  </div>
-                </div>
-                <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
-                  Schedule a meeting for later
                 </div>
               </DropdownItem>
             </DropdownMenu>
@@ -221,19 +214,17 @@ function ScheduleModal() {
       hideCloseButton
       scrollBehavior="inside"
     >
-      <ModalBody>
-        <ModalContent className="p-2">
-          <ModalHeader className="flex flex-col">
-            <h2>Schedule a Meeting</h2>
-            <p className="text-sm font-normal text-zinc-400">
-              Send a personal email to schedule a meeting
-            </p>
-          </ModalHeader>
-          <ModalBody>
-            <MeetingScheduleForm></MeetingScheduleForm>
-          </ModalBody>
-        </ModalContent>
-      </ModalBody>
+      <ModalContent className="p-2">
+        <ModalHeader className="flex flex-col">
+          <h2>Schedule a Meeting</h2>
+          <p className="text-sm font-normal text-zinc-400">
+            Send a personal email to schedule a meeting
+          </p>
+        </ModalHeader>
+        <ModalBody>
+          <MeetingScheduleForm></MeetingScheduleForm>
+        </ModalBody>
+      </ModalContent>
     </Modal>
   );
 }
