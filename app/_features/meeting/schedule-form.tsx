@@ -83,7 +83,7 @@ export default function MeetingScheduleForm() {
       startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
       startTime.setMinutes(parseTimeStringToDate(data.startTime).getMinutes());
 
-      const endTime = startTime;
+      const endTime = parseStringDateToDate(data.endTime);
       endTime.setHours(parseTimeStringToDate(data.endTime).getHours());
       endTime.setMinutes(parseTimeStringToDate(data.endTime).getMinutes());
 
