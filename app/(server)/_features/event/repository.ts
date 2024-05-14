@@ -171,7 +171,7 @@ export class EventRepo implements iEventRepo {
       orderBy(fields, operators) {
         return [operators.desc(fields.createdAt)];
       },
-      columns: { roomId: false },
+      
     };
 
     const whereQuery: SQL[] = [];
