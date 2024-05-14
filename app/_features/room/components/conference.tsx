@@ -88,7 +88,7 @@ const ParticipantView = ({ roomType }: { roomType: string }) => {
           />
         ) : null}
       </div>
-      <div className="px-4 pb-4">
+      <div className="mt-3 px-4 pb-4">
         {roomType === 'event' ? (
           <WebinarView streams={streams} pinnedStream={pinnedStream} />
         ) : (

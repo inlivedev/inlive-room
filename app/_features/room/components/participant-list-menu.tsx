@@ -218,7 +218,7 @@ const ParticipantsListItem = ({ stream }: { stream: ParticipantVideo }) => {
       <div>
         <Image
           referrerPolicy="no-referrer"
-          src={`https://api.dicebear.com/8.x/shapes/svg?seed=${stream.clientId}`}
+          src={`https://api.dicebear.com/8.x/initials/svg?seed=${stream.name}`}
           alt={`Image of ${stream.name}`}
           loading="lazy"
           width={36}
@@ -246,7 +246,7 @@ const ParticipantsListItem = ({ stream }: { stream: ParticipantVideo }) => {
               } else {
                 return (
                   <span key={`${identifier.id}-${index}`}>
-                    ,{identifier.name}
+                    ,&nbsp;{identifier.name}
                   </span>
                 );
               }
