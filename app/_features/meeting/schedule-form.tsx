@@ -228,6 +228,7 @@ export default function MeetingScheduleForm() {
               type="text"
               placeholder="Meeting Title"
               className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+              {...register('title')}
             />
           </div>
 
