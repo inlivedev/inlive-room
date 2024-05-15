@@ -1,24 +1,14 @@
 'use client';
 
-import { useCallback, Key, useEffect, useRef, useState } from 'react';
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Button,
-} from '@nextui-org/react';
-import * as Sentry from '@sentry/nextjs';
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@nextui-org/react';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import type { ParticipantVideo } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
-import { clientSDK } from '@/_shared/utils/sdk';
-import { useClientContext } from '@/_features/room/contexts/client-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import CheckIcon from '@/_shared/components/icons/check-icon';
 import { type SVGElementPropsType } from '@/_shared/types/types';
+import ParticipantMoreDropdown from './participant-more-dropdown';
 
 export default function ConferenceScreen({
   stream,
@@ -44,16 +34,7 @@ function OverlayScreen({
   stream: ParticipantVideo;
 }) {
   const { peer } = usePeerContext();
-  const { datachannels } = useDataChannelContext();
-  const { roomID, clientID } = useClientContext();
-  const {
-    speakerClientIDs,
-    spotlights,
-    moderatorClientIDs,
-    isModerator,
-    roomType,
-    currentLayout,
-  } = useMetadataContext();
+  const { moderatorClientIDs } = useMetadataContext();
 
   const isHost = moderatorClientIDs.includes(stream.clientId);
   const [rtcLocalStats, setRtcLocalStats] = useState({
@@ -128,98 +109,6 @@ function OverlayScreen({
       document.removeEventListener('send:rtc-stats', onRTCStats);
     };
   }, [peer, stream]);
-
-  const onMoreSelection = useCallback(
-    async (key: Key) => {
-      if (key === 'pin') {
-        document.dispatchEvent(
-          new CustomEvent('set:pin', {
-            detail: {
-              active: !stream.pin,
-              id: stream.id,
-            },
-          })
-        );
-      } else if (key === 'spotlight') {
-        try {
-          if (stream.spotlight) {
-            const newSpotlights = spotlights.filter(
-              (spotlight) => spotlight !== stream.id
-            );
-
-            await clientSDK.setMetadata(roomID, {
-              spotlights: newSpotlights,
-            });
-          } else {
-            await clientSDK.setMetadata(roomID, {
-              spotlights: [...spotlights, stream.id],
-            });
-          }
-        } catch (error) {
-          Sentry.captureException(error, {
-            extra: {
-              message: `API call error when trying to set metadata spotlight`,
-            },
-          });
-          console.error(error);
-        }
-      } else if (key === 'set-speaker') {
-        if (!isModerator) return;
-
-        try {
-          await clientSDK.setMetadata(roomID, {
-            speakerClientIDs: [...speakerClientIDs, stream.clientId],
-          });
-        } catch (error) {
-          Sentry.captureException(error, {
-            extra: {
-              message: `API call error when trying to set metadata speakerClientIDs`,
-            },
-          });
-          console.error(error);
-        }
-      } else if (key === 'set-regular-participant') {
-        if (!isModerator) return;
-
-        try {
-          const newSpeakerClientIDs = speakerClientIDs.filter((speaker) => {
-            return speaker !== stream.clientId;
-          });
-
-          await clientSDK.setMetadata(roomID, {
-            speakerClientIDs: newSpeakerClientIDs,
-          });
-        } catch (error) {
-          Sentry.captureException(error, {
-            extra: {
-              message: `API call error when trying to set metadata speakerClientIDs`,
-            },
-          });
-          console.error(error);
-        }
-      } else if (key === 'remove-client') {
-        if (!isModerator) return;
-
-        const moderatorDataChannel = datachannels.get('moderator');
-
-        const confirmed = confirm(
-          'Are you sure you want to remove this participant?'
-        );
-
-        if (confirmed && moderatorDataChannel) {
-          const message = {
-            type: 'remove-client',
-            data: {
-              clientIDs: [stream.clientId],
-            },
-          };
-
-          moderatorDataChannel.send(JSON.stringify(message));
-        }
-      }
-    },
-    [roomID, speakerClientIDs, stream, isModerator, spotlights, datachannels]
-  );
 
   return (
     <div className="group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg">
@@ -404,75 +293,16 @@ function OverlayScreen({
       ) : null}
       {/* video screen overlay */}
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
-        <Dropdown placement="bottom" className="ring-1 ring-zinc-800/70">
-          <DropdownTrigger>
-            <Button
-              isIconOnly
-              size="sm"
-              variant="light"
-              className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
-            >
-              <MoreIcon className="h-4 w-4" />
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
-            {[
-              <DropdownItem key="pin">
-                <div className="flex items-center gap-1">
-                  <span>Pin for myself</span>
-                  {stream.pin ? (
-                    <span>
-                      <CheckIcon width={16} height={16} />
-                    </span>
-                  ) : null}
-                </div>
-              </DropdownItem>,
-              // @ts-ignore
-              isModerator
-                ? [
-                    <DropdownItem key="spotlight">
-                      <div className="flex items-center gap-1">
-                        <span>Spotlight for everyone</span>
-                        {stream.spotlight ? (
-                          <span>
-                            <CheckIcon width={16} height={16} />
-                          </span>
-                        ) : null}
-                      </div>
-                    </DropdownItem>,
-                  ]
-                : undefined,
-              // @ts-ignore
-              isModerator &&
-              clientID !== stream.clientId &&
-              stream.source === 'media' &&
-              roomType === 'event' &&
-              currentLayout === 'speaker'
-                ? [
-                    speakerClientIDs.includes(stream.clientId) ? (
-                      <DropdownItem key="set-regular-participant">
-                        Set as a regular participant
-                      </DropdownItem>
-                    ) : (
-                      <DropdownItem key="set-speaker">
-                        Set as a speaker
-                      </DropdownItem>
-                    ),
-                  ]
-                : undefined,
-              // @ts-ignore
-              isModerator &&
-              stream.origin === 'remote' &&
-              stream.source === 'media'
-                ? [
-                    <DropdownItem key="remove-client">
-                      Remove this participant
-                    </DropdownItem>,
-                  ]
-                : undefined,
-            ]}
-          </DropdownMenu>
-        </Dropdown>
+        <ParticipantMoreDropdown stream={stream}>
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
+          >
+            <MoreIcon className="h-4 w-4" />
+          </Button>
+        </ParticipantMoreDropdown>
         <div className="flex">
           <div className="flex max-w-full items-center gap-2 rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100">
             {stream.spotlight || stream.pin ? (
