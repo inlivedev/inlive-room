@@ -153,12 +153,17 @@ export function ParticipantProvider({
     document.addEventListener('set:pin', onPinSet);
     document.addEventListener('set:fullscreen', onFullscreenSet);
     document.addEventListener('fullscreenchange', onFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullScreenChange);
 
     return () => {
       document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
       document.removeEventListener('set:pin', onPinSet);
       document.removeEventListener('set:fullscreen', onFullscreenSet);
       document.removeEventListener('fullscreenchange', onFullScreenChange);
+      document.removeEventListener(
+        'webkitfullscreenchange',
+        onFullScreenChange
+      );
     };
   }, [streams]);
 
