@@ -15,6 +15,7 @@ export type ParticipantVideo = {
   readonly audioLevel: number;
   pin: boolean;
   spotlight: boolean;
+  fullscreen: boolean;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
   readonly addEventListener: (
     type: string,
@@ -33,6 +34,7 @@ const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.videoElement.srcObject = stream.mediaStream;
   stream.pin = false;
   stream.spotlight = false;
+  stream.fullscreen = false;
   return stream;
 };
 
@@ -91,12 +93,51 @@ export function ParticipantProvider({
       }
     }) as EventListener;
 
+    const onFullscreenSet = (async (event: CustomEventInit) => {
+      const { id: streamID, active } = event.detail || {};
+      const currentStream = streams.find((stream) => stream.id === streamID);
+      if (!currentStream) return;
+
+      if (active === true && !currentStream.fullscreen) {
+        await document.body.requestFullscreen();
+        setStreams((prevState) => {
+          return prevState.map((stream) => {
+            if (stream.id === currentStream.id) stream.fullscreen = true;
+            return stream;
+          });
+        });
+      } else if (active === false && currentStream.fullscreen) {
+        await document.exitFullscreen();
+        setStreams((prevState) => {
+          return prevState.map((stream) => {
+            if (stream.id === currentStream.id) stream.fullscreen = false;
+            return stream;
+          });
+        });
+      }
+    }) as EventListener;
+
+    const onFullScreenChange = () => {
+      if (!document.fullscreenElement) {
+        setStreams((prevState) => {
+          return prevState.map((stream) => {
+            if (stream.fullscreen) stream.fullscreen = false;
+            return stream;
+          });
+        });
+      }
+    };
+
     document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
     document.addEventListener('set:pin', onPinSet);
+    document.addEventListener('set:fullscreen', onFullscreenSet);
+    document.addEventListener('fullscreenchange', onFullScreenChange);
 
     return () => {
       document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
       document.removeEventListener('set:pin', onPinSet);
+      document.removeEventListener('set:fullscreen', onFullscreenSet);
+      document.removeEventListener('fullscreenchange', onFullScreenChange);
     };
   }, [streams]);
 

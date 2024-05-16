@@ -35,7 +35,6 @@ function OverlayScreen({
 }) {
   const { peer } = usePeerContext();
   const { moderatorClientIDs } = useMetadataContext();
-  const screenElementRef = useRef<HTMLDivElement>(null);
 
   const isHost = moderatorClientIDs.includes(stream.clientId);
   const [rtcLocalStats, setRtcLocalStats] = useState({
@@ -112,31 +111,11 @@ function OverlayScreen({
     };
   }, [peer, stream]);
 
-  useEffect(() => {
-    const onFullScreenChange = () => {
-      const screenElement = screenElementRef.current;
-
-      if (
-        !document.fullscreenElement &&
-        screenElement?.className.includes('fixed-fullscreen')
-      ) {
-        screenElement.classList.remove('fixed-fullscreen');
-        screenElement.style.backgroundColor = '';
-      }
-    };
-
-    document.addEventListener('fullscreenchange', onFullScreenChange);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', onFullScreenChange);
-    };
-  }, [stream]);
-
   return (
     <div
-      id={`screen-${stream.id}`}
-      className="group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg"
-      ref={screenElementRef}
+      className={`group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg ${
+        stream.fullscreen ? 'fixed-fullscreen bg-black' : ''
+      }`}
     >
       {/* stats debug overlay */}
       {showStats ? (

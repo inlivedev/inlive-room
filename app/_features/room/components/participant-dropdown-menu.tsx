@@ -62,16 +62,14 @@ export default function ParticipantDropdownMenu({
           console.error(error);
         }
       } else if (key === 'fullscreen-view') {
-        const screenElement = document.getElementById(`screen-${stream.id}`);
-
-        if (!document.fullscreenElement && screenElement) {
-          screenElement.classList.add('fixed-fullscreen');
-          screenElement.style.backgroundColor = 'black';
-          await document.body.requestFullscreen();
-          return;
-        }
-
-        await document.exitFullscreen();
+        document.dispatchEvent(
+          new CustomEvent('set:fullscreen', {
+            detail: {
+              active: !stream.fullscreen,
+              id: stream.id,
+            },
+          })
+        );
       } else if (key === 'set-speaker') {
         if (!isModerator) return;
 
@@ -166,6 +164,11 @@ export default function ParticipantDropdownMenu({
                 <DropdownItem key="fullscreen-view">
                   <div className="flex items-center gap-1">
                     <span>Fullscreen view</span>
+                    {stream.fullscreen ? (
+                      <span>
+                        <CheckIcon width={16} height={16} />
+                      </span>
+                    ) : null}
                   </div>
                 </DropdownItem>,
               ]
