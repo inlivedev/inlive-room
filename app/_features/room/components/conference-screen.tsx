@@ -95,7 +95,6 @@ function OverlayScreen({
       'disable:debug-webrtc-stats',
       disableDebugWebrtcStats
     );
-
     document.addEventListener('send:rtc-stats', onRTCStats);
 
     return () => {
