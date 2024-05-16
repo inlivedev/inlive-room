@@ -113,7 +113,7 @@ function OverlayScreen({
   return (
     <div
       className={`group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg ${
-        stream.fullscreen ? 'fixed-fullscreen bg-black' : ''
+        stream.fullscreen ? 'fixed-fullscreen !bg-zinc-900' : ''
       }`}
     >
       {/* stats debug overlay */}
