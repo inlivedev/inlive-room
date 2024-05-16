@@ -1,4 +1,6 @@
 {
+  "id": "62c0bcc4-3d40-4d32-a041-a558088d3ee4",
+  "prevId": "948222b3-a2b2-45b4-aa7b-357b04075360",
   "version": "6",
   "dialect": "postgresql",
   "tables": {
@@ -86,12 +88,34 @@
       "uniqueConstraints": {
         "early_access_invitees_email_unique": {
           "name": "early_access_invitees_email_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
+    },
+    "public.event_category": {
+      "name": "event_category",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.events": {
       "name": "events",
@@ -107,7 +131,7 @@
           "name": "uuid",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "gen_random_uuid()"
         },
         "slug": {
@@ -181,6 +205,7 @@
         "status": {
           "name": "status",
           "type": "event_status_enum",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
           "default": "'draft'"
@@ -191,6 +216,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": 50
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -198,38 +229,51 @@
         "events_created_by_users_id_fk": {
           "name": "events_created_by_users_id_fk",
           "tableFrom": "events",
+          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "events_room_id_rooms_id_fk": {
           "name": "events_room_id_rooms_id_fk",
           "tableFrom": "events",
+          "tableTo": "rooms",
           "columnsFrom": [
             "room_id"
           ],
-          "tableTo": "rooms",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "events_category_id_event_category_id_fk": {
+          "name": "events_category_id_event_category_id_fk",
+          "tableFrom": "events",
+          "tableTo": "event_category",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "events_slug_unique": {
           "name": "events_slug_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     },
@@ -293,11 +337,19 @@
           "notNull": true,
           "default": 0
         },
+        "is_invited": {
+          "name": "is_invited",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
         "role_id": {
           "name": "role_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": 1
         }
       },
       "indexes": {},
@@ -305,47 +357,47 @@
         "events_participant_event_id_events_id_fk": {
           "name": "events_participant_event_id_events_id_fk",
           "tableFrom": "events_participant",
+          "tableTo": "events",
           "columnsFrom": [
             "event_id"
           ],
-          "tableTo": "events",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "events_participant_role_id_participant_role_id_fk": {
           "name": "events_participant_role_id_participant_role_id_fk",
           "tableFrom": "events_participant",
+          "tableTo": "participant_role",
           "columnsFrom": [
             "role_id"
           ],
-          "tableTo": "participant_role",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "events_participant_client_id_event_id_unique": {
           "name": "events_participant_client_id_event_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "client_id",
             "event_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         },
         "events_participant_email_event_id_unique": {
           "name": "events_participant_email_event_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email",
             "event_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     },
@@ -467,17 +519,17 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ],
-          "nullsNotDistinct": false
+          ]
         },
         "users_account_id_unique": {
           "name": "users_account_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "account_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       }
     }
@@ -495,10 +547,8 @@
   },
   "schemas": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "id": "7c0aaba6-2d85-4634-acd4-8da33fe00dfa",
-  "prevId": "d201d63b-2d05-40e4-aa0c-0db635245399"
+    "tables": {}
+  }
 }

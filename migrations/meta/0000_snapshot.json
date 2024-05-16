@@ -1,10 +1,8 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "id": "6dbd156f-51db-4e8d-b0d1-87e8ff835a75",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "rooms": {
+    "public.rooms": {
       "name": "rooms",
       "schema": "",
       "columns": {
@@ -45,5 +43,7 @@
     "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "6dbd156f-51db-4e8d-b0d1-87e8ff835a75",
+  "prevId": "00000000-0000-0000-0000-000000000000"
 }

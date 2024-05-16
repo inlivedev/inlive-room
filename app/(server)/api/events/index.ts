@@ -1,22 +1,38 @@
-import {
-  selectEvent,
-  selectParticipant,
-} from '@/(server)/_features/event/schema';
-import { EventType } from '@/_shared/types/event';
-
 const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
 // reference: https://www.rfc-editor.org/rfc/rfc5545
 export function GenerateIcal(
-  event: selectEvent,
+  event: {
+    uuid: string;
+    name: string;
+    slug: string;
+    roomId?: string | null;
+    startTime: Date;
+    endTime: Date;
+    status: string;
+  },
+  type: 'webinar' | 'meeting',
   timezone: string,
-  host: EventType.Host,
-  participant: selectParticipant
+  host: {
+    name: string;
+    email: string;
+  },
+  participant: {
+    clientId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    updateCount: number;
+  }
 ) {
-  const { eventDate, eventTime, DTSTAMP, DTSTART, DTEND } = generateDateTime(
-    event,
-    timezone
-  );
+  const { eventDate, eventStartTime, eventEndTime, DTSTAMP, DTSTART, DTEND } =
+    generateDateTime(
+      {
+        start: event.startTime,
+        end: event.endTime,
+      },
+      timezone
+    );
 
   const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
 
@@ -28,19 +44,32 @@ export function GenerateIcal(
     eventMethod = 'CANCEL';
   }
 
-  const eventDesc = `Hi there!\\n
-  Thanks for registering for our upcoming webinar!\\n
-  We're excited to have you join us to learn more about\\n
-  \\n
-  ${event.name}\\n
-  Hosted by ${host.name}\\n
-  \\n
-  ${eventDate} - ${eventTime}\\n
-  \\n
-  Don't forget to mark your calendar on that date, see you there!\\n
-  \\n
-  About event : ${PUBLIC_URL}/events/${event.slug}\\n
-  Join the event : ${roomURL}`;
+  let eventDesc = '';
+
+  switch (type) {
+    case 'meeting':
+      eventDesc = createMeetingDesc({
+        eventDate,
+        eventStartTime,
+        eventEndTime,
+        roomURL,
+        host: host.name,
+      });
+      break;
+    case 'webinar':
+      eventDesc = createWebinarDesc({
+        name: event.name,
+        eventDate,
+        eventStartTime,
+        roomURL,
+        slug: event.slug,
+        host: host.name,
+      });
+      break;
+
+    default:
+      break;
+  }
 
   // eslint-disable-next-line prettier/prettier
   return `BEGIN:VCALENDAR
@@ -77,16 +106,27 @@ END:VEVENT
 END:VCALENDAR`;
 }
 
-function generateDateTime(event: selectEvent, timezone: string) {
+function generateDateTime(
+  time: {
+    start: Date;
+    end: Date;
+  },
+  timezone: string
+) {
   const eventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
     timeZone: timezone,
-  }).format(event.startTime);
+  }).format(time.start);
 
-  const eventTime = Intl.DateTimeFormat('en-GB', {
+  const eventStartTime = Intl.DateTimeFormat('en-GB', {
     timeStyle: 'long',
     timeZone: timezone,
-  }).format(event.startTime);
+  }).format(time.start);
+
+  const eventEndTime = Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'long',
+    timeZone: timezone,
+  }).format(time.end);
 
   const icalStartDate = Intl.DateTimeFormat('fr-CA', {
     timeZone: timezone,
@@ -94,7 +134,7 @@ function generateDateTime(event: selectEvent, timezone: string) {
     day: '2-digit',
     year: 'numeric',
   })
-    .format(event.startTime)
+    .format(time.start)
     .replaceAll('-', '');
 
   const icalStartTime = Intl.DateTimeFormat('en-GB', {
@@ -103,7 +143,7 @@ function generateDateTime(event: selectEvent, timezone: string) {
     second: '2-digit',
     timeZone: timezone,
   })
-    .format(event.startTime)
+    .format(time.start)
     .replaceAll(':', '');
 
   const icalEndDate = Intl.DateTimeFormat('fr-CA', {
@@ -112,7 +152,7 @@ function generateDateTime(event: selectEvent, timezone: string) {
     day: '2-digit',
     year: 'numeric',
   })
-    .format(event.endTime)
+    .format(time.end)
     .replaceAll('-', '');
 
   const icalEndTime = Intl.DateTimeFormat('en-GB', {
@@ -121,11 +161,52 @@ function generateDateTime(event: selectEvent, timezone: string) {
     second: '2-digit',
     timeZone: timezone,
   })
-    .format(event.endTime)
+    .format(time.end)
     .replaceAll(':', '');
 
   const DTSTAMP = `${icalStartDate}T${icalStartTime}`;
   const DTSTART = `${icalStartDate}T${icalStartTime}`;
   const DTEND = `${icalEndDate}T${icalEndTime}`;
-  return { eventDate, eventTime, DTSTAMP, DTSTART, DTEND };
+  return { eventDate, eventStartTime, eventEndTime, DTSTAMP, DTSTART, DTEND };
+}
+
+function createWebinarDesc(meta: {
+  name: string;
+  eventDate: string;
+  eventStartTime: string;
+  roomURL: string;
+  slug: string;
+  host: string;
+}) {
+  return `Hi there!\\n
+  Thanks for registering for our upcoming webinar!\\n
+  We're excited to have you join us to learn more about\\n
+  \\n
+  ${meta.name}\\n
+  Hosted by ${meta.host}\\n
+  \\n
+  ${meta.eventDate} - ${meta.eventStartTime}\\n
+  \\n
+  Don't forget to mark your calendar on that date, see you there!\\n
+  \\n
+  About event : ${PUBLIC_URL}/events/${meta.slug}\\n
+  Join the event : ${meta.roomURL}`;
+}
+
+function createMeetingDesc(meta: {
+  eventDate: string;
+  eventStartTime: string;
+  eventEndTime: string;
+  roomURL: string;
+  host: string;
+}) {
+  return `
+  Hi there! \\n
+
+  ${meta.host} has scheduled a meeting with you. \\n
+  ${meta.eventDate}
+  ${meta.eventStartTime} - ${meta.eventEndTime} \\n
+
+  Join the meeting : ${meta.roomURL} \\n
+  `;
 }

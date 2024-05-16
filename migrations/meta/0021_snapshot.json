@@ -1,10 +1,8 @@
 {
-  "id": "88e69efd-be36-46c7-98ec-f7a036260420",
-  "prevId": "b8a8f50e-ad9f-4ce9-abaa-50433463c8f3",
-  "version": "5",
-  "dialect": "pg",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "activities_logs": {
+    "public.activities_logs": {
       "name": "activities_logs",
       "schema": "",
       "columns": {
@@ -45,7 +43,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "early_access_invitees": {
+    "public.early_access_invitees": {
       "name": "early_access_invitees",
       "schema": "",
       "columns": {
@@ -88,14 +86,14 @@
       "uniqueConstraints": {
         "early_access_invitees_email_unique": {
           "name": "early_access_invitees_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "events": {
+    "public.events": {
       "name": "events",
       "schema": "",
       "columns": {
@@ -193,42 +191,42 @@
         "events_created_by_users_id_fk": {
           "name": "events_created_by_users_id_fk",
           "tableFrom": "events",
-          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "events_room_id_rooms_id_fk": {
           "name": "events_room_id_rooms_id_fk",
           "tableFrom": "events",
-          "tableTo": "rooms",
           "columnsFrom": [
             "room_id"
           ],
+          "tableTo": "rooms",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "events_slug_unique": {
           "name": "events_slug_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "events_participant": {
+    "public.events_participant": {
       "name": "events_participant",
       "schema": "",
       "columns": {
@@ -294,30 +292,30 @@
         "events_participant_event_id_events_id_fk": {
           "name": "events_participant_event_id_events_id_fk",
           "tableFrom": "events_participant",
-          "tableTo": "events",
           "columnsFrom": [
             "event_id"
           ],
+          "tableTo": "events",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "events_participant_client_id_event_id_unique": {
           "name": "events_participant_client_id_event_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "client_id",
             "event_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "rooms": {
+    "public.rooms": {
       "name": "rooms",
       "schema": "",
       "columns": {
@@ -358,7 +356,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "users": {
+    "public.users": {
       "name": "users",
       "schema": "",
       "columns": {
@@ -413,35 +411,38 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "users_account_id_unique": {
           "name": "users_account_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "account_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     }
   },
   "enums": {
-    "event_status_enum": {
+    "public.event_status_enum": {
       "name": "event_status_enum",
-      "values": {
-        "draft": "draft",
-        "published": "published",
-        "cancelled": "cancelled"
-      }
+      "schema": "public",
+      "values": [
+        "draft",
+        "published",
+        "cancelled"
+      ]
     }
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "88e69efd-be36-46c7-98ec-f7a036260420",
+  "prevId": "b8a8f50e-ad9f-4ce9-abaa-50433463c8f3"
 }

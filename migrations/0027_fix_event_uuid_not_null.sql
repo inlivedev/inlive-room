@@ -1,0 +1,1 @@
+ALTER TABLE "events" ALTER COLUMN "uuid" SET NOT NULL;
