@@ -159,7 +159,9 @@ export default function ParticipantDropdownMenu({
               ]
             : undefined,
           // @ts-ignore
-          document.fullscreenEnabled
+          document.fullscreenEnabled ||
+          // @ts-ignore
+          document.webkitFullscreenEnabled
             ? [
                 <DropdownItem key="fullscreen-view">
                   <div className="flex items-center gap-1">

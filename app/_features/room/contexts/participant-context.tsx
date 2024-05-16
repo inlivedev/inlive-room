@@ -99,7 +99,16 @@ export function ParticipantProvider({
       if (!currentStream) return;
 
       if (active === true && !currentStream.fullscreen) {
-        await document.body.requestFullscreen();
+        const body = document.body;
+        if (body.requestFullscreen) {
+          await body.requestFullscreen();
+        }
+        // @ts-ignore
+        else if (body.webkitEnterFullscreen) {
+          // @ts-ignore
+          await body.webkitEnterFullscreen();
+        }
+
         setStreams((prevState) => {
           return prevState.map((stream) => {
             if (stream.id === currentStream.id) stream.fullscreen = true;
@@ -107,7 +116,15 @@ export function ParticipantProvider({
           });
         });
       } else if (active === false && currentStream.fullscreen) {
-        await document.exitFullscreen();
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+        // @ts-ignore
+        else if (document.webkitExitFullscreen) {
+          // @ts-ignore
+          await document.webkitExitFullscreen();
+        }
+
         setStreams((prevState) => {
           return prevState.map((stream) => {
             if (stream.id === currentStream.id) stream.fullscreen = false;
@@ -118,7 +135,11 @@ export function ParticipantProvider({
     }) as EventListener;
 
     const onFullScreenChange = () => {
-      if (!document.fullscreenElement) {
+      if (
+        !document.fullscreenElement ||
+        // @ts-ignore
+        !document.webkitFullscreenElement
+      ) {
         setStreams((prevState) => {
           return prevState.map((stream) => {
             if (stream.fullscreen) stream.fullscreen = false;
