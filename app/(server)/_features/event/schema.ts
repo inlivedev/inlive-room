@@ -22,7 +22,7 @@ export const statusEnum = pgEnum('event_status_enum', [
 // Event Table
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
-  uuid: uuid('uuid').defaultRandom(),
+  uuid: uuid('uuid').defaultRandom().notNull(),
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
   startTime: timestamp('start_time').notNull(),

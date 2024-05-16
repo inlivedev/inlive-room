@@ -46,7 +46,15 @@ export async function SendEventInvitationEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
-  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
+  const icalString = GenerateIcal(
+    { ...event },
+    'meeting',
+    'Asia/Jakarta',
+    host,
+    {
+      ...participant,
+    }
+  );
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
   const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
   const res = await mailer.messages.create(MAILER_DOMAIN, {
@@ -122,7 +130,15 @@ export async function SendEventCancelledEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
-  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
+  const icalString = GenerateIcal(
+    { ...event },
+    'meeting',
+    'Asia/Jakarta',
+    host,
+    {
+      ...participant,
+    }
+  );
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
@@ -211,7 +227,15 @@ export async function SendEventRescheduledEmail(
     timeZone: 'Asia/Jakarta',
   }).format(newEvent.startTime);
 
-  const icalString = GenerateIcal(newEvent, 'Asia/Jakarta', host, participant);
+  const icalString = GenerateIcal(
+    { ...newEvent },
+    'meeting',
+    'Asia/Jakarta',
+    host,
+    {
+      ...participant,
+    }
+  );
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
@@ -317,7 +341,13 @@ export async function SendScheduledMeetinEmail(
     username: 'api',
   });
 
-  const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
+  const icalString = GenerateIcal(
+    { ...event },
+    'meeting',
+    'Asia/Jakarta',
+    host,
+    participant
+  );
   const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
 
   const html = render(
