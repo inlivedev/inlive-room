@@ -1,10 +1,8 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "id": "599f61c8-1839-429f-9c9c-a8c9e587548c",
-  "prevId": "219e1732-746f-4714-859a-f73d3ce50b52",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "participants": {
+    "public.participants": {
       "name": "participants",
       "schema": "",
       "columns": {
@@ -32,15 +30,15 @@
         "participants_room_id_rooms_id_fk": {
           "name": "participants_room_id_rooms_id_fk",
           "tableFrom": "participants",
-          "tableTo": "rooms",
           "columnsFrom": [
             "room_id"
           ],
+          "tableTo": "rooms",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -54,7 +52,7 @@
       },
       "uniqueConstraints": {}
     },
-    "rooms": {
+    "public.rooms": {
       "name": "rooms",
       "schema": "",
       "columns": {
@@ -89,5 +87,7 @@
     "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "599f61c8-1839-429f-9c9c-a8c9e587548c",
+  "prevId": "219e1732-746f-4714-859a-f73d3ce50b52"
 }

@@ -1,10 +1,8 @@
 {
-  "id": "948222b3-a2b2-45b4-aa7b-357b04075360",
-  "prevId": "c2471741-dd57-4610-ae7a-0c483c347325",
-  "version": "5",
-  "dialect": "pg",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "activities_logs": {
+    "public.activities_logs": {
       "name": "activities_logs",
       "schema": "",
       "columns": {
@@ -45,7 +43,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "early_access_invitees": {
+    "public.early_access_invitees": {
       "name": "early_access_invitees",
       "schema": "",
       "columns": {
@@ -88,14 +86,14 @@
       "uniqueConstraints": {
         "early_access_invitees_email_unique": {
           "name": "early_access_invitees_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "event_category": {
+    "public.event_category": {
       "name": "event_category",
       "schema": "",
       "columns": {
@@ -117,7 +115,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "events": {
+    "public.events": {
       "name": "events",
       "schema": "",
       "columns": {
@@ -228,55 +226,55 @@
         "events_created_by_users_id_fk": {
           "name": "events_created_by_users_id_fk",
           "tableFrom": "events",
-          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "events_room_id_rooms_id_fk": {
           "name": "events_room_id_rooms_id_fk",
           "tableFrom": "events",
-          "tableTo": "rooms",
           "columnsFrom": [
             "room_id"
           ],
+          "tableTo": "rooms",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "events_category_id_event_category_id_fk": {
           "name": "events_category_id_event_category_id_fk",
           "tableFrom": "events",
-          "tableTo": "event_category",
           "columnsFrom": [
             "category_id"
           ],
+          "tableTo": "event_category",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "events_slug_unique": {
           "name": "events_slug_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "events_participant": {
+    "public.events_participant": {
       "name": "events_participant",
       "schema": "",
       "columns": {
@@ -356,51 +354,51 @@
         "events_participant_event_id_events_id_fk": {
           "name": "events_participant_event_id_events_id_fk",
           "tableFrom": "events_participant",
-          "tableTo": "events",
           "columnsFrom": [
             "event_id"
           ],
+          "tableTo": "events",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "events_participant_role_id_participant_role_id_fk": {
           "name": "events_participant_role_id_participant_role_id_fk",
           "tableFrom": "events_participant",
-          "tableTo": "participant_role",
           "columnsFrom": [
             "role_id"
           ],
+          "tableTo": "participant_role",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "events_participant_client_id_event_id_unique": {
           "name": "events_participant_client_id_event_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "client_id",
             "event_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "events_participant_email_event_id_unique": {
           "name": "events_participant_email_event_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email",
             "event_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "participant_role": {
+    "public.participant_role": {
       "name": "participant_role",
       "schema": "",
       "columns": {
@@ -422,7 +420,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "rooms": {
+    "public.rooms": {
       "name": "rooms",
       "schema": "",
       "columns": {
@@ -463,7 +461,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "users": {
+    "public.users": {
       "name": "users",
       "schema": "",
       "columns": {
@@ -518,35 +516,38 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "users_account_id_unique": {
           "name": "users_account_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "account_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     }
   },
   "enums": {
-    "event_status_enum": {
+    "public.event_status_enum": {
       "name": "event_status_enum",
-      "values": {
-        "draft": "draft",
-        "published": "published",
-        "cancelled": "cancelled"
-      }
+      "schema": "public",
+      "values": [
+        "draft",
+        "published",
+        "cancelled"
+      ]
     }
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "948222b3-a2b2-45b4-aa7b-357b04075360",
+  "prevId": "c2471741-dd57-4610-ae7a-0c483c347325"
 }

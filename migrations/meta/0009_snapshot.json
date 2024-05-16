@@ -1,10 +1,8 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "id": "bcea71ca-beb4-4abf-b426-7de9bc11eee9",
-  "prevId": "3d196f1d-b80e-4b01-b280-cbaf476f2c6a",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "events_to_participant": {
+    "public.events_to_participant": {
       "name": "events_to_participant",
       "schema": "",
       "columns": {
@@ -26,28 +24,28 @@
         "events_to_participant_event_id_events_id_fk": {
           "name": "events_to_participant_event_id_events_id_fk",
           "tableFrom": "events_to_participant",
-          "tableTo": "events",
           "columnsFrom": [
             "event_id"
           ],
+          "tableTo": "events",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "events_to_participant_participant_id_events_participant_id_fk": {
           "name": "events_to_participant_participant_id_events_participant_id_fk",
           "tableFrom": "events_to_participant",
-          "tableTo": "events_participant",
           "columnsFrom": [
             "participant_id"
           ],
+          "tableTo": "events_participant",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -61,7 +59,7 @@
       },
       "uniqueConstraints": {}
     },
-    "events": {
+    "public.events": {
       "name": "events",
       "schema": "",
       "columns": {
@@ -133,14 +131,14 @@
       "uniqueConstraints": {
         "events_slug_unique": {
           "name": "events_slug_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "events_participant": {
+    "public.events_participant": {
       "name": "events_participant",
       "schema": "",
       "columns": {
@@ -199,7 +197,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "rooms": {
+    "public.rooms": {
       "name": "rooms",
       "schema": "",
       "columns": {
@@ -240,5 +238,7 @@
     "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "bcea71ca-beb4-4abf-b426-7de9bc11eee9",
+  "prevId": "3d196f1d-b80e-4b01-b280-cbaf476f2c6a"
 }
