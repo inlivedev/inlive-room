@@ -15,7 +15,7 @@ import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
 import CheckIcon from '@/_shared/components/icons/check-icon';
 
-export default function ParticipantMoreDropdown({
+export default function ParticipantDropdownMenu({
   stream,
   children,
 }: {

@@ -8,7 +8,7 @@ import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { type SVGElementPropsType } from '@/_shared/types/types';
-import ParticipantMoreDropdown from './participant-more-dropdown';
+import ParticipantDropdownMenu from './participant-dropdown-menu';
 
 export default function ConferenceScreen({
   stream,
@@ -293,7 +293,7 @@ function OverlayScreen({
       ) : null}
       {/* video screen overlay */}
       <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
-        <ParticipantMoreDropdown stream={stream}>
+        <ParticipantDropdownMenu stream={stream}>
           <Button
             isIconOnly
             size="sm"
@@ -302,7 +302,7 @@ function OverlayScreen({
           >
             <MoreIcon className="h-4 w-4" />
           </Button>
-        </ParticipantMoreDropdown>
+        </ParticipantDropdownMenu>
         <div className="flex">
           <div className="flex max-w-full items-center gap-2 rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100">
             {stream.spotlight || stream.pin ? (

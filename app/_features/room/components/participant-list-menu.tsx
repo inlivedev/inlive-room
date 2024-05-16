@@ -11,7 +11,7 @@ import {
   useParticipantContext,
 } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import ParticipantMoreDropdown from './participant-more-dropdown';
+import ParticipantDropdownMenu from './participant-dropdown-menu';
 
 export default function ParticipantListMenu() {
   return (
@@ -141,11 +141,11 @@ const ParticipantsListItem = ({ stream }: { stream: ParticipantVideo }) => {
         ) : null}
       </div>
       <div>
-        <ParticipantMoreDropdown stream={stream}>
+        <ParticipantDropdownMenu stream={stream}>
           <Button className="h-auto min-h-0 min-w-0 rounded-full bg-transparent p-1.5 antialiased hover:bg-zinc-700 active:bg-zinc-600">
             <MoreIcon className="h-5 w-5" />
           </Button>
-        </ParticipantMoreDropdown>
+        </ParticipantDropdownMenu>
       </div>
     </div>
   );
