@@ -6,6 +6,27 @@ html, body {
   min-height: 100dvh;
 }
 
+.fixed-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0px !important;
+  max-width: none !important;
+  min-height: 0px !important;
+  max-height: none !important;
+  inset: 0px !important;
+  margin: 0px !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+  z-index: 999 !important;
+  object-fit: contain;
+  overlay: auto !important;
+}
+
 .min-viewport-height {
   min-height: 100vh; /*older device*/
   min-height: 100dvh;

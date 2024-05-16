@@ -61,6 +61,17 @@ export default function ParticipantDropdownMenu({
           });
           console.error(error);
         }
+      } else if (key === 'fullscreen-view') {
+        const screenElement = document.getElementById(`screen-${stream.id}`);
+
+        if (!document.fullscreenElement && screenElement) {
+          screenElement.classList.add('fixed-fullscreen');
+          screenElement.style.backgroundColor = 'black';
+          await document.body.requestFullscreen();
+          return;
+        }
+
+        await document.exitFullscreen();
       } else if (key === 'set-speaker') {
         if (!isModerator) return;
 
@@ -149,11 +160,16 @@ export default function ParticipantDropdownMenu({
                 </DropdownItem>,
               ]
             : undefined,
-          <DropdownItem key="fullscreen-view">
-            <div className="flex items-center gap-1">
-              <span>Fullscreen view</span>
-            </div>
-          </DropdownItem>,
+          // @ts-ignore
+          document.fullscreenEnabled
+            ? [
+                <DropdownItem key="fullscreen-view">
+                  <div className="flex items-center gap-1">
+                    <span>Fullscreen view</span>
+                  </div>
+                </DropdownItem>,
+              ]
+            : undefined,
           // @ts-ignore
           isModerator &&
           clientID !== stream.clientId &&
