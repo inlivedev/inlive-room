@@ -296,7 +296,7 @@ function OverlayScreen({
         </div>
       ) : null}
       {/* video screen overlay */}
-      <div className="absolute z-10 flex h-full w-full flex-col justify-between rounded-lg p-2">
+      <div className="absolute z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-lg p-2">
         <div className="flex items-center justify-between gap-3 text-[0] leading-[0]">
           <div className="flex items-center gap-1.5">
             {stream.spotlight && (
@@ -322,8 +322,8 @@ function OverlayScreen({
             </ParticipantDropdownMenu>
           </div>
         </div>
-        <div className="flex">
-          <div className="max-w-full truncate rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100">
+        <div className="absolute bottom-0 left-0 flex max-w-full rounded-tr-md bg-zinc-700/70 px-2 py-1.5">
+          <div className="max-w-full truncate text-xs font-medium text-zinc-100">
             <span>
               {isHost && stream.origin === 'local'
                 ? '(Host) You'
