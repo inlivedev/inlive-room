@@ -227,8 +227,8 @@ const checkSpotlight = (streams: ParticipantVideo[], spotlights: string[]) => {
 const orderByPinned = (streams: ParticipantVideo[]) => {
   return streams.sort((streamA, streamB) => {
     return (
-      Number(streamB.spotlight) - Number(streamA.spotlight) ||
-      Number(streamB.pin) - Number(streamA.pin)
+      Number(streamB.pin) - Number(streamA.pin) ||
+      Number(streamB.spotlight) - Number(streamA.spotlight)
     );
   });
 };
