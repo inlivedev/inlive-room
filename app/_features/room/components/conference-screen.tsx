@@ -296,44 +296,43 @@ function OverlayScreen({
         </div>
       ) : null}
       {/* video screen overlay */}
-      <div className="absolute z-10 flex h-full w-full flex-col justify-end rounded-lg p-2">
-        <ParticipantDropdownMenu stream={stream}>
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            className="absolute right-1 top-1 h-7 w-7 min-w-0 rounded-full bg-zinc-700/70 text-zinc-100 opacity-0 hover:!bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100"
-          >
-            <MoreIcon className="h-4 w-4" />
-          </Button>
-        </ParticipantDropdownMenu>
-        <div className="flex">
-          <div className="flex max-w-full items-center gap-2 rounded bg-zinc-900/70 px-2 py-0.5 text-xs font-medium text-zinc-100">
-            {stream.spotlight || stream.pin ? (
-              <div className="flex items-center gap-1">
-                {stream.spotlight && (
-                  <span title="Spotlighted for everyone">
-                    <PersonScreenIcon className="h-3.5 w-3.5" />
-                  </span>
-                )}
-                {stream.pin && (
-                  <span title="Pinned for myself">
-                    <PinIcon className="h-3.5 w-3.5" />
-                  </span>
-                )}
+      <div className="absolute z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-lg p-2">
+        <div className="flex items-center justify-between gap-3 text-[0] leading-[0]">
+          <div className="flex items-center gap-1.5">
+            {stream.spotlight && (
+              <div title="Spotlighted for everyone">
+                <div className="rounded-full bg-zinc-700/70 p-1 text-zinc-200">
+                  <SparkleIcon className="h-5 w-5" />
+                </div>
               </div>
-            ) : null}
-            <div className={`max-w-full truncate`}>
-              <span>
-                {isHost && stream.origin === 'local'
-                  ? '(Host) You'
-                  : stream.origin === 'local'
-                  ? 'You'
-                  : isHost
-                  ? `(Host) ${stream.name}`
-                  : stream.name}
-              </span>
-            </div>
+            )}
+            {stream.pin && (
+              <div title="Pinned for myself">
+                <div className="rounded-full bg-zinc-700/70 p-1 text-zinc-200">
+                  <PinIcon className="h-5 w-5" />
+                </div>
+              </div>
+            )}
+          </div>
+          <div>
+            <ParticipantDropdownMenu stream={stream}>
+              <Button className="h-auto min-h-0 min-w-0 rounded-full bg-zinc-700/70 p-1 text-zinc-200 antialiased opacity-0 hover:bg-zinc-700 active:bg-zinc-600 group-hover:opacity-100 group-active:opacity-100">
+                <MoreIcon className="h-5 w-5" />
+              </Button>
+            </ParticipantDropdownMenu>
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 flex max-w-full rounded-tr-md bg-zinc-700/70 px-2 py-1.5">
+          <div className="max-w-full truncate text-xs font-medium text-zinc-100">
+            <span>
+              {isHost && stream.origin === 'local'
+                ? '(Host) You'
+                : stream.origin === 'local'
+                ? 'You'
+                : isHost
+                ? `(Host) ${stream.name}`
+                : stream.name}
+            </span>
           </div>
         </div>
       </div>
@@ -461,12 +460,14 @@ function VideoScreen({
   );
 }
 
-function PersonScreenIcon(props: SVGElementPropsType) {
+function SparkleIcon(props: SVGElementPropsType) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" {...props}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
       <path
         fill="currentColor"
-        d="M7.715 49.574h40.57c4.899 0 7.36-2.437 7.36-7.265V13.69c0-4.828-2.461-7.265-7.36-7.265H7.715C2.84 6.426.355 8.84.355 13.69v28.62c0 4.851 2.485 7.265 7.36 7.265m20.273-16.71c-4.195 0-7.547-3.563-7.547-8.298c0-4.453 3.352-8.062 7.547-8.062c4.219 0 7.57 3.61 7.57 8.062c0 4.735-3.351 8.297-7.57 8.297m.024 3.679c6.937 0 12.609 2.977 15.703 9.258h-31.43c3.117-6.281 8.766-9.258 15.727-9.258"
+        fillRule="evenodd"
+        d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5m9-3a.75.75 0 0 1 .728.568l.258 1.036a2.63 2.63 0 0 0 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258a2.63 2.63 0 0 0-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5M16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395a1.5 1.5 0 0 0-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395a1.5 1.5 0 0 0 .948-.948l.395-1.183A.75.75 0 0 1 16.5 15"
+        clipRule="evenodd"
       />
     </svg>
   );
