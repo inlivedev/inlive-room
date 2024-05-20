@@ -122,7 +122,7 @@ export class EventService implements iEventService {
     }
 
     for (const participant of participants) {
-      SendEventRescheduledEmail(participant, newEvent, oldEvent, host);
+      SendEventRescheduledEmail(newEvent, oldEvent, host, participant);
     }
   }
 
@@ -140,7 +140,7 @@ export class EventService implements iEventService {
     }
 
     for (const participant of participants) {
-      SendEventCancelledEmail(participant, event, host);
+      SendEventCancelledEmail(event, host, participant);
     }
   }
 
@@ -156,7 +156,7 @@ export class EventService implements iEventService {
     return false;
   }
 
-  async inviteParticipant(event: EventType.Event, email: string) {
+  async InviteParticipant(event: EventType.Event, email: string) {
     // register into participant table
     const newParticipant: insertParticipant = {
       firstName: '',
@@ -181,7 +181,9 @@ export class EventService implements iEventService {
 
     // scheduled meeting
     if (event.categoryID == 2) {
-      SendScheduledMeetinEmail(event, event.host, participant, email);
+      SendScheduledMeetinEmail(event, event.host, email, participant);
     }
+
+    return participant;
   }
 }

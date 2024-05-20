@@ -27,14 +27,12 @@ type ScheduledMeetingMeta = {
   host: {
     name: string;
   };
-  participant: {
-    clientId: string;
-  }
+  clientID?: string;
 }
 
 export default function EmailScheduledMeeting({
   event = dummyEvent,
-  participant,
+  clientID,
   host
 }: ScheduledMeetingMeta) {
   const startDate = Intl.DateTimeFormat('en-GB', {
@@ -55,6 +53,10 @@ export default function EmailScheduledMeeting({
     minute: '2-digit',
     hour12: true,
   }).format(event.endTime,);
+
+  const joinRoomURL = `${APP_ORIGIN}/rooms/${event.roomID}/${
+  clientID ? `?clientID=${clientID}` : ''
+  }`;
 
   return (
     <Html lang='en'>
@@ -138,7 +140,7 @@ export default function EmailScheduledMeeting({
 
               <Button
                 className="rounded-md bg-red-800 py-2 text-[14px] antialiase text-zinc-100 w-full text-center justify-center mt-2"
-                href={`${APP_ORIGIN}/rooms/${event.roomID}?clientID=${participant.clientId}`}>
+                href={joinRoomURL}>
                 Join Meeting
               </Button>
 

@@ -1,3 +1,5 @@
+import { selectParticipant } from '@/(server)/_features/event/schema';
+import { SendScheduledMeetinEmail } from '@/(server)/_shared/mailer/mailer';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { eventService } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
@@ -15,6 +17,7 @@ export async function POST(
   const slugOrId = params.slugOrId;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
+  const registeredParticipant: selectParticipant[] = [];
 
   if (!requestToken) {
     return NextResponse.json(
@@ -68,10 +71,29 @@ export async function POST(
     try {
       const reqJSON = await request.json();
 
-      const emails = sendInviteEmailSchema.parse(reqJSON);
-      emails.emails.forEach((email) => {
-        eventService.inviteParticipant(event, email);
+      const req = sendInviteEmailSchema.parse(reqJSON);
+      req.emails.forEach(async (email) => {
+        const participant = await eventService.InviteParticipant(event, email);
+        if (participant) {
+          registeredParticipant.push(participant);
+        }
       });
+
+      if (event.categoryID === 2) {
+        // Send Email for the Host
+        SendScheduledMeetinEmail(
+          event,
+          {
+            name: user.name,
+            email: user.email,
+            pictureUrl: user.pictureUrl,
+            id: user.id,
+          },
+          user.email,
+          undefined,
+          registeredParticipant
+        );
+      }
     } catch (e) {
       return NextResponse.json(
         {

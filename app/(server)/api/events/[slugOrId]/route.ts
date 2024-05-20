@@ -10,7 +10,10 @@ import { stat, unlink } from 'fs';
 import * as Sentry from '@sentry/nextjs';
 import { whitelistFeature } from '@/_shared/utils/flag';
 import * as z from 'zod';
-import { isMailerEnabled } from '@/(server)/_shared/mailer/mailer';
+import {
+  SendEventInvitationEmail,
+  isMailerEnabled,
+} from '@/(server)/_shared/mailer/mailer';
 
 const roomStoragePath = process.env.ROOM_LOCAL_STORAGE_PATH || './storage';
 const EVENT_TRIAL_COUNT = parseInt(
@@ -392,6 +395,18 @@ export async function PUT(
       isMailerEnabled()
     ) {
       eventService.sendEmailsRescheduledEvent(oldEvent, updatedEvent);
+    }
+
+    // Send Invitation Email to User
+    if (oldEvent.status === 'draft' && updatedEvent.status === 'published') {
+      switch (updatedEvent.categoryID) {
+        case 1:
+          SendEventInvitationEmail({ ...updatedEvent }, { ...user });
+          break;
+
+        default:
+          break;
+      }
     }
 
     return NextResponse.json(

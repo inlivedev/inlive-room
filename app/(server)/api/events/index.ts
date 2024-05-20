@@ -1,109 +1,139 @@
-const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
+import { statusEnum } from '@/(server)/_features/event/schema';
+import ical, {
+  ICalCalendarMethod,
+  ICalAttendeeType,
+  ICalAttendeeData,
+  ICalAttendeeStatus,
+  ICalAttendeeRole,
+} from 'ical-generator';
 
-// reference: https://www.rfc-editor.org/rfc/rfc5545
-export function GenerateIcal(
-  event: {
-    uuid: string;
-    name: string;
-    slug: string;
-    roomId?: string | null;
-    startTime: Date;
-    endTime: Date;
-    status: string;
-  },
-  type: 'webinar' | 'meeting',
-  timezone: string,
-  host: {
-    name: string;
-    email: string;
-  },
-  participant: {
-    clientId: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    updateCount: number;
-  }
+const PUBLIC_URL = process.env.NEXT_PUBLIC_PUBLIC_URL || '';
+
+export type ICSParticipant = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  clientId?: string;
+  eventID?: number;
+  updateCount: number;
+};
+
+type ICSEvent = {
+  name: string;
+  startTime: Date;
+  endTime: Date;
+  roomId?: string | null;
+  slug: string;
+  status: string;
+  uuid: string;
+};
+
+type ICSHost = {
+  name: string;
+  email: string;
+};
+
+export function createICS(
+  event: ICSEvent,
+  host: ICSHost,
+  category: 'webinar' | 'meeting',
+  participant?: ICSParticipant,
+  participants?: ICSParticipant[]
 ) {
-  const { eventDate, eventStartTime, eventEndTime, DTSTAMP, DTSTART, DTEND } =
-    generateDateTime(
-      {
-        start: event.startTime,
-        end: event.endTime,
-      },
-      timezone
+  const ICS = ical();
+  ICS.name(event.name);
+  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}`;
+  const joinRoomURL = `${PUBLIC_URL}/rooms/${event.roomId}/${
+    participant ? `?clientID=${participant.clientId}` : ''
+  }`;
+
+  const summary =
+    category === 'webinar'
+      ? `Webinar: ${event.name}`
+      : `Meeting with ${host.name}`;
+
+  const description =
+    category === 'webinar'
+      ? createWebinarDesc({
+          name: event.name,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          joinRoomURL,
+          slug: event.slug,
+          host: host.name,
+        })
+      : createMeetingDesc({
+          startTime: event.startTime,
+          endTime: event.endTime,
+          joinRoomURL,
+          host: host.name,
+        });
+
+  const attendees: ICalAttendeeData[] = [];
+
+  if (participant) {
+    attendees.push({
+      name: participant.firstName,
+      email: participant.email,
+      rsvp: true,
+      type: ICalAttendeeType.INDIVIDUAL,
+      status: ICalAttendeeStatus.NEEDSACTION,
+      role: ICalAttendeeRole.REQ,
+    });
+  }
+
+  if (participants) {
+    attendees.concat(
+      participants?.map((participant) => {
+        return {
+          name: `${participant.firstName} ${participant.lastName}`,
+          email: participant.email,
+          rsvp: true,
+          type: ICalAttendeeType.INDIVIDUAL,
+          status: ICalAttendeeStatus.NEEDSACTION,
+          role: ICalAttendeeRole.REQ,
+        };
+      })
     );
-
-  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
-
-  let eventStatus = 'CONFIRMED';
-  let eventMethod = 'REQUEST';
-
-  if (event.status === 'cancelled') {
-    eventStatus = 'CANCELLED';
-    eventMethod = 'CANCEL';
   }
 
-  let eventDesc = '';
+  const organizer = {
+    name: host.name,
+    email: host.email,
+  };
 
-  switch (type) {
-    case 'meeting':
-      eventDesc = createMeetingDesc({
-        eventDate,
-        eventStartTime,
-        eventEndTime,
-        roomURL,
-        host: host.name,
-      });
+  switch (event.status) {
+    case statusEnum.enumValues[2]:
+      ICS.method(ICalCalendarMethod.CANCEL);
       break;
-    case 'webinar':
-      eventDesc = createWebinarDesc({
-        name: event.name,
-        eventDate,
-        eventStartTime,
-        roomURL,
-        slug: event.slug,
-        host: host.name,
-      });
-      break;
-
     default:
+      ICS.method(ICalCalendarMethod.REQUEST);
       break;
   }
 
-  // eslint-disable-next-line prettier/prettier
-  return `BEGIN:VCALENDAR
-VERSION:2.0
-CALSCALE:GREGORIAN
-METHOD:${eventMethod}
-PRODID:-//inLive//inLive//EN
-BEGIN:VTIMEZONE
-TZID:Asia/Jakarta
-LAST-MODIFIED:20230911T053111Z
-TZURL:https://www.tzurl.org/zoneinfo-outlook/Asia/Jakarta
-X-LIC-LOCATION:Asia/Jakarta
-BEGIN:STANDARD
-TZNAME:WIB
-TZOFFSETFROM:+0700
-TZOFFSETTO:+0700
-DTSTART:19700101T000000
-END:STANDARD
-END:VTIMEZONE
-BEGIN:VEVENT
-UID:${event.uuid}
-DTSTAMP;TZID=${timezone}:${DTSTAMP}
-DTSTART;TZID=${timezone}:${DTSTART}
-DTEND;TZID=${timezone}:${DTEND}
-SUMMARY:${event.name}
-ORGANIZER;CN=${host.name}:mailto:${host.email}
-ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${participant.firstName} ${participant.lastName};X-NUM-GUESTS=0:mailto:${participant.email}
-URL;VALUE=URI:${PUBLIC_URL}/events/${event.slug}
-X-INLIVE-ROOM:${PUBLIC_URL}/rooms/${event.roomId}
-SEQUENCE:${participant.updateCount}
-STATUS:${eventStatus}
-DESCRIPTION:${eventDesc}
-END:VEVENT
-END:VCALENDAR`;
+  const ICSEvent = ICS.createEvent({
+    start: event.startTime,
+    end: event.endTime,
+    summary: event.name,
+    id: event.uuid,
+  });
+
+  ICSEvent.organizer(organizer);
+
+  if (attendees) {
+    ICSEvent.attendees(attendees);
+  }
+
+  ICSEvent.url(joinRoomURL);
+  ICSEvent.x([{ key: 'X-INLIVE-ROOM-ID', value: roomURL }]);
+  ICSEvent.sequence(participant ? participant.updateCount : 0);
+  ICSEvent.summary(summary);
+  ICSEvent.description(description);
+  ICSEvent.lastModified(new Date());
+
+  ICS.prodId('-//inLive//inLive//EN');
+
+  return ICS.events([ICSEvent]);
 }
 
 function generateDateTime(
@@ -172,12 +202,17 @@ function generateDateTime(
 
 function createWebinarDesc(meta: {
   name: string;
-  eventDate: string;
-  eventStartTime: string;
-  roomURL: string;
+  startTime: Date;
+  endTime: Date;
+  joinRoomURL: string;
   slug: string;
   host: string;
 }) {
+  const { eventStartTime, eventDate } = generateDateTime(
+    { start: meta.startTime, end: meta.endTime },
+    'Asia/Jakarta'
+  );
+
   return `Hi there!\\n
   Thanks for registering for our upcoming webinar!\\n
   We're excited to have you join us to learn more about\\n
@@ -185,28 +220,31 @@ function createWebinarDesc(meta: {
   ${meta.name}\\n
   Hosted by ${meta.host}\\n
   \\n
-  ${meta.eventDate} - ${meta.eventStartTime}\\n
+  ${eventDate} - ${eventStartTime}\\n
   \\n
   Don't forget to mark your calendar on that date, see you there!\\n
   \\n
   About event : ${PUBLIC_URL}/events/${meta.slug}\\n
-  Join the event : ${meta.roomURL}`;
+  Join the event : ${meta.joinRoomURL}`;
 }
 
 function createMeetingDesc(meta: {
-  eventDate: string;
-  eventStartTime: string;
-  eventEndTime: string;
-  roomURL: string;
+  startTime: Date;
+  endTime: Date;
+  joinRoomURL: string;
   host: string;
 }) {
+  const { eventStartTime, eventDate, eventEndTime } = generateDateTime(
+    { start: meta.startTime, end: meta.endTime },
+    'Asia/Jakarta'
+  );
   return `
   Hi there! \\n
 
   ${meta.host} has scheduled a meeting with you. \\n
-  ${meta.eventDate}
-  ${meta.eventStartTime} - ${meta.eventEndTime} \\n
+  ${eventDate}
+  ${eventStartTime} - ${eventEndTime} \\n
 
-  Join the meeting : ${meta.roomURL} \\n
+  Join the meeting : ${meta.joinRoomURL} \\n
   `;
 }

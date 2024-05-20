@@ -5,8 +5,7 @@ import {
   selectParticipant,
 } from '@/(server)/_features/event/schema';
 import * as Sentry from '@sentry/nextjs';
-import { GenerateIcal } from '@/(server)/api/events';
-import { selectUser } from '@/(server)/_features/user/schema';
+import { createICS } from '@/(server)/api/events';
 import { render } from '@react-email/render';
 import EventManualInvitation from 'emails/event/EventManualInvitation';
 import { EventType } from '@/_shared/types/event';
@@ -26,9 +25,9 @@ export function isMailerEnabled() {
 }
 
 export async function SendEventInvitationEmail(
-  participant: selectParticipant,
   event: selectEvent,
-  host: selectUser
+  host: EventType.Host,
+  participant?: selectParticipant
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
@@ -46,32 +45,31 @@ export async function SendEventInvitationEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
-  const icalString = GenerateIcal(
+  const ICSString = createICS(
     { ...event },
-    'meeting',
-    'Asia/Jakarta',
     host,
-    {
-      ...participant,
-    }
-  );
-  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
-  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
+    'webinar',
+    participant
+  ).toString();
+  const iCalendarBuffer = Buffer.from(ICSString, 'utf-8');
+
+  const recipient = createRecipient(event, host, participant);
+
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_INV_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
-    to: participant.email,
+    to: recipient.email,
     subject: `Your invitation URL for ${event.name}`,
-    'v:room-url': roomURL,
+    'v:room-url': recipient.joinRoomURL,
     'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
     'v:event-name': event.name,
     'v:event-description': event.description,
     'v:event-date': eventDate,
     'v:event-time': eventTime,
     'v:event-host': host.name,
-    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar/${participant.id}`,
-    'v:user-firstname': participant.firstName,
-    'v:user-lastname': participant.lastName,
+    'v:event-calendar': recipient.calendarURL,
+    'v:user-firstname': recipient.firstName,
+    'v:user-lastname': recipient.lastName,
     inline: {
       data: iCalendarBuffer,
       filename: 'invite.ics',
@@ -87,8 +85,8 @@ export async function SendEventInvitationEmail(
       message: 'Event Invitation Email Request Fail',
       level: 'info',
       extra: {
-        name: participant.firstName,
-        email: participant.email,
+        name: recipient.firstName + ' ' + recipient.lastName,
+        email: recipient.email,
         event,
         res,
       },
@@ -101,8 +99,8 @@ export async function SendEventInvitationEmail(
     message: 'Event Invitation Email Request Success',
     level: 'info',
     extra: {
-      name: participant.firstName,
-      email: participant.email,
+      name: recipient.firstName + ' ' + recipient.lastName,
+      email: recipient.email,
       event,
       res,
     },
@@ -110,9 +108,9 @@ export async function SendEventInvitationEmail(
 }
 
 export async function SendEventCancelledEmail(
-  participant: selectParticipant,
   event: selectEvent,
-  host: selectUser
+  host: EventType.Host,
+  participant?: selectParticipant
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
@@ -130,21 +128,20 @@ export async function SendEventCancelledEmail(
     timeZone: 'Asia/Jakarta',
   }).format(event.startTime);
 
-  const icalString = GenerateIcal(
+  const ICSString = createICS(
     { ...event },
-    'meeting',
-    'Asia/Jakarta',
     host,
-    {
-      ...participant,
-    }
-  );
-  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+    'webinar',
+    participant
+  ).toString();
+  const iCalendarBuffer = Buffer.from(ICSString, 'utf-8');
+
+  const recipient = createRecipient(event, host, participant);
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_CANCEL_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
-    to: participant.email,
+    to: recipient.email,
     subject: `Your event ${event.name} has been cancelled`,
     'v:room-url': `${PUBLIC_URL}/rooms/${event.roomId}`,
     'v:event-url': `${PUBLIC_URL}/events/${event.slug}`,
@@ -153,9 +150,9 @@ export async function SendEventCancelledEmail(
     'v:event-date': eventDate,
     'v:event-time': eventTime,
     'v:event-host': host.name,
-    'v:event-calendar': `${PUBLIC_URL}/api/events/${event.slug}/calendar/${participant.id}`,
-    'v:user-firstname': participant.firstName,
-    'v:user-lastname': participant.lastName,
+    'v:event-calendar': recipient.calendarURL,
+    'v:user-firstname': recipient.firstName,
+    'v:user-lastname': recipient.lastName,
     inline: {
       data: iCalendarBuffer,
       filename: 'invite.ics',
@@ -171,8 +168,8 @@ export async function SendEventCancelledEmail(
       message: 'Event Cancelled Email Request Fail',
       level: 'info',
       extra: {
-        name: participant.firstName,
-        email: participant.email,
+        name: recipient.firstName + ' ' + recipient.lastName,
+        email: recipient.email,
         event,
         res,
       },
@@ -185,8 +182,8 @@ export async function SendEventCancelledEmail(
     message: 'Event Cancelled Email Request Success',
     level: 'info',
     extra: {
-      name: participant.firstName,
-      email: participant.email,
+      name: recipient.firstName + ' ' + recipient.lastName,
+      email: recipient.email,
       event,
       res,
     },
@@ -194,18 +191,16 @@ export async function SendEventCancelledEmail(
 }
 
 export async function SendEventRescheduledEmail(
-  participant: selectParticipant,
   newEvent: selectEvent,
   oldEvent: selectEvent,
-  host: selectUser
+  host: EventType.Host,
+  participant?: selectParticipant
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
     key: MAILER_API_KEY,
     username: 'api',
   });
-
-  const roomURL = `${PUBLIC_URL}/rooms/${newEvent.roomId}?clientID=${participant.clientId}`;
 
   const oldEventDate = Intl.DateTimeFormat('en-GB', {
     dateStyle: 'full',
@@ -227,23 +222,22 @@ export async function SendEventRescheduledEmail(
     timeZone: 'Asia/Jakarta',
   }).format(newEvent.startTime);
 
-  const icalString = GenerateIcal(
+  const ICSString = createICS(
     { ...newEvent },
-    'meeting',
-    'Asia/Jakarta',
     host,
-    {
-      ...participant,
-    }
-  );
-  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+    'webinar',
+    participant
+  ).toString();
+  const iCalendarBuffer = Buffer.from(ICSString, 'utf-8');
+
+  const recipient = createRecipient(newEvent, host, participant);
 
   const res = await mailer.messages.create(MAILER_DOMAIN, {
     template: ROOM_RESCHED_EMAIL_TEMPLATE,
     from: 'inLive Room Events <notification@inlive.app>',
-    to: participant.email,
+    to: recipient.email,
     subject: `Your event ${oldEvent.name} has been rescheduled`,
-    'v:room-url': roomURL,
+    'v:room-url': recipient.joinRoomURL,
     'v:event-url': `${PUBLIC_URL}/events/${newEvent.slug}`,
     'v:new-event-name': newEvent.name,
     'v:new-event-description': newEvent.description,
@@ -254,9 +248,9 @@ export async function SendEventRescheduledEmail(
     'v:old-event-date': oldEventDate,
     'v:old-event-time': oldEventTime,
     'v:event-host': host.name,
-    'v:event-calendar': `${PUBLIC_URL}/api/events/${newEvent.slug}/calendar/${participant.id}`,
-    'v:user-firstname': participant.firstName,
-    'v:user-lastname': participant.lastName,
+    'v:event-calendar': recipient.calendarURL,
+    'v:user-firstname': recipient.firstName,
+    'v:user-lastname': recipient.lastName,
     inline: {
       data: iCalendarBuffer,
       filename: 'invite.ics',
@@ -272,8 +266,8 @@ export async function SendEventRescheduledEmail(
       message: 'Event Rescheduled Email Request Fail',
       level: 'info',
       extra: {
-        name: participant.firstName,
-        email: participant.email,
+        name: recipient.firstName,
+        email: recipient.email,
         newEvent,
         res,
       },
@@ -286,8 +280,8 @@ export async function SendEventRescheduledEmail(
     message: 'Event Rescheduled Email Request Success',
     level: 'info',
     extra: {
-      name: participant.firstName,
-      email: participant.email,
+      name: recipient.firstName,
+      email: recipient.email,
       newEvent,
       res,
     },
@@ -332,8 +326,9 @@ export async function SendEventManualInvitationEmail(
 export async function SendScheduledMeetinEmail(
   event: selectEvent,
   host: EventType.Host,
-  participant: selectParticipant,
-  email: string
+  email: string,
+  participant?: selectParticipant,
+  participants?: selectParticipant[]
 ) {
   const mg = new Mailgun(formData);
   const mailer = mg.client({
@@ -341,14 +336,14 @@ export async function SendScheduledMeetinEmail(
     username: 'api',
   });
 
-  const icalString = GenerateIcal(
+  const ICSString = createICS(
     { ...event },
-    'meeting',
-    'Asia/Jakarta',
     host,
-    participant
-  );
-  const iCalendarBuffer = Buffer.from(icalString, 'utf-8');
+    'meeting',
+    participant,
+    participants
+  ).toString();
+  const iCalendarBuffer = Buffer.from(ICSString, 'utf-8');
 
   const html = render(
     EmailScheduledMeeting({
@@ -362,9 +357,7 @@ export async function SendScheduledMeetinEmail(
       host: {
         name: host.name,
       },
-      participant: {
-        clientId: participant.clientId,
-      },
+      clientID: participant ? participant.clientId : undefined,
     }),
     { pretty: true }
   );
@@ -383,4 +376,22 @@ export async function SendScheduledMeetinEmail(
       contentTransferEncoding: 'base64',
     },
   });
+}
+
+function createRecipient(
+  event: selectEvent,
+  host: EventType.Host,
+  participant?: selectParticipant
+) {
+  return {
+    joinRoomURL: participant
+      ? `${PUBLIC_URL}/rooms/${event.roomId}/?clientID=${participant.clientId}`
+      : `${PUBLIC_URL}/rooms/${event.roomId}`,
+    firstName: participant ? participant.firstName : host.name,
+    lastName: participant ? participant.lastName : '',
+    calendarURL: `${PUBLIC_URL}/api/events/${event.slug}/calendar/${
+      participant ? participant.id : 0
+    }`,
+    email: participant ? participant.email : host.email,
+  };
 }

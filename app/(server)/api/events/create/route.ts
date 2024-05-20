@@ -9,6 +9,7 @@ import { whitelistFeature } from '@/_shared/utils/flag';
 import * as z from 'zod';
 import { selectRoom } from '@/(server)/_features/room/schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
+import { SendEventInvitationEmail } from '@/(server)/_shared/mailer/mailer';
 
 const CreateEventSchema = z.object({
   name: z.string().max(255),
@@ -156,6 +157,18 @@ export async function POST(req: Request) {
       eventID: createdEvent.id,
       roleID: 2,
     });
+
+    // Send Invitation Email to User
+    if (eventMeta.status == 'published') {
+      switch (createdEvent.categoryID) {
+        case 1:
+          SendEventInvitationEmail({ ...createdEvent }, { ...user });
+          break;
+
+        default:
+          break;
+      }
+    }
 
     return NextResponse.json({
       code: 201,

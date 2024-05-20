@@ -1,7 +1,7 @@
 import { eventService } from '@/(server)/api/_index';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
-import { GenerateIcal } from '../../..';
+import { createICS } from '@/(server)/api/events/index';
 
 export async function GET(
   _: Request,
@@ -35,8 +35,14 @@ export async function GET(
       });
     }
 
-    const icalString = GenerateIcal(event, 'Asia/Jakarta', host, participant);
-    const resp = new Response(icalString);
+    const ICSString = createICS(
+      { ...event },
+      host,
+      'meeting',
+      participant ? { ...participant } : undefined
+    ).toString();
+
+    const resp = new Response(ICSString);
     resp.headers.set(
       'Content-Type',
       'text/calendar; charset=utf-8; name=invite.ics'

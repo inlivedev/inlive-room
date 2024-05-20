@@ -110,7 +110,7 @@ export async function POST(
     }
 
     if (isMailerEnabled()) {
-      SendEventInvitationEmail(participant, existingEvent, host);
+      SendEventInvitationEmail(existingEvent, host, participant);
     }
 
     const data: EventType.RegisterParticipantResponse['data'] = {
