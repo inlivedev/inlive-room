@@ -34,7 +34,7 @@ export const generateMetadata = async ({
     };
   }
 
-  const event = await eventService.getEventBySlugOrID(eventID, user.id);
+  const event = await eventService.GetEventBySlugOrID(eventID, user.id);
 
   if (!event || !event.id) {
     return {
@@ -76,7 +76,7 @@ export default async function Page({ params: { eventID } }: PageProps) {
     );
   }
 
-  const event = await eventService.getEventBySlugOrID(eventID, user?.id);
+  const event = await eventService.GetEventBySlugOrID(eventID, user?.id);
 
   if (!event) {
     return notFound();

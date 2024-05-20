@@ -39,7 +39,7 @@ export async function GET(
         { status: 401 }
       );
     }
-    const existingEvent = await eventService.getEventBySlugOrID(slug, user.id);
+    const existingEvent = await eventService.GetEventBySlugOrID(slug, user.id);
 
     if (!existingEvent) {
       return NextResponse.json(

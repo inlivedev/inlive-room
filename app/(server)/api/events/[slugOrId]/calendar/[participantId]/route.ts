@@ -11,7 +11,7 @@ export async function GET(
   const participantId = params.participantId;
 
   try {
-    const event = await eventService.getEventBySlugOrID(slug);
+    const event = await eventService.GetEventBySlugOrID(slug);
     if (!event) {
       return NextResponse.json({
         code: 404,
@@ -19,7 +19,7 @@ export async function GET(
       });
     }
 
-    const host = await eventService.getEventHostByEventId(event.id);
+    const host = await eventService.GetEventHostByEventId(event.id);
     if (!host) {
       return NextResponse.json({
         code: 404,
@@ -27,7 +27,7 @@ export async function GET(
       });
     }
 
-    const participant = await eventService.getParticipantById(participantId);
+    const participant = await eventService.GetParticipantById(participantId);
     if (!participant) {
       return NextResponse.json({
         code: 404,

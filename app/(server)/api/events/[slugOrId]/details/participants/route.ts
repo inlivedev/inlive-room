@@ -39,7 +39,7 @@ export async function GET(
       );
     }
 
-    const event = await eventService.getEventBySlugOrID(slugOrId);
+    const event = await eventService.GetEventBySlugOrID(slugOrId);
 
     if (!event) {
       return NextResponse.json(

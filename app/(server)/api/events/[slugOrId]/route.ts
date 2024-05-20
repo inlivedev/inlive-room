@@ -52,7 +52,7 @@ export async function GET(
       }
     }
 
-    const existingEvent = await eventService.getEventBySlugOrID(slug, userID);
+    const existingEvent = await eventService.GetEventBySlugOrID(slug, userID);
 
     if (!existingEvent) {
       return NextResponse.json(
@@ -137,7 +137,7 @@ export async function DELETE(
   }
 
   try {
-    const event = await eventService.getEventBySlugOrID(slugOrId, user.id);
+    const event = await eventService.GetEventBySlugOrID(slugOrId, user.id);
 
     if (!event) {
       return NextResponse.json(
@@ -229,7 +229,7 @@ export async function PUT(
   }
 
   try {
-    const oldEvent = await eventService.getEventBySlugOrID(slugOrId, user.id);
+    const oldEvent = await eventService.GetEventBySlugOrID(slugOrId, user.id);
 
     if (!oldEvent) {
       return NextResponse.json(
@@ -394,7 +394,7 @@ export async function PUT(
       eventService.isEventRescheduled(oldEvent, updatedEvent) &&
       isMailerEnabled()
     ) {
-      eventService.sendEmailsRescheduledEvent(oldEvent, updatedEvent);
+      eventService.SendEmailsRescheduledEvent(oldEvent, updatedEvent);
     }
 
     // Send Invitation Email to User

@@ -122,7 +122,7 @@ export async function POST(req: Request) {
       categoryID: eventTypeMap[eventMeta.type],
     };
 
-    const createdEvent = await eventService.createEvent(Event);
+    const createdEvent = await eventService.CreateEvent(Event);
 
     if (eventImage) {
       const roomStoragePath =

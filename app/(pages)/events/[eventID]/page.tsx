@@ -39,7 +39,7 @@ function sanitizeHTML(htmlString: string) {
 export const generateMetadata = async ({
   params: { eventID },
 }: PageProps): Promise<Metadata> => {
-  const event = await eventService.getEventBySlugOrID(eventID, undefined);
+  const event = await eventService.GetEventBySlugOrID(eventID, undefined);
 
   if (!event || !event.id) {
     return {
@@ -87,7 +87,7 @@ export default async function Page({
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const event = await eventService.getEventBySlugOrID(eventID, undefined);
+  const event = await eventService.GetEventBySlugOrID(eventID, undefined);
 
   if (!event || event.status === 'draft') {
     return notFound();

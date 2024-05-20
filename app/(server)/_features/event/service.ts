@@ -67,13 +67,13 @@ export interface EventParticipant {
 export class EventService implements iEventService {
   constructor(private repo: iEventRepo) {}
 
-  async createEvent(eventData: insertEvent) {
+  async CreateEvent(eventData: insertEvent) {
     eventData.slug = eventData.slug + '-' + generateID(8);
     const event = await this.repo.addEvent(eventData);
     return event;
   }
 
-  async getEventBySlugOrID(slugOrId: string, userId?: number) {
+  async GetEventBySlugOrID(slugOrId: string, userId?: number) {
     let event: EventType.Event | undefined;
     const isnum = /^\d+$/.test(slugOrId);
 
@@ -93,18 +93,18 @@ export class EventService implements iEventService {
 
     return event;
   }
-  async getParticipantById(id: number) {
+  async GetParticipantById(id: number) {
     return await this.repo.getParticipantById(id);
   }
 
-  async getEventHostByEventId(eventId: number) {
+  async GetEventHostByEventId(eventId: number) {
     return await this.repo.getEventHostByEventId(eventId);
   }
 
-  async getAllParticipantsByEventId(eventId: number) {
+  async GetAllParticipantsByEventId(eventId: number) {
     return await this.repo.getEventParticipantsByEventId(eventId);
   }
-  async sendEmailsRescheduledEvent(
+  async SendEmailsRescheduledEvent(
     oldEvent: selectEvent,
     newEvent: selectEvent
   ) {
@@ -126,7 +126,7 @@ export class EventService implements iEventService {
     }
   }
 
-  async sendEmailsCancelledEvent(eventId: number) {
+  async SendEmailsCancelledEvent(eventId: number) {
     eventRepo.updateParticipantCount(eventId);
     const participants = await this.repo.getEventParticipantsByEventId(eventId);
     const event = await this.repo.getEventById(eventId);

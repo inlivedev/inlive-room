@@ -40,7 +40,7 @@ export async function PUT(
   }
 
   try {
-    const oldEvent = await eventService.getEventBySlugOrID(slugOrId, user.id);
+    const oldEvent = await eventService.GetEventBySlugOrID(slugOrId, user.id);
 
     if (!oldEvent) {
       return NextResponse.json(
@@ -80,7 +80,7 @@ export async function PUT(
     );
 
     if (isMailerEnabled()) {
-      eventService.sendEmailsCancelledEvent(oldEvent.id);
+      eventService.SendEmailsCancelledEvent(oldEvent.id);
     }
 
     return NextResponse.json(

@@ -45,7 +45,7 @@ export async function POST(
   }
 
   try {
-    const event = await eventService.getEventBySlugOrID(slugOrId, user.id);
+    const event = await eventService.GetEventBySlugOrID(slugOrId, user.id);
     if (!event) {
       return NextResponse.json(
         {
