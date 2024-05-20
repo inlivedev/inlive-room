@@ -21,8 +21,8 @@ export default function NotSignedIn() {
           </p>
           <div className="mt-8">
             <Button
-              className="w-52 rounded-md bg-red-700 px-6 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
-              onClick={openSignInModal}
+              className="h-auto min-h-0 min-w-0 rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+              onPress={openSignInModal}
             >
               Sign in to try inLive Room
             </Button>
