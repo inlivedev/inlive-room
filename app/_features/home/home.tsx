@@ -13,7 +13,7 @@ export default function View() {
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex flex-1 flex-col justify-center">
-          {user ? <SignedIn /> : <NotSignedIn />}
+          {user ? <SignedIn user={user} /> : <NotSignedIn />}
         </main>
         <Footer />
       </div>
