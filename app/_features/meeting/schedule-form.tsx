@@ -120,7 +120,7 @@ export default function MeetingScheduleForm() {
         {
           body: JSON.stringify(body),
           headers: {
-            contentType: 'ap  plication/json',
+            contentType: 'application/json',
           },
         }
       );
