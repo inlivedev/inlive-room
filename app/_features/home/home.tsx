@@ -9,7 +9,7 @@ export default function View() {
   const { user } = useAuthContext();
 
   return (
-    <div className="bg-zinc-900 text-zinc-200">
+    <div className="bg-zinc-950">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex flex-1 flex-col justify-center">
