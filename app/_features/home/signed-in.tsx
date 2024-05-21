@@ -15,6 +15,7 @@ import type { RoomType } from '@/_shared/types/room';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import JoinRoomField from '@/_features/home/join-room-field';
 import type { AuthType } from '@/_shared/types/auth';
+import MeetingList from '@/_features/meeting/meeting-list';
 
 const createRoom = async (type: string) => {
   const response: RoomType.CreateGetRoomResponse =
@@ -154,7 +155,9 @@ export default function SignedIn({
           <JoinRoomField />
         </div>
       </div>
-      <div className="md:flex-1"></div>
+      <div className="md:flex-1 md:px-10">
+        <MeetingList />
+      </div>
     </div>
   );
 }
