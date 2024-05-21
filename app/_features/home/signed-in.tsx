@@ -75,8 +75,8 @@ export default function SignedIn({
   );
 
   return (
-    <div className="flex w-full flex-col md:flex-row">
-      <div className="md:flex-1 md:px-10">
+    <div className="grid w-full grid-cols-1 gap-y-12 md:grid-cols-2">
+      <div className="md:px-5 lg:px-10">
         <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
           Hi, {firstName}.
         </h2>
@@ -155,8 +155,10 @@ export default function SignedIn({
           <JoinRoomField />
         </div>
       </div>
-      <div className="md:flex-1 md:px-10">
-        <MeetingList />
+      <div className="md:px-5 lg:px-10">
+        <div className="max-w-lg">
+          <MeetingList />
+        </div>
       </div>
     </div>
   );
