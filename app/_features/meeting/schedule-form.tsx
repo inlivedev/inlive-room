@@ -107,7 +107,6 @@ export default function MeetingScheduleForm() {
         });
 
       if (!createEventResp.ok) {
-        console.log(createEventResp.message);
         setErrorMessage('Failed to create meeting please try again later');
       }
 
@@ -125,7 +124,6 @@ export default function MeetingScheduleForm() {
       );
 
       if (!inviteParticipantResp.ok) {
-        console.log(inviteParticipantResp.message);
         setErrorMessage('Failed to invite user, please try again later');
       }
 
