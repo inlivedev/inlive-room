@@ -17,6 +17,7 @@ import JoinRoomField from '@/_features/home/join-room-field';
 import type { AuthType } from '@/_shared/types/auth';
 import MeetingList from '@/_features/meeting/meeting-list';
 import ScheduleModal from '@/_features/meeting/schedule-modal';
+import type { EventType } from '@/_shared/types/event';
 
 const createRoom = async (type: string) => {
   const response: RoomType.CreateGetRoomResponse =
@@ -44,8 +45,10 @@ const createRoom = async (type: string) => {
 
 export default function SignedIn({
   user,
+  events,
 }: {
   user: AuthType.CurrentAuthContext;
+  events: EventType.Event[];
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const firstName = user.name.split(' ')[0];
@@ -170,7 +173,7 @@ export default function SignedIn({
         </div>
         <div className="md:px-5 lg:px-10">
           <div className="max-w-lg">
-            <MeetingList />
+            <MeetingList events={events} />
           </div>
         </div>
       </div>

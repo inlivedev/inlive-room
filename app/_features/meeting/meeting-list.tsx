@@ -1,30 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@nextui-org/react';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { EventType } from '@/_shared/types/event';
 import Link from 'next/link';
 
-const now = new Date();
-
-export default function MeetingList() {
+export default function MeetingList({ events }: { events: EventType.Event[] }) {
   const [activeTab, setActiveTab] = useState<'today' | 'upcoming'>('today');
-  const [events, setEvents] = useState<EventType.Event[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const response: EventType.ListEventsResponse =
-        await InternalApiFetcher.get(
-          `/api/events?&limit=${10}&start_is_before=${now.toISOString()}&end_is_after=${now.toISOString()}&type=${'meeting'}`
-        );
-
-      if (response.data) {
-        setEvents(response.data);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   console.log('events', events);
 

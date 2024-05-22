@@ -4,8 +4,9 @@ import Footer from '@/_shared/components/footer/footer';
 import SignedIn from '@/_features/home/signed-in';
 import NotSignedIn from '@/_features/home/not-signed-in';
 import { useAuthContext } from '@/_shared/contexts/auth';
+import type { EventType } from '@/_shared/types/event';
 
-export default function View() {
+export default function View({ events }: { events: EventType.Event[] }) {
   const { user } = useAuthContext();
 
   return (
@@ -13,7 +14,7 @@ export default function View() {
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
         <main className="flex flex-1 flex-col justify-center">
-          {user ? <SignedIn user={user} /> : <NotSignedIn />}
+          {user ? <SignedIn user={user} events={events} /> : <NotSignedIn />}
         </main>
         <Footer />
       </div>
