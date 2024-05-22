@@ -79,11 +79,10 @@ export default function MeetingScheduleForm() {
       setDisplayError(true);
 
       const startTime = parseStringDateToDate(data.date);
-
       startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
       startTime.setMinutes(parseTimeStringToDate(data.startTime).getMinutes());
 
-      const endTime = parseStringDateToDate(data.endTime);
+      const endTime = parseStringDateToDate(data.date);
       endTime.setHours(parseTimeStringToDate(data.endTime).getHours());
       endTime.setMinutes(parseTimeStringToDate(data.endTime).getMinutes());
 
@@ -125,7 +124,6 @@ export default function MeetingScheduleForm() {
         }
       );
 
-      console.log(JSON.stringify(inviteParticipantResp));
       if (!inviteParticipantResp.ok) {
         console.log(inviteParticipantResp.message);
         setErrorMessage('Failed to invite user, please try again later');
@@ -253,7 +251,6 @@ export default function MeetingScheduleForm() {
                     selected={new Date(selectedDate)}
                     onChange={(date) => {
                       if (date) {
-                        console.log(date);
                         setValue('date', parseDateToString(date));
                         setIsDatePickerOpen(false);
                       }
