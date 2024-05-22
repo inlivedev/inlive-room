@@ -1,4 +1,6 @@
-import { useCallback, useEffect, type Key } from 'react';
+'use client';
+
+import { useEffect } from 'react';
 import {
   Modal,
   ModalBody,
@@ -6,7 +8,7 @@ import {
   ModalContent,
   ModalHeader,
 } from '@nextui-org/react';
-import MeetingScheduleForm from './schedule-form';
+import MeetingScheduleForm from '@/_features/meeting/schedule-form';
 
 export default function ScheduleModal() {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
