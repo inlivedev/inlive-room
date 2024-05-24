@@ -10,12 +10,14 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
 
   const { todayEvents, upcomingEvents } = events.reduce(
     (accumulator, currentValue) => {
+      const now = new Date();
       const today = new Date(new Date().setHours(0, 0, 0, 0));
-      const eventEndTime = new Date(
+      const eventEndTime = new Date(currentValue.endTime);
+      const eventEndDay = new Date(
         new Date(currentValue.endTime).setHours(0, 0, 0, 0)
       );
 
-      if (eventEndTime > today) {
+      if (eventEndDay > today) {
         let upcomingEvents = [...accumulator.upcomingEvents, currentValue];
 
         upcomingEvents = upcomingEvents.slice().sort((eventA, eventB) => {
@@ -28,7 +30,10 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
           ...accumulator,
           upcomingEvents,
         };
-      } else if (eventEndTime.toDateString() === today.toDateString()) {
+      } else if (
+        eventEndDay.toDateString() === today.toDateString() &&
+        eventEndTime > now
+      ) {
         let todayEvents = [...accumulator.todayEvents, currentValue];
 
         todayEvents = todayEvents.slice().sort((eventA, eventB) => {
@@ -180,11 +185,7 @@ const MeetingItem = ({
             className={`truncate text-xs ${
               activeItem ? 'text-red-400' : 'text-zinc-500'
             }`}
-          >
-            <span>nalendrasari@gmail.com</span>
-            <span>, kangalfania@gmail.com</span>
-            <span>, +2 more</span>
-          </div>
+          ></div>
         </div>
       </div>
       {activeItem && now ? (
