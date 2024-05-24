@@ -51,7 +51,7 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
     }
   );
 
-  const activeEvents = activeTab === 'today' ? todayEvents : upcomingEvents;
+  const activeEvents: EventType.Event[] = [];
 
   return (
     <div className="max-w-full rounded-xl bg-zinc-900 ring-1 ring-zinc-800">
@@ -105,7 +105,17 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
           </ul>
           <div className="absolute bottom-0 left-0 h-8 w-full bg-gradient-to-t from-zinc-900 to-zinc-900/30"></div>
         </div>
-      ) : null}
+      ) : (
+        <div className="flex h-[300px] flex-col items-center justify-center p-4 text-center md:p-6">
+          <div>
+            <p className="text-sm font-medium text-zinc-400 md:text-base">
+              {activeTab === 'today'
+                ? `You don't have any schedule for today`
+                : `You don't have any schedule for the upcoming days`}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
