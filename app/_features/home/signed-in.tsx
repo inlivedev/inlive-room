@@ -87,88 +87,94 @@ export default function SignedIn({
     <>
       <ScheduleModal />
       <div className="grid w-full grid-cols-1 gap-y-12 md:grid-cols-2">
-        <div className="md:px-5 lg:px-10">
-          <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
-            Hi, {firstName}.
-          </h2>
-          <p className="mt-3 text-pretty text-base text-zinc-400 lg:text-lg">
-            Get the conversation going in virtual room. Ready, set, collaborate!
-          </p>
-          <div className="mt-8">
-            <Dropdown
-              placement="bottom-start"
-              className="ring-1 ring-zinc-800/70"
-            >
-              <DropdownTrigger>
-                <Button
-                  className="h-auto min-h-0 min-w-0 rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
-                  isDisabled={isSubmitting}
-                  aria-disabled={isSubmitting}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <div className="flex gap-2">
-                      <Spinner
-                        classNames={{
-                          circle1: 'border-b-zinc-200',
-                          circle2: 'border-b-zinc-200',
-                          wrapper: 'w-4 h-4',
-                        }}
-                      />
-                      <span>Creating a room...</span>
-                    </div>
-                  ) : (
-                    <span>New room</span>
-                  )}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Create a room menu"
-                onAction={onCreateRoomSelection}
-              >
-                <DropdownItem key="meeting" classNames={{ wrapper: 'group' }}>
-                  <div className="text-sm font-medium text-zinc-200">
-                    <span className="inline-block">Meeting</span>
-                  </div>
-                  <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
-                    Personal or group meetings
-                  </div>
-                </DropdownItem>
-                <DropdownItem key="event" classNames={{ wrapper: 'group' }}>
-                  <div className="flex justify-between text-sm font-medium text-zinc-200">
-                    <span className="inline-block">Webinar</span>
-                    <div className="inline-flex items-center">
-                      <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
-                        Beta
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
-                    Host sessions with large audiences
-                  </div>
-                </DropdownItem>
-                <DropdownItem key="schedule" classNames={{ wrapper: 'group' }}>
-                  <div className="flex justify-between text-sm font-medium text-zinc-200">
-                    <span className="inline-block">Schedule</span>
-                    <div className="inline-flex items-center">
-                      <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
-                        Beta
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
-                    Schedule meeting for later
-                  </div>
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-          <div className="mt-8 max-w-xs">
-            <p className="mb-2 text-sm text-zinc-400">
-              Got a room code to join?
+        <div className="flex items-center md:px-5 lg:px-10">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
+              Hi, {firstName}.
+            </h2>
+            <p className="mt-3 text-pretty text-base text-zinc-400 lg:text-lg">
+              Get the conversation going in virtual room. Ready, set,
+              collaborate!
             </p>
-            <JoinRoomField />
+            <div className="mt-8">
+              <Dropdown
+                placement="bottom-start"
+                className="ring-1 ring-zinc-800/70"
+              >
+                <DropdownTrigger>
+                  <Button
+                    className="h-auto min-h-0 min-w-0 rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+                    isDisabled={isSubmitting}
+                    aria-disabled={isSubmitting}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex gap-2">
+                        <Spinner
+                          classNames={{
+                            circle1: 'border-b-zinc-200',
+                            circle2: 'border-b-zinc-200',
+                            wrapper: 'w-4 h-4',
+                          }}
+                        />
+                        <span>Creating a room...</span>
+                      </div>
+                    ) : (
+                      <span>New room</span>
+                    )}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  disallowEmptySelection
+                  aria-label="Create a room menu"
+                  onAction={onCreateRoomSelection}
+                >
+                  <DropdownItem key="meeting" classNames={{ wrapper: 'group' }}>
+                    <div className="text-sm font-medium text-zinc-200">
+                      <span className="inline-block">Meeting</span>
+                    </div>
+                    <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
+                      Personal or group meetings
+                    </div>
+                  </DropdownItem>
+                  <DropdownItem key="event" classNames={{ wrapper: 'group' }}>
+                    <div className="flex justify-between text-sm font-medium text-zinc-200">
+                      <span className="inline-block">Webinar</span>
+                      <div className="inline-flex items-center">
+                        <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
+                          Beta
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
+                      Host sessions with large audiences
+                    </div>
+                  </DropdownItem>
+                  <DropdownItem
+                    key="schedule"
+                    classNames={{ wrapper: 'group' }}
+                  >
+                    <div className="flex justify-between text-sm font-medium text-zinc-200">
+                      <span className="inline-block">Schedule</span>
+                      <div className="inline-flex items-center">
+                        <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
+                          Beta
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
+                      Schedule meeting for later
+                    </div>
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+            <div className="mt-8 max-w-xs">
+              <p className="mb-2 text-sm text-zinc-400">
+                Got a room code to join?
+              </p>
+              <JoinRoomField />
+            </div>
           </div>
         </div>
         <div className="md:px-5 lg:px-10">

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Button } from '@nextui-org/react';
 import type { EventType } from '@/_shared/types/event';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
@@ -8,57 +8,55 @@ import Link from 'next/link';
 export default function MeetingList({ events }: { events: EventType.Event[] }) {
   const [activeTab, setActiveTab] = useState<'today' | 'upcoming'>('today');
 
-  const { todayEvents, upcomingEvents } = useMemo(() => {
-    return events.reduce(
-      (accumulator, currentValue) => {
-        const today = new Date(new Date().setHours(0, 0, 0, 0));
-        const eventEndTime = new Date(
-          new Date(currentValue.endTime).setHours(0, 0, 0, 0)
-        );
+  const { todayEvents, upcomingEvents } = events.reduce(
+    (accumulator, currentValue) => {
+      const today = new Date(new Date().setHours(0, 0, 0, 0));
+      const eventEndTime = new Date(
+        new Date(currentValue.endTime).setHours(0, 0, 0, 0)
+      );
 
-        if (eventEndTime > today) {
-          let upcomingEvents = [...accumulator.upcomingEvents, currentValue];
+      if (eventEndTime > today) {
+        let upcomingEvents = [...accumulator.upcomingEvents, currentValue];
 
-          upcomingEvents = upcomingEvents.slice().sort((eventA, eventB) => {
-            const eventATime = new Date(eventA.startTime).getTime();
-            const eventBTime = new Date(eventB.startTime).getTime();
-            return eventATime - eventBTime;
-          });
+        upcomingEvents = upcomingEvents.slice().sort((eventA, eventB) => {
+          const eventATime = new Date(eventA.startTime).getTime();
+          const eventBTime = new Date(eventB.startTime).getTime();
+          return eventATime - eventBTime;
+        });
 
-          return {
-            ...accumulator,
-            upcomingEvents,
-          };
-        } else if (eventEndTime.toDateString() === today.toDateString()) {
-          let todayEvents = [...accumulator.todayEvents, currentValue];
+        return {
+          ...accumulator,
+          upcomingEvents,
+        };
+      } else if (eventEndTime.toDateString() === today.toDateString()) {
+        let todayEvents = [...accumulator.todayEvents, currentValue];
 
-          todayEvents = todayEvents.slice().sort((eventA, eventB) => {
-            const eventATime = new Date(eventA.startTime).getTime();
-            const eventBTime = new Date(eventB.startTime).getTime();
-            return eventATime - eventBTime;
-          });
+        todayEvents = todayEvents.slice().sort((eventA, eventB) => {
+          const eventATime = new Date(eventA.startTime).getTime();
+          const eventBTime = new Date(eventB.startTime).getTime();
+          return eventATime - eventBTime;
+        });
 
-          return {
-            ...accumulator,
-            todayEvents,
-          };
-        }
-
-        return { ...accumulator };
-      },
-      {
-        todayEvents: [] as EventType.Event[],
-        upcomingEvents: [] as EventType.Event[],
+        return {
+          ...accumulator,
+          todayEvents,
+        };
       }
-    );
-  }, [events]);
+
+      return { ...accumulator };
+    },
+    {
+      todayEvents: [] as EventType.Event[],
+      upcomingEvents: [] as EventType.Event[],
+    }
+  );
 
   const activeEvents = activeTab === 'today' ? todayEvents : upcomingEvents;
 
   return (
-    <div className="max-w-full rounded-xl bg-zinc-900 p-4 ring-1 ring-zinc-800">
-      <nav className="border-b border-zinc-800 text-sm font-medium">
-        <ul className="flex items-center">
+    <div className="max-w-full rounded-xl bg-zinc-900 ring-1 ring-zinc-800">
+      <nav className="px-4 pt-4">
+        <ul className="flex items-center border-b border-zinc-800 text-sm font-medium">
           <li className="relative py-2">
             <Button
               className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
@@ -87,22 +85,26 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
           </li>
         </ul>
       </nav>
-      {activeEvents.length > 0 ? (
-        <ul className="mt-4 flex flex-col gap-4">
-          {activeEvents.map((event, index) => {
-            const active = index === 0 && activeTab === 'today';
 
-            return (
-              <li key={event.id}>
-                <MeetingItem
-                  activeTab={activeTab}
-                  activeItem={active}
-                  event={event}
-                />
-              </li>
-            );
-          })}
-        </ul>
+      {activeEvents.length > 0 ? (
+        <div className="relative">
+          <ul className="flex max-h-[380px] flex-col gap-4 overflow-y-auto overflow-x-hidden px-4 pb-5 pt-4">
+            {activeEvents.map((event, index) => {
+              const active = index === 0 && activeTab === 'today';
+
+              return (
+                <li key={event.id}>
+                  <MeetingItem
+                    activeTab={activeTab}
+                    activeItem={active}
+                    event={event}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+          <div className="absolute bottom-0 left-0 h-8 w-full bg-gradient-to-t from-zinc-900 to-zinc-900/30"></div>
+        </div>
       ) : null}
     </div>
   );
@@ -115,7 +117,7 @@ const MeetingItem = ({
 }: {
   event: EventType.Event;
   activeTab: 'today' | 'upcoming';
-  activeItem: boolean;
+  activeItem?: boolean;
 }) => {
   const startTime = new Date(event.startTime);
   const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
@@ -182,74 +184,3 @@ const MeetingItem = ({
     </Button>
   );
 };
-
-// import { Button } from '@nextui-org/react';
-// import Link from 'next/link';
-
-// export default function MeetingList() {
-//   const [events, setEvents] = useState<EventType.Event[]>([]);
-//   const now = new Date();
-
-//   return (
-//     <div className="m-4">
-//       {(!events || events.length === 0) && (
-//         <div className="flex w-full flex-col">
-//           <Button
-//             disabled={true}
-//             className="z-10 -m-4 mt-2 items-center justify-center rounded-md bg-red-800 p-4 text-zinc-300 sm:min-h-16"
-//           >
-//             No meetings available
-//           </Button>
-
-//           <Button
-//             disabled={true}
-//             className="mt-2 flex  items-center justify-center  rounded-md bg-zinc-800 p-4 text-zinc-300 sm:min-h-16"
-//           >
-//             Your future meetings will appear here
-//           </Button>
-//         </div>
-//       )}
-// <MeetingItem
-//   event={event}
-//
-//   ongoing={new Date(event.startTime) < now}
-// />
-//     </div>
-//   );
-// }
-
-// function MeetingItem({
-//   event,
-//   ongoing = false,
-// }: {
-//   event: selectEvent;
-//   ongoing?: boolean;
-// }) {
-//   return (
-//     <Button
-//       as={Link}
-//       href={`/rooms/${event.roomId}`}
-//       target="_blank"
-//       className={`mt-2 flex flex-row items-center justify-between gap-2 rounded-md bg-zinc-800 p-4 text-zinc-300
-//         first:z-10  first:-m-2 first:bg-red-800
-//        first:shadow-md sm:min-h-16 sm:first:-mb-4`}
-//     >
-//       <p className="text-nowrap">
-//         {`${new Date(event.startTime)
-//           .getHours()
-//           .toString()
-//           .padStart(2, '0')} : ${new Date(event.startTime)
-//           .getMinutes()
-//           .toString()
-//           .padStart(2, '0')}`}
-//       </p>
-//       <h2 className="flex-1 truncate">{event.name}</h2>
-
-//       {ongoing && (
-//         <div className="inline-flex h-min items-center rounded-sm bg-zinc-950 px-2 py-0.5 text-xs font-medium tracking-[0.275px] text-zinc-300 outline outline-1 outline-zinc-800">
-//           now
-//         </div>
-//       )}
-//     </Button>
-//   );
-// }
