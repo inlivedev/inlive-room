@@ -51,7 +51,8 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
     }
   );
 
-  const activeEvents: EventType.Event[] = [];
+  const activeEvents: EventType.Event[] = ([] =
+    activeTab === 'today' ? todayEvents : upcomingEvents);
 
   return (
     <div className="max-w-full rounded-xl bg-zinc-900 ring-1 ring-zinc-800">
