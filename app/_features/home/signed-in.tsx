@@ -86,7 +86,7 @@ export default function SignedIn({
   return (
     <>
       <ScheduleModal />
-      <div className="grid w-full grid-cols-1 gap-y-12 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-y-12 pb-4 md:grid-cols-2 md:pb-0">
         <div className="flex items-center md:px-5 lg:px-10">
           <div>
             <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">

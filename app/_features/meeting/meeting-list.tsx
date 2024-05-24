@@ -88,7 +88,7 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
 
       {activeEvents.length > 0 ? (
         <div className="relative">
-          <ul className="flex h-[300px] flex-col gap-4 overflow-y-auto overflow-x-hidden px-4 pb-5 pt-4">
+          <ul className="flex h-[300px] flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-5 pt-4">
             {activeEvents.map((event, index) => {
               const active = index === 0 && activeTab === 'today';
 
