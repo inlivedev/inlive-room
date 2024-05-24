@@ -79,11 +79,10 @@ export default function MeetingScheduleForm() {
       setDisplayError(true);
 
       const startTime = parseStringDateToDate(data.date);
-
       startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
       startTime.setMinutes(parseTimeStringToDate(data.startTime).getMinutes());
 
-      const endTime = parseStringDateToDate(data.endTime);
+      const endTime = parseStringDateToDate(data.date);
       endTime.setHours(parseTimeStringToDate(data.endTime).getHours());
       endTime.setMinutes(parseTimeStringToDate(data.endTime).getMinutes());
 
@@ -108,7 +107,6 @@ export default function MeetingScheduleForm() {
         });
 
       if (!createEventResp.ok) {
-        console.log(createEventResp.message);
         setErrorMessage('Failed to create meeting please try again later');
       }
 
@@ -125,9 +123,7 @@ export default function MeetingScheduleForm() {
         }
       );
 
-      console.log(JSON.stringify(inviteParticipantResp));
       if (!inviteParticipantResp.ok) {
-        console.log(inviteParticipantResp.message);
         setErrorMessage('Failed to invite user, please try again later');
       }
 
@@ -227,7 +223,7 @@ export default function MeetingScheduleForm() {
               id="title"
               type="text"
               placeholder="Meeting Title"
-              className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+              className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-base shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
               {...register('title')}
             />
           </div>
@@ -253,7 +249,6 @@ export default function MeetingScheduleForm() {
                     selected={new Date(selectedDate)}
                     onChange={(date) => {
                       if (date) {
-                        console.log(date);
                         setValue('date', parseDateToString(date));
                         setIsDatePickerOpen(false);
                       }
@@ -264,7 +259,7 @@ export default function MeetingScheduleForm() {
               </Popover>
               <input
                 id="event-date"
-                className="z-10 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm  outline-none disabled:cursor-not-allowed disabled:bg-zinc-800"
+                className="z-10 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-base shadow-sm  outline-none disabled:cursor-not-allowed disabled:bg-zinc-800"
                 type="text"
                 {...register('date')}
                 onClick={() => {
@@ -275,8 +270,8 @@ export default function MeetingScheduleForm() {
               />
               <Button
                 isIconOnly
-                className="bg-trasnparent r-2 z-10 w-5 flex-none text-zinc-400"
-                onClick={(e) => {
+                className="r-2 z-10 w-5 flex-none bg-transparent text-zinc-400"
+                onClick={() => {
                   setIsEndTimeOpen(false);
                   setIsStartTimeOpen(false);
                   setIsDatePickerOpen(!isDatePickerOpen);
@@ -319,7 +314,7 @@ export default function MeetingScheduleForm() {
               </Popover>
               <input
                 id="time"
-                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px] text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
                 type="time"
                 onClick={() => {
                   setIsDatePickerOpen(false);
@@ -363,7 +358,7 @@ export default function MeetingScheduleForm() {
               </Popover>
               <input
                 id="time"
-                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-[16px]  text-zinc-400 shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
                 type="time"
                 onClick={() => {
                   setIsDatePickerOpen(false);
