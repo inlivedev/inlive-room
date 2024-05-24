@@ -120,13 +120,15 @@ const MeetingItem = ({
   activeItem?: boolean;
 }) => {
   const startTime = new Date(event.startTime);
+  const endTime = new Date(event.endTime);
   const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
     month: 'short',
     day: 'numeric',
   });
-
+  const currentTime = new Date();
   const startHour = startTime.getHours();
   const startMinute = startTime.getMinutes();
+  const now = currentTime > startTime && currentTime < endTime;
 
   return (
     <Button
@@ -174,7 +176,7 @@ const MeetingItem = ({
           </div>
         </div>
       </div>
-      {activeItem ? (
+      {activeItem && now ? (
         <div>
           <b className="rounded-lg bg-red-950 px-3 py-0.5 text-[10px] font-medium leading-[14px] text-red-200">
             Now
