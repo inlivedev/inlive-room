@@ -1,13 +1,59 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@nextui-org/react';
 import type { EventType } from '@/_shared/types/event';
+import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 import Link from 'next/link';
 
 export default function MeetingList({ events }: { events: EventType.Event[] }) {
   const [activeTab, setActiveTab] = useState<'today' | 'upcoming'>('today');
 
-  console.log('events', events);
+  const { todayEvents, upcomingEvents } = useMemo(() => {
+    return events.reduce(
+      (accumulator, currentValue) => {
+        const today = new Date(new Date().setHours(0, 0, 0, 0));
+        const eventEndTime = new Date(
+          new Date(currentValue.endTime).setHours(0, 0, 0, 0)
+        );
+
+        if (eventEndTime > today) {
+          let upcomingEvents = [...accumulator.upcomingEvents, currentValue];
+
+          upcomingEvents = upcomingEvents.slice().sort((eventA, eventB) => {
+            const eventATime = new Date(eventA.startTime).getTime();
+            const eventBTime = new Date(eventB.startTime).getTime();
+            return eventATime - eventBTime;
+          });
+
+          return {
+            ...accumulator,
+            upcomingEvents,
+          };
+        } else if (eventEndTime.toDateString() === today.toDateString()) {
+          let todayEvents = [...accumulator.todayEvents, currentValue];
+
+          todayEvents = todayEvents.slice().sort((eventA, eventB) => {
+            const eventATime = new Date(eventA.startTime).getTime();
+            const eventBTime = new Date(eventB.startTime).getTime();
+            return eventATime - eventBTime;
+          });
+
+          return {
+            ...accumulator,
+            todayEvents,
+          };
+        }
+
+        return { ...accumulator };
+      },
+      {
+        todayEvents: [] as EventType.Event[],
+        upcomingEvents: [] as EventType.Event[],
+      }
+    );
+  }, [events]);
+
+  const activeEvents = activeTab === 'today' ? todayEvents : upcomingEvents;
 
   return (
     <div className="max-w-full rounded-xl bg-zinc-900 p-4 ring-1 ring-zinc-800">
@@ -41,98 +87,83 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
           </li>
         </ul>
       </nav>
-      <ul className="mt-4 flex flex-col gap-4">
-        <li>
-          <MeetingItem
-            active={true}
-            name="Talking About Adventure Plan on Next Trip with Friends"
-          />
-        </li>
-        <li>
-          <MeetingItem
-            active={false}
-            name="Talking About Adventure Plan on Next Trip with Friends"
-          />
-        </li>
-        <li>
-          <MeetingItem
-            active={false}
-            name="Talking About Adventure Plan on Next Trip with Friends"
-          />
-        </li>
-        <li>
-          <MeetingItem
-            active={false}
-            name="Talking About Adventure Plan on Next Trip with Friends"
-          />
-        </li>
-        <li>
-          <MeetingItem
-            active={false}
-            name="Talking About Adventure Plan on Next Trip with Friends"
-          />
-        </li>
-      </ul>
-      {/* <br />
-      <br />
-      {events.length > 0 ? (
-        <ul>
-          {events.map((event) => (
-            <div key={event.id}>
-              {`${new Date(event.startTime)
-                .getHours()
-                .toString()
-                .padStart(2, '0')} : ${new Date(event.startTime)
-                .getMinutes()
-                .toString()
-                .padStart(2, '0')}`}{' '}
-              {event.name}
-            </div>
-          ))}
+      {activeEvents.length > 0 ? (
+        <ul className="mt-4 flex flex-col gap-4">
+          {activeEvents.map((event, index) => {
+            const active = index === 0 && activeTab === 'today';
+
+            return (
+              <li key={event.id}>
+                <MeetingItem
+                  activeTab={activeTab}
+                  activeItem={active}
+                  event={event}
+                />
+              </li>
+            );
+          })}
         </ul>
-      ) : null} */}
+      ) : null}
     </div>
   );
 }
 
 const MeetingItem = ({
-  name,
-  active = false,
+  event,
+  activeTab,
+  activeItem = false,
 }: {
-  name: string;
-  active: boolean;
+  event: EventType.Event;
+  activeTab: 'today' | 'upcoming';
+  activeItem: boolean;
 }) => {
+  const startTime = new Date(event.startTime);
+  const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
+    month: 'short',
+    day: 'numeric',
+  });
+
+  const startHour = startTime.getHours();
+  const startMinute = startTime.getMinutes();
+
   return (
     <Button
       as={Link}
-      href="/"
+      href={`/rooms/${event.roomId}`}
       className={`flex h-[66px] min-h-0 w-full min-w-0 items-center gap-4 rounded px-4 py-3 antialiased ${
-        active
+        activeItem
           ? 'bg-red-900 hover:bg-red-800 active:bg-red-700'
           : 'bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700'
       }`}
     >
-      <div>
+      <div className="flex flex-col gap-0.5">
+        {activeTab === 'upcoming' ? (
+          <span className="block text-xs font-medium text-zinc-400">
+            {startDate}
+          </span>
+        ) : null}
         <b
-          className={`text-base font-medium ${
-            active ? 'text-red-300' : 'text-zinc-400'
+          className={`block text-base font-semibold ${
+            activeItem ? 'text-red-300' : 'text-zinc-400'
           }`}
         >
-          10:30
+          {startHour.toString().padStart(2, '0')}
+          {':'}
+          {startMinute.toString().padStart(2, '0')}
         </b>
       </div>
       <div className="flex-1 truncate">
         <div className="flex flex-col gap-0.5">
           <div
             className={`truncate text-base ${
-              active ? 'text-zinc-100' : 'text-zinc-200'
+              activeItem ? 'text-zinc-100' : 'text-zinc-200'
             }`}
           >
-            {name}
+            {event.name}
           </div>
           <div
             className={`truncate text-xs ${
-              active ? 'text-red-400' : 'text-zinc-500'
+              activeItem ? 'text-red-400' : 'text-zinc-500'
             }`}
           >
             <span>nalendrasari@gmail.com</span>
@@ -141,7 +172,7 @@ const MeetingItem = ({
           </div>
         </div>
       </div>
-      {active ? (
+      {activeItem ? (
         <div>
           <b className="rounded-lg bg-red-950 px-3 py-0.5 text-[10px] font-medium leading-[14px] text-red-200">
             Now
