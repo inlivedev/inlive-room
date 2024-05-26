@@ -23,34 +23,39 @@ export default function ParticipantDropdownMenu({
   children: React.ReactNode;
 }) {
   const { roomID, clientID } = useClientContext();
-  const { speakerClientIDs, spotlights, isModerator, roomType, currentLayout } =
-    useMetadataContext();
+  const {
+    speakerClientIDs,
+    spotlightForEveryone,
+    isModerator,
+    roomType,
+    currentLayout,
+  } = useMetadataContext();
   const { datachannels } = useDataChannelContext();
 
   const onMoreSelection = useCallback(
     async (key: Key) => {
-      if (key === 'pin') {
+      if (key === 'spotlight-for-myself') {
         document.dispatchEvent(
-          new CustomEvent('set:pin', {
+          new CustomEvent('set:spotlight-for-myself', {
             detail: {
-              active: !stream.pin,
+              active: !stream.spotlightForMyself,
               id: stream.id,
             },
           })
         );
-      } else if (key === 'spotlight') {
+      } else if (key === 'spotlight-for-everyone') {
         try {
-          if (stream.spotlight) {
-            const newSpotlights = spotlights.filter(
+          if (stream.spotlightForEveryone) {
+            const data = spotlightForEveryone.filter(
               (spotlight) => spotlight !== stream.id
             );
 
             await clientSDK.setMetadata(roomID, {
-              spotlights: newSpotlights,
+              spotlightForEveryone: data,
             });
           } else {
             await clientSDK.setMetadata(roomID, {
-              spotlights: [...spotlights, stream.id],
+              spotlightForEveryone: [...spotlightForEveryone, stream.id],
             });
           }
         } catch (error) {
@@ -125,7 +130,14 @@ export default function ParticipantDropdownMenu({
         }
       }
     },
-    [roomID, speakerClientIDs, stream, isModerator, spotlights, datachannels]
+    [
+      roomID,
+      speakerClientIDs,
+      stream,
+      isModerator,
+      spotlightForEveryone,
+      datachannels,
+    ]
   );
 
   return (
@@ -133,10 +145,20 @@ export default function ParticipantDropdownMenu({
       <DropdownTrigger>{children}</DropdownTrigger>
       <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
         {[
-          <DropdownItem key="pin">
+          // <DropdownItem key="pin">
+          //   <div className="flex items-center gap-1">
+          //     <span>Pin for myself</span>
+          //     {stream.pin ? (
+          //       <span>
+          //         <CheckIcon width={16} height={16} />
+          //       </span>
+          //     ) : null}
+          //   </div>
+          // </DropdownItem>,
+          <DropdownItem key="spotlight-for-myself">
             <div className="flex items-center gap-1">
-              <span>Pin for myself</span>
-              {stream.pin ? (
+              <span>Spotlight for myself</span>
+              {stream.spotlightForMyself ? (
                 <span>
                   <CheckIcon width={16} height={16} />
                 </span>
@@ -146,10 +168,10 @@ export default function ParticipantDropdownMenu({
           // @ts-ignore
           isModerator
             ? [
-                <DropdownItem key="spotlight">
+                <DropdownItem key="spotlight-for-everyone">
                   <div className="flex items-center gap-1">
                     <span>Spotlight for everyone</span>
-                    {stream.spotlight ? (
+                    {stream.spotlightForEveryone ? (
                       <span>
                         <CheckIcon width={16} height={16} />
                       </span>

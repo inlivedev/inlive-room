@@ -75,13 +75,16 @@ const RightDrawerMenuContainer = () => {
 
 const ParticipantView = ({ roomType }: { roomType: string }) => {
   const { streams } = useParticipantContext();
-  const pinnedStream =
-    streams[0]?.pin || streams[0]?.spotlight ? streams[0] : undefined;
+  const spotlightedStream =
+    streams[0]?.spotlightForMyself || streams[0]?.spotlightForEveryone
+      ? streams[0]
+      : undefined;
 
   return (
     <>
       <div className="px-4">
-        {pinnedStream?.spotlight && pinnedStream?.origin === 'local' ? (
+        {spotlightedStream?.spotlightForEveryone &&
+        spotlightedStream?.origin === 'local' ? (
           <ConferenceNotification
             show={true}
             text="You are currently being spotlighted. Your video is highlighted for everyone."
@@ -90,9 +93,15 @@ const ParticipantView = ({ roomType }: { roomType: string }) => {
       </div>
       <div className="mt-3 px-4 pb-4">
         {roomType === 'event' ? (
-          <WebinarView streams={streams} pinnedStream={pinnedStream} />
+          <WebinarView
+            streams={streams}
+            spotlightedStream={spotlightedStream}
+          />
         ) : (
-          <MeetingView streams={streams} pinnedStream={pinnedStream} />
+          <MeetingView
+            streams={streams}
+            spotlightedStream={spotlightedStream}
+          />
         )}
       </div>
     </>
@@ -101,20 +110,20 @@ const ParticipantView = ({ roomType }: { roomType: string }) => {
 
 const MeetingView = ({
   streams,
-  pinnedStream,
+  spotlightedStream,
 }: {
   streams: ParticipantVideo[];
-  pinnedStream: ParticipantVideo | undefined;
+  spotlightedStream: ParticipantVideo | undefined;
 }) => {
   const { currentLayout } = useMetadataContext();
 
-  if (pinnedStream) {
+  if (spotlightedStream) {
     const hiddenStreams = streams.slice(1);
 
-    if (pinnedStream.origin === 'local') {
+    if (spotlightedStream.origin === 'local') {
       return (
         <>
-          <SpotlightView streamA={pinnedStream} />
+          <SpotlightView streamA={spotlightedStream} />
           <HiddenView streams={hiddenStreams} />
         </>
       );
@@ -128,7 +137,7 @@ const MeetingView = ({
 
     return (
       <>
-        <SpotlightView streamA={pinnedStream} streamB={localStream} />
+        <SpotlightView streamA={spotlightedStream} streamB={localStream} />
         <HiddenView streams={hiddenStreams} />
       </>
     );
@@ -152,20 +161,20 @@ const MeetingView = ({
 
 const WebinarView = ({
   streams,
-  pinnedStream,
+  spotlightedStream,
 }: {
   streams: ParticipantVideo[];
-  pinnedStream: ParticipantVideo | undefined;
+  spotlightedStream: ParticipantVideo | undefined;
 }) => {
   const { currentLayout } = useMetadataContext();
 
-  if (pinnedStream) {
+  if (spotlightedStream) {
     const hiddenStreams = streams.slice(1);
 
-    if (pinnedStream.origin === 'local') {
+    if (spotlightedStream.origin === 'local') {
       return (
         <>
-          <SpotlightView streamA={pinnedStream} />
+          <SpotlightView streamA={spotlightedStream} />
           <HiddenView streams={hiddenStreams} />
         </>
       );
@@ -179,7 +188,7 @@ const WebinarView = ({
 
     return (
       <>
-        <SpotlightView streamA={pinnedStream} streamB={localStream} />
+        <SpotlightView streamA={spotlightedStream} streamB={localStream} />
         <HiddenView streams={hiddenStreams} />
       </>
     );

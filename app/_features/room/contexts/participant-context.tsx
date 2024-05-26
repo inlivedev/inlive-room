@@ -13,8 +13,9 @@ export type ParticipantVideo = {
   readonly mediaStream: MediaStream;
   readonly videoElement: HTMLVideoElement;
   readonly audioLevel: number;
-  pin: boolean;
-  spotlight: boolean;
+  // pin: boolean;
+  spotlightForMyself: boolean;
+  spotlightForEveryone: boolean;
   fullscreen: boolean;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
   readonly addEventListener: (
@@ -32,8 +33,8 @@ export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.videoElement = document.createElement('video');
   stream.videoElement.srcObject = stream.mediaStream;
-  stream.pin = false;
-  stream.spotlight = false;
+  stream.spotlightForMyself = false;
+  stream.spotlightForEveryone = false;
   stream.fullscreen = false;
   return stream;
 };
@@ -55,7 +56,7 @@ export function ParticipantProvider({
 }) {
   const { clientID, clientName } = useClientContext();
   const { peer } = usePeerContext();
-  const { spotlights } = useMetadataContext();
+  const { spotlightForEveryone } = useMetadataContext();
   const [streams, setStreams] = useState<ParticipantVideo[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
@@ -69,24 +70,28 @@ export function ParticipantProvider({
       }
     }) as EventListener;
 
-    const onPinSet = ((event: CustomEventInit) => {
+    const onSpotlightForMyselfSet = ((event: CustomEventInit) => {
       const { id: streamID, active } = event.detail || {};
       const currentStream = streams.find((stream) => stream.id === streamID);
       if (!currentStream) return;
 
       if (active === true) {
-        const prevPinned = streams[0]?.pin === true ? streams[0] : undefined;
+        const prevSpotlight =
+          streams[0]?.spotlightForMyself === true ? streams[0] : undefined;
         setStreams((prevState) => {
           return prevState.map((stream) => {
-            if (stream.id === prevPinned?.id) stream.pin = false;
-            if (stream.id === currentStream.id) stream.pin = true;
+            if (stream.id === prevSpotlight?.id)
+              stream.spotlightForMyself = false;
+            if (stream.id === currentStream.id)
+              stream.spotlightForMyself = true;
             return stream;
           });
         });
       } else {
         setStreams((prevState) => {
           return prevState.map((stream) => {
-            if (stream.id === currentStream.id) stream.pin = false;
+            if (stream.id === currentStream.id)
+              stream.spotlightForMyself = false;
             return stream;
           });
         });
@@ -150,14 +155,20 @@ export function ParticipantProvider({
     };
 
     document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
-    document.addEventListener('set:pin', onPinSet);
+    document.addEventListener(
+      'set:spotlight-for-myself',
+      onSpotlightForMyselfSet
+    );
     document.addEventListener('set:fullscreen', onFullscreenSet);
     document.addEventListener('fullscreenchange', onFullScreenChange);
     document.addEventListener('webkitfullscreenchange', onFullScreenChange);
 
     return () => {
       document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
-      document.removeEventListener('set:pin', onPinSet);
+      document.removeEventListener(
+        'set:spotlight-for-myself',
+        onSpotlightForMyselfSet
+      );
       document.removeEventListener('set:fullscreen', onFullscreenSet);
       document.removeEventListener('fullscreenchange', onFullScreenChange);
       document.removeEventListener(
@@ -204,7 +215,9 @@ export function ParticipantProvider({
     }
   }, [peer, localStream, clientID, clientName]);
 
-  const newStreams = orderByPinned(checkSpotlight(streams, spotlights));
+  const newStreams = orderBySpotlighted(
+    checkSpotlight(streams, spotlightForEveryone)
+  );
 
   return (
     <ParticipantContext.Provider value={{ streams: newStreams }}>
@@ -213,22 +226,26 @@ export function ParticipantProvider({
   );
 }
 
-const checkSpotlight = (streams: ParticipantVideo[], spotlights: string[]) => {
+const checkSpotlight = (
+  streams: ParticipantVideo[],
+  spotlightForEveryone: string[]
+) => {
   return streams.map((stream) => {
-    if (spotlights.includes(stream.id)) {
-      stream.spotlight = true;
+    if (spotlightForEveryone.includes(stream.id)) {
+      stream.spotlightForEveryone = true;
     } else {
-      stream.spotlight = false;
+      stream.spotlightForEveryone = false;
     }
     return stream;
   });
 };
 
-const orderByPinned = (streams: ParticipantVideo[]) => {
+const orderBySpotlighted = (streams: ParticipantVideo[]) => {
   return streams.sort((streamA, streamB) => {
     return (
-      Number(streamB.pin) - Number(streamA.pin) ||
-      Number(streamB.spotlight) - Number(streamA.spotlight)
+      Number(streamB.spotlightForMyself) - Number(streamA.spotlightForMyself) ||
+      Number(streamB.spotlightForEveryone) -
+        Number(streamA.spotlightForEveryone)
     );
   });
 };
