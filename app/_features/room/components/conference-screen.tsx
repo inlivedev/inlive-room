@@ -312,6 +312,13 @@ function OverlayScreen({
                 </div>
               </div>
             ) : null}
+            {stream.pin ? (
+              <div title="Pinned for myself">
+                <div className="rounded-full bg-zinc-700/70 p-1 text-zinc-200">
+                  <PinIcon className="h-5 w-5" />
+                </div>
+              </div>
+            ) : null}
           </div>
           <div>
             <ParticipantDropdownMenu stream={stream}>

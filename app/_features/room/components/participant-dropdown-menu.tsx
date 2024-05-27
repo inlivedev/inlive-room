@@ -34,7 +34,16 @@ export default function ParticipantDropdownMenu({
 
   const onMoreSelection = useCallback(
     async (key: Key) => {
-      if (key === 'spotlight-for-myself') {
+      if (key === 'pin') {
+        document.dispatchEvent(
+          new CustomEvent('set:pin', {
+            detail: {
+              active: !stream.pin,
+              id: stream.id,
+            },
+          })
+        );
+      } else if (key === 'spotlight-for-myself') {
         document.dispatchEvent(
           new CustomEvent('set:spotlight-for-myself', {
             detail: {
@@ -145,16 +154,16 @@ export default function ParticipantDropdownMenu({
       <DropdownTrigger>{children}</DropdownTrigger>
       <DropdownMenu aria-label="More options" onAction={onMoreSelection}>
         {[
-          // <DropdownItem key="pin">
-          //   <div className="flex items-center gap-1">
-          //     <span>Pin for myself</span>
-          //     {stream.pin ? (
-          //       <span>
-          //         <CheckIcon width={16} height={16} />
-          //       </span>
-          //     ) : null}
-          //   </div>
-          // </DropdownItem>,
+          <DropdownItem key="pin">
+            <div className="flex items-center gap-1">
+              <span>Pin for myself</span>
+              {stream.pin ? (
+                <span>
+                  <CheckIcon width={16} height={16} />
+                </span>
+              ) : null}
+            </div>
+          </DropdownItem>,
           <DropdownItem key="spotlight-for-myself">
             <div className="flex items-center gap-1">
               <span>Spotlight for myself</span>
