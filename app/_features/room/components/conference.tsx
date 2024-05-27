@@ -15,7 +15,7 @@ import GalleryLayout from './gallery-layout';
 import WebinarSpeakerLayout from './webinar-speaker-layout';
 import WebinarPresentationLayout from './webinar-presentation-layout';
 import HiddenView from './hidden-view';
-import ConferenceNotification from './ conference-notification';
+import ConferenceNotification from './conference-notification';
 import ParticipantListMenu from './participant-list-menu';
 import RightDrawerMenu from './right-drawer-menu';
 
