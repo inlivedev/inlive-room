@@ -261,50 +261,9 @@ export function ParticipantProvider({
     }
   }, [peer, localStream, clientID, clientName]);
 
-  // const newStreams = orderBySpotlight(
-  //   checkSpotlight(streams, spotlightForEveryone)
-  // );
-
-  const newStreams = orderByPin(streams, pinnedStreams);
-
   return (
-    <ParticipantContext.Provider value={{ streams: newStreams }}>
+    <ParticipantContext.Provider value={{ streams }}>
       {children}
     </ParticipantContext.Provider>
   );
 }
-
-const checkSpotlight = (
-  streams: ParticipantVideo[],
-  spotlightForEveryone: string[]
-) => {
-  return streams.map((stream) => {
-    if (spotlightForEveryone.includes(stream.id)) {
-      stream.spotlightForEveryone = true;
-    } else {
-      stream.spotlightForEveryone = false;
-    }
-    return stream;
-  });
-};
-
-const orderByPin = (streams: ParticipantVideo[], pinnedStreams: string[]) => {
-  return streams.sort((streamA, streamB) => {
-    const indexA = pinnedStreams.indexOf(streamA.id);
-    const indexB = pinnedStreams.indexOf(streamB.id);
-
-    return (
-      (indexA > -1 ? indexA : Infinity) - (indexB > -1 ? indexB : Infinity)
-    );
-  });
-};
-
-const orderBySpotlight = (streams: ParticipantVideo[]) => {
-  return streams.sort((streamA, streamB) => {
-    return (
-      Number(streamB.spotlightForMyself) - Number(streamA.spotlightForMyself) ||
-      Number(streamB.spotlightForEveryone) -
-        Number(streamA.spotlightForEveryone)
-    );
-  });
-};

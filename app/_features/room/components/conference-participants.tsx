@@ -19,6 +19,13 @@ export default function ConferenceParticipants({
   roomType: string;
 }) {
   const { streams } = useParticipantContext();
+
+  //   const streams = orderBySpotlight(
+  //   checkSpotlight(rawStreams, spotlightForEveryone)
+  // );
+
+  // const streams = orderByPin(rawStreams, pinnedStreams);
+
   const spotlightedStream =
     streams[0]?.spotlightForMyself || streams[0]?.spotlightForEveryone
       ? streams[0]
@@ -150,7 +157,7 @@ const WebinarView = ({
 };
 
 const orderByPin = (streams: ParticipantVideo[], pinnedStreams: string[]) => {
-  return streams.slice().sort((streamA, streamB) => {
+  return streams.sort((streamA, streamB) => {
     const indexA = pinnedStreams.indexOf(streamA.id);
     const indexB = pinnedStreams.indexOf(streamB.id);
 
