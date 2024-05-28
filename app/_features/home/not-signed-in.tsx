@@ -9,7 +9,7 @@ export default function NotSignedIn() {
 
   return (
     <div className="flex w-full flex-col gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
-      <div className="flex-auto">
+      <div className="md:flex-auto">
         <section className="md:max-w-xl">
           <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
             Virtual room for your real-time collaboration
@@ -29,7 +29,7 @@ export default function NotSignedIn() {
           </div>
         </section>
       </div>
-      <div className="flex flex-1 justify-center md:justify-end">
+      <div className="flex justify-center md:flex-1 md:justify-end">
         <div className="w-[400px] md:w-[360px] lg:w-[400px]">
           <div className="rounded-2xl border border-zinc-950 bg-zinc-950/25 p-6 lg:p-8">
             <p className="mb-4 text-base font-medium text-zinc-400">
