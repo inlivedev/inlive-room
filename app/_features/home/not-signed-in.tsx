@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@nextui-org/react';
 import JoinRoomField from '@/_features/home/join-room-field';
 import TablerArrowRightIcon from '@/_shared/components/icons/tabler-arrow-right-icon';
@@ -152,6 +153,36 @@ export default function NotSignedIn() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-8 py-20 sm:flex-row xl:gap-16">
+        <div className="w-full sm:max-w-[280px] md:max-w-[360px] lg:max-w-[480px]">
+          <Image
+            width={0}
+            height={0}
+            src="/images/webinar/host-in-the-webinar-room-desktop-quality.png"
+            alt="A desktop view of webinar session with audiences"
+            className="h-auto w-full object-cover"
+            loading="lazy"
+            unoptimized
+          />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-xl font-semibold text-zinc-200">
+            Seamless quality for uninterrupted communication
+          </h3>
+          <div className="mt-3 flex flex-col gap-6 text-base text-zinc-400">
+            <p>
+              With latency less than 10 milliseconds, you can experience
+              seamless streaming, even in challenging network conditions.
+            </p>
+            <p>
+              Our adaptive bitrate and streaming protection technology ensures
+              smooth playback, while the audio/video packet loss protection
+              technology guarantees uninterrupted communication, even in highly
+              congested network environments.
+            </p>
           </div>
         </div>
       </div>
