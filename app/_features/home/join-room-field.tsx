@@ -3,7 +3,7 @@
 import { Button } from '@nextui-org/react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
-import type { SVGElementPropsType } from '@/_shared/types/types';
+import TablerArrowRightIcon from '@/_shared/components/icons/tabler-arrow-right-icon';
 
 type JoinRoomInput = { roomID: string };
 
@@ -36,24 +36,9 @@ export default function JoinRoomField() {
           type="submit"
           className="h-auto min-h-0 min-w-0 rounded-lg bg-zinc-800/50 px-4 py-2.5 antialiased hover:bg-zinc-800 active:bg-zinc-700"
         >
-          <ArrowRightIcon className="h-5 w-5 text-zinc-100/50" />
+          <TablerArrowRightIcon className="h-5 w-5 text-zinc-100/50" />
         </Button>
       </div>
     </form>
   );
 }
-
-const ArrowRightIcon = (props: SVGElementPropsType) => {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M5 12h14m-6 6l6-6m-6-6l6 6"
-      />
-    </svg>
-  );
-};
