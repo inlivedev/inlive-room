@@ -13,7 +13,7 @@ export default function View({ events }: { events: EventType.Event[] }) {
     <div className="bg-zinc-950">
       <div className="min-viewport-height mx-auto flex h-full w-full max-w-7xl flex-1 flex-col px-4">
         <Header logoText="inLive Room" logoHref="/" />
-        <main className="flex flex-1 flex-col justify-center">
+        <main className="grid flex-1 grid-cols-1">
           {user ? <SignedIn user={user} events={events} /> : <NotSignedIn />}
         </main>
         <Footer />
