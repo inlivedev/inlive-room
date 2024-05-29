@@ -60,7 +60,7 @@ export default function NotSignedIn() {
         </div>
       </div>
       <div id="features" className="flex flex-col gap-6 py-10">
-        <div className="rounded-xl bg-zinc-900 px-8 py-6">
+        <div className="rounded-xl bg-zinc-900 px-6 py-4 md:px-8 md:py-6">
           <div className="flex flex-col gap-5 sm:flex-row">
             <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:gap-5">
               <div>
@@ -106,7 +106,7 @@ export default function NotSignedIn() {
           </div>
         </div>
         <div className="flex flex-col gap-6 md:flex-row">
-          <div className="rounded-xl bg-zinc-900 px-8 py-6">
+          <div className="rounded-xl bg-zinc-900 px-6 py-4 md:px-8 md:py-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-5">
               <div>
                 <div className="text-zinc-200 sm:p-1">
@@ -137,7 +137,7 @@ export default function NotSignedIn() {
               </div>
             </div>
           </div>
-          <div className="rounded-xl bg-zinc-900 px-8 py-6">
+          <div className="rounded-xl bg-zinc-900 px-6 py-4 md:px-8 md:py-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-5">
               <div>
                 <div className="text-zinc-200 sm:p-1">
@@ -197,6 +197,88 @@ export default function NotSignedIn() {
               technology guarantees uninterrupted communication, even in highly
               congested network environments.
             </p>
+          </div>
+        </div>
+      </div>
+      <div className="py-10">
+        <div className="grid grid-cols-1 gap-8 rounded-xl bg-zinc-900 px-6 py-5 md:px-10 md:py-8 lg:grid-cols-2 xl:gap-16">
+          <div>
+            <h3 className="text-xl font-semibold text-zinc-200">
+              Ready to build a similar project as this one?
+            </h3>
+            <div className="mt-3 flex flex-col gap-6 text-base text-zinc-400">
+              <p>
+                Because if you are, you can build your own now. The source code
+                of this project is available for free to use by everyone through
+                GitHub.
+              </p>
+              <p>
+                Grab a copy of it by hitting one of the buttons. Build a
+                completely different project web app or give the existing a new
+                look under your name!
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <Button
+                as={Link}
+                href="https://github.com/inlivedev/inlive-room/generate"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-auto min-h-0 min-w-0 whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+              >
+                <div>
+                  <b className="flex items-center justify-between text-base font-semibold text-zinc-200">
+                    <span>Use as a template</span>
+                    <span>
+                      <TablerArrowRightIcon className="h-5 w-5" />
+                    </span>
+                  </b>
+                  <p className="mt-1 text-sm text-zinc-400">
+                    Create a GitHub repository using this project as a template
+                  </p>
+                </div>
+              </Button>
+            </div>
+            <div>
+              <Button
+                as={Link}
+                href="https://github.com/inlivedev/inlive-room/fork"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-auto min-h-0 min-w-0 whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+              >
+                <div>
+                  <b className="flex items-center justify-between text-base font-semibold text-zinc-200">
+                    <span>Fork this project</span>
+                    <span>
+                      <TablerArrowRightIcon className="h-5 w-5" />
+                    </span>
+                  </b>
+                  <p className="mt-1 text-sm text-zinc-400">Lorem ipsum</p>
+                </div>
+              </Button>
+            </div>
+            <div>
+              <Button
+                as={Link}
+                href="https://github.com/inlivedev/inlive-room/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-auto min-h-0 min-w-0 whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+              >
+                <div>
+                  <b className="flex items-center justify-between text-base font-semibold text-zinc-200">
+                    <span>Clone this project</span>
+                    <span>
+                      <TablerArrowRightIcon className="h-5 w-5" />
+                    </span>
+                  </b>
+                  <p className="mt-1 text-sm text-zinc-400">Lorem ipsum</p>
+                </div>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
