@@ -24,18 +24,32 @@ export default function NotSignedIn() {
               that simple! Experience real-time messaging, video, and audio for
               seamless collaboration, all within open-source virtual rooms.
             </p>
-            <div className="mt-8">
-              <Button
-                className="h-auto min-h-0 min-w-0 rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
-                onPress={openSignInModal}
-              >
-                Sign in to try inLive Room
-              </Button>
+            <div className="mt-8 flex flex-row flex-wrap gap-4">
+              <div>
+                <Button
+                  className="h-auto min-h-0 min-w-0 rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+                  onPress={openSignInModal}
+                >
+                  Sign in to try inLive Room
+                </Button>
+              </div>
+              <div>
+                <Button
+                  as={Link}
+                  href="/#features"
+                  className="inline-flex h-auto min-h-0 min-w-0 items-center gap-2 rounded-lg bg-zinc-700 px-6 py-2.5 pr-5 text-zinc-100 antialiased hover:bg-zinc-600 active:bg-zinc-500"
+                >
+                  <span className="text-sm font-medium">Learn more</span>
+                  <span>
+                    <TablerArrowRightIcon className="h-5 w-5 rotate-90" />
+                  </span>
+                </Button>
+              </div>
             </div>
           </section>
         </div>
         <div className="flex justify-center md:flex-1 md:justify-end">
-          <div className="w-[400px] md:w-[360px] lg:w-[400px]">
+          <div className="w-[400px] md:w-[320px] lg:w-[400px]">
             <div className="rounded-2xl border border-zinc-950 bg-zinc-950/25 p-6 lg:p-8">
               <p className="mb-4 text-base font-medium text-zinc-400">
                 Got a room code to join?
@@ -45,7 +59,7 @@ export default function NotSignedIn() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-6 py-10">
+      <div id="features" className="flex flex-col gap-6 py-10">
         <div className="rounded-xl bg-zinc-900 px-8 py-6">
           <div className="flex flex-col gap-5 sm:flex-row">
             <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:gap-5">

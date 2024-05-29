@@ -6,6 +6,11 @@ html, body {
   min-height: 100dvh;
 }
 
+html:focus-within {
+  scroll-behavior: smooth;
+  scroll-padding-top: 2.5rem;
+}
+
 .fixed-fullscreen {
   position: fixed !important;
   top: 0 !important;
