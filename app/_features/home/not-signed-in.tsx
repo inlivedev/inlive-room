@@ -227,7 +227,7 @@ export default function NotSignedIn() {
                   href="https://github.com/inlivedev/inlive-room/generate"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-950 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
                 >
                   <div className="w-full">
                     <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
@@ -248,7 +248,7 @@ export default function NotSignedIn() {
                   href="https://github.com/inlivedev/inlive-room/fork"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-950 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
                 >
                   <div className="w-full">
                     <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
@@ -270,7 +270,7 @@ export default function NotSignedIn() {
                   href="https://github.com/inlivedev/inlive-room/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-950 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
                 >
                   <div className="w-full">
                     <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
