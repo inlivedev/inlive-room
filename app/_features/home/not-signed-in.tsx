@@ -217,9 +217,9 @@ export default function NotSignedIn() {
                 by everyone through GitHub.
               </p>
               <p>
-                When you are already signed in to GitHub, grab a copy of it by
-                hitting one of the buttons. Build a completely different video
-                conference app or give the existing a new look under your name!
+                Sign in to GitHub and grab a copy of it by hitting one of the
+                buttons. Build a completely different video conference app or
+                give the existing a new look under your name!
               </p>
             </div>
           </div>
