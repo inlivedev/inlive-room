@@ -98,50 +98,8 @@ export class EventRepo implements iEventRepo {
         availableSlots: data.maximumSlots ? data.maximumSlots - countRegistered.count : undefined,
       };
     })
-    
+
     return event;
-  }
-
-  /**
-   * Retrive published events that not yet started and drafted and cancelled events by the user.
-   */
-  async getMyEvents(userID: number, page: number, limit: number) {
-    page = page - 1;
-
-    if (page < 0) {
-      page = 0;
-    }
-
-    if (limit <= 0) {
-      limit = 10;
-    }
-
-    const filter = sql`
-    ${events.createdBy} = ${userID} AND
-    ${events.deletedAt} IS NULL AND
-    ((${events.status} = ${'published'} AND ${events.endTime} >= NOW())
-    OR ${events.status} = ${'cancelled'}
-    OR ${events.status} = ${'draft'})`;
-
-    const res = await db.query.events.findMany({
-      where: filter,
-      limit: limit,
-      offset: page * limit,
-    });
-
-    const resCount = await db
-      .select({ total: count() })
-      .from(events)
-      .where(filter);
-
-    const pageMeta: PageMeta = {
-      current_page: page + 1,
-      total_page: Math.ceil(resCount[0].total / limit) || 1,
-      per_page: limit,
-      total_record: resCount[0].total,
-    };
-
-    return { data: res, meta: pageMeta };
   }
 
   async getEvents(
@@ -171,7 +129,7 @@ export class EventRepo implements iEventRepo {
       orderBy(fields, operators) {
         return [operators.desc(fields.createdAt)];
       },
-      
+
     };
 
     const whereQuery: SQL[] = [];
@@ -217,16 +175,16 @@ export class EventRepo implements iEventRepo {
 
     if(category){
       switch (category) {
-        case 'webinar': 
+        case 'webinar':
           whereQuery.push(sql`${events.categoryID} = ${1}`);
           break;
-        
+
         case 'meeting':
           whereQuery.push(sql`${events.categoryID} = ${2}`);
           break;
       }
     }
-    
+
 
     const statusFilter = statusQuery.length
       ? sql.join(statusQuery, sql` OR `)
@@ -351,7 +309,7 @@ export class EventRepo implements iEventRepo {
     limit = 10,
     page = 1
   ) {
-    const res = await db.transaction(async (tx) => { 
+    const res = await db.transaction(async (tx) => {
       const registeree = await tx
         .select({
           first_name: participants.firstName,
@@ -364,9 +322,9 @@ export class EventRepo implements iEventRepo {
         .innerJoin(events, eq(participants.eventID, events.id))
         .where(
           and(
-            eq(events.slug, slug), 
+            eq(events.slug, slug),
             eq(events.createdBy, createdBy),
-            eq(participants.roleID,1))   
+            eq(participants.roleID,1))
         )
 
       const total = await tx
@@ -419,7 +377,7 @@ export class EventRepo implements iEventRepo {
     });
   }
 
-  async updateParticipant(participant : selectParticipant) { 
+  async updateParticipant(participant : selectParticipant) {
     const res = await db.update(participants).set(participant).where(eq(participants.id,participant.id)).returning()
     return res[0]
   }
@@ -562,7 +520,7 @@ export class EventRepo implements iEventRepo {
         `.as('isRegistered'),
         isJoined: sql<boolean>`
         CASE
-          WHEN (${participantMatchEventID.clientId} IS NOT NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) 
+          WHEN (${participantMatchEventID.clientId} IS NOT NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL)
             OR (${participantMatchEventID.clientId} IS NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) THEN ${true}
           ELSE ${false}
         END
@@ -597,8 +555,8 @@ export class EventRepo implements iEventRepo {
 
   /**
    * Get the list of participants that fully attended the event based on the percentage of the event duration
-   * 
-   * 
+   *
+   *
    * @param eventId the eventID
    * @param percentage percentage value to be counted as fully attended (0-100)
    * @returns list of participant that satisfy the percentage condition
@@ -620,7 +578,7 @@ export class EventRepo implements iEventRepo {
         })
         .from(activitiesLog)
         .innerJoin(
-            participant, 
+            participant,
             and(
               eq(sql<object[]>`${activitiesLog.meta} ->> 'roomID'`, event.roomId),
               eq(sql<string>`${activitiesLog.meta} ->> 'clientID'`, sql<string>`${participant.clientId}`)))
@@ -695,4 +653,3 @@ function getTotalJoinDuration(intervals: z.infer<typeof RoomDurationMeta>[], ses
 
   return totalDuration;
 }
-
