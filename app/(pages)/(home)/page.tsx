@@ -22,7 +22,7 @@ export default async function Page() {
   if (token && user) {
     const listEventsResponse: EventType.ListEventsResponse =
       await InternalApiFetcher.get(
-        `/api/events?&limit=${10}&end_is_after=${now.toISOString()}`,
+        `/api/events?&limit=${10}&end_is_after=${now.toISOString()}&status[]=published`,
         {
           headers: {
             Cookie: `token=${token}`,
