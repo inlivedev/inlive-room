@@ -180,12 +180,7 @@ function ParticipantTable({ eventID }: { eventID: string | number }) {
     };
 
     fetchParticipants();
-    console.log();
   }, [eventID, limit, page]);
-
-  useEffect(() => {
-    console.log(participants);
-  }, [participants]);
 
   const nextPage = useCallback(() => {
     setPage((prev) => prev + 1);
