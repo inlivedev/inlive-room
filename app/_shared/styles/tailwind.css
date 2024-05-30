@@ -6,7 +6,7 @@ html, body {
   min-height: 100dvh;
 }
 
-html:focus-within {
+:root {
   scroll-behavior: smooth;
   scroll-padding-top: 2.5rem;
 }
