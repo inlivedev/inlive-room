@@ -71,7 +71,6 @@ export default function MeetingScheduleForm() {
 
   const onSubmit: SubmitHandler<InputsType> = async (data, e) => {
     const submitEvent = e as React.SyntheticEvent<HTMLFormElement, SubmitEvent>;
-
     const submitter = submitEvent.nativeEvent.submitter;
 
     if (submitter && !isSubmitting) {
@@ -118,7 +117,7 @@ export default function MeetingScheduleForm() {
         {
           body: JSON.stringify(body),
           headers: {
-            contentType: 'ap  plication/json',
+            contentType: 'application/json',
           },
         }
       );
@@ -131,9 +130,9 @@ export default function MeetingScheduleForm() {
         reset();
         document.dispatchEvent(new CustomEvent('close:schedule-meeting-modal'));
       }
+      setIsSubmitting(false);
+      window.location.reload();
     }
-
-    setIsSubmitting(false);
   };
 
   register('emails', {
