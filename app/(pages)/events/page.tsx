@@ -43,12 +43,13 @@ export default async function Page({
 
   const page = searchParams['page'] ? parseInt(searchParams['page']) : 1;
   const limit = searchParams['limit'] ? parseInt(searchParams['limit']) : 10;
+  const now = new Date();
 
   const token = cookies().get('token')?.value ?? '';
 
   const eventResponse: EventType.ListEventsResponse =
     await InternalApiFetcher.get(
-      `/api/events/not-started?page=${page}&limit=${limit}&type=${'webinar'}`,
+      `/api/events?page=${page}&limit=${limit}&end_is_after=${now.toISOString()}&type=webinar`,
       {
         headers: {
           Cookie: `token=${token}`,

@@ -369,7 +369,7 @@ export default function EventForm({
         status: publish ? 'published' : 'draft',
         deleteImage: deleteImage,
         maximumSlots: isLimitSlot ? Number(maximumSlots) : undefined,
-        type: 'event',
+        type: 'webinar',
       };
 
       const formData = new FormData();

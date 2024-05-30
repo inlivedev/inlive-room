@@ -105,7 +105,8 @@ export async function POST(req: Request) {
     let eventRoom: selectRoom | null = null;
 
     if (eventMeta.status == 'published') {
-      eventRoom = await roomService.createRoom(user.id, 'event');
+      const type = eventMeta.type === 'webinar' ? 'event' : eventMeta.type;
+      eventRoom = await roomService.createRoom(user.id, type);
     }
 
     const Event: insertEvent = {
