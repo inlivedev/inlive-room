@@ -201,8 +201,8 @@ export default function NotSignedIn() {
         </div>
       </div>
       <div className="py-10">
-        <div className="grid grid-cols-1 gap-8 rounded-xl bg-zinc-900 px-6 py-5 md:px-10 md:py-8 lg:grid-cols-2 xl:gap-16">
-          <div>
+        <div className="grid grid-cols-1 gap-8 rounded-xl bg-zinc-900 px-6 py-5 md:px-10 md:py-8 lg:grid-cols-12 xl:gap-16">
+          <div className="lg:col-span-5 xl:col-span-6">
             <h3 className="text-xl font-semibold text-zinc-200">
               Ready to build a similar project as this one?
             </h3>
@@ -219,70 +219,72 @@ export default function NotSignedIn() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <Button
-                as={Link}
-                href="https://github.com/inlivedev/inlive-room/generate"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
-              >
-                <div className="w-full">
-                  <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
-                    <span>Create from template</span>
-                    <span>
-                      <TablerArrowRightIcon className="h-5 w-5" />
-                    </span>
-                  </b>
-                  <p className="mt-1 text-sm text-zinc-400">
-                    Create a GitHub repository using this project template
-                  </p>
-                </div>
-              </Button>
-            </div>
-            <div>
-              <Button
-                as={Link}
-                href="https://github.com/inlivedev/inlive-room/fork"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
-              >
-                <div className="w-full">
-                  <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
-                    <span>Fork and modify</span>
-                    <span>
-                      <TablerArrowRightIcon className="h-5 w-5" />
-                    </span>
-                  </b>
-                  <p className="mt-1 text-sm text-zinc-400">
-                    Grab a copy and keep it up-to-date with the original
-                    repository
-                  </p>
-                </div>
-              </Button>
-            </div>
-            <div>
-              <Button
-                as={Link}
-                href="https://github.com/inlivedev/inlive-room/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
-              >
-                <div className="w-full">
-                  <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
-                    <span>Clone or download</span>
-                    <span>
-                      <TablerArrowRightIcon className="h-5 w-5" />
-                    </span>
-                  </b>
-                  <p className="mt-1 text-sm text-zinc-400">
-                    Create a local copy of this project on your device
-                  </p>
-                </div>
-              </Button>
+          <div className="lg:col-span-7 xl:col-span-6">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <Button
+                  as={Link}
+                  href="https://github.com/inlivedev/inlive-room/generate"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+                >
+                  <div className="w-full">
+                    <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
+                      <span>Create from template</span>
+                      <span>
+                        <TablerArrowRightIcon className="h-5 w-5" />
+                      </span>
+                    </b>
+                    <p className="mt-1 text-sm text-zinc-400">
+                      Create a GitHub repository using this project template
+                    </p>
+                  </div>
+                </Button>
+              </div>
+              <div>
+                <Button
+                  as={Link}
+                  href="https://github.com/inlivedev/inlive-room/fork"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+                >
+                  <div className="w-full">
+                    <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
+                      <span>Fork and modify</span>
+                      <span>
+                        <TablerArrowRightIcon className="h-5 w-5" />
+                      </span>
+                    </b>
+                    <p className="mt-1 text-sm text-zinc-400">
+                      Grab a copy and keep it up-to-date with the original
+                      repository
+                    </p>
+                  </div>
+                </Button>
+              </div>
+              <div>
+                <Button
+                  as={Link}
+                  href="https://github.com/inlivedev/inlive-room/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-full min-h-0 w-full min-w-0 justify-start whitespace-normal rounded-xl bg-zinc-900 px-5 py-3 antialiased ring-1 ring-zinc-700 hover:bg-zinc-800 active:bg-zinc-700"
+                >
+                  <div className="w-full">
+                    <b className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-200">
+                      <span>Clone or download</span>
+                      <span>
+                        <TablerArrowRightIcon className="h-5 w-5" />
+                      </span>
+                    </b>
+                    <p className="mt-1 text-sm text-zinc-400">
+                      Create a local copy of this project on your device
+                    </p>
+                  </div>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
