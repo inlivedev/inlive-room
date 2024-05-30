@@ -13,52 +13,56 @@ export default function NotSignedIn() {
 
   return (
     <div>
-      <div className="flex flex-col gap-10 py-10 md:flex-row md:py-20 lg:gap-20">
-        <div className="md:flex-auto">
-          <section className="md:max-w-xl">
-            <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
-              Virtual room for your real-time collaboration
-            </h2>
-            <p className="mt-4 text-pretty text-base text-zinc-400 lg:text-lg">
-              Connect with anyone, anywhere. Host or join in seconds. It&apos;s
-              that simple! Experience real-time messaging, video, and audio for
-              seamless collaboration, all within open-source virtual rooms.
-            </p>
-            <div className="mt-8 flex flex-row flex-wrap gap-4">
-              <div>
-                <Button
-                  className="h-auto min-h-0 min-w-0 rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
-                  onPress={openSignInModal}
-                >
-                  Sign in to try inLive Room
-                </Button>
-              </div>
-              <div>
-                <Button
-                  as={Link}
-                  href="/#features"
-                  className="inline-flex h-auto min-h-0 min-w-0 items-center gap-2 rounded-lg bg-zinc-700 px-6 py-2.5 pr-5 text-zinc-100 antialiased hover:bg-zinc-600 active:bg-zinc-500"
-                >
-                  <span className="text-sm font-medium">Learn more</span>
-                  <span>
-                    <TablerArrowRightIcon className="h-5 w-5 rotate-90" />
-                  </span>
-                </Button>
-              </div>
-            </div>
-          </section>
-        </div>
-        <div className="flex justify-center md:flex-1 md:justify-end">
-          <div className="w-[400px] md:w-[320px] lg:w-[400px]">
-            <div className="rounded-2xl border border-zinc-950 bg-zinc-950/25 p-6 lg:p-8">
-              <p className="mb-4 text-base font-medium text-zinc-400">
-                Got a room code to join?
+      <div className="flex flex-col justify-center py-10 md:py-20 landscape:lg:min-h-[70dvh]">
+        <div className="flex w-full flex-col gap-10 md:flex-row lg:gap-20">
+          <div className="md:flex-auto">
+            <section className="md:max-w-xl">
+              <h2 className="text-3xl font-semibold tracking-wide text-zinc-200 lg:text-4xl">
+                Virtual room for your real-time collaboration
+              </h2>
+              <p className="mt-4 text-pretty text-base text-zinc-400 lg:text-lg">
+                Connect with anyone, anywhere. Host or join in seconds.
+                It&apos;s that simple! Experience real-time messaging, video,
+                and audio for seamless collaboration, all within open-source
+                virtual rooms.
               </p>
-              <JoinRoomField />
+              <div className="mt-8 flex flex-row flex-wrap gap-4">
+                <div>
+                  <Button
+                    className="h-auto min-h-0 min-w-0 rounded-lg bg-red-700 px-6 py-2.5 text-sm font-medium text-zinc-100 antialiased hover:bg-red-600 active:bg-red-500"
+                    onPress={openSignInModal}
+                  >
+                    Sign in to try inLive Room
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    as={Link}
+                    href="/#features"
+                    className="inline-flex h-auto min-h-0 min-w-0 items-center gap-2 rounded-lg bg-zinc-700 px-6 py-2.5 pr-5 text-zinc-100 antialiased hover:bg-zinc-600 active:bg-zinc-500"
+                  >
+                    <span className="text-sm font-medium">Learn more</span>
+                    <span>
+                      <TablerArrowRightIcon className="h-5 w-5 rotate-90" />
+                    </span>
+                  </Button>
+                </div>
+              </div>
+            </section>
+          </div>
+          <div className="flex justify-center md:flex-1 md:justify-end">
+            <div className="w-[400px] md:w-[320px] lg:w-[400px]">
+              <div className="rounded-2xl border border-zinc-950 bg-zinc-950/25 p-6 lg:p-8">
+                <p className="mb-4 text-base font-medium text-zinc-400">
+                  Got a room code to join?
+                </p>
+                <JoinRoomField />
+              </div>
             </div>
           </div>
         </div>
       </div>
+
       <div id="features" className="flex flex-col gap-6 py-10">
         <div className="rounded-xl bg-zinc-900 px-6 py-4 md:px-8 md:py-6">
           <div className="flex flex-col gap-5 sm:flex-row">
@@ -209,13 +213,13 @@ export default function NotSignedIn() {
             <div className="mt-3 flex flex-col gap-6 text-base text-zinc-400">
               <p>
                 Because if you are, you can build your own now. The source code
-                of this project is available for free to use by everyone through
-                GitHub.
+                of this project is available for free to use as starter template
+                by everyone through GitHub.
               </p>
               <p>
                 When you are already signed in to GitHub, grab a copy of it by
-                hitting one of the buttons. Build a completely different project
-                web app or give the existing a new look under your name!
+                hitting one of the buttons. Build a completely different video
+                conference app or give the existing a new look under your name!
               </p>
             </div>
           </div>
