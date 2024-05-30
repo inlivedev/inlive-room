@@ -213,8 +213,8 @@ export default function NotSignedIn() {
             <div className="mt-3 flex flex-col gap-6 text-base text-zinc-400">
               <p>
                 Because if you are, you can build your own now. The source code
-                of this project is available for free to use as starter template
-                by everyone through GitHub.
+                of this project is available on GitHub and free to use as a
+                starter template for everyone.
               </p>
               <p>
                 Sign in to GitHub and grab a copy of it by hitting one of the
