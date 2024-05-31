@@ -299,6 +299,7 @@ export async function PUT(
       published: ['draft'],
       cancelled: ['draft', 'published'],
       draft: ['cancelled'],
+      completed: ['draft', 'published', 'cancelled'],
     };
 
     if (

@@ -232,6 +232,37 @@ export class EventRepo implements iEventRepo {
       .returning();
   }
 
+  async getOngoingEvents(
+    type : "webinar" | "meeting" | undefined,
+  ){
+    const now = new Date();
+    const query = await db.query.events.findMany({
+      where: and(
+        sql`${events.endTime} > ${now.toISOString()}`,
+        sql`${events.startTime} < ${now.toISOString()}`,
+        
+        type ? sql`${events.categoryID} = ${type === 'webinar' ? 1 : 2}` : undefined
+      )
+    })
+
+    return query;
+  }
+
+  async getShouldBeEndedEvents(
+    type : "webinar" | "meeting" | undefined,
+  ){
+    const now = new Date();
+    const query = await db.query.events.findMany({
+      where: and(
+        sql`${events.endTime} < ${now.toISOString()}`,
+        eq(events.status, 'published'),
+        type ? sql`${events.categoryID} = ${type === 'webinar' ? 1 : 2}` : undefined
+      )
+    })
+
+    return query;
+  }
+
   async deleteEventBySlug(slug: string, userId: number) {
     return await db
       .update(events)

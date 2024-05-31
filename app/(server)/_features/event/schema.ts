@@ -17,6 +17,7 @@ export const statusEnum = pgEnum('event_status_enum', [
   'draft',
   'published',
   'cancelled',
+  'completed',
 ]);
 
 // Event Table
@@ -115,4 +116,4 @@ export type selectEvent = typeof events.$inferSelect;
 export type insertParticipant = typeof participant.$inferInsert;
 export type selectParticipant = typeof participant.$inferSelect;
 
-export type eventStatusEnum = 'draft' | 'published' | 'cancelled';
+export type eventStatusEnum = 'draft' | 'published' | 'cancelled' | 'completed';
