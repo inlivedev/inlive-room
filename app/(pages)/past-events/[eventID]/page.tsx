@@ -4,7 +4,7 @@ import AppContainer from '@/_shared/components/containers/app-container';
 import HTTPError from '@/_shared/components/errors/http-error';
 import { AuthType } from '@/_shared/types/auth';
 import { headers } from 'next/headers';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 type PageProps = {
   params: {
@@ -50,6 +50,10 @@ export default async function Page({ params: { eventID } }: PageProps) {
         />
       </AppContainer>
     );
+  }
+
+  if (event.status !== 'completed') {
+    redirect(`/events/${event.slug}/detail`);
   }
 
   return <EventPastDashboard event={event} />;

@@ -21,6 +21,10 @@ const navLinks = [
     title: 'Past Events',
     href: '/past-events',
   },
+  {
+    title: 'Not Ended Events',
+    href: '/not-ended-events',
+  },
 ];
 
 export default function PastEvents({

@@ -48,10 +48,11 @@ export async function POST(
       );
     }
 
-    if (room?.meta.type === 'meeting') {
+    if (room?.meta.type === 'event') {
       const event = await eventRepo.getByRoomID(room.id);
       if (event) {
         event.endTime = new Date();
+        event.status = 'completed';
         const newEvent = await eventRepo.updateEvent(user.id, event.id, event);
 
         return NextResponse.json(

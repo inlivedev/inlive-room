@@ -6,6 +6,9 @@ import { eventRepo } from '../../_index';
 export async function GET(req: Request) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get('page') ?? '1');
+  const limit = parseInt(searchParams.get('limit') ?? '10');
 
   const getUserResp = await getCurrentAuthenticated(requestToken?.value || '');
   const user = getUserResp.data ? getUserResp.data : null;
@@ -27,14 +30,20 @@ export async function GET(req: Request) {
     );
   }
 
-  const events = await eventRepo.getShouldBeEndedEvents('webinar');
+  const events = await eventRepo.getShouldBeEndedEvents(
+    user.id,
+    'webinar',
+    page,
+    limit
+  );
 
-  if (!events || events.length === 0) {
+  if (events.meta.total_record === 0) {
     return NextResponse.json(
       {
         code: 404,
         ok: false,
         message: 'No events found',
+        meta: events.meta,
       },
       { status: 404 }
     );
@@ -45,7 +54,8 @@ export async function GET(req: Request) {
       code: 200,
       ok: true,
       message: 'Successfully fetched events',
-      data: events,
+      data: events.data,
+      meta: events.meta,
     },
     { status: 200 }
   );

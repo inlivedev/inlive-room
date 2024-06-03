@@ -65,7 +65,7 @@ export default async function Page({
 
   const eventResponse: EventType.ListEventsResponse =
     await InternalApiFetcher.get(
-      `/api/events?page=${page}&limit=${limit}&end_is_before=${today.toISOString()}&status[]=published`,
+      `/api/events?page=${page}&limit=${limit}&end_is_before=${today.toISOString()}&status[]=completed`,
       {
         headers: {
           Cookie: `token=${token}`,

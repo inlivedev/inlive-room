@@ -18,7 +18,7 @@ import type { AuthType } from '@/_shared/types/auth';
 import MeetingList from '@/_features/meeting/meeting-list';
 import ScheduleModal from '@/_features/meeting/schedule-modal';
 import type { EventType } from '@/_shared/types/event';
-import NotEndedWebinarMessage from './not-ended-events';
+import NotEndedWebinarMessage from './not-ended-webinar-message';
 
 const createRoom = async (type: string) => {
   const response: RoomType.CreateGetRoomResponse =
@@ -178,9 +178,8 @@ export default function SignedIn({
             </div>
           </div>
         </div>
-        <div className="flex items-center md:px-5 lg:px-10">
-          <div className="max-w-lg flex-1"></div>
-          <div className="max-w-lg flex-1 gap-2">
+        <div className="flex items-center justify-center md:px-5 lg:px-10">
+          <div className="flex max-w-lg flex-1 flex-col gap-4">
             <NotEndedWebinarMessage />
             <MeetingList events={events} />
           </div>
