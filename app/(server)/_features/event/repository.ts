@@ -91,7 +91,13 @@ export class EventRepo implements iEventRepo {
 
       const countRegistered = data.maximumSlots ? (await tx.select({
         count: count(),
-      }).from(participants).where(eq(participants.eventID, data.id)))[0] : { count: 0 };
+      }).from(participants).
+      where(
+        and(
+          eq(participants.eventID, data.id),
+          eq(participants.roleID, 1)
+        )
+        ))[0] : { count: 0 };
 
       return {
         ...data,

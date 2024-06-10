@@ -27,6 +27,7 @@ const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 export const StatusNoClientID = 'noClientID';
 export const StatusInvalidClientID = 'invalidClientID';
+export const StatusCompleted = 'eventCompleted';
 
 export default function EventDetail({
   event,
@@ -138,7 +139,8 @@ export default function EventDetail({
                         </b>
                         <div className="mt-0.5 block text-sm text-zinc-300">
                           {event.maximumSlots ? (
-                            event.availableSlots ? (
+                            event.availableSlots &&
+                            event.availableSlots >= 0 ? (
                               <p>
                                 {' '}
                                 <span> {event.availableSlots} slots left</span>,
@@ -232,7 +234,12 @@ function PublicAction({ event }: { event: EventType.Event }) {
               className="w-full rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
               onClick={openRegisterEventForm}
               isDisabled={
-                event.maximumSlots && event.availableSlots === 0 ? true : false
+                event.maximumSlots &&
+                event.availableSlots &&
+                event.availableSlots <= 0 &&
+                event.status === 'completed'
+                  ? true
+                  : false
               }
             >
               Register to Attend
@@ -373,6 +380,15 @@ function ErrorMessage({ errorStatus }: { errorStatus?: string }) {
           <br />
         </p>
         Please double-check your email for the correct link.
+      </div>
+    );
+  } else if (errorStatus === StatusCompleted) {
+    return (
+      <div className="mx-auto mb-3 flex w-full max-w-3xl flex-col items-center justify-center rounded-md bg-blue-900/25 px-4 py-3 text-center text-blue-300 sm:px-6">
+        <p className="text-pretty">
+          The event has ended. You can still view the event&apos;s details.
+          <br />
+        </p>
       </div>
     );
   }
