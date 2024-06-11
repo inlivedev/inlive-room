@@ -16,6 +16,7 @@ import Footer from '@/_shared/components/footer/footer';
 import {
   StatusPublished,
   StatusCancelled,
+  StatusCompleted,
 } from '@/_features/event/components/event-status';
 import type { EventType } from '@/_shared/types/event';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
@@ -57,6 +58,9 @@ export default function EventDetailDashboard({
     day: 'numeric',
   });
 
+  const currentTime = new Date();
+  const endTime = new Date(event.endTime);
+
   return (
     <div className="bg-zinc-900">
       <CancelEventModal slug={event.slug} />
@@ -70,6 +74,14 @@ export default function EventDetailDashboard({
             }`}
           >
             <div className="lg:px-5">
+              {event.status === 'published' && endTime < currentTime && (
+                <div className="mb-2 flex items-center justify-center rounded-md bg-blue-950/50 p-2 text-blue-300 ring-1">
+                  This webinar is still ongoing, if the webinar has ended make
+                  sure to end the room for all participants to mark it as
+                  complete and view the statistics
+                </div>
+              )}
+
               <div className="flex items-center justify-between lg:-ml-5">
                 <div>
                   <Button
@@ -119,6 +131,7 @@ export default function EventDetailDashboard({
                             href={`/rooms/${event.roomId}`}
                             target="_blank"
                             className="h-9 w-full min-w-0 rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500 lg:text-sm"
+                            disabled={event.status !== 'published'}
                           >
                             Join Webinar
                           </Button>
@@ -137,6 +150,7 @@ export default function EventDetailDashboard({
                 <div className="mb-3 flex items-center md:-mb-5">
                   {event.status === 'published' && <StatusPublished />}
                   {event.status === 'cancelled' && <StatusCancelled />}
+                  {event.status === 'completed' && <StatusCompleted />}
                   <span className="ml-3 inline-block text-sm font-medium text-zinc-500">
                     Free event
                   </span>
@@ -172,6 +186,7 @@ export default function EventDetailDashboard({
                   }
                   target="_blank"
                   className="mt-2 h-9 w-full min-w-0 rounded-md bg-zinc-800 px-4 py-2 text-base font-medium text-white antialiased hover:bg-zinc-700 active:bg-zinc-600 lg:text-sm"
+                  disabled={event.status !== 'published'}
                 >
                   Invite Participants
                 </Button>
@@ -319,7 +334,7 @@ function MoreDropdown({
 }: {
   title: string;
   slug: string;
-  status: 'draft' | 'published' | 'cancelled';
+  status: 'draft' | 'published' | 'cancelled' | 'completed';
 }) {
   const { isOpen, onOpenChange, onClose } = useDisclosure();
 

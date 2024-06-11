@@ -130,6 +130,13 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
             }
           }
 
+          if (eventData.status === 'completed') {
+            const url = request.nextUrl.clone();
+            url.pathname = `/events/${eventData.slug}`;
+            url.searchParams.append('error', 'eventCompleted');
+            return NextResponse.redirect(url);
+          }
+
           if (!clientID) {
             const url = request.nextUrl.clone();
             url.pathname = `/events/${eventData.slug}`;

@@ -98,50 +98,14 @@ export default function EventList({
               {validPagination ? (
                 <>
                   {events.length > 0 ? (
-                    <>
-                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        {events.map((event) => {
-                          return <EventCard key={event.id} event={event} />;
-                        })}
-                      </div>
-                      {previousPage || nextPage ? (
-                        <div className="mt-10 text-sm md:mt-20">
-                          <p className="pb-4 text-center text-sm font-medium text-zinc-500">
-                            Page {currentPage} of {lastPage}
-                          </p>
-                          <div className="flex items-center justify-center gap-6">
-                            {previousPage ? (
-                              <div>
-                                <Button
-                                  className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                                  as={Link}
-                                  href={`/events?page=${previousPage}&limit=${pageMeta.per_page}`}
-                                >
-                                  <span className="flex items-center">
-                                    <ChevronLeft width={16} height={16} />
-                                  </span>
-                                  <span>Previous page</span>
-                                </Button>
-                              </div>
-                            ) : null}
-                            {nextPage ? (
-                              <div>
-                                <Button
-                                  className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                                  as={Link}
-                                  href={`/events?page=${nextPage}&limit=${pageMeta.per_page}`}
-                                >
-                                  <span>Next page</span>
-                                  <span className="flex items-center">
-                                    <ChevronRight width={16} height={16} />
-                                  </span>
-                                </Button>
-                              </div>
-                            ) : null}
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
+                    <EventCardList
+                      events={events}
+                      previousPage={previousPage}
+                      nextPage={nextPage}
+                      currentPage={currentPage}
+                      lastPage={lastPage}
+                      pageMeta={pageMeta}
+                    />
                   ) : (
                     <div className="flex h-[360px] w-full items-center justify-center rounded-3xl border border-zinc-800 lg:h-80">
                       <div className="text-center">
@@ -207,6 +171,71 @@ export default function EventList({
         </div>
       </div>
     </>
+  );
+}
+
+export function EventCardList({
+  events,
+  previousPage,
+  nextPage,
+  currentPage,
+  lastPage,
+  pageMeta,
+}: {
+  events: EventType.Event[];
+  previousPage: number;
+  nextPage: number;
+  currentPage: number;
+  lastPage: number;
+  pageMeta: PageMeta;
+}) {
+  const basePath = new URL(window.location.href);
+
+  return (
+    <div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {events.map((event) => {
+          return <EventCard key={event.id} event={event} />;
+        })}
+      </div>
+      {previousPage || nextPage ? (
+        <div className="mt-10 text-sm md:mt-20">
+          <p className="pb-4 text-center text-sm font-medium text-zinc-500">
+            Page {currentPage} of {lastPage}
+          </p>
+          <div className="flex items-center justify-center gap-6">
+            {previousPage ? (
+              <div>
+                <Button
+                  className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                  as={Link}
+                  href={`${basePath}?page=${previousPage}&limit=${pageMeta.per_page}`}
+                >
+                  <span className="flex items-center">
+                    <ChevronLeft width={16} height={16} />
+                  </span>
+                  <span>Previous page</span>
+                </Button>
+              </div>
+            ) : null}
+            {nextPage ? (
+              <div>
+                <Button
+                  className="flex h-9 w-36 min-w-0 items-center justify-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
+                  as={Link}
+                  href={`${basePath}?page=${nextPage}&limit=${pageMeta.per_page}`}
+                >
+                  <span>Next page</span>
+                  <span className="flex items-center">
+                    <ChevronRight width={16} height={16} />
+                  </span>
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

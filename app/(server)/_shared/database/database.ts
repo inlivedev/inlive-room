@@ -21,4 +21,4 @@ if (process.env.NEXT_PUBLIC_APP_ENV == 'development') {
 
 const queryClient = postgres(Option);
 
-export const db = drizzle(queryClient, { schema });
+export const db = drizzle(queryClient, { schema, logger: true });

@@ -52,7 +52,7 @@ export async function GET(req: Request) {
         .array()
         .refine(
           (val: Array<string>) => {
-            const Valid = ['draft', 'published', 'cancelled'];
+            const Valid = ['draft', 'published', 'cancelled', 'completed'];
 
             for (let i = 0; i < val.length; i++) {
               if (!Valid.includes(val[i])) {
