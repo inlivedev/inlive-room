@@ -10,7 +10,7 @@ export default function NotEndedWebinarMessage() {
 
   useEffect(() => {
     if (user) {
-      InternalApiFetcher.get('/api/events/not-ended?limit=1')
+      InternalApiFetcher.get('/api/events/not-ended')
         .catch((err) => {
           console.error(`Error fetching not-ended events: ${err}`);
         })
