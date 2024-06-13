@@ -187,7 +187,7 @@ export default function NotSignedIn() {
             unoptimized
           />
         </div>
-        <div className="flex-1">
+        <div className="flex flex-1 flex-col justify-center">
           <h3 className="text-xl font-semibold text-zinc-200">
             Seamless quality for uninterrupted communication
           </h3>
@@ -206,8 +206,8 @@ export default function NotSignedIn() {
         </div>
       </div>
       <div className="py-10">
-        <div className="flex flex-col gap-8 rounded-xl bg-zinc-900 p-6 ring-1 ring-zinc-700 md:p-8 lg:flex-row lg:gap-16">
-          <div>
+        <div className="flex flex-col rounded-xl  bg-zinc-900 ring-1  ring-zinc-700 lg:flex-row">
+          <div className="p-6 lg:p-8">
             <h3 className="text-xl font-semibold text-zinc-200">
               Wanna build a project like this?
             </h3>
@@ -218,7 +218,18 @@ export default function NotSignedIn() {
               forget to click a star.
             </p>
           </div>
-          <div>
+          <div className="relative p-6 pt-2 lg:p-8">
+            <div className="absolute left-0 top-0 h-full w-full">
+              <Image
+                width={0}
+                height={0}
+                src="/images/landing/net-pattern.svg"
+                alt="Net pattern"
+                className="h-full w-full object-cover object-[right,25%] lg:object-right"
+                loading="lazy"
+                unoptimized
+              />
+            </div>
             <Button
               as={Link}
               href="https://github.com/inlivedev/inlive-room/"
