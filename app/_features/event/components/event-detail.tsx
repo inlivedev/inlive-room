@@ -234,15 +234,17 @@ function PublicAction({ event }: { event: EventType.Event }) {
               className="w-full rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white antialiased hover:bg-red-600 active:bg-red-500"
               onClick={openRegisterEventForm}
               isDisabled={
-                event.maximumSlots &&
-                event.availableSlots &&
-                event.availableSlots <= 0 &&
+                (event.maximumSlots &&
+                  event.availableSlots &&
+                  event.availableSlots <= 0) ||
                 event.status === 'completed'
                   ? true
                   : false
               }
             >
-              Register to Attend
+              {event.status === 'completed'
+                ? 'Event has finished'
+                : 'Register to Attend'}
             </Button>
           </div>
         </div>
