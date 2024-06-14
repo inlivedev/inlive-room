@@ -105,11 +105,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       if (roomData) {
         let newName = '';
 
-        if (
-          typeof roomData.meta !== 'undefined' &&
-          roomData.meta.type === 'event' &&
-          eventData
-        ) {
+        if (typeof roomData.meta !== 'undefined' && eventData) {
           const requestToken = cookies().get('token');
           if (requestToken) {
             const clientData: EventType.ParticipantResponse =
