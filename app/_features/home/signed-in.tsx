@@ -16,7 +16,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import JoinRoomField from '@/_features/home/join-room-field';
 import type { AuthType } from '@/_shared/types/auth';
 import MeetingList from '@/_features/meeting/meeting-list';
-import ScheduleModal from '@/_features/meeting/schedule-modal';
+
 import type { EventType } from '@/_shared/types/event';
 import NotEndedWebinarMessage from './not-ended-webinar-message';
 
@@ -76,17 +76,12 @@ export default function SignedIn({
           console.error(error);
         }
       }
-
-      if (key === 'schedule') {
-        document.dispatchEvent(new CustomEvent('open:schedule-meeting-modal'));
-      }
     },
     [isSubmitting]
   );
 
   return (
     <>
-      <ScheduleModal />
       <div className="grid w-full grid-cols-1 gap-y-12 py-10 md:grid-cols-2 md:py-0">
         <div className="flex items-center md:px-5 lg:px-10">
           <div>
@@ -149,22 +144,6 @@ export default function SignedIn({
                     </div>
                     <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
                       Host sessions with large audiences
-                    </div>
-                  </DropdownItem>
-                  <DropdownItem
-                    key="schedule"
-                    classNames={{ wrapper: 'group' }}
-                  >
-                    <div className="flex justify-between text-sm font-medium text-zinc-200">
-                      <span className="inline-block">Schedule</span>
-                      <div className="inline-flex items-center">
-                        <span className="rounded-sm border-1 border-emerald-800 bg-emerald-950 px-1.5 text-[11px] font-medium leading-4 tracking-[0.275px] text-emerald-300">
-                          Beta
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-zinc-400 group-hover:text-zinc-200">
-                      Schedule meeting for later
                     </div>
                   </DropdownItem>
                 </DropdownMenu>
