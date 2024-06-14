@@ -83,18 +83,17 @@ export class RoomService {
       throw new Error('Room not found');
     }
 
-    if (roomData.meta.type === 'event') {
-      const event = await eventRepo.getByRoomID(roomData.id);
-      if (event) {
-        if (!clientID) throw new Error('Client ID is required for event room');
+    const event = await eventRepo.getByRoomID(roomData.id);
 
-        const participant = await eventRepo.getParticipantByClientId(clientID);
+    if (event) {
+      if (!clientID) throw new Error('Client ID is required for event room');
 
-        if (!participant) throw errorParticipantNotFound;
+      const participant = await eventRepo.getParticipantByClientId(clientID);
 
-        if (participant.eventID !== event.id) {
-          throw errorParticipantNotFound;
-        }
+      if (!participant) throw errorParticipantNotFound;
+
+      if (participant.eventID !== event.id) {
+        throw errorParticipantNotFound;
       }
     }
 
@@ -295,10 +294,12 @@ export class RoomService {
           );
         }
       }
+    }
 
+    if (room) {
       const event = await eventRepo.getByRoomID(room.id);
 
-      return { room, event: event || undefined };
+      return { room, event: event };
     }
 
     return { room, event: undefined };
