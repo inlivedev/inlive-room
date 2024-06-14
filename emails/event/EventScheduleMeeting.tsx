@@ -42,18 +42,22 @@ export default function EmailScheduledMeeting({
     month: 'long',
     day: 'numeric',
     weekday: 'long',
+    timeZone:'Asia/Jakarta'
   }).format(event.startTime,)
 
   const startTime = Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZone:'Asia/Jakarta'
   }).format(event.startTime,);
 
   const endTime = Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZone:'Asia/Jakarta'
+
   }).format(event.endTime,);
 
   return (
