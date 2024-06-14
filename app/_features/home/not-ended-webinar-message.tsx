@@ -22,11 +22,10 @@ export default function NotEndedWebinarMessage() {
 
   if (resp != undefined && resp.code == 200) {
     return (
-      <div className="flex flex-row items-center justify-between rounded-xl bg-blue-900/25 p-2 ring-1 ring-blue-300/50">
+      <div className="flex flex-row items-center justify-between rounded-xl bg-blue-900/25 p-3 ring-1 ring-blue-300/50">
         <p className="px-2 text-sm text-blue-300 md:px-4">
           You have an ongoing webinar that should be ended
         </p>
-
         <Button
           as={Link}
           href={
@@ -34,7 +33,7 @@ export default function NotEndedWebinarMessage() {
               ? `/events/${resp.data[0].slug}/detail`
               : '/not-ended-events/'
           }
-          className="h-auto min-h-0 min-w-0 rounded-lg bg-zinc-800/50 px-4 py-2.5 antialiased hover:bg-zinc-800 active:bg-zinc-700"
+          className="h-7 rounded bg-transparent px-3 text-xs font-medium text-blue-300"
         >
           View
         </Button>
