@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@nextui-org/react';
 import JoinRoomField from '@/_features/home/join-room-field';
 import TablerArrowRightIcon from '@/_shared/components/icons/tabler-arrow-right-icon';
+import TablerCircleArrowDownIcon from '@/_shared/components/icons/tabler-circle-arrow-down-icon';
 import TablerExternalIcon from '@/_shared/components/icons/tabler-external-icon';
 
 export default function NotSignedIn() {
@@ -44,7 +45,7 @@ export default function NotSignedIn() {
                   >
                     <span className="text-sm font-medium">Learn more</span>
                     <span>
-                      <TablerArrowRightIcon className="h-5 w-5 rotate-90" />
+                      <TablerCircleArrowDownIcon className="h-5 w-5" />
                     </span>
                   </Button>
                 </div>
