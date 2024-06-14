@@ -64,47 +64,48 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
     <>
       <ScheduleModal />
       <div className="max-w-full rounded-xl bg-zinc-900 ring-1 ring-zinc-800">
-        <nav className="flex items-center justify-between gap-4 px-4 pt-4">
-          <ul className="flex items-center border-b border-zinc-800 text-sm font-medium">
-            <li className="relative py-2">
-              <Button
-                className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
-                  activeTab === 'today' ? 'text-zinc-100' : 'text-zinc-400'
-                }`}
-                onPress={() => setActiveTab('today')}
-              >
-                Today
-              </Button>
-              {activeTab === 'today' ? (
-                <div className="absolute bottom-0 left-1/2 inline-block h-[2px] w-3/4 -translate-x-1/2 bg-white"></div>
-              ) : null}
-            </li>
-            <li className="relative py-2">
-              <Button
-                className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
-                  activeTab === 'upcoming' ? 'text-zinc-100' : 'text-zinc-400'
-                }`}
-                onPress={() => setActiveTab('upcoming')}
-              >
-                Upcoming
-              </Button>
-              {activeTab === 'upcoming' ? (
-                <div className="absolute bottom-0 left-1/2 inline-block h-[2px] w-3/4 -translate-x-1/2 bg-white"></div>
-              ) : null}
-            </li>
-          </ul>
-          <Button
-            className="inline-flex h-auto min-h-0 min-w-0 items-center gap-2 rounded-md bg-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-100 antialiased hover:bg-zinc-600 active:bg-zinc-500"
-            onPress={() =>
-              document.dispatchEvent(
-                new CustomEvent('open:schedule-meeting-modal')
-              )
-            }
-          >
-            Add schedule
-          </Button>
+        <nav className="px-4 pt-4">
+          <div className="flex items-center justify-between gap-4 border-b border-zinc-800">
+            <ul className="flex items-center text-sm font-medium">
+              <li className="relative py-2">
+                <Button
+                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
+                    activeTab === 'today' ? 'text-zinc-100' : 'text-zinc-400'
+                  }`}
+                  onPress={() => setActiveTab('today')}
+                >
+                  Today
+                </Button>
+                {activeTab === 'today' ? (
+                  <div className="absolute bottom-0 left-1/2 inline-block h-[2px] w-3/4 -translate-x-1/2 bg-white"></div>
+                ) : null}
+              </li>
+              <li className="relative py-2">
+                <Button
+                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
+                    activeTab === 'upcoming' ? 'text-zinc-100' : 'text-zinc-400'
+                  }`}
+                  onPress={() => setActiveTab('upcoming')}
+                >
+                  Upcoming
+                </Button>
+                {activeTab === 'upcoming' ? (
+                  <div className="absolute bottom-0 left-1/2 inline-block h-[2px] w-3/4 -translate-x-1/2 bg-white"></div>
+                ) : null}
+              </li>
+            </ul>
+            <Button
+              className="inline-flex h-auto min-h-0 min-w-0 items-center gap-2 rounded-md bg-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-100 antialiased hover:bg-zinc-600 active:bg-zinc-500"
+              onPress={() =>
+                document.dispatchEvent(
+                  new CustomEvent('open:schedule-meeting-modal')
+                )
+              }
+            >
+              Add schedule
+            </Button>
+          </div>
         </nav>
-
         {activeEvents.length > 0 ? (
           <div className="relative">
             <ul className="flex h-[300px] flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-5 pt-4">
