@@ -108,7 +108,7 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
         </nav>
         {activeEvents.length > 0 ? (
           <div className="relative">
-            <ul className="flex h-[300px] flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-5 pt-4">
+            <ul className="flex h-[310px] flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-8 pt-4">
               {activeEvents.map((event, index) => {
                 const active = index === 0 && activeTab === 'today';
 
@@ -165,7 +165,7 @@ const MeetingItem = ({
     <Button
       as={Link}
       href={`/rooms/${event.roomId}`}
-      className={`flex h-[66px] min-h-0 w-full min-w-0 items-center gap-4 rounded px-4 py-3 antialiased ${
+      className={`flex h-auto min-h-0 w-full min-w-0 items-center gap-4 rounded px-4 py-3 antialiased ${
         activeItem
           ? 'bg-red-900 hover:bg-red-800 active:bg-red-700'
           : 'bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700'
@@ -196,11 +196,6 @@ const MeetingItem = ({
           >
             {event.name}
           </div>
-          <div
-            className={`truncate text-xs ${
-              activeItem ? 'text-red-400' : 'text-zinc-500'
-            }`}
-          ></div>
         </div>
       </div>
       {activeItem && now ? (
