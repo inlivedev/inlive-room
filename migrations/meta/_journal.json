@@ -204,6 +204,13 @@
       "when": 1717393310979,
       "tag": "0028_add_event_status_completed",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1718874925430,
+      "tag": "0029_missing_room_fk_user",
+      "breakpoints": true
     }
   ]
 }
