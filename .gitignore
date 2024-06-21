@@ -49,3 +49,5 @@ app/(server)/api/test
 .storybook/*
 stories/*
 *storybook.log
+
+/migrations
