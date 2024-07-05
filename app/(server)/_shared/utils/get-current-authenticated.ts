@@ -74,6 +74,7 @@ export const getCurrentAuthenticated = async (token: string) => {
         pictureUrl: user.pictureUrl,
         whitelistFeature: user.whitelistFeature,
         createdAt: user.createdAt,
+        accountId: user.accountId,
       },
     };
   } catch (error) {

@@ -17,14 +17,14 @@ export async function GET(req: Request) {
   let endIsAfter = searchParams.get('end_is_after')?.trim();
   let endIsBefore = searchParams.get('end_is_before')?.trim();
   const status = searchParams.getAll('status[]');
-  const type = searchParams.get('type')?.trim();
+  const type = searchParams.getAll('type[]');
 
   let isStartAfterParsed: Date | undefined = undefined;
   let isStartBeforeParsed: Date | undefined = undefined;
   let isEndStartAfterParsed: Date | undefined = undefined;
   let isEndBeforeParsed: Date | undefined = undefined;
   let statusParsed: Array<string> | undefined;
-  const typeParsed = z.enum(['webinar', 'meeting']).optional().parse(type);
+  const typeParsed = z.array(z.string()).parse(type);
   try {
     if (startIsAfter) {
       startIsAfter = z.string().datetime().parse(startIsAfter);
@@ -110,6 +110,16 @@ export async function GET(req: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      Sentry.captureException(error);
+      return NextResponse.json({
+        status: 400,
+        body: {
+          message: error.errors,
+        },
+      });
+    }
+
     Sentry.captureException(error);
     return NextResponse.json({
       status: 500,

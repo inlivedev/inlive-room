@@ -1,6 +1,7 @@
 import { users, usersRelations } from '@/(server)/_features/user/schema';
 import { rooms } from '@/(server)/_features/room/schema';
 import {
+  eventCategory,
   events,
   eventsRelations,
   participant,
@@ -20,6 +21,7 @@ const models = {
   earlyAccessInvitees,
   activitiesLog,
   participantRole,
+  eventCategory,
 };
 
 const relations = {
