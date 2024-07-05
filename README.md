@@ -120,3 +120,7 @@ docker run -p 3000:3000 inlive-room:latest
 ```
 
 Navigate to the local development server in http://localhost:3000
+
+
+---
+This project is tested with BrowserStack
