@@ -353,8 +353,8 @@ function VideoScreen({
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const callbackVoiceActivity = () => {
-      if (stream.audioLevel > 0) {
+    const callbackVoiceActivity = (e: CustomEventInit) => {
+      if (e.detail.audioLevel > 0) {
         stream.videoElement.style.borderColor = 'green';
         stream.videoElement.style.borderWidth = '5px';
         stream.videoElement.style.borderStyle = 'solid';
