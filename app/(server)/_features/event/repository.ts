@@ -1,43 +1,32 @@
 /* eslint-disable prettier/prettier */
 import { db } from '@/(server)/_shared/database/database';
-import { Participant, iEventRepo } from './service';
 import {
+  eventCategory,
   events,
   insertEvent,
   insertParticipant,
-  participant,
   participant as participants,
   selectEvent,
   selectParticipant,
 } from './schema';
-import { DBQueryConfig, SQL, and, count, eq, isNull, sql } from 'drizzle-orm';
+import { DBQueryConfig, SQL, and, count, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { User, users } from '../user/schema';
-import { activitiesLog } from '../activity-log/schema';
-import { z } from 'zod';
-import { ArrayRoomDurationMeta, RoomDurationMeta } from '@/(server)/api/user/activity/route';
-
-type participantAttendances = {
-  participant: {
-    clientID: string;
-    joinDuration: number;
-    isAttended: boolean;
-  }[],
-  attendedCount: number;
-  totalCount: number;
-  eventDuration: number;
-}
 
 
-
-export class EventRepo implements iEventRepo {
+export class EventRepo {
   async addEvent(event: insertEvent) {
     const data = await db.insert(events).values(event).returning()
     return data[0];
   }
 
-  async getEventBySlug(slug: string) {
+  async getEventBySlug(slug: string, category?: string) {
     const event = await db.transaction(async (tx) => {
+
+      const categoryID = category ? await tx.query.eventCategory.findFirst({
+        where: ilike(eventCategory.name, category)
+      }) : undefined;
+
       const data = await db.query.events.findFirst({
         with: {
           host: {
@@ -49,7 +38,12 @@ export class EventRepo implements iEventRepo {
             },
           },
         },
-        where: and(eq(events.slug, slug), isNull(events.deletedAt)),
+        where: and(
+          eq(events.slug, slug),
+          isNull(events.deletedAt),
+          categoryID ? eq(events.categoryID, categoryID.id) : undefined
+        ),
+
       });
 
       if (!data) {
@@ -69,10 +63,20 @@ export class EventRepo implements iEventRepo {
     return event;
   }
 
-  async getEventById(id: number) {
+  async getEventById(id: number, category?: string) {
     const event = await db.transaction(async (tx) => {
-      const data = await db.query.events.findFirst({
+      const categoryID = category ? await tx.query.eventCategory.findFirst({
+        where: ilike(eventCategory.name, category)
+      }) : undefined;
+
+      const data = await tx.query.events.findFirst({
         with: {
+          category: {
+            columns: {
+
+              name: true,
+            },
+          },
           host: {
             columns: {
               id: true,
@@ -82,7 +86,10 @@ export class EventRepo implements iEventRepo {
             },
           },
         },
-        where: and(eq(events.id, id), isNull(events.deletedAt)),
+        where: and(
+          eq(events.id, id),
+          isNull(events.deletedAt),
+          categoryID ? eq(events.categoryID, categoryID.id) : undefined),
       });
 
       if (!data) {
@@ -92,11 +99,11 @@ export class EventRepo implements iEventRepo {
       const countRegistered = data.maximumSlots ? (await tx.select({
         count: count(),
       }).from(participants).
-      where(
-        and(
-          eq(participants.eventID, data.id),
-          eq(participants.roleID, 1)
-        )
+        where(
+          and(
+            eq(participants.eventID, data.id),
+            eq(participants.roleID, 1)
+          )
         ))[0] : { count: 0 };
 
       return {
@@ -117,7 +124,7 @@ export class EventRepo implements iEventRepo {
     isStartBefore?: Date,
     isEndAfter?: Date,
     isEndBefore?: Date,
-    category: "webinar" | "meeting" | undefined = undefined
+    category?: string[]
   ) {
     page = page - 1;
 
@@ -179,19 +186,6 @@ export class EventRepo implements iEventRepo {
       });
     }
 
-    if (category) {
-      switch (category) {
-        case 'webinar':
-          whereQuery.push(sql`${events.categoryID} = ${1}`);
-          break;
-
-        case 'meeting':
-          whereQuery.push(sql`${events.categoryID} = ${2}`);
-          break;
-      }
-    }
-
-
     const statusFilter = statusQuery.length
       ? sql.join(statusQuery, sql` OR `)
       : null;
@@ -202,9 +196,18 @@ export class EventRepo implements iEventRepo {
       : whereFilter;
 
     const { data, total } = await db.transaction(async (tx) => {
+      const categoryList = await tx.query.eventCategory.findMany({
+        where: (category && category.length > 0) ? inArray(eventCategory.name, category) : undefined
+      })
+
       const data = await tx.query.events.findMany({
         ...filter,
-        where: finalFilter,
+        where: and(
+          finalFilter,
+          categoryList.length == 0 ? undefined : inArray(events.categoryID, categoryList.map((c) => c.id))),
+        with: {
+          category: true
+        }
       });
 
       const totalRows = await db
@@ -212,7 +215,11 @@ export class EventRepo implements iEventRepo {
           total: count(),
         })
         .from(events)
-        .where(finalFilter);
+        .where(
+          and(
+            finalFilter,
+            categoryList.length == 0 ? undefined : inArray(events.categoryID, categoryList.map((c) => c.id))
+          ));
 
       return { data, total: totalRows[0].total };
     });
@@ -239,55 +246,77 @@ export class EventRepo implements iEventRepo {
   }
 
   async getOngoingEvents(
-    type: "webinar" | "meeting" | undefined,
+    type: string[]
   ) {
     const now = new Date();
-    const query = await db.query.events.findMany({
-      where: and(
-        sql`${events.endTime} > ${now.toISOString()}`,
-        sql`${events.startTime} < ${now.toISOString()}`,
 
-        type ? sql`${events.categoryID} = ${type === 'webinar' ? 1 : 2}` : undefined
-      )
+    const res = db.transaction(async (tx) => {
+      const category = await tx.query.eventCategory.findMany({
+        where: inArray(eventCategory.name, type)
+      })
+
+      const query = await tx.query.events.findMany({
+        where: and(
+          sql`${events.endTime} > ${now.toISOString()}`,
+          sql`${events.startTime} < ${now.toISOString()}`,
+          category ? inArray(events.categoryID, category.map((c) => c.id)) : undefined
+        )
+      })
+
+      return query;
+
     })
 
-    return query;
+    return res
+
+  }
+
+  async getCategoryByName(name: string) {
+    return await db.query.eventCategory.findFirst({
+      where: ilike(eventCategory.name, name),
+    });
   }
 
   async getShouldBeEndedEvents(
     userID: number,
-    type: "webinar" | "meeting" | undefined,
+    type: string[],
     page = 1,
     limit = 10,
   ) {
     const now = new Date();
     const query = await db.transaction(async (tx) => {
+      const category = await tx.query.eventCategory.findMany({
+        where: inArray(eventCategory.name, type)
+      })
+
       const res = await tx.query.events.findMany({
         where: and(
           sql`${events.endTime} < ${now.toISOString()}`,
           eq(events.status, 'published'),
           eq(events.createdBy, userID),
-          type ? sql`${events.categoryID} = ${type === 'webinar' ? 1 : 2}` : undefined
+          category ? inArray(events.categoryID, category.map((c) => c.id)) : undefined
         ),
         limit: limit,
         offset: (page - 1) * limit
       })
 
-      const val = await tx.select({val : count()}).from(events).where(
+      const val = await tx.select({ val: count() }).from(events).where(
         and(
           sql`${events.endTime} < ${now.toISOString()}`,
           eq(events.status, 'published'),
           eq(events.createdBy, userID),
-          type ? sql`${events.categoryID} = ${type === 'webinar' ? 1 : 2}` : undefined
+          category ? inArray(events.categoryID, category.map((c) => c.id)) : undefined
         )
       )
 
-      return {data: res, meta: {
-        current_page: page,
-        total_page: Math.ceil(val[0].val / limit) || 1,
-        per_page: limit,
-        total_record: val[0].val
-      }}
+      return {
+        data: res, meta: {
+          current_page: page,
+          total_page: Math.ceil(val[0].val / limit) || 1,
+          per_page: limit,
+          total_record: val[0].val
+        }
+      }
     })
 
     return query;
@@ -313,11 +342,23 @@ export class EventRepo implements iEventRepo {
           .set({ thumbnailUrl: null })
           .where(eq(events.id, id));
       }
-      return await tx
+
+      const res = await tx
         .update(events)
         .set(event)
         .where(and(eq(events.id, id), eq(events.createdBy, userId)))
         .returning();
+
+      if (res[0].status == 'published') {
+        await tx
+          .update(participants)
+          .set({ updateCount: sql`${participants.updateCount} + 1` })
+          .where(eq(participants.eventID, id))
+          .returning();
+      }
+
+      return res
+
     });
 
     if (!data || data.length == 0) {
@@ -345,24 +386,7 @@ export class EventRepo implements iEventRepo {
     return res[0];
   }
 
-  /**
-   * This function counts all published events for a given user, including those that have been canceled.
-   *
-   * @param userID The ID of the user for whom to count the events.
-   * @returns A promise that resolves to the count of all published events for the given user.
-   */
-  async countNonDraftEvents(userID: number) {
-    const res = await db
-      .select({
-        value: count(),
-      })
-      .from(events)
-      .where(
-        sql`${events.status} !='draft' AND ${events.createdBy} = ${userID}`
-      );
 
-    return res[0];
-  }
 
   async getRegisteredParticipants(
     slug: string,
@@ -502,215 +526,4 @@ export class EventRepo implements iEventRepo {
     return res;
   }
 
-  async getAllParticipantsByEventId(
-    eventId: number,
-    limit: number,
-    page: number
-  ): Promise<{
-    data: Participant[];
-    meta: PageMeta;
-  } | undefined> {
-
-    if (page < 1) {
-      page = 1;
-    }
-
-    if (limit < 1) {
-      limit = 10;
-    }
-
-    const subQueryConnectedClient = db
-      .select(
-        {
-          meta: activitiesLog.meta,
-          eventID: events.id
-        }
-      )
-      .from(activitiesLog)
-      .innerJoin(
-        events,
-        and(eq(events.roomId, sql`${activitiesLog.meta} ->> 'roomID'`), eq(activitiesLog.name, "RoomDuration"))
-      )
-      .where(eq(events.id, eventId))
-      .as('ConnectedClientsLog');
-
-    // Removes the duplicates clientID
-    const subQueryUniqueConnectedClient = db
-      .selectDistinctOn([sql`${subQueryConnectedClient.meta} ->> 'clientID'`], {
-        clientID:
-          sql<string>`${subQueryConnectedClient.meta} ->> 'clientID'`.as(
-            'clientID'
-          ),
-        name: sql<string>`${subQueryConnectedClient.meta} ->> 'name'`.as(
-          'name'
-        ),
-        eventID: subQueryConnectedClient.eventID,
-      })
-      .from(subQueryConnectedClient)
-      .as('UniqueConnectedClients');
-
-    // TODO : Query the alias for same clientID with same name
-    // subQueryGetAlias
-
-    const participantMatchEventID = db.
-      select().
-      from(participants).
-      where(
-        and(
-          eq(participants.eventID, eventId),
-          eq(participant.roleID, 1))
-      ).
-      as('participantEventID');
-
-    // add the isRegistered and isJoined field and email
-    const finalQuery = await db
-      .select({
-        clientID: subQueryUniqueConnectedClient.clientID,
-        name: sql<string>`
-        CASE
-          WHEN ${participantMatchEventID.firstName} IS NULL THEN ${subQueryUniqueConnectedClient.name}
-          ELSE CONCAT_WS(' ', ${participantMatchEventID.firstName}, ${participantMatchEventID.lastName})
-        END
-          `.as('name'),
-        email: participantMatchEventID.email,
-        isRegistered: sql<boolean>`
-        CASE
-          WHEN ${participantMatchEventID.clientId} IS NULL THEN ${false}
-          ELSE ${true}
-        END
-        `.as('isRegistered'),
-        isJoined: sql<boolean>`
-        CASE
-          WHEN (${participantMatchEventID.clientId} IS NOT NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL)
-            OR (${participantMatchEventID.clientId} IS NULL AND ${subQueryUniqueConnectedClient.clientID} IS NOT NULL) THEN ${true}
-          ELSE ${false}
-        END
-        `.as('isJoined'),
-        eventID: sql<number>` COALESCE(${participantMatchEventID.eventID},${subQueryUniqueConnectedClient.eventID})`.as('eventID')
-      })
-      .from(subQueryUniqueConnectedClient)
-      .fullJoin(
-        participantMatchEventID,
-        eq(participantMatchEventID.clientId, subQueryUniqueConnectedClient.clientID)
-      ).as('participants')
-
-    const { data, meta } = await db.transaction(async (tx) => {
-      const data = await tx.select().from(finalQuery)
-        .limit(limit)
-        .offset((page - 1) * limit);
-
-      const total = await tx.select({ total: count() }).from(finalQuery);
-
-      const meta: PageMeta = {
-        current_page: page,
-        total_page: Math.ceil(total[0].total / limit) || 1,
-        per_page: limit,
-        total_record: total[0].total
-      }
-
-      return { data, meta };
-    })
-
-    return { data, meta };
-  }
-
-  /**
-   * Get the list of participants that fully attended the event based on the percentage of the event duration
-   *
-   *
-   * @param eventId the eventID
-   * @param percentage percentage value to be counted as fully attended (0-100)
-   * @returns list of participant that satisfy the percentage condition
-   */
-  async getFullyAttendedParticipant(eventId: number, percentage: number): Promise<participantAttendances> {
-    const { participants, event } = await db.transaction(async (tx) => {
-      const event = await tx.query.events.findFirst({
-        where: eq(events.id, eventId)
-      })
-
-      if (!event) {
-        throw new Error('Event not found');
-      }
-
-      const registeredParticipants = await tx
-        .select({
-          clientID: sql<string>`${activitiesLog.meta} ->> 'clientID'`.as('clientID'),
-          combined_logs: sql<z.infer<typeof RoomDurationMeta>[]>`ARRAY_AGG(meta ORDER BY ${activitiesLog.meta} ->> 'joinTime')`.as('combined_logs')
-        })
-        .from(activitiesLog)
-        .innerJoin(
-          participant,
-          and(
-            eq(sql<object[]>`${activitiesLog.meta} ->> 'roomID'`, event.roomId),
-            eq(sql<string>`${activitiesLog.meta} ->> 'clientID'`, sql<string>`${participant.clientId}`)))
-        .groupBy(sql<string>`${activitiesLog.meta} ->> 'clientID'`);
-      return { participants: registeredParticipants, event };
-    })
-
-    const eventDuration = (event.endTime.getTime() - event.startTime.getTime()) / 1000;
-
-    const participantAttendance = participants.map((participant) => {
-      const parsedLogs = ArrayRoomDurationMeta.parse(participant.combined_logs)
-      const totalDuration = getTotalJoinDuration(parsedLogs, event.startTime, event.endTime) / 1000;
-      const isAttended = ((totalDuration / eventDuration) * 100) >= percentage;
-      return {
-        clientID: participant.clientID,
-        joinDuration: totalDuration,
-        isAttended,
-      }
-    })
-
-    const attendedCount = participantAttendance.filter((participant) => participant.isAttended).length;
-    const totalCount = participantAttendance.length;
-
-    return {
-      participant: participantAttendance,
-      attendedCount,
-      totalCount,
-      eventDuration
-    }
-
-  }
-
-}
-
-
-function getTotalJoinDuration(intervals: z.infer<typeof RoomDurationMeta>[], sessionStartTime: Date, sessionEndTime: Date): number {
-  // Sort intervals by joinTime
-  intervals.sort((a, b) => a.joinTime.getTime() - b.joinTime.getTime());
-
-  let totalDuration = 0;
-  let currentEndTime: number | null = null;
-
-  for (const interval of intervals) {
-    // Check if interval is within session start and end time
-    const validJoinTime = interval.joinTime >= sessionStartTime && interval.joinTime <= sessionEndTime;
-    const validLeaveTime = interval.leaveTime <= sessionEndTime;
-
-    if (validJoinTime && validLeaveTime) {
-      if (currentEndTime === null || interval.joinTime.getTime() >= currentEndTime) {
-        // No overlap, add duration
-        totalDuration += interval.duration;
-      } else if (interval.leaveTime.getTime() > (currentEndTime || 0)) {
-        // Overlap, add only the additional duration beyond the current end time
-        totalDuration += interval.leaveTime.getTime() - (currentEndTime || 0);
-      }
-      // Update currentEndTime
-      currentEndTime = Math.max(currentEndTime || 0, interval.leaveTime.getTime());
-    } else if (validJoinTime && !validLeaveTime) {
-      // Partial overlap
-      if (currentEndTime === null || interval.joinTime.getTime() >= currentEndTime) {
-        // No overlap, add duration until session end time
-        totalDuration += sessionEndTime.getTime() - interval.joinTime.getTime();
-      } else {
-        // Overlap, add only the additional duration until session end time
-        totalDuration += sessionEndTime.getTime() - (currentEndTime || 0);
-      }
-      // No need to process further intervals if we've reached session end time
-      break;
-    }
-    // Ignore intervals outside session start and end time
-  }
-
-  return totalDuration;
 }

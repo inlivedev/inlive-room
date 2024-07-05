@@ -177,8 +177,10 @@ export class RoomService {
       }
 
       if (roomResp.code > 299) {
+        console.log(roomResp.message);
         Sentry.captureMessage(`Failed to create a room ${roomID}.`, 'error');
-        throw new Error('Error during creating room, please try again later');
+        console.log(JSON.stringify(roomResp))
+        throw new Error('Error during creating room, please try again later ' + roomResp.message);
       }
 
       for (const datachannel of this._datachannels) {
@@ -230,6 +232,8 @@ export class RoomService {
             throw error;
           }
         }
+
+        console.log(JSON.stringify(error))
       }
     }
 

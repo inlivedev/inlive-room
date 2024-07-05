@@ -178,18 +178,14 @@ function createWebinarDesc(meta: {
   slug: string;
   host: string;
 }) {
-  return `Hi there!\\n
-  Thanks for registering for our upcoming webinar!\\n
-  We're excited to have you join us to learn more about\\n
-  \\n
-  ${meta.name}\\n
-  Hosted by ${meta.host}\\n
-  \\n
-  ${meta.eventDate} - ${meta.eventStartTime}\\n
-  \\n
-  Don't forget to mark your calendar on that date, see you there!\\n
-  \\n
-  About event : ${PUBLIC_URL}/events/${meta.slug}\\n
+  return `Hi there! \n 
+  Thanks for registering for our upcoming webinar! \n
+  We're excited to have you join us to learn more about \n
+  ${meta.name} \n
+  Hosted by ${meta.host} \n
+  ${meta.eventDate} - ${meta.eventStartTime} \n
+  Don't forget to mark your calendar on that date, see you there! \n
+  About event : ${PUBLIC_URL}/events/${meta.slug} \n
   Join the event : ${meta.roomURL}`;
 }
 
@@ -201,12 +197,10 @@ function createMeetingDesc(meta: {
   host: string;
 }) {
   return `
-  Hi there! \\n
-
-  ${meta.host} has scheduled a meeting with you. \\n
-  ${meta.eventDate}
-  ${meta.eventStartTime} - ${meta.eventEndTime} \\n
-
-  Join the meeting : ${meta.roomURL} \\n
+  Hi there! \n
+  ${meta.host} has scheduled a meeting with you. \n
+  ${meta.eventDate} \n
+  ${meta.eventStartTime} - ${meta.eventEndTime} \n
+  Join the meeting : ${meta.roomURL} 
   `;
 }
