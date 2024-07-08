@@ -100,7 +100,7 @@ export default function NotSignedIn() {
             <div className="flex items-center">
               <Button
                 as={Link}
-                href="/events"
+                href="room.inlive.app/webinars"
                 className="inline-flex h-auto min-h-0 min-w-0 items-center gap-2 rounded-md bg-zinc-700 py-2.5 pl-4 pr-3 text-zinc-100 antialiased hover:bg-zinc-600 active:bg-zinc-500"
               >
                 <span className="text-sm font-medium">See feature tour</span>
