@@ -7,7 +7,7 @@ export async function GET(
   _: Request,
   { params }: { params: { slugOrId: string; participantId: number } }
 ) {
-  const slug = params.slugOrId;
+  const slug = decodeURIComponent(params.slugOrId);
   const participantId = params.participantId;
 
   try {
