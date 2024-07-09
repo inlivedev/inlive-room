@@ -8,7 +8,7 @@ export async function GET(
   request: Request,
   { params }: { params: { slugOrId: string } }
 ) {
-  const slugOrId = params.slugOrId;
+  const slugOrId = decodeURIComponent(params.slugOrId);
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
   const { searchParams } = new URL(request.url);

@@ -8,7 +8,7 @@ export async function GET(
   request: Request,
   { params }: { params: { slugOrId: string } }
 ) {
-  const slugOrId = params.slugOrId;
+  const slugOrId = decodeURIComponent(params.slugOrId);
   const isnum = /^\d+$/.test(slugOrId);
   const requestToken = cookies().get('token');
 

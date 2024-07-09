@@ -8,7 +8,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { slugOrId: string } }
 ) {
-  const slug = params.slugOrId;
+  const slug = decodeURIComponent(params.slugOrId);
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
   try {
