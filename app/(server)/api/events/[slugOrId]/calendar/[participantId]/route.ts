@@ -35,13 +35,9 @@ export async function GET(
       });
     }
 
-    const icalString = GenerateIcal(
-      event,
-      'meeting',
-      'Asia/Jakarta',
-      host,
-      participant
-    );
+    const icalString = GenerateIcal(event, 'meeting', 'Asia/Jakarta', host, {
+      ...participant,
+    });
     const resp = new Response(icalString);
     resp.headers.set(
       'Content-Type',

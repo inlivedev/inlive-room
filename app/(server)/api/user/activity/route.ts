@@ -10,7 +10,7 @@ const ActivityRequest = z.object({
   meta: z.any(),
 });
 
-export const RoomDurationMeta = z.object({
+const RoomDurationMeta = z.object({
   roomID: z.string(),
   clientID: z.string(),
   name: z.string().optional(),
@@ -26,8 +26,6 @@ export const RoomDurationMeta = z.object({
   duration: z.number().default(0),
   trigger: z.enum(['beforeunload', 'leave-button']),
 });
-
-export const ArrayRoomDurationMeta = z.array(RoomDurationMeta);
 
 const activityName = ['RoomDuration'];
 

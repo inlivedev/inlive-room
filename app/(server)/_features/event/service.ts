@@ -1,10 +1,16 @@
 import { eventRepo } from '@/(server)/api/_index';
-import { insertEvent, selectEvent } from './schema';
+import {
+  insertEvent,
+  insertParticipant,
+  selectEvent,
+  selectRole,
+} from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { EventType } from '@/_shared/types/event';
 import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import { ICalAttendeeStatus, ICalAttendeeRole } from 'ical-generator';
-import { getUserByEmail } from '../user/repository';
+import { addUser, getUserByEmail } from '../user/repository';
+import { User, selectUser } from '../user/schema';
 
 /**
  * Type used to represent all type of participant in an event
@@ -26,10 +32,23 @@ export type Participant = {
 };
 
 export interface EventParticipant {
-  id: number;
-  eventId: number;
-  clientId: string;
+  user: User;
+  eventID: number;
+  clientID: string;
   createdAt: Date;
+  role: selectRole;
+  isInvited: boolean;
+  updateCount: number;
+}
+
+export class EventError extends Error {
+  errorCode: number;
+
+  constructor(message: string, errorCode: number) {
+    super(message); // Pass the message to the base Error class
+    this.name = 'ServiceError';
+    this.errorCode = errorCode; // HTTP status code
+  }
 }
 
 export class EventService {
@@ -107,10 +126,7 @@ export class EventService {
     ICS.addParticipants(
       participantWithoutHost.map((participant) => {
         return {
-          name:
-            participant.firstName && participant.lastName
-              ? `${participant.firstName} ${participant.lastName}`
-              : participant.email,
+          name: participant.name ? participant.name : participant.email,
           email: participant.email,
           status: status,
           role: ICalAttendeeRole.REQ,
@@ -119,6 +135,51 @@ export class EventService {
     );
 
     return ICS;
+  }
+
+  async registerParticipant(
+    email: string,
+    eventID: number,
+    role: string,
+    options?: Pick<insertParticipant, 'isInvited'>
+  ): Promise<EventParticipant> {
+    let user: selectUser | undefined;
+
+    user = await getUserByEmail(email);
+
+    if (!user) {
+      [user] = await addUser({
+        email: email,
+        name: email,
+        isRegistered: false,
+      });
+    }
+
+    if (!user) {
+      throw new EventError('Failed to register user', 500);
+    }
+
+    const roleData = await eventRepo.getRoleByName(role);
+
+    const participantData = await eventRepo.insertParticipant(
+      user.id,
+      eventID,
+      {
+        clientID: generateID(12),
+        roleID: roleData?.id || 1,
+        ...options,
+      }
+    );
+
+    return {
+      user: user,
+      eventID: eventID,
+      clientID: participantData.clientID,
+      createdAt: participantData.createdAt,
+      isInvited: participantData.isInvited,
+      updateCount: participantData.updateCount,
+      role: participantData.role!,
+    };
   }
 }
 

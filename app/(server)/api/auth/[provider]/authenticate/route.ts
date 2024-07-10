@@ -129,10 +129,11 @@ export async function GET(
             if (existingEarlyAccessInvitee) {
               userData.whitelistFeature =
                 existingEarlyAccessInvitee.whitelistFeature;
-              await addUser(userData);
-            } else {
-              await addUser(userData);
             }
+            await addUser({
+              ...userData,
+              isRegistered: true,
+            });
           }
         }
 

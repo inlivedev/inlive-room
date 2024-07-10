@@ -1,10 +1,6 @@
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { eventRepo, roomService } from '@/(server)/api/_index';
-import {
-  insertParticipant,
-  selectEvent,
-  selectParticipant,
-} from '../event/schema';
+import { selectEvent } from '../event/schema';
 import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import { ICalAttendeeRole, ICalAttendeeStatus } from 'ical-generator';
 import { sendEmail } from '@/(server)/_shared/mailer/mailer';
@@ -12,6 +8,7 @@ import { render } from '@react-email/components';
 import EmailScheduledMeeting from 'emails/event/EventScheduleMeeting';
 import * as Sentry from '@sentry/node';
 import { generateDateTime } from '@/(server)/_shared/utils/generate-date-time';
+import { EventParticipant, eventService } from '../event/service';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -54,13 +51,11 @@ class ScheduledMeetingService {
       status: 'published',
     });
 
-    const hostParticipant = await eventRepo.registerParticipant({
-      clientId: generateID(12),
-      email: host.email,
-      eventID: event.id,
-      firstName: host.name,
-      lastName: '',
-    });
+    const hostParticipant = await eventService.registerParticipant(
+      host.email,
+      event.id,
+      'host'
+    );
 
     if (!event) {
       return;
@@ -100,7 +95,7 @@ class ScheduledMeetingService {
     );
 
     // Send Email to Host
-    const joinRoomURL = `${BASE_URL}/rooms/${event.roomId}?clientID=${hostParticipant.clientId}`;
+    const joinRoomURL = `${BASE_URL}/rooms/${event.roomId}?clientID=${hostParticipant.clientID}`;
 
     const description = generateScheduledMeetingDescription({
       startTime: event.startTime,
@@ -136,7 +131,7 @@ class ScheduledMeetingService {
           name: host.name,
         },
         participant: {
-          clientId: hostParticipant.clientId,
+          clientId: hostParticipant.clientID,
         },
       })
     );
@@ -146,7 +141,7 @@ class ScheduledMeetingService {
         html: emailTemplate,
       },
       {
-        destination: hostParticipant.email,
+        destination: hostParticipant.user.email,
         inlineAttachment: {
           data: Buffer.from(ICS.icalCalendar.toString(), 'utf-8'),
           filename: 'invite.ics',
@@ -164,8 +159,8 @@ class ScheduledMeetingService {
         message: 'failed send scheduled meeting email',
         level: 'info',
         extra: {
-          name: hostParticipant.firstName,
-          email: hostParticipant.email,
+          name: hostParticipant.user.name,
+          email: hostParticipant.user.email,
           event,
           res,
         },
@@ -178,8 +173,8 @@ class ScheduledMeetingService {
       message: 'Succes send scheduled meeting email',
       level: 'info',
       extra: {
-        name: hostParticipant.firstName,
-        email: hostParticipant.email,
+        name: hostParticipant.user.name,
+        email: hostParticipant.user.email,
         event,
         res,
       },
@@ -204,22 +199,19 @@ class ScheduledMeetingService {
       return;
     }
 
-    const listParticipant: selectParticipant[] = [];
+    const listParticipant: EventParticipant[] = [];
     const replyEmails = new Array<string>();
     replyEmails.push(host.email);
     const emailCustomValue: { [key: string]: string } = {};
 
     for (const participant of participants) {
-      const newParticipant: insertParticipant = {
-        firstName: '',
-        lastName: '',
-        email: participant.email,
-        description: '',
-        clientId: generateID(12),
-        eventID: event.id,
-        isInvited: true,
-      };
-      listParticipant.push(await eventRepo.registerParticipant(newParticipant));
+      listParticipant.push(
+        await eventService.registerParticipant(
+          participant.email,
+          event.id,
+          'participant'
+        )
+      );
       replyEmails.push(participant.email);
     }
 
@@ -229,7 +221,7 @@ class ScheduledMeetingService {
     for (const participant of listParticipant) {
       // create deep copy of ics
       const participantICS = ICS.createCopy();
-      const joinRoomURL = `${BASE_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
+      const joinRoomURL = `${BASE_URL}/rooms/${event.roomId}?clientID=${participant.clientID}`;
 
       const description = generateScheduledMeetingDescription({
         startTime: event.startTime,
@@ -267,7 +259,7 @@ class ScheduledMeetingService {
             name: host.name,
           },
           participant: {
-            clientId: participant.clientId,
+            clientId: participant.clientID,
           },
         })
       );
@@ -277,7 +269,7 @@ class ScheduledMeetingService {
           html: emailTemplate,
         },
         {
-          destination: participant.email,
+          destination: participant.user.email,
           inlineAttachment: {
             data: Buffer.from(participantICS.icalCalendar.toString(), 'utf-8'),
             filename: 'invite.ics',
@@ -296,8 +288,8 @@ class ScheduledMeetingService {
           message: 'failed send scheduled meeting email',
           level: 'info',
           extra: {
-            name: participant.firstName,
-            email: participant.email,
+            name: participant.user.name,
+            email: participant.user.email,
             event,
             res,
           },
@@ -310,8 +302,8 @@ class ScheduledMeetingService {
         message: 'Succes send scheduled meeting email',
         level: 'info',
         extra: {
-          name: participant.firstName,
-          email: participant.email,
+          name: participant.user.name,
+          email: participant.user.email,
           event,
           res,
         },
