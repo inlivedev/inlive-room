@@ -3,12 +3,11 @@ import { type InsertUser, users } from '@/(server)/_features/user/schema';
 import { UserType } from '@/_shared/types/user';
 import { eq } from 'drizzle-orm';
 
-export const addUser = async (data: InsertUser) => {
-  const [user] = await db.insert(users).values(data).returning();
-  return user;
+export const addUser = (data: InsertUser) => {
+  return db.insert(users).values(data).returning();
 };
 
-export const getUserById = async (userId: number) => {
+export const getUserById = (userId: number) => {
   return db.query.users.findFirst({
     where(fields, operators) {
       return operators.eq(fields.id, userId);

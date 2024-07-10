@@ -2,7 +2,7 @@ import { db } from '@/(server)/_shared/database/database';
 import { activitiesLog, type InsertActivityLog } from './schema';
 import { RoomType } from '@/_shared/types/room';
 import { countDistinct, eq, sql, type SQL, isNull, and } from 'drizzle-orm';
-import { participant } from '../event/schema';
+import { participants } from '../event/schema';
 
 export const addLog = async (data: InsertActivityLog) => {
   const res = await db.insert(activitiesLog).values(data).returning();
@@ -48,9 +48,9 @@ export const countRegisteredParticipant = async (roomID: string) => {
     .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
     .from(activitiesLog)
     .innerJoin(
-      participant,
+      participants,
       and(
-        eq(sql`${activitiesLog.meta} ->> 'clientID'`, participant.clientId),
+        eq(sql`${activitiesLog.meta} ->> 'clientID'`, participants.clientID),
         eq(sql`${activitiesLog.meta} ->> 'roomID'`, roomID)
       )
     );
@@ -58,20 +58,23 @@ export const countRegisteredParticipant = async (roomID: string) => {
   return res[0];
 };
 
+/**
+ * @deprecated only used for older events, events now require registration
+ */
 export const countGuestParticipant = async (roomID: string) => {
   const res = await db
     .select({ value: countDistinct(sql`${activitiesLog.meta} ->> 'clientID'`) })
     .from(activitiesLog)
     .leftJoin(
-      participant,
+      participants,
       and(
-        eq(sql`${activitiesLog.meta} ->> 'clientID'`, participant.clientId),
+        eq(sql`${activitiesLog.meta} ->> 'clientID'`, participants.clientID),
         eq(sql`${activitiesLog.meta} ->> 'roomID'`, roomID)
       )
     )
     .where(
       and(
-        isNull(participant.clientId),
+        isNull(participants.clientID),
         eq(sql`${activitiesLog.meta} ->> 'roomID'`, roomID)
       )
     );

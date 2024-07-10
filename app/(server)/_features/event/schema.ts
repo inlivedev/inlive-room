@@ -6,12 +6,12 @@ import {
   integer,
   serial,
   pgEnum,
-  unique,
   boolean,
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
 import { users } from '../user/schema';
 import { relations } from 'drizzle-orm';
+import { primaryKey } from 'drizzle-orm/pg-core';
 
 export const statusEnum = pgEnum('event_status_enum', [
   'draft',
@@ -44,33 +44,34 @@ export const events = pgTable('events', {
     .notNull(),
 });
 
-// Participant Table
-export const participant = pgTable(
-  'events_participant',
+export const participants = pgTable(
+  'event_participants',
   {
-    id: serial('id').primaryKey(),
-    clientId: text('client_id').notNull(),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    firstName: text('first_name').notNull(),
-    lastName: text('last_name').notNull(),
-    email: text('email').notNull(),
-    description: text('description'),
     eventID: integer('event_id')
-      .notNull()
-      .references(() => events.id, { onDelete: 'cascade' }),
-    updateCount: integer('update_count').notNull().default(0),
-    isInvited: boolean('is_invited').default(false),
+      .references(() => events.id, {
+        onDelete: 'cascade',
+      })
+      .notNull(),
+    userID: integer('user_id')
+      .references(() => users.id, {
+        onDelete: 'cascade',
+      })
+      .notNull(),
     roleID: integer('role_id')
-      .default(1)
       .references(() => participantRole.id, {
         onDelete: 'set null',
       })
+      .default(1)
       .notNull(),
+    isInvited: boolean('is_invited').default(false).notNull(),
+    updateCount: integer('update_count').default(0).notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    clientID: text('client_id').notNull(),
   },
   (table) => {
     return {
-      uniqueClientID: unique().on(table.clientId, table.eventID),
-      uniqueEmail: unique().on(table.email, table.eventID),
+      pk: primaryKey({ columns: [table.eventID, table.userID] }),
     };
   }
 );
@@ -80,15 +81,23 @@ export const eventCategory = pgTable('event_category', {
   name: text('name').notNull(),
 });
 
-export const participantRelations = relations(participant, ({ one }) => ({
+export const participantRelations = relations(participants, ({ one }) => ({
   event: one(events, {
-    fields: [participant.eventID],
+    fields: [participants.eventID],
     references: [events.id],
+  }),
+  user: one(users, {
+    fields: [participants.userID],
+    references: [users.id],
+  }),
+  role: one(participantRole, {
+    fields: [participants.roleID],
+    references: [participantRole.id],
   }),
 }));
 
 export const eventsRelations = relations(events, ({ many, one }) => ({
-  participants: many(participant),
+  participants: many(participants),
   category: one(eventCategory, {
     fields: [events.categoryID],
     references: [eventCategory.id],
@@ -105,15 +114,18 @@ export const participantRole = pgTable('participant_role', {
 });
 
 export const roleRelations = relations(participantRole, ({ one }) => ({
-  role: one(participant, {
+  role: one(participants, {
     fields: [participantRole.id],
-    references: [participant.roleID],
+    references: [participants.roleID],
   }),
 }));
 
 export type insertEvent = typeof events.$inferInsert;
 export type selectEvent = typeof events.$inferSelect;
-export type insertParticipant = typeof participant.$inferInsert;
-export type selectParticipant = typeof participant.$inferSelect;
+export type insertParticipant = typeof participants.$inferInsert;
+export type selectParticipant = typeof participants.$inferSelect;
+
+export type selectRole = typeof participantRole.$inferSelect;
+export type selectCategory = typeof eventCategory.$inferSelect;
 
 export type eventStatusEnum = 'draft' | 'published' | 'cancelled' | 'completed';

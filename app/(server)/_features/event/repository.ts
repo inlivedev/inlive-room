@@ -5,7 +5,8 @@ import {
   events,
   insertEvent,
   insertParticipant,
-  participant as participants,
+  participantRole,
+  participants,
   selectEvent,
   selectParticipant,
 } from './schema';
@@ -368,11 +369,23 @@ export class EventRepo {
     return data[0];
   }
 
-  async registerParticipant(participant: insertParticipant) {
-    const res = await db.insert(participants).values(participant)
-      .returning()
+  async insertParticipant(userID : number, eventID: number, options:  Omit<insertParticipant,'userID' | 'eventID'>) {
 
-    return res[0];
+    const res = db.transaction(async (tx) => {
+      const [participant] = await tx.insert(participants).values({userID,eventID,...options}).returning()
+      const role = await tx.query.participantRole.findFirst({
+        where: eq(participantRole.id, participant.roleID)
+      })
+
+      return {
+        ...participant,
+        role : role
+      }
+
+    })
+
+
+    return res;
   }
 
   async countRegistiree(eventID: number) {
@@ -397,10 +410,9 @@ export class EventRepo {
     const res = await db.transaction(async (tx) => {
       const registeree = await tx
         .select({
-          first_name: participants.firstName,
-          last_name: participants.lastName,
-          email: participants.email,
-          id: participants.id,
+          name:users.name,
+          email: users.email,
+          id: users.id,
           created_at: participants.createdAt,
         })
         .from(participants)
@@ -410,7 +422,7 @@ export class EventRepo {
             eq(events.slug, slug),
             eq(events.createdBy, createdBy),
             eq(participants.roleID, 1))
-        )
+        ).innerJoin(users, eq(participants.userID, users.id))
 
       const total = await tx
         .select({ total: count() })
@@ -433,8 +445,7 @@ export class EventRepo {
       return {
         id: user.id,
         email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        name: user.name,
         createdAt: user.created_at,
       };
     });
@@ -443,38 +454,80 @@ export class EventRepo {
   }
 
   async getEventParticipantsByEventId(eventId: number) {
-    const res = await db.query.participant.findMany({
+    const res = await db.query.participants.findMany({
       where: eq(participants.eventID, eventId),
     });
 
     return res;
   }
 
-  async getParticipantById(id: number) {
-    return await db.query.participant.findFirst({
-      where: eq(participants.id, id),
+  async getParticipantById(userID: number) {
+    const res =  await db.query.participants.findFirst({
+      where: eq(participants.userID, userID),
+      with: {
+        user: {
+          columns: {
+            name: true,
+            email: true,
+            pictureUrl: true,
+            id:true
+          },
+        }
+      }
     });
+
+    return res ? {
+      id: res.user?.id,
+      email: res.user?.email,
+      name: res.user?.name,
+      pictureUrl: res.user?.pictureUrl,
+      roleID: res.roleID,
+      eventID: res.eventID,
+      isInvited: res.isInvited,
+      updateCount: res.updateCount,
+      createdAt: res.createdAt,
+      updatedAt: res.updatedAt,
+      clientID: res.clientID,
+    } : undefined;
   }
 
-  async getParticipantByClientId(clientId: string) {
-    return await db.query.participant.findFirst({
-      where: eq(participants.clientId, clientId),
+  async getParticipantByClientId(clientID: string) {
+    const res=  await db.query.participants.findFirst({
+      where: eq(participants.clientID, clientID),
+      with:{
+        user:{
+          columns:{
+            name:true,
+            email:true,
+            pictureUrl:true,
+            id:true
+          }
+        }
+      }
     });
-  }
 
-  async updateParticipant(participant: selectParticipant) {
-    const res = await db.update(participants).set(participant).where(eq(participants.id, participant.id)).returning()
-    return res[0]
+    return res ? {
+      id: res.user?.id,
+      email: res.user?.email,
+      name: res.user?.name,
+      pictureUrl: res.user?.pictureUrl,
+      roleID: res.roleID,
+      eventID: res.eventID,
+      isInvited: res.isInvited,
+      updateCount: res.updateCount,
+      createdAt: res.createdAt,
+      updatedAt: res.updatedAt,
+      clientID: res.clientID,
+    } : undefined;
   }
-
 
   async getEventParticipantByEmail(email: string, eventID: number): Promise<selectParticipant | undefined>;
   async getEventParticipantByEmail(email: string, eventSlug: string): Promise<selectParticipant | undefined>;
 
   async getEventParticipantByEmail(email: string, eventIDorSlug: number | string): Promise<selectParticipant | undefined> {
     if (typeof eventIDorSlug === 'number') {
-      return await db.query.participant.findFirst({
-        where: and(eq(participants.email, email), eq(participants.eventID, eventIDorSlug)),
+      return await db.query.participants.findFirst({
+        where: and(eq(users.email, email), eq(participants.eventID, eventIDorSlug)),
       });
     }
 
@@ -485,7 +538,7 @@ export class EventRepo {
         }
       ).from(participants).innerJoin(events, eq(participants.eventID, events.id)).where(
         and(
-          eq(participants.email, email),
+          eq(users.email, email),
           eq(events.slug, eventIDorSlug)
         )
       ).limit(1);
@@ -524,6 +577,12 @@ export class EventRepo {
     });
 
     return res;
+  }
+
+  async getRoleByName(name: string) {
+    return db.query.participantRole.findFirst({
+      where: ilike(participantRole.name, name),
+    });
   }
 
 }
