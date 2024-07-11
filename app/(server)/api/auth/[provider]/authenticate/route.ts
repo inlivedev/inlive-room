@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { InliveApiFetcher } from '@/_shared/utils/fetcher';
-import { getUserByEmail, addUser } from '@/(server)/_features/user/repository';
+import {
+  getUserByEmail,
+  addUser,
+  activateUser,
+} from '@/(server)/_features/user/repository';
 import { getEarlyAccessInviteeByEmail } from '@/(server)/_features/early-access-invitee/repository';
 import type { AuthType } from '@/_shared/types/auth';
 
@@ -114,26 +118,36 @@ export async function GET(
 
           const existingUser = await getUserByEmail(currentAuth.data.email);
 
-          if (!existingUser) {
-            const userData = {
-              email: currentAuth.data.email,
-              name: currentAuth.data.name,
-              accountId: currentAuth.data.id,
-              pictureUrl: currentAuth.data.picture_url,
-              whitelistFeature: [] as string[],
-            };
-
+          if (!existingUser || existingUser?.isRegistered === false) {
             const existingEarlyAccessInvitee =
-              await getEarlyAccessInviteeByEmail(userData.email);
+              await getEarlyAccessInviteeByEmail(currentAuth.data.email);
+            if (existingUser) {
+              const userData = {
+                email: currentAuth.data.email,
+                name: currentAuth.data.name,
+                accountId: currentAuth.data.id,
+                pictureUrl: currentAuth.data.picture_url,
+                whitelistFeature: [] as string[],
+              };
 
-            if (existingEarlyAccessInvitee) {
-              userData.whitelistFeature =
-                existingEarlyAccessInvitee.whitelistFeature;
+              if (existingEarlyAccessInvitee) {
+                userData.whitelistFeature =
+                  existingEarlyAccessInvitee.whitelistFeature;
+              }
+              await addUser({
+                ...userData,
+                isRegistered: true,
+              });
             }
-            await addUser({
-              ...userData,
-              isRegistered: true,
-            });
+
+            if (existingUser?.isRegistered === false) {
+              activateUser(existingUser.id, {
+                pictureUrl: currentAuth.data.picture_url,
+                whitelistFeature:
+                  existingEarlyAccessInvitee?.whitelistFeature || [],
+                name: currentAuth.data.name,
+              });
+            }
           }
         }
 

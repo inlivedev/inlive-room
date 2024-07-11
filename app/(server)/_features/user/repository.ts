@@ -1,5 +1,5 @@
-import { db } from '@/(server)/_shared/database/database';
-import { type InsertUser, users } from '@/(server)/_features/user/schema';
+import { DB, db } from '@/(server)/_shared/database/database';
+import {
 import { UserType } from '@/_shared/types/user';
 import { eq } from 'drizzle-orm';
 
@@ -21,6 +21,19 @@ export const getUserByEmail = async (email: string) => {
       return operators.eq(fields.email, email);
     },
   });
+};
+
+export const activateUser = async (
+  userId: number,
+  options?: Partial<
+    Pick<selectUser, 'pictureUrl' | 'whitelistFeature' | 'name'>
+  >,
+  _db: DB = db
+) => {
+  return _db
+    .update(users)
+    .set({ ...options, isRegistered: true })
+    .where(eq(users.id, userId));
 };
 
 export const addWhiteListFeature = async (
