@@ -11,6 +11,7 @@ import { ICalAttendeeStatus, ICalAttendeeRole } from 'ical-generator';
 import { addUser, getUserByEmail, getUserById } from '../user/repository';
 import { User, selectUser } from '../user/schema';
 import { db } from '@/(server)/_shared/database/database';
+import { ServiceError } from '../_service';
 
 /**
  * Type used to represent all type of participant in an event
@@ -44,16 +45,6 @@ export interface EventParticipant {
 export interface EventDetails extends selectEvent {
   host?: selectUser;
   availableSlots?: number;
-}
-
-export class EventError extends Error {
-  errorCode: number;
-
-  constructor(message: string, errorCode: number) {
-    super(message); // Pass the message to the base Error class
-    this.name = 'ServiceError';
-    this.errorCode = errorCode; // HTTP status code
-  }
 }
 
 export class EventService {
@@ -248,7 +239,7 @@ export class EventService {
     }
 
     if (!user) {
-      throw new EventError('Failed to register user', 500);
+      throw new ServiceError('EventError', 'Failed to register user', 500);
     }
 
     const roleData = await eventRepo.getRoleByName(role);
