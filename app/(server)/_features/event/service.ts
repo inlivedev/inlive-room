@@ -228,40 +228,49 @@ export class EventService {
   ): Promise<EventParticipant> {
     let user: selectUser | undefined;
 
-    user = await getUserByEmail(email);
+    const res = await db.transaction(async (tx) => {
+      user = await getUserByEmail(email, tx);
 
-    if (!user) {
-      [user] = await addUser({
-        email: email,
-        name: email,
-        isRegistered: false,
-      });
-    }
-
-    if (!user) {
-      throw new ServiceError('EventError', 'Failed to register user', 500);
-    }
-
-    const roleData = await eventRepo.getRoleByName(role);
-
-    const participantData = await eventRepo.insertParticipant(
-      user.id,
-      eventID,
-      {
-        clientID: generateID(12),
-        roleID: roleData?.id || 1,
-        ...options,
+      if (!user) {
+        [user] = await addUser({
+          email: email,
+          name: email,
+          isRegistered: false,
+        });
       }
-    );
+
+      if (!user) {
+        throw new ServiceError('EventError', 'Failed to register user', 500);
+      }
+
+      const roleData = await eventRepo.getRoleByName(role, tx);
+
+      const participantData = await eventRepo.insertParticipant(
+        user.id,
+        eventID,
+        {
+          clientID: generateID(12),
+          roleID: roleData?.id || 1,
+          ...options,
+        },
+        tx
+      );
+
+      return {
+        user,
+        roleData,
+        participantData,
+      };
+    });
 
     return {
-      user: user,
+      user: res.user,
       eventID: eventID,
-      clientID: participantData.clientID,
-      createdAt: participantData.createdAt,
-      isInvited: participantData.isInvited,
-      updateCount: participantData.updateCount,
-      role: participantData.role!,
+      clientID: res.participantData.clientID,
+      createdAt: res.participantData.createdAt,
+      isInvited: res.participantData.isInvited,
+      updateCount: res.participantData.updateCount,
+      role: res.roleData!,
     };
   }
 }

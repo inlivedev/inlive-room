@@ -8,6 +8,7 @@ import {
   participantRole,
   participants,
   selectEvent,
+  selectParticipant,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -303,24 +304,10 @@ export class EventRepo {
     return data[0];
   }
 
-  async insertParticipant(userID : number, eventID: number, options:  Omit<insertParticipant,'userID' | 'eventID'>) {
-
-    const res = db.transaction(async (tx) => {
-      const [participant] = await tx.insert(participants).values({userID,eventID,...options}).returning()
-      const role = await tx.query.participantRole.findFirst({
-        where: eq(participantRole.id, participant.roleID)
-      })
-
-      return {
-        ...participant,
-        role : role
-      }
-
-    })
-
-
-    return res;
-  }
+  async insertParticipant(userID : number, eventID: number, options:  Omit<insertParticipant,'userID' | 'eventID'>, _db: DB = db) : Promise<selectParticipant>{
+      const [participant] = await _db.insert(participants).values({userID,eventID,...options}).returning()
+      return participant
+    }
 
   async countRegistiree(eventID: number, _db: DB = db) {
     const res = await _db
