@@ -1,4 +1,4 @@
-import { eventService } from '@/(server)/api/_index';
+import { eventRepo, eventService } from '@/(server)/api/_index';
 import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 import { GenerateIcal } from '../../..';
@@ -11,7 +11,7 @@ export async function GET(
   const participantId = params.participantId;
 
   try {
-    const event = await eventService.getEventBySlugOrID(slug);
+    const event = await eventRepo.getBySlugOrID(slug);
     if (!event) {
       return NextResponse.json({
         code: 404,
@@ -19,7 +19,7 @@ export async function GET(
       });
     }
 
-    const host = await eventService.getEventHostByEventId(event.id);
+    const host = await eventRepo.getEventHostByEventId(event.id);
     if (!host) {
       return NextResponse.json({
         code: 404,
@@ -27,7 +27,10 @@ export async function GET(
       });
     }
 
-    const participant = await eventService.getParticipantById(participantId);
+    const participant = await eventService.getParticipantByID(
+      participantId,
+      slug
+    );
     if (!participant) {
       return NextResponse.json({
         code: 404,
@@ -36,7 +39,10 @@ export async function GET(
     }
 
     const icalString = GenerateIcal(event, 'meeting', 'Asia/Jakarta', host, {
-      ...participant,
+      clientID: participant.clientID,
+      name: participant.user.name,
+      email: participant.user.email,
+      updateCount: participant.updateCount,
     });
     const resp = new Response(icalString);
     resp.headers.set(
