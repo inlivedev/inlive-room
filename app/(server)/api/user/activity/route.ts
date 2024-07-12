@@ -5,12 +5,14 @@ import * as Sentry from '@sentry/nextjs';
 import { addLog } from '@/(server)/_features/activity-log/repository';
 import { z } from 'zod';
 
+const persistentRoom = process.env.PERSISTENT_DATA === 'true';
+
 const ActivityRequest = z.object({
   name: z.string(),
   meta: z.any(),
 });
 
-export const RoomDurationMeta = z.object({
+const RoomDurationMeta = z.object({
   roomID: z.string(),
   clientID: z.string(),
   name: z.string().optional(),
@@ -27,8 +29,6 @@ export const RoomDurationMeta = z.object({
   trigger: z.enum(['beforeunload', 'leave-button']),
 });
 
-export const ArrayRoomDurationMeta = z.array(RoomDurationMeta);
-
 const activityName = ['RoomDuration'];
 
 export async function POST(request: NextRequest) {
@@ -36,6 +36,10 @@ export async function POST(request: NextRequest) {
   const requestToken = cookieStore.get('token');
 
   try {
+    if (!persistentRoom) {
+      throw new Error('This feature is not enabled');
+    }
+
     const response = await getCurrentAuthenticated(requestToken?.value || '');
     const user = response.data ? response.data : null;
     const currentTime = new Date();

@@ -1,10 +1,17 @@
 import { eventRepo } from '@/(server)/api/_index';
-import { insertEvent, selectEvent } from './schema';
+import {
+  insertEvent,
+  insertParticipant,
+  selectEvent,
+  selectRole,
+} from './schema';
 import { generateID } from '@/(server)/_shared/utils/generateid';
-import { EventType } from '@/_shared/types/event';
 import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import { ICalAttendeeStatus, ICalAttendeeRole } from 'ical-generator';
-import { getUserByEmail } from '../user/repository';
+import { addUser, getUserByEmail, getUserById } from '../user/repository';
+import { User, selectUser } from '../user/schema';
+import { db } from '@/(server)/_shared/database/database';
+import { ServiceError } from '../_service';
 
 /**
  * Type used to represent all type of participant in an event
@@ -26,10 +33,18 @@ export type Participant = {
 };
 
 export interface EventParticipant {
-  id: number;
-  eventId: number;
-  clientId: string;
+  user: User;
+  eventID: number;
+  clientID: string;
   createdAt: Date;
+  role: selectRole;
+  isInvited: boolean;
+  updateCount: number;
+}
+
+export interface EventDetails extends selectEvent {
+  host?: selectUser;
+  availableSlots?: number;
 }
 
 export class EventService {
@@ -41,40 +56,127 @@ export class EventService {
     return event;
   }
 
+  async getParticipantByID(
+    id: number,
+    eventSlugOrID: string
+  ): Promise<EventParticipant | undefined> {
+    const data = await db.transaction(async (tx) => {
+      const user = await getUserById(id, tx);
+
+      if (!user) {
+        return;
+      }
+
+      const event = await eventRepo.getBySlugOrID(eventSlugOrID, undefined, tx);
+
+      if (!event) {
+        return;
+      }
+
+      const participant = await eventRepo.getParticipant(
+        user?.id,
+        event?.id,
+        tx
+      );
+
+      if (!participant) {
+        return;
+      }
+
+      const role = await eventRepo.getRoleByID(participant.roleID, tx);
+
+      if (!role) {
+        return;
+      }
+
+      return {
+        user: user,
+        ...participant,
+        role: role,
+      };
+    });
+
+    return data;
+  }
+
   async getEventBySlugOrID(
-    slugOrId: string,
-    userId?: number,
+    slugOrID: string,
     category?: string
-  ) {
-    let event: EventType.Event | undefined;
-    const isnum = /^\d+$/.test(slugOrId);
+  ): Promise<EventDetails | undefined> {
+    const data = await db.transaction(async (tx) => {
+      const event = await eventRepo.getBySlugOrID(slugOrID, category, tx);
 
-    if (isnum) {
-      event = await eventRepo.getEventById(parseInt(slugOrId), category);
-    } else {
-      event = await eventRepo.getEventBySlug(slugOrId, category);
+      if (!event) {
+        return;
+      }
+
+      const host = await eventRepo.getEventHostByEventId(event.id, tx);
+
+      const countRegisteree = await eventRepo.countRegistiree(event?.id, tx);
+
+      return {
+        event,
+        host,
+        countRegisteree,
+      };
+    });
+
+    if (!data) {
+      return;
     }
 
-    if (!event) {
-      return undefined;
+    let availableSlots: number | undefined = undefined;
+    if (data.event.maximumSlots) {
+      availableSlots = data.event.maximumSlots - data.countRegisteree;
     }
-
-    if (event?.createdBy != userId) {
-      event.roomId = '';
-    }
-
-    return event;
-  }
-  async getParticipantById(id: number) {
-    return await eventRepo.getParticipantById(id);
+    return {
+      ...data.event,
+      host: data.host,
+      availableSlots: availableSlots,
+    };
   }
 
-  async getEventHostByEventId(eventId: number) {
-    return await eventRepo.getEventHostByEventId(eventId);
-  }
+  async getParticipantByEmail(
+    email: string,
+    eventSlugOrID: string
+  ): Promise<EventParticipant | undefined> {
+    const data = await db.transaction(async (tx) => {
+      const user = await getUserByEmail(email, tx);
 
-  async getAllParticipantsByEventId(eventId: number) {
-    return await eventRepo.getEventParticipantsByEventId(eventId);
+      if (!user) {
+        return;
+      }
+
+      const event = await eventRepo.getBySlugOrID(eventSlugOrID, undefined, tx);
+
+      if (!event) {
+        return;
+      }
+
+      const participant = await eventRepo.getParticipant(
+        user?.id,
+        event?.id,
+        tx
+      );
+
+      if (!participant) {
+        return;
+      }
+
+      const role = await eventRepo.getRoleByID(participant?.roleID, tx);
+
+      if (!role) {
+        return;
+      }
+
+      return {
+        user: user,
+        ...participant,
+        role: role,
+      };
+    });
+
+    return data;
   }
 
   async generateICS(event: selectEvent, status: ICalAttendeeStatus) {
@@ -107,10 +209,7 @@ export class EventService {
     ICS.addParticipants(
       participantWithoutHost.map((participant) => {
         return {
-          name:
-            participant.firstName && participant.lastName
-              ? `${participant.firstName} ${participant.lastName}`
-              : participant.email,
+          name: participant.name ? participant.name : participant.email,
           email: participant.email,
           status: status,
           role: ICalAttendeeRole.REQ,
@@ -119,6 +218,60 @@ export class EventService {
     );
 
     return ICS;
+  }
+
+  async registerParticipant(
+    email: string,
+    eventID: number,
+    role: string,
+    options?: Pick<insertParticipant, 'isInvited'>
+  ): Promise<EventParticipant> {
+    let user: selectUser | undefined;
+
+    const res = await db.transaction(async (tx) => {
+      user = await getUserByEmail(email, tx);
+
+      if (!user) {
+        [user] = await addUser({
+          email: email,
+          name: email,
+          isRegistered: false,
+        });
+      }
+
+      if (!user) {
+        throw new ServiceError('EventError', 'Failed to register user', 500);
+      }
+
+      const roleData = await eventRepo.getRoleByName(role, tx);
+
+      const participantData = await eventRepo.insertParticipant(
+        user.id,
+        eventID,
+        {
+          clientID: generateID(12),
+          roleID: roleData?.id || 1,
+          ...options,
+        },
+        tx
+      );
+
+      return {
+        user,
+        roleData,
+        participantData,
+      };
+    });
+
+    return {
+      user: res.user,
+      eventID: eventID,
+      clientID: res.participantData.clientID,
+      createdAt: res.participantData.createdAt,
+      isInvited: res.participantData.isInvited,
+      updateCount: res.participantData.updateCount,
+      role: res.roleData!,
+    };
   }
 }
 

@@ -18,9 +18,8 @@ export function GenerateIcal(
     email: string;
   },
   participant: {
-    clientId: string;
-    firstName: string;
-    lastName: string;
+    clientID: string;
+    name: string;
     email: string;
     updateCount: number;
   }
@@ -34,7 +33,7 @@ export function GenerateIcal(
       timezone
     );
 
-  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientId}`;
+  const roomURL = `${PUBLIC_URL}/rooms/${event.roomId}?clientID=${participant.clientID}`;
 
   let eventStatus = 'CONFIRMED';
   let eventMethod = 'REQUEST';
@@ -96,7 +95,7 @@ DTSTART;TZID=${timezone}:${DTSTART}
 DTEND;TZID=${timezone}:${DTEND}
 SUMMARY:${event.name}
 ORGANIZER;CN=${host.name}:mailto:${host.email}
-ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${participant.firstName} ${participant.lastName};X-NUM-GUESTS=0:mailto:${participant.email}
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${participant.name};X-NUM-GUESTS=0:mailto:${participant.email}
 URL;VALUE=URI:${PUBLIC_URL}/events/${event.slug}
 X-INLIVE-ROOM:${PUBLIC_URL}/rooms/${event.roomId}
 SEQUENCE:${participant.updateCount}

@@ -1,6 +1,7 @@
 import { selectParticipant } from '@/(server)/_features/event/schema';
+import { EventParticipant } from '@/(server)/_features/event/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
-import { eventRepo } from '@/(server)/api/_index';
+import { eventService } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -9,7 +10,6 @@ export async function GET(
   { params }: { params: { slugOrId: string } }
 ) {
   const slugOrId = decodeURIComponent(params.slugOrId);
-  const isnum = /^\d+$/.test(slugOrId);
   const requestToken = cookies().get('token');
 
   if (!requestToken) {
@@ -38,19 +38,8 @@ export async function GET(
   }
 
   try {
-    let participant: selectParticipant | undefined;
-    if (isnum) {
-      const eventID = parseInt(slugOrId);
-      participant = await eventRepo.getEventParticipantByEmail(
-        user.email,
-        eventID
-      );
-    } else {
-      participant = await eventRepo.getEventParticipantByEmail(
-        user.email,
-        slugOrId
-      );
-    }
+    const participant: EventParticipant | undefined =
+      await eventService.getParticipantByEmail(user.email, slugOrId);
 
     if (!participant) {
       return NextResponse.json(

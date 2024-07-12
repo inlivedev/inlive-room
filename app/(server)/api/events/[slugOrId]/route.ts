@@ -23,7 +23,7 @@ export async function GET(
       }
     }
 
-    const existingEvent = await eventService.getEventBySlugOrID(slug, userID);
+    const existingEvent = await eventService.getEventBySlugOrID(slug);
 
     if (!existingEvent) {
       return NextResponse.json(

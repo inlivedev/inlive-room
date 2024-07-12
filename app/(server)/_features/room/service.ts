@@ -3,7 +3,7 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import { serverSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
 import { eventRepo } from '@/(server)/api/_index';
-import { errorEventNotFound, errorParticipantNotFound } from './errors';
+import { ServiceError } from '../_service';
 
 export interface Room {
   id: string;
@@ -90,10 +90,20 @@ export class RoomService {
 
       const participant = await eventRepo.getParticipantByClientId(clientID);
 
-      if (!participant) throw errorParticipantNotFound;
+      if (!participant) {
+        throw new ServiceError(
+          'EventError',
+          'Client ID does not match any participant',
+          400
+        );
+      }
 
       if (participant.eventID !== event.id) {
-        throw errorParticipantNotFound;
+        throw new ServiceError(
+          'EventError',
+          'Client ID does not match the event room',
+          400
+        );
       }
     }
 
@@ -179,8 +189,11 @@ export class RoomService {
       if (roomResp.code > 299) {
         console.log(roomResp.message);
         Sentry.captureMessage(`Failed to create a room ${roomID}.`, 'error');
-        console.log(JSON.stringify(roomResp))
-        throw new Error('Error during creating room, please try again later ' + roomResp.message);
+        console.log(JSON.stringify(roomResp));
+        throw new Error(
+          'Error during creating room, please try again later ' +
+            roomResp.message
+        );
       }
 
       for (const datachannel of this._datachannels) {
@@ -233,7 +246,7 @@ export class RoomService {
           }
         }
 
-        console.log(JSON.stringify(error))
+        console.log(JSON.stringify(error));
       }
     }
 

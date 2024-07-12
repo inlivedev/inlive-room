@@ -108,7 +108,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         if (typeof roomData.meta !== 'undefined' && eventData) {
           const requestToken = cookies().get('token');
           if (requestToken) {
-            const clientData: EventType.ParticipantResponse =
+            const participantData: EventType.ParticipantResponse =
               await InternalApiFetcher.get(
                 `/api/events/${eventData.id}/client`,
                 {
@@ -119,10 +119,9 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
                 }
               );
 
-            if (clientData?.data) {
-              clientID = clientData.data.clientId;
-              newName =
-                clientData.data.firstName + ' ' + clientData.data.lastName;
+            if (participantData?.data) {
+              clientID = participantData.data.clientID;
+              newName = participantData.data.user.name;
             }
           }
 
