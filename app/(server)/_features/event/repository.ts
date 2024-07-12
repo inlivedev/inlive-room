@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { db } from '@/(server)/_shared/database/database';
+import { DB, db } from '@/(server)/_shared/database/database';
 import {
   eventCategory,
   events,
@@ -8,7 +8,6 @@ import {
   participantRole,
   participants,
   selectEvent,
-  selectParticipant,
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
@@ -21,26 +20,17 @@ export class EventRepo {
     return data[0];
   }
 
-  async getEventBySlug(slug: string, category?: string) {
-    const event = await db.transaction(async (tx) => {
-
+  async getBySlugOrID(slugOrID: string, category?: string, _db: DB = db): Promise<selectEvent | undefined>{
+    const event = await _db.transaction(async (tx) => {
+      const isnum = /^\d+$/.test(slugOrID);
+      
       const categoryID = category ? await tx.query.eventCategory.findFirst({
         where: ilike(eventCategory.name, category)
       }) : undefined;
 
       const data = await db.query.events.findFirst({
-        with: {
-          host: {
-            columns: {
-              id: true,
-              name: true,
-              pictureUrl: true,
-              email: true,
-            },
-          },
-        },
         where: and(
-          eq(events.slug, slug),
+          isnum? eq(events.id, parseInt(slugOrID)) : eq(events.slug, slugOrID),
           isNull(events.deletedAt),
           categoryID ? eq(events.categoryID, categoryID.id) : undefined
         ),
@@ -51,70 +41,14 @@ export class EventRepo {
         return undefined;
       }
 
-      const countRegistered = data.maximumSlots ? (await tx.select({
-        count: count(),
-      }).from(participants).where(eq(participants.eventID, data.id)))[0] : { count: 0 };
-
       return {
         ...data,
-        availableSlots: data.maximumSlots ? data.maximumSlots - countRegistered.count : undefined,
       };
     })
 
     return event;
   }
 
-  async getEventById(id: number, category?: string) {
-    const event = await db.transaction(async (tx) => {
-      const categoryID = category ? await tx.query.eventCategory.findFirst({
-        where: ilike(eventCategory.name, category)
-      }) : undefined;
-
-      const data = await tx.query.events.findFirst({
-        with: {
-          category: {
-            columns: {
-
-              name: true,
-            },
-          },
-          host: {
-            columns: {
-              id: true,
-              name: true,
-              pictureUrl: true,
-              email: true,
-            },
-          },
-        },
-        where: and(
-          eq(events.id, id),
-          isNull(events.deletedAt),
-          categoryID ? eq(events.categoryID, categoryID.id) : undefined),
-      });
-
-      if (!data) {
-        return undefined;
-      }
-
-      const countRegistered = data.maximumSlots ? (await tx.select({
-        count: count(),
-      }).from(participants).
-        where(
-          and(
-            eq(participants.eventID, data.id),
-            eq(participants.roleID, 1)
-          )
-        ))[0] : { count: 0 };
-
-      return {
-        ...data,
-        availableSlots: data.maximumSlots ? data.maximumSlots - countRegistered.count : undefined,
-      };
-    })
-
-    return event;
-  }
 
   async getEvents(
     page: number,
@@ -453,43 +387,6 @@ export class EventRepo {
     return { data: data, meta };
   }
 
-  async getEventParticipantsByEventId(eventId: number) {
-    const res = await db.query.participants.findMany({
-      where: eq(participants.eventID, eventId),
-    });
-
-    return res;
-  }
-
-  async getParticipantById(userID: number) {
-    const res =  await db.query.participants.findFirst({
-      where: eq(participants.userID, userID),
-      with: {
-        user: {
-          columns: {
-            name: true,
-            email: true,
-            pictureUrl: true,
-            id:true
-          },
-        }
-      }
-    });
-
-    return res ? {
-      id: res.user?.id,
-      email: res.user?.email,
-      name: res.user?.name,
-      pictureUrl: res.user?.pictureUrl,
-      roleID: res.roleID,
-      eventID: res.eventID,
-      isInvited: res.isInvited,
-      updateCount: res.updateCount,
-      createdAt: res.createdAt,
-      updatedAt: res.updatedAt,
-      clientID: res.clientID,
-    } : undefined;
-  }
 
   async getParticipantByClientId(clientID: string) {
     const res=  await db.query.participants.findFirst({
@@ -521,27 +418,10 @@ export class EventRepo {
     } : undefined;
   }
 
-  async getEventParticipantByEmail(email: string, eventID: number): Promise<selectParticipant | undefined>;
-  async getEventParticipantByEmail(email: string, eventSlug: string): Promise<selectParticipant | undefined>;
-
-  async getEventParticipantByEmail(email: string, eventIDorSlug: number | string): Promise<selectParticipant | undefined> {
-    if (typeof eventIDorSlug === 'number') {
-      return await db.query.participants.findFirst({
-        where: and(eq(users.email, email), eq(participants.eventID, eventIDorSlug)),
-      });
-    }
-
-    if (typeof eventIDorSlug === 'string') {
-      const res = await db.select(
-        {
-          participants: participants,
-        }
-      ).from(participants).innerJoin(events, eq(participants.eventID, events.id)).where(
-        and(
-          eq(users.email, email),
-          eq(events.slug, eventIDorSlug)
-        )
-      ).limit(1);
+  async getParticipant(userID: number, eventID: number, _db :DB = db) {
+    const res = await _db.query.participants.findFirst({
+      where: and(eq(participants.userID, userID), eq(participants.eventID, eventID)),
+    });
 
     return res;
 
