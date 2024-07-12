@@ -22,3 +22,8 @@ if (process.env.NEXT_PUBLIC_APP_ENV == 'development') {
 const queryClient = postgres(Option);
 
 export const db = drizzle(queryClient, { schema });
+
+// Type to represent the database connection, it can be a connection or a transaction
+export type DB =
+  | typeof db
+  | Parameters<Parameters<typeof db.transaction>[0]>[0];

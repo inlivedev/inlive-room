@@ -1,5 +1,9 @@
 import { DB, db } from '@/(server)/_shared/database/database';
 import {
+  type InsertUser,
+  users,
+  selectUser,
+} from '@/(server)/_features/user/schema';
 import { UserType } from '@/_shared/types/user';
 import { eq } from 'drizzle-orm';
 
@@ -7,16 +11,16 @@ export const addUser = (data: InsertUser) => {
   return db.insert(users).values(data).returning();
 };
 
-export const getUserById = (userId: number) => {
-  return db.query.users.findFirst({
+export const getUserById = (userId: number, _db: DB = db) => {
+  return _db.query.users.findFirst({
     where(fields, operators) {
       return operators.eq(fields.id, userId);
     },
   });
 };
 
-export const getUserByEmail = async (email: string) => {
-  return db.query.users.findFirst({
+export const getUserByEmail = async (email: string, _db: DB = db) => {
+  return _db.query.users.findFirst({
     where(fields, operators) {
       return operators.eq(fields.email, email);
     },

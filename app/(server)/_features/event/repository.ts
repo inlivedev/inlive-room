@@ -388,15 +388,15 @@ export class EventRepo {
     return res;
   }
 
-  async countRegistiree(eventID: number) {
-    const res = await db
+  async countRegistiree(eventID: number, _db: DB = db) {
+    const res = await _db
       .select({
         value: count(),
       })
       .from(participants)
       .where(eq(participants.eventID, eventID));
 
-    return res[0];
+    return res[0].value;
   }
 
 
@@ -543,14 +543,12 @@ export class EventRepo {
         )
       ).limit(1);
 
-      return res[0].participants
-    }
+    return res;
 
-    throw new Error('Invalid eventIDorSlug');
   }
 
-  async getEventHostByEventId(eventId: number) {
-    const event = await db.query.events.findFirst({
+  async getEventHostByEventId(eventId: number, _db: DB = db) {
+    const event = await _db.query.events.findFirst({
       where: eq(events.id, eventId),
     });
 
@@ -579,9 +577,15 @@ export class EventRepo {
     return res;
   }
 
-  async getRoleByName(name: string) {
-    return db.query.participantRole.findFirst({
+  async getRoleByName(name: string, _db: DB= db) {
+    return _db.query.participantRole.findFirst({
       where: ilike(participantRole.name, name),
+    });
+  }
+
+  async getRoleByID(id: number, _db: DB= db) {
+    return _db.query.participantRole.findFirst({
+      where: eq(participantRole.id, id),
     });
   }
 
