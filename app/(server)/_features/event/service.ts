@@ -197,20 +197,19 @@ export class EventService {
       email: user.email,
     });
 
-    const participants = await eventRepo.getRegisteredParticipants(
-      event.slug,
-      user?.id
-    );
+    const participants = await eventRepo.getRegisteredParticipants(event.slug);
 
     const participantWithoutHost = participants.data.filter(
-      (participant) => participant.email !== eventHost.email
+      (participant) => participant.user.email !== eventHost.email
     );
 
     ICS.addParticipants(
       participantWithoutHost.map((participant) => {
         return {
-          name: participant.name ? participant.name : participant.email,
-          email: participant.email,
+          name: participant.user.name
+            ? participant.user.name
+            : participant.user.email,
+          email: participant.user.email,
           status: status,
           role: ICalAttendeeRole.REQ,
         };
