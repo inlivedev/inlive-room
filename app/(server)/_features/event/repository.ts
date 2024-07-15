@@ -13,6 +13,7 @@ import {
 import { DBQueryConfig, SQL, and, count, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { User, users } from '../user/schema';
+import { EventParticipant } from './service';
 
 
 export class EventRepo {
@@ -323,55 +324,66 @@ export class EventRepo {
 
 
   async getRegisteredParticipants(
-    slug: string,
-    createdBy: User['id'],
-    limit = 10,
-    page = 1
-  ) {
-    const res = await db.transaction(async (tx) => {
-      const registeree = await tx
-        .select({
-          name:users.name,
-          email: users.email,
-          id: users.id,
-          created_at: participants.createdAt,
-        })
-        .from(participants)
-        .innerJoin(events, eq(participants.eventID, events.id))
-        .where(
-          and(
-            eq(events.slug, slug),
-            eq(events.createdBy, createdBy),
-            eq(participants.roleID, 1))
-        ).innerJoin(users, eq(participants.userID, users.id))
+    slugOrID: string,
+    paging?: { page: number; limit: number },
+    _db: DB = db,
+  ) : Promise<{
+    data: EventParticipant[],
+    meta: PageMeta
+  }> {
+    const isNum = /^\d+$/.test(slugOrID);
 
-      const total = await tx
-        .select({ total: count() })
-        .from(participants)
-        .innerJoin(events, eq(participants.eventID, events.id))
-        .where(and(eq(events.slug, slug), eq(events.createdBy, createdBy)));
-      total[0].total = total[0].total || 0;
+    const res = await  _db.transaction(async (tx) => {
+      const mainQuery =   tx.select(
+        {
+          count: count(),
+          user: users,
+          eventID: participants.eventID,
+          clientID: participants.clientID,
+          createdAt: participants.createdAt,
+          isInvited: participants.isInvited,
+          role: participantRole,
+          updateCount: participants.updateCount,
+        }
+      )
+      .from(participants)
+      .innerJoin(events, eq(participants.eventID, events.id))
+      .innerJoin(participantRole,eq(participants.roleID, participantRole.id))
+      .innerJoin(users, eq(participants.userID, users.id))
+      .where(isNum? eq(events.id, parseInt(slugOrID)) : eq(events.slug, slugOrID))
+      
 
-      return { total: total[0].total, registeree };
+      if(paging){
+        mainQuery.limit(paging.limit).offset((paging.page - 1) * paging.limit)
+      }
+
+
+
+      const registeree = await mainQuery
+
+
+      return { total: registeree[0].count, registeree };
     });
 
     const meta: PageMeta = {
-      current_page: page,
-      total_page: Math.ceil(res.total / limit) || 1,
-      per_page: limit,
+      current_page: paging?.page || 1,
+      total_page: paging ? Math.ceil(res.total / paging.limit) || 1 : 1,
+      per_page: paging?.limit || 0,
       total_record: res.total,
     };
 
-    const data = res.registeree.map((user) => {
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        createdAt: user.created_at,
-      };
-    });
+    const data : EventParticipant[]  = res.registeree.map((r) => ({
+      user: r.user,
+      eventID: r.eventID,
+      clientID: r.clientID,
+      createdAt: r.createdAt,
+      role: r.role,
+      isInvited: r.isInvited,
+      updateCount: r.updateCount,
+      name: r.user
+    }))
 
-    return { data: data, meta };
+    return { data, meta };
   }
 
 
