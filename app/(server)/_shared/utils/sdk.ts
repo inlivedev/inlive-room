@@ -5,7 +5,7 @@ const inliveApiVersion = process.env.NEXT_PUBLIC_INLIVE_API_VERSION;
 const inliveHubOrigin = process.env.NEXT_PUBLIC_INLIVE_HUB_ORIGIN;
 const inliveHubVersion = process.env.NEXT_PUBLIC_INLIVE_HUB_VERSION;
 
-export const createSDKAuth = async () => {
+const createSDKAuth = async () => {
   if (typeof window !== 'undefined') return null;
 
   return createAuth({
