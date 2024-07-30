@@ -7,8 +7,13 @@ import ButtonCamera from '@/_features/room/components/button-camera';
 import ButtonScreenShare from '@/_features/room/components/button-screen-share';
 import ButtonChat from '@/_features/room/components/button-chat';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
+import type { Sidebar } from './conference';
 
-export default function ConferenceActionsBar() {
+export default function ConferenceActionsBar({
+  sidebar,
+}: {
+  sidebar: Sidebar;
+}) {
   const [isTouchScreen, setIsTouchScreen] = useState(true);
 
   useEffect(() => {
@@ -33,7 +38,7 @@ export default function ConferenceActionsBar() {
             <ButtonScreenShare />
           </div>
           <div className="flex h-full flex-col justify-center">
-            <ButtonChat />
+            <ButtonChat sidebar={sidebar} />
           </div>
           <div className="flex h-full flex-col justify-center">
             <ButtonLeave />

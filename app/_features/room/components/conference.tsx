@@ -43,7 +43,7 @@ export default function Conference() {
       <div className="relative grid h-full grid-rows-[auto,1fr,72px] overflow-y-hidden">
         <ConferenceTopBar sidebar={sidebar} />
         <ConferenceParticipants sidebar={sidebar} />
-        <ConferenceActionsBar />
+        <ConferenceActionsBar sidebar={sidebar} />
       </div>
     </div>
   );
