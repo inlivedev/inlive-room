@@ -36,7 +36,7 @@ export default function ParticipantListSidebar() {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-hidden px-5 py-4">
         <ParticipantListGroup />
       </div>
     </div>
@@ -49,7 +49,7 @@ const ParticipantListGroup = ({ show = true }) => {
   const participants = streams.filter((stream) => stream.source === 'media');
 
   return (
-    <div>
+    <div className="h-full overflow-y-auto">
       <div className="flex h-9 items-center gap-1.5">
         <div className="flex items-center">
           <Button
