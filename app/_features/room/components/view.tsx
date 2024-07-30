@@ -12,7 +12,6 @@ import { ChatProvider } from '@/_features/room/contexts/chat-context';
 import { MetadataProvider } from '@/_features/room/contexts/metadata-context';
 import EventContainer from '@/_features/room/components/event-container';
 import Conference from '@/_features/room/components/conference';
-import ChatDrawerMenu from '@/_features/room/components/chat-drawer-menu';
 import type { ClientType } from '@/_shared/types/client';
 
 type ViewProps = {
@@ -63,12 +62,10 @@ export default function View({
                 <DataChannelProvider>
                   <ChatProvider>
                     <EventContainer>
-                      <ChatDrawerMenu />
-
                       {activeView === 'exit' ? (
                         <ConferenceExit />
                       ) : activeView === 'conference' ? (
-                        <Conference roomType={roomType} />
+                        <Conference />
                       ) : (
                         <ConferenceLobby roomID={roomID} />
                       )}
