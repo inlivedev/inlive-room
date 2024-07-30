@@ -11,7 +11,7 @@ export default function ConferenceNotification({
   const { active, setInActive } = useToggle(show);
 
   return active ? (
-    <div className="my-2.5 flex w-full flex-col gap-3 rounded-md bg-blue-900/25 px-4 py-2 text-blue-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
+    <div className="flex w-full flex-col gap-3 rounded-md bg-blue-900/25 px-4 py-2 text-blue-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
       <div className="flex-1">
         <p className="text-sm lg:text-center">{text}</p>
       </div>
