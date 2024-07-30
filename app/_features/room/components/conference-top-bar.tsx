@@ -36,12 +36,10 @@ export default function ConferenceTopBar({ sidebar }: { sidebar: Sidebar }) {
           className="h-auto min-h-0 min-w-0 gap-2 rounded-xl bg-zinc-700/70 px-2 py-1.5 text-xs font-medium tabular-nums antialiased hover:bg-zinc-600 active:bg-zinc-500"
           onClick={() => {
             if (sidebar === 'participants') {
-              document.dispatchEvent(
-                new CustomEvent('close:right-drawer-menu')
-              );
+              document.dispatchEvent(new CustomEvent('close:right-sidebar'));
             } else {
               document.dispatchEvent(
-                new CustomEvent('open:right-drawer-menu', {
+                new CustomEvent('open:right-sidebar', {
                   detail: { menu: 'participants' },
                 })
               );
