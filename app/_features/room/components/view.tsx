@@ -68,7 +68,7 @@ export default function View({
                       {activeView === 'exit' ? (
                         <ConferenceExit />
                       ) : activeView === 'conference' ? (
-                        <Conference roomType={roomType} />
+                        <Conference />
                       ) : (
                         <ConferenceLobby roomID={roomID} />
                       )}
