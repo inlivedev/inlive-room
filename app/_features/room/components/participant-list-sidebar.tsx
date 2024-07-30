@@ -24,7 +24,11 @@ export default function ParticipantListSidebar() {
             <Button
               className="h-auto min-h-0 min-w-0 rounded-full bg-transparent p-1.5 text-zinc-900 antialiased hover:bg-zinc-200 active:bg-zinc-100"
               onClick={() =>
-                document.dispatchEvent(new CustomEvent('close:right-sidebar'))
+                document.dispatchEvent(
+                  new CustomEvent('close:right-sidebar', {
+                    detail: { menu: 'participants' },
+                  })
+                )
               }
             >
               <XFillIcon className="h-6 w-6" />
