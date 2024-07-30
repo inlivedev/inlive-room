@@ -13,8 +13,9 @@ import MeetingPresentationLayout from './meeting-presentation-layout';
 import GalleryLayout from './gallery-layout';
 import HiddenView from './hidden-view';
 import ConferenceNotification from './ conference-notification';
-import ParticipantListMenu from './participant-list-sidebar';
+import ParticipantListSidebar from './participant-list-sidebar';
 import RightSidebar from './right-sidebar';
+import ChatSidebar from './chat-sidebar';
 
 export type Sidebar = 'participants' | 'chat' | '';
 
@@ -22,18 +23,18 @@ export default function Conference() {
   const [sidebar, setSidebar] = useState<Sidebar>('');
 
   useEffect(() => {
-    const openRightDrawer = ((event: CustomEventInit) => {
+    const openRightSidebar = ((event: CustomEventInit) => {
       setSidebar(event.detail?.menu || '');
     }) as EventListener;
 
-    const closeRightDrawer = (() => setSidebar('')) as EventListener;
+    const closeRightSidebar = (() => setSidebar('')) as EventListener;
 
-    document.addEventListener('open:right-drawer-menu', openRightDrawer);
-    document.addEventListener('close:right-drawer-menu', closeRightDrawer);
+    document.addEventListener('open:right-sidebar', openRightSidebar);
+    document.addEventListener('close:right-sidebar', closeRightSidebar);
 
     return () => {
-      document.removeEventListener('open:right-drawer-menu', openRightDrawer);
-      document.removeEventListener('close:right-drawer-menu', closeRightDrawer);
+      document.removeEventListener('open:right-sidebar', openRightSidebar);
+      document.removeEventListener('close:right-sidebar', closeRightSidebar);
     };
   }, []);
 
@@ -74,7 +75,8 @@ const ConferenceParticipants = ({ sidebar }: { sidebar: Sidebar }) => {
         {sidebar ? (
           <div className="ml-4 w-[360px]">
             <RightSidebar isOpen={!!sidebar}>
-              {sidebar === 'participants' ? <ParticipantListMenu /> : null}
+              {sidebar === 'participants' ? <ParticipantListSidebar /> : null}
+              {sidebar === 'chat' ? <ChatSidebar /> : null}
             </RightSidebar>
           </div>
         ) : null}
