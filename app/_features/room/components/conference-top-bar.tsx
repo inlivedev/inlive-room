@@ -16,32 +16,37 @@ import { useParticipantContext } from '@/_features/room/contexts/participant-con
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
-import ReconncectModal from '@/_features/room/components/reconnect-modal';
+import ReconnectModal from '@/_features/room/components/reconnect-modal';
 import { clientSDK } from '@/_shared/utils/sdk';
 import type { SVGElementPropsType } from '@/_shared/types/types';
+import type { Sidebar } from './conference';
 
-export default function ConferenceTopBar() {
+export default function ConferenceTopBar({ sidebar }: { sidebar: Sidebar }) {
   const { roomType, isModerator } = useMetadataContext();
   const { streams } = useParticipantContext();
   const participants = streams.filter((stream) => stream.source === 'media');
 
   return (
-    <div className="flex items-center justify-between px-4 pt-3">
+    <div className="flex items-center justify-between px-4 py-3">
       <div className="flex items-center">
         <ConnectionStatusOverlay></ConnectionStatusOverlay>
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
         <Button
           className="h-auto min-h-0 min-w-0 gap-2 rounded-xl bg-zinc-700/70 px-2 py-1.5 text-xs font-medium tabular-nums antialiased hover:bg-zinc-600 active:bg-zinc-500"
-          onClick={() =>
-            document.dispatchEvent(
-              new CustomEvent('open:right-drawer-menu', {
-                detail: {
-                  menu: 'participants',
-                },
-              })
-            )
-          }
+          onClick={() => {
+            if (sidebar === 'participants') {
+              document.dispatchEvent(
+                new CustomEvent('close:right-drawer-menu')
+              );
+            } else {
+              document.dispatchEvent(
+                new CustomEvent('open:right-drawer-menu', {
+                  detail: { menu: 'participants' },
+                })
+              );
+            }
+          }}
         >
           <PeopleIcon className="h-5 w-5" />
           <span>{participants.length}</span>
@@ -198,7 +203,7 @@ function ConnectionStatusOverlay() {
 
   return (
     <div>
-      <ReconncectModal />
+      <ReconnectModal />
       {connectionState === 'connecting' && (
         <div className="flex items-center">
           <CircularProgress
