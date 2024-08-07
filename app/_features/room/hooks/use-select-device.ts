@@ -14,7 +14,7 @@ export const useSelectDevice = (
 ) => {
   const { peer } = usePeerContext();
   const { streams } = useParticipantContext();
-  const { setCurrentActiveDevice } = useDeviceContext();
+  const { setCurrentDevice } = useDeviceContext();
 
   const [selectedDeviceKeyState, setSelectedDeviceKeyState] = useState<
     Set<Key>
@@ -68,8 +68,7 @@ export const useSelectDevice = (
             localStream.replaceTrack(track);
 
             setSelectedDeviceKeyState(selectedDeviceKeys);
-            setCurrentActiveDevice &&
-              setCurrentActiveDevice(currentSelectedDevice);
+            setCurrentDevice && setCurrentDevice(currentSelectedDevice);
           }
         } else if (currentSelectedDevice.kind === 'audiooutput') {
           if (
@@ -87,8 +86,7 @@ export const useSelectDevice = (
           }
 
           setSelectedDeviceKeyState(selectedDeviceKeys);
-          setCurrentActiveDevice &&
-            setCurrentActiveDevice(currentSelectedDevice);
+          setCurrentDevice && setCurrentDevice(currentSelectedDevice);
         } else {
           for (const videoTrack of localStream.mediaStream.getVideoTracks()) {
             videoTrack.stop();
@@ -104,15 +102,14 @@ export const useSelectDevice = (
             localStream.replaceTrack(track);
 
             setSelectedDeviceKeyState(selectedDeviceKeys);
-            setCurrentActiveDevice &&
-              setCurrentActiveDevice(currentSelectedDevice);
+            setCurrentDevice && setCurrentDevice(currentSelectedDevice);
           }
         }
       } catch (error) {
         console.error(error);
       }
     },
-    [peer, streams, setCurrentActiveDevice]
+    [peer, streams, setCurrentDevice]
   );
 
   const selectDeviceOptions = useMemo(() => {

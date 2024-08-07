@@ -28,6 +28,11 @@ export default function ButtonCamera() {
     onDeviceSelectionChange: onVideoInputSelectionChange,
   } = useSelectDevice(videoInputs, currentVideoInput);
 
+  const videoInputKey =
+    selectedVideoInputKey.size === 0
+      ? ['camera-default']
+      : selectedVideoInputKey;
+
   const onDeviceSelectionChange = useCallback(
     (selectedKey: Selection) => {
       if (!(selectedKey instanceof Set) || selectedKey.size === 0) return;
@@ -80,25 +85,25 @@ export default function ButtonCamera() {
           <CameraOffIcon width={20} height={20} className="text-red-500" />
         )}
       </Button>
-      {videoInputs.length > 0 ? (
-        <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
-          <DropdownTrigger>
-            <Button
-              isIconOnly
-              className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-            >
-              <ArrowDownFillIcon className="h-3.5 w-3.5" />
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            disallowEmptySelection
-            aria-label="Camera options"
-            selectionMode="single"
-            selectedKeys={selectedVideoInputKey}
-            onSelectionChange={onDeviceSelectionChange}
+      <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
+        <DropdownTrigger>
+          <Button
+            isIconOnly
+            className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
           >
-            <DropdownSection title="Camera" className="mb-0">
-              {selectVideoInputOptions.map((item, index) => {
+            <ArrowDownFillIcon className="h-3.5 w-3.5" />
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu
+          disallowEmptySelection
+          aria-label="Camera options"
+          selectionMode="single"
+          selectedKeys={videoInputKey}
+          onSelectionChange={onDeviceSelectionChange}
+        >
+          <DropdownSection title="Camera" className="mb-0">
+            {videoInputs.length > 0 ? (
+              selectVideoInputOptions.map((item, index) => {
                 return (
                   <DropdownItem
                     key={item.key}
@@ -110,15 +115,22 @@ export default function ButtonCamera() {
                     }
                   >
                     {item.label === 'Default'
-                      ? 'Default Camera'
+                      ? 'System default camera'
                       : item.label || `Camera ${index + 1}`}
                   </DropdownItem>
                 );
-              })}
-            </DropdownSection>
-          </DropdownMenu>
-        </Dropdown>
-      ) : null}
+              })
+            ) : (
+              <DropdownItem
+                key={`camera-default`}
+                description="Currently in use"
+              >
+                System default camera
+              </DropdownItem>
+            )}
+          </DropdownSection>
+        </DropdownMenu>
+      </Dropdown>
     </ButtonGroup>
   );
 }
