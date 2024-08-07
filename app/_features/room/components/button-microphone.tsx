@@ -54,7 +54,17 @@ export default function ButtonMicrophone() {
   }, []);
 
   const selectedDeviceKeys = useMemo(() => {
-    return new Set([...selectedAudioInputKey, ...selectedAudioOutputKey]);
+    const audioInputKey =
+      selectedAudioInputKey.size === 0
+        ? ['mic-default']
+        : selectedAudioInputKey;
+
+    const audioOutputKey =
+      selectedAudioOutputKey.size === 0
+        ? ['speaker-default']
+        : selectedAudioOutputKey;
+
+    return new Set([...audioInputKey, ...audioOutputKey]);
   }, [selectedAudioInputKey, selectedAudioOutputKey]);
 
   const onDeviceSelectionChange = useCallback(
@@ -111,87 +121,87 @@ export default function ButtonMicrophone() {
           <MicrophoneOffIcon width={20} height={20} className="text-red-500" />
         )}
       </Button>
-      {audioInputs.length > 0 || audioOutputs.length > 0 ? (
-        <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
-          <DropdownTrigger>
-            <Button
-              isIconOnly
-              className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-            >
-              <ArrowDownFillIcon className="h-3.5 w-3.5" />
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            disallowEmptySelection
-            aria-label="Audio options"
-            selectionMode="multiple"
-            selectedKeys={selectedDeviceKeys}
-            onSelectionChange={onDeviceSelectionChange}
-            disabledKeys={['no-mic', 'no-speaker']}
+      <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
+        <DropdownTrigger>
+          <Button
+            isIconOnly
+            className="w-8 min-w-0 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
           >
-            <DropdownSection title="Microphone" showDivider>
-              {audioInputs.length > 0 ? (
-                selectAudioInputOptions.map((item, index) => {
-                  return (
-                    <DropdownItem
-                      key={item.key}
-                      description={
-                        item.key ===
-                        `${currentAudioInput?.kind}-${currentAudioInput?.deviceId}`
-                          ? 'Currently in use'
-                          : 'Switch to this device'
-                      }
-                    >
-                      {item.label === 'Default'
-                        ? 'Default Microphone'
-                        : item.label || `Microphone ${index + 1}`}
-                    </DropdownItem>
-                  );
-                })
-              ) : (
-                <DropdownItem key={`no-mic`}>
-                  <p className="text-xs">No microphone available</p>
-                </DropdownItem>
-              )}
-            </DropdownSection>
-            <DropdownSection title="Speaker" className="mb-0">
-              {audioOutputs.length > 0 ? (
-                speakerSelectionSupport ? (
-                  selectAudioOutputOptions.map((item, index) => (
-                    <DropdownItem
-                      key={item.key}
-                      description={
-                        item.key ===
-                        `${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`
-                          ? 'Currently in use'
-                          : 'Switch to this device'
-                      }
-                    >
-                      {item.label === 'Default'
-                        ? 'Default Speaker'
-                        : item.label || `Speaker ${index + 1}`}
-                    </DropdownItem>
-                  ))
-                ) : (
+            <ArrowDownFillIcon className="h-3.5 w-3.5" />
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu
+          disallowEmptySelection
+          aria-label="Audio options"
+          selectionMode="multiple"
+          selectedKeys={selectedDeviceKeys}
+          onSelectionChange={onDeviceSelectionChange}
+        >
+          <DropdownSection title="Microphone" showDivider>
+            {audioInputs.length > 0 ? (
+              selectAudioInputOptions.map((item, index) => {
+                return (
                   <DropdownItem
-                    key={`${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`}
-                    description="Currently in use"
+                    key={item.key}
+                    description={
+                      item.key ===
+                      `${currentAudioInput?.kind}-${currentAudioInput?.deviceId}`
+                        ? 'Currently in use'
+                        : 'Switch to this device'
+                    }
                   >
-                    {!currentAudioOutput?.label ||
-                    currentAudioOutput?.label === 'Default'
-                      ? 'Default Speaker'
-                      : currentAudioOutput?.label}
+                    {item.label === 'Default'
+                      ? 'System default microphone'
+                      : item.label || `Microphone ${index + 1}`}
                   </DropdownItem>
-                )
+                );
+              })
+            ) : (
+              <DropdownItem key={`mic-default`} description="Currently in use">
+                System default microphone
+              </DropdownItem>
+            )}
+          </DropdownSection>
+          <DropdownSection title="Speaker" className="mb-0">
+            {audioOutputs.length > 0 ? (
+              speakerSelectionSupport ? (
+                selectAudioOutputOptions.map((item, index) => (
+                  <DropdownItem
+                    key={item.key}
+                    description={
+                      item.key ===
+                      `${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`
+                        ? 'Currently in use'
+                        : 'Switch to this device'
+                    }
+                  >
+                    {item.label === 'Default'
+                      ? 'System default speaker'
+                      : item.label || `Speaker ${index + 1}`}
+                  </DropdownItem>
+                ))
               ) : (
-                <DropdownItem key={`no-speaker`}>
-                  <p className="text-xs">No speaker available</p>
+                <DropdownItem
+                  key={`${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`}
+                  description="Currently in use"
+                >
+                  {!currentAudioOutput?.label ||
+                  currentAudioOutput?.label === 'Default'
+                    ? 'System default speaker'
+                    : currentAudioOutput?.label}
                 </DropdownItem>
-              )}
-            </DropdownSection>
-          </DropdownMenu>
-        </Dropdown>
-      ) : null}
+              )
+            ) : (
+              <DropdownItem
+                key={`speaker-default`}
+                description="Currently in use"
+              >
+                System default speaker
+              </DropdownItem>
+            )}
+          </DropdownSection>
+        </DropdownMenu>
+      </Dropdown>
     </ButtonGroup>
   );
 }
