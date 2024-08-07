@@ -7,28 +7,25 @@ import {
 } from 'react';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 
-const defaultValue = {
-  currentAudioInput: undefined as MediaDeviceInfo | undefined,
-  currentAudioOutput: undefined as MediaDeviceInfo | undefined,
-  currentVideoInput: undefined as MediaDeviceInfo | undefined,
-  audioInputs: [] as MediaDeviceInfo[],
-  audioOutputs: [] as MediaDeviceInfo[],
-  videoInputs: [] as MediaDeviceInfo[],
-  devices: [] as MediaDeviceInfo[],
-  activeMic: false,
-  activeCamera: true,
+type DeviceContextStateType = {
+  currentAudioInput: MediaDeviceInfo | undefined;
+  currentAudioOutput: MediaDeviceInfo | undefined;
+  currentVideoInput: MediaDeviceInfo | undefined;
+  audioInputs: MediaDeviceInfo[];
+  audioOutputs: MediaDeviceInfo[];
+  videoInputs: MediaDeviceInfo[];
+  devices: MediaDeviceInfo[];
+  activeMic: boolean;
+  activeCamera: boolean;
 };
 
-type SetCurrentDeviceType = (deviceInfo: MediaDeviceInfo) => void;
-type SetActiveMicType = (active?: boolean) => void;
-type SetActiveCameraType = (active?: boolean) => void;
+type DeviceContextType = DeviceContextStateType & {
+  setCurrentDevice: (deviceInfo: MediaDeviceInfo) => void;
+  setActiveMic: (active?: boolean) => void;
+  setActiveCamera: (active?: boolean) => void;
+};
 
-const DeviceContext = createContext({
-  ...defaultValue,
-  setCurrentDevice: undefined as SetCurrentDeviceType | undefined,
-  setActiveMic: undefined as SetActiveMicType | undefined,
-  setActiveCamera: undefined as SetActiveCameraType | undefined,
-});
+const DeviceContext = createContext(undefined as unknown as DeviceContextType);
 
 export const AudioOutputContext =
   typeof window !== 'undefined' ? new AudioContext() : null;
@@ -38,10 +35,21 @@ export const useDeviceContext = () => {
 };
 
 export function DeviceProvider({ children }: { children: React.ReactNode }) {
-  const [devicesState, setDevicesState] = useState(defaultValue);
+  const [devicesState, setDevicesState] = useState<DeviceContextStateType>({
+    currentAudioInput: undefined,
+    currentAudioOutput: undefined,
+    currentVideoInput: undefined,
+    audioInputs: [],
+    audioOutputs: [],
+    videoInputs: [],
+    devices: [],
+    activeMic: false,
+    activeCamera: true,
+  });
+
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  const setCurrentDevice = useCallback((deviceInfo: MediaDeviceInfo) => {
+  const setCurrentDevice = (deviceInfo: MediaDeviceInfo) => {
     setDevicesState((prevState) => {
       const newData = { ...prevState };
 
@@ -55,7 +63,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
 
       return { ...newData };
     });
-  }, []);
+  };
 
   const setActiveCamera = (active = true) => {
     setDevicesState((prevState) => ({ ...prevState, activeCamera: active }));
