@@ -15,13 +15,19 @@ const defaultValue = {
   audioOutputs: [] as MediaDeviceInfo[],
   videoInputs: [] as MediaDeviceInfo[],
   devices: [] as MediaDeviceInfo[],
+  activeMic: false,
+  activeCamera: true,
 };
 
-type SetCurrentActiveDeviceType = (deviceInfo: MediaDeviceInfo) => void;
+type SetCurrentDeviceType = (deviceInfo: MediaDeviceInfo) => void;
+type SetActiveMicType = (active?: boolean) => void;
+type SetActiveCameraType = (active?: boolean) => void;
 
 const DeviceContext = createContext({
   ...defaultValue,
-  setCurrentActiveDevice: undefined as SetCurrentActiveDeviceType | undefined,
+  setCurrentDevice: undefined as SetCurrentDeviceType | undefined,
+  setActiveMic: undefined as SetActiveMicType | undefined,
+  setActiveCamera: undefined as SetActiveCameraType | undefined,
 });
 
 export const AudioOutputContext =
@@ -35,9 +41,9 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   const [devicesState, setDevicesState] = useState(defaultValue);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  const setCurrentActiveDevice = useCallback((deviceInfo: MediaDeviceInfo) => {
-    setDevicesState((prevData) => {
-      const newData = { ...prevData };
+  const setCurrentDevice = useCallback((deviceInfo: MediaDeviceInfo) => {
+    setDevicesState((prevState) => {
+      const newData = { ...prevState };
 
       if (deviceInfo.kind === 'audioinput') {
         newData.currentAudioInput = deviceInfo;
@@ -51,13 +57,21 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setActiveCamera = (active = true) => {
+    setDevicesState((prevState) => ({ ...prevState, activeCamera: active }));
+  };
+
+  const setActiveMic = (active = true) => {
+    setDevicesState((prevState) => ({ ...prevState, activeMic: active }));
+  };
+
   const getDevices = useCallback(
     async (localStream: MediaStream) => {
       const devices = await navigator.mediaDevices.enumerateDevices();
 
-      const audioInputs = [];
-      const audioOutputs = [];
-      const videoInputs = [];
+      const audioInputs: MediaDeviceInfo[] = [];
+      const audioOutputs: MediaDeviceInfo[] = [];
+      const videoInputs: MediaDeviceInfo[] = [];
 
       for (const device of devices) {
         if (device.kind === 'audioinput') {
@@ -72,32 +86,44 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
       let currentAudioInput: MediaDeviceInfo | undefined =
         devicesState.currentAudioInput
           ? devicesState.currentAudioInput
-          : audioInputs[0];
+          : audioInputs.length > 0
+          ? audioInputs[0]
+          : undefined;
 
-      window.sessionStorage.setItem(
-        'device:selected-audio-input-id',
-        currentAudioInput.deviceId
-      );
+      if (currentAudioInput) {
+        window.sessionStorage.setItem(
+          'device:selected-audio-input-id',
+          currentAudioInput.deviceId
+        );
+      }
 
       let currentVideoInput: MediaDeviceInfo | undefined =
         devicesState.currentVideoInput
           ? devicesState.currentVideoInput
-          : videoInputs[0];
+          : videoInputs.length > 0
+          ? videoInputs[0]
+          : undefined;
 
-      window.sessionStorage.setItem(
-        'device:selected-video-input-id',
-        currentVideoInput.deviceId
-      );
+      if (currentVideoInput) {
+        window.sessionStorage.setItem(
+          'device:selected-video-input-id',
+          currentVideoInput.deviceId
+        );
+      }
 
       const currentAudioOutput: MediaDeviceInfo | undefined =
         devicesState.currentAudioOutput
           ? devicesState.currentAudioOutput
-          : audioOutputs[0];
+          : audioOutputs.length > 0
+          ? audioOutputs[0]
+          : undefined;
 
-      window.sessionStorage.setItem(
-        'device:selected-audio-output-id',
-        currentAudioOutput.deviceId
-      );
+      if (currentAudioOutput) {
+        window.sessionStorage.setItem(
+          'device:selected-audio-output-id',
+          currentAudioOutput.deviceId
+        );
+      }
 
       if (localStream) {
         const currentAudioInputId = localStream
@@ -129,7 +155,8 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setDevicesState({
+      setDevicesState((prevState) => ({
+        ...prevState,
         currentAudioInput: currentAudioInput,
         currentAudioOutput: currentAudioOutput,
         currentVideoInput: currentVideoInput,
@@ -137,7 +164,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
         audioOutputs: audioOutputs,
         videoInputs: videoInputs,
         devices: devices,
-      });
+      }));
     },
     [devicesState]
   );
@@ -175,7 +202,14 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <DeviceContext.Provider value={{ ...devicesState, setCurrentActiveDevice }}>
+    <DeviceContext.Provider
+      value={{
+        ...devicesState,
+        setCurrentDevice,
+        setActiveMic,
+        setActiveCamera,
+      }}
+    >
       {children}
     </DeviceContext.Provider>
   );
