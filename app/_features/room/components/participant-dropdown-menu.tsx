@@ -23,7 +23,7 @@ export default function ParticipantDropdownMenu({
   children: React.ReactNode;
 }) {
   const { roomID } = useClientContext();
-  const { speakerClientIDs, spotlights, isModerator } = useMetadataContext();
+  const { spotlights, isModerator } = useMetadataContext();
   const { datachannels } = useDataChannelContext();
 
   const onMoreSelection = useCallback(
