@@ -6,6 +6,8 @@ import {
   useCallback,
 } from 'react';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
+import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
 
 type DeviceContextStateType = {
   currentAudioInput: MediaDeviceInfo | undefined;
@@ -46,6 +48,8 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
     activeMic: false,
     activeCamera: true,
   });
+
+  const { peer } = usePeerContext();
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
@@ -176,6 +180,46 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
     },
     [devicesState]
   );
+
+  useEffect(() => {
+    if (peer) {
+      if (devicesState.activeCamera) {
+        peer.turnOnCamera();
+        return;
+      }
+
+      peer.turnOffCamera();
+      return;
+    }
+  }, [peer, devicesState.activeCamera]);
+
+  useEffect(() => {
+    if (peer) {
+      if (devicesState.activeMic) {
+        peer.turnOnMic();
+        return;
+      }
+
+      peer.turnOffMic();
+      return;
+    }
+  }, [peer, devicesState.activeMic]);
+
+  useEffect(() => {
+    if (!peer) return;
+    const isTouchScreen = hasTouchScreen();
+    const onWindowBlur = () => {
+      if (isTouchScreen && peer) {
+        setActiveCamera(false);
+        setActiveMic(false);
+      }
+    };
+
+    window.addEventListener('blur', onWindowBlur);
+    return () => {
+      window.removeEventListener('blur', onWindowBlur);
+    };
+  }, [peer]);
 
   useEffect(() => {
     const onMediaInputTurnedOn = ((event: CustomEvent) => {

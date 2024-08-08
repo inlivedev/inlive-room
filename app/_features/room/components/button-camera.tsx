@@ -53,12 +53,10 @@ export default function ButtonCamera() {
   const handleClick = () => {
     if (activeCamera) {
       setActiveCamera(false);
-      document.dispatchEvent(new CustomEvent('trigger:turnoff-camera'));
       return;
     }
 
     setActiveCamera(true);
-    document.dispatchEvent(new CustomEvent('trigger:turnon-camera'));
     return;
   };
 
