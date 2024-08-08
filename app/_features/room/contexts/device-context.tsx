@@ -6,7 +6,6 @@ import {
   useCallback,
   useRef,
 } from 'react';
-import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
 
@@ -50,8 +49,8 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
     activeCamera: true,
   });
 
+  const hasJoined = useRef<boolean>(false);
   const { peer } = usePeerContext();
-  const didMount = useRef(false);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
@@ -184,7 +183,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    if (peer && didMount.current) {
+    if (peer && localStream) {
       if (devicesState.activeCamera) {
         peer.turnOnCamera();
         return;
@@ -193,10 +192,10 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
       peer.turnOffCamera();
       return;
     }
-  }, [peer, devicesState.activeCamera]);
+  }, [peer, localStream, devicesState.activeCamera]);
 
   useEffect(() => {
-    if (peer && didMount.current) {
+    if (peer && localStream) {
       if (devicesState.activeMic) {
         peer.turnOnMic();
         return;
@@ -205,11 +204,10 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
       peer.turnOffMic();
       return;
     }
-  }, [peer, devicesState.activeMic]);
+  }, [peer, localStream, devicesState.activeMic]);
 
   useEffect(() => {
     if (!peer) return;
-    if (!didMount.current) didMount.current = true;
 
     const isTouchScreen = hasTouchScreen();
     const onWindowBlur = () => {
@@ -249,13 +247,14 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   }, [localStream, getDevices]);
 
   useEffect(() => {
-    clientSDK.on(RoomEvent.STREAM_AVAILABLE, ({ stream }: { stream: any }) => {
-      if (stream.source === 'media' && stream.origin === 'local') {
-        //mute mic on first mount
-        document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
-      }
-    });
-  }, []);
+    if (!peer) return;
+    if (hasJoined.current) return;
+
+    if (localStream && !devicesState.activeMic) {
+      peer.turnOffMic();
+      hasJoined.current = true;
+    }
+  }, [peer, localStream, devicesState.activeMic]);
 
   return (
     <DeviceContext.Provider
