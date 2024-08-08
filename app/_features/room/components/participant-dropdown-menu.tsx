@@ -22,9 +22,8 @@ export default function ParticipantDropdownMenu({
   stream: ParticipantVideo;
   children: React.ReactNode;
 }) {
-  const { roomID, clientID } = useClientContext();
-  const { speakerClientIDs, spotlights, isModerator, roomType, currentLayout } =
-    useMetadataContext();
+  const { roomID } = useClientContext();
+  const { speakerClientIDs, spotlights, isModerator } = useMetadataContext();
   const { datachannels } = useDataChannelContext();
 
   const onMoreSelection = useCallback(
@@ -70,40 +69,6 @@ export default function ParticipantDropdownMenu({
             },
           })
         );
-      } else if (key === 'set-speaker') {
-        if (!isModerator) return;
-
-        try {
-          await clientSDK.setMetadata(roomID, {
-            speakerClientIDs: [...speakerClientIDs, stream.clientId],
-          });
-        } catch (error) {
-          Sentry.captureException(error, {
-            extra: {
-              message: `API call error when trying to set metadata speakerClientIDs`,
-            },
-          });
-          console.error(error);
-        }
-      } else if (key === 'set-regular-participant') {
-        if (!isModerator) return;
-
-        try {
-          const newSpeakerClientIDs = speakerClientIDs.filter((speaker) => {
-            return speaker !== stream.clientId;
-          });
-
-          await clientSDK.setMetadata(roomID, {
-            speakerClientIDs: newSpeakerClientIDs,
-          });
-        } catch (error) {
-          Sentry.captureException(error, {
-            extra: {
-              message: `API call error when trying to set metadata speakerClientIDs`,
-            },
-          });
-          console.error(error);
-        }
       } else if (key === 'remove-client') {
         if (!isModerator) return;
 
@@ -125,7 +90,7 @@ export default function ParticipantDropdownMenu({
         }
       }
     },
-    [roomID, speakerClientIDs, stream, isModerator, spotlights, datachannels]
+    [roomID, stream, isModerator, spotlights, datachannels]
   );
 
   return (
