@@ -10,8 +10,8 @@ const defaultData = {
   isModerator: false as boolean,
   moderatorClientIDs: [] as string[],
   roomType: 'meeting' as string,
-  previousLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
-  currentLayout: 'gallery' as 'gallery' | 'speaker' | 'presentation',
+  previousLayout: 'gallery' as 'gallery' | 'presentation',
+  currentLayout: 'gallery' as 'gallery' | 'presentation',
   speakerClientIDs: [] as string[],
   spotlights: [] as string[],
 };
