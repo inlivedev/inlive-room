@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from 'react';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
@@ -50,6 +51,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   });
 
   const { peer } = usePeerContext();
+  const didMount = useRef(false);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
@@ -182,7 +184,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    if (peer) {
+    if (peer && didMount.current) {
       if (devicesState.activeCamera) {
         peer.turnOnCamera();
         return;
@@ -194,7 +196,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   }, [peer, devicesState.activeCamera]);
 
   useEffect(() => {
-    if (peer) {
+    if (peer && didMount.current) {
       if (devicesState.activeMic) {
         peer.turnOnMic();
         return;
@@ -207,6 +209,8 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!peer) return;
+    if (!didMount.current) didMount.current = true;
+
     const isTouchScreen = hasTouchScreen();
     const onWindowBlur = () => {
       if (isTouchScreen && peer) {
