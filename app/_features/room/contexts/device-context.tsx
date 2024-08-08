@@ -207,11 +207,9 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   }, [peer, localStream, devicesState.activeMic]);
 
   useEffect(() => {
-    if (!peer) return;
-
     const isTouchScreen = hasTouchScreen();
     const onWindowBlur = () => {
-      if (isTouchScreen && peer) {
+      if (isTouchScreen && peer && localStream) {
         setActiveCamera(false);
         setActiveMic(false);
       }
@@ -221,7 +219,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener('blur', onWindowBlur);
     };
-  }, [peer]);
+  }, [peer, localStream]);
 
   useEffect(() => {
     const onMediaInputTurnedOn = ((event: CustomEvent) => {
