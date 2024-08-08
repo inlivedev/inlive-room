@@ -33,7 +33,7 @@ export function MetadataProvider({
   roomType: string;
   isModerator: boolean;
 }) {
-  const defaultLayout = roomType === 'event' ? 'speaker' : 'gallery';
+  const defaultLayout = 'gallery';
 
   const [metadataState, setMetadataState] = useState<typeof defaultData>({
     ...defaultData,

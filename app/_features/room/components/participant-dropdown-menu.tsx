@@ -176,24 +176,6 @@ export default function ParticipantDropdownMenu({
               ]
             : undefined,
           // @ts-ignore
-          isModerator &&
-          clientID !== stream.clientId &&
-          stream.source === 'media' &&
-          roomType === 'event' &&
-          currentLayout === 'speaker'
-            ? [
-                speakerClientIDs.includes(stream.clientId) ? (
-                  <DropdownItem key="set-regular-participant">
-                    Set as a regular participant
-                  </DropdownItem>
-                ) : (
-                  <DropdownItem key="set-speaker">
-                    Set as a speaker
-                  </DropdownItem>
-                ),
-              ]
-            : undefined,
-          // @ts-ignore
           isModerator && stream.origin === 'remote' && stream.source === 'media'
             ? [
                 <DropdownItem key="remove-client">
