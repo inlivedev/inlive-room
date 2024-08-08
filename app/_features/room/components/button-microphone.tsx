@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -11,7 +11,6 @@ import {
   Button,
 } from '@nextui-org/react';
 import type { Selection } from '@nextui-org/react';
-import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
@@ -19,13 +18,14 @@ import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 
 export default function ButtonMicrophone() {
-  const { active, setActive, setInActive } = useToggle(true);
   const {
     currentAudioInput,
     currentAudioOutput,
     audioInputs,
     audioOutputs,
     devices,
+    activeMic,
+    setActiveMic,
   } = useDeviceContext();
 
   const {
@@ -53,58 +53,41 @@ export default function ButtonMicrophone() {
     return false;
   }, []);
 
-  const selectedDeviceKeys = useMemo(() => {
-    const audioInputKey =
-      selectedAudioInputKey.size === 0
-        ? ['mic-default']
-        : selectedAudioInputKey;
+  const audioInputKey =
+    selectedAudioInputKey.size === 0 ? ['mic-default'] : selectedAudioInputKey;
 
-    const audioOutputKey =
-      selectedAudioOutputKey.size === 0
-        ? ['speaker-default']
-        : selectedAudioOutputKey;
+  const audioOutputKey =
+    selectedAudioOutputKey.size === 0
+      ? ['speaker-default']
+      : selectedAudioOutputKey;
 
-    return new Set([...audioInputKey, ...audioOutputKey]);
-  }, [selectedAudioInputKey, selectedAudioOutputKey]);
+  const selectedDeviceKeys = new Set([...audioInputKey, ...audioOutputKey]);
 
-  const onDeviceSelectionChange = useCallback(
-    (selectedKeys: Selection) => {
-      if (!(selectedKeys instanceof Set) || selectedKeys.size === 0) return;
+  const onDeviceSelectionChange = (selectedKeys: Selection) => {
+    if (!(selectedKeys instanceof Set) || selectedKeys.size === 0) return;
 
-      const currentSelected = devices.find((device) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        return `${device.kind}-${device.deviceId}` === selectedKeys.currentKey;
-      });
+    const currentSelected = devices.find((device) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      return `${device.kind}-${device.deviceId}` === selectedKeys.currentKey;
+    });
 
-      if (currentSelected?.kind === 'audioinput') {
-        onAudioInputSelectionChange(selectedKeys, currentSelected);
-      } else if (currentSelected?.kind === 'audiooutput') {
-        onAudioOutputSelectionChange(selectedKeys, currentSelected);
-      }
-    },
-    [devices, onAudioInputSelectionChange, onAudioOutputSelectionChange]
-  );
-
-  const handleClick = useCallback(() => {
-    if (active) {
-      document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
-    } else {
-      document.dispatchEvent(new CustomEvent('trigger:turnon-mic'));
+    if (currentSelected?.kind === 'audioinput') {
+      onAudioInputSelectionChange(selectedKeys, currentSelected);
+    } else if (currentSelected?.kind === 'audiooutput') {
+      onAudioOutputSelectionChange(selectedKeys, currentSelected);
     }
-  }, [active]);
+  };
 
-  useEffect(() => {
-    const onTurnOnMic = () => setActive();
-    const onTurnOffMic = () => setInActive();
-    document.addEventListener('trigger:turnon-mic', onTurnOnMic);
-    document.addEventListener('trigger:turnoff-mic', onTurnOffMic);
+  const handleClick = () => {
+    if (activeMic) {
+      setActiveMic(false);
+      return;
+    }
 
-    return () => {
-      document.removeEventListener('trigger:turnon-mic', onTurnOnMic);
-      document.removeEventListener('trigger:turnoff-mic', onTurnOffMic);
-    };
-  }, [setActive, setInActive]);
+    setActiveMic(true);
+    return;
+  };
 
   return (
     <ButtonGroup variant="flat">
@@ -115,7 +98,7 @@ export default function ButtonMicrophone() {
         className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
         onClick={handleClick}
       >
-        {active ? (
+        {activeMic ? (
           <MicrophoneOnIcon width={20} height={20} />
         ) : (
           <MicrophoneOffIcon width={20} height={20} className="text-red-500" />

@@ -17,26 +17,6 @@ export default function EventContainer({
   const { peer, debug } = usePeerContext();
 
   useEffect(() => {
-    if (!peer) return;
-
-    const onTurnOnMic = () => {
-      if (peer) peer.turnOnMic();
-    };
-
-    const onTurnOffMic = () => {
-      if (peer) peer.turnOffMic();
-    };
-
-    document.addEventListener('trigger:turnon-mic', onTurnOnMic);
-    document.addEventListener('trigger:turnoff-mic', onTurnOffMic);
-
-    return () => {
-      document.removeEventListener('trigger:turnon-mic', onTurnOnMic);
-      document.removeEventListener('trigger:turnoff-mic', onTurnOffMic);
-    };
-  }, [peer]);
-
-  useEffect(() => {
     const peerConnection = peer?.getPeerConnection();
 
     if (!peer || !peerConnection) return;
