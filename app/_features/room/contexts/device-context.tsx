@@ -4,31 +4,30 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from 'react';
-import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
+import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
 
-const defaultValue = {
-  currentAudioInput: undefined as MediaDeviceInfo | undefined,
-  currentAudioOutput: undefined as MediaDeviceInfo | undefined,
-  currentVideoInput: undefined as MediaDeviceInfo | undefined,
-  audioInputs: [] as MediaDeviceInfo[],
-  audioOutputs: [] as MediaDeviceInfo[],
-  videoInputs: [] as MediaDeviceInfo[],
-  devices: [] as MediaDeviceInfo[],
-  activeMic: false,
-  activeCamera: true,
+type DeviceContextStateType = {
+  currentAudioInput: MediaDeviceInfo | undefined;
+  currentAudioOutput: MediaDeviceInfo | undefined;
+  currentVideoInput: MediaDeviceInfo | undefined;
+  audioInputs: MediaDeviceInfo[];
+  audioOutputs: MediaDeviceInfo[];
+  videoInputs: MediaDeviceInfo[];
+  devices: MediaDeviceInfo[];
+  activeMic: boolean;
+  activeCamera: boolean;
 };
 
-type SetCurrentDeviceType = (deviceInfo: MediaDeviceInfo) => void;
-type SetActiveMicType = (active?: boolean) => void;
-type SetActiveCameraType = (active?: boolean) => void;
+type DeviceContextType = DeviceContextStateType & {
+  setCurrentDevice: (deviceInfo: MediaDeviceInfo) => void;
+  setActiveMic: (active?: boolean) => void;
+  setActiveCamera: (active?: boolean) => void;
+};
 
-const DeviceContext = createContext({
-  ...defaultValue,
-  setCurrentDevice: undefined as SetCurrentDeviceType | undefined,
-  setActiveMic: undefined as SetActiveMicType | undefined,
-  setActiveCamera: undefined as SetActiveCameraType | undefined,
-});
+const DeviceContext = createContext(undefined as unknown as DeviceContextType);
 
 export const AudioOutputContext =
   typeof window !== 'undefined' ? new AudioContext() : null;
@@ -38,10 +37,24 @@ export const useDeviceContext = () => {
 };
 
 export function DeviceProvider({ children }: { children: React.ReactNode }) {
-  const [devicesState, setDevicesState] = useState(defaultValue);
+  const [devicesState, setDevicesState] = useState<DeviceContextStateType>({
+    currentAudioInput: undefined,
+    currentAudioOutput: undefined,
+    currentVideoInput: undefined,
+    audioInputs: [],
+    audioOutputs: [],
+    videoInputs: [],
+    devices: [],
+    activeMic: false,
+    activeCamera: true,
+  });
+
+  const hasJoined = useRef<boolean>(false);
+  const { peer } = usePeerContext();
+
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  const setCurrentDevice = useCallback((deviceInfo: MediaDeviceInfo) => {
+  const setCurrentDevice = (deviceInfo: MediaDeviceInfo) => {
     setDevicesState((prevState) => {
       const newData = { ...prevState };
 
@@ -55,7 +68,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
 
       return { ...newData };
     });
-  }, []);
+  };
 
   const setActiveCamera = (active = true) => {
     setDevicesState((prevState) => ({ ...prevState, activeCamera: active }));
@@ -170,6 +183,45 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
+    if (peer && localStream) {
+      if (devicesState.activeCamera) {
+        peer.turnOnCamera();
+        return;
+      }
+
+      peer.turnOffCamera();
+      return;
+    }
+  }, [peer, localStream, devicesState.activeCamera]);
+
+  useEffect(() => {
+    if (peer && localStream) {
+      if (devicesState.activeMic) {
+        peer.turnOnMic();
+        return;
+      }
+
+      peer.turnOffMic();
+      return;
+    }
+  }, [peer, localStream, devicesState.activeMic]);
+
+  useEffect(() => {
+    const isTouchScreen = hasTouchScreen();
+    const onWindowBlur = () => {
+      if (isTouchScreen && peer && localStream) {
+        setActiveCamera(false);
+        setActiveMic(false);
+      }
+    };
+
+    window.addEventListener('blur', onWindowBlur);
+    return () => {
+      window.removeEventListener('blur', onWindowBlur);
+    };
+  }, [peer, localStream]);
+
+  useEffect(() => {
     const onMediaInputTurnedOn = ((event: CustomEvent) => {
       const detail = event.detail || {};
       const mediaInput = detail.mediaInput;
@@ -193,13 +245,14 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
   }, [localStream, getDevices]);
 
   useEffect(() => {
-    clientSDK.on(RoomEvent.STREAM_AVAILABLE, ({ stream }: { stream: any }) => {
-      if (stream.source === 'media' && stream.origin === 'local') {
-        //mute mic on first mount
-        document.dispatchEvent(new CustomEvent('trigger:turnoff-mic'));
-      }
-    });
-  }, []);
+    if (!peer) return;
+    if (hasJoined.current) return;
+
+    if (localStream && !devicesState.activeMic) {
+      peer.turnOffMic();
+      hasJoined.current = true;
+    }
+  }, [peer, localStream, devicesState.activeMic]);
 
   return (
     <DeviceContext.Provider

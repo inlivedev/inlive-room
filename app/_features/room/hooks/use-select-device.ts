@@ -14,7 +14,7 @@ export const useSelectDevice = (
 ) => {
   const { peer } = usePeerContext();
   const { streams } = useParticipantContext();
-  const { setCurrentDevice } = useDeviceContext();
+  const { setCurrentDevice, activeCamera, activeMic } = useDeviceContext();
 
   const [selectedDeviceKeyState, setSelectedDeviceKeyState] = useState<
     Set<Key>
@@ -66,9 +66,10 @@ export const useSelectDevice = (
             const track = mediaStream.getAudioTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
+            if (!activeMic) peer.turnOffMic();
 
             setSelectedDeviceKeyState(selectedDeviceKeys);
-            setCurrentDevice && setCurrentDevice(currentSelectedDevice);
+            setCurrentDevice(currentSelectedDevice);
           }
         } else if (currentSelectedDevice.kind === 'audiooutput') {
           if (
@@ -86,8 +87,8 @@ export const useSelectDevice = (
           }
 
           setSelectedDeviceKeyState(selectedDeviceKeys);
-          setCurrentDevice && setCurrentDevice(currentSelectedDevice);
-        } else {
+          setCurrentDevice(currentSelectedDevice);
+        } else if (currentSelectedDevice.kind === 'videoinput') {
           for (const videoTrack of localStream.mediaStream.getVideoTracks()) {
             videoTrack.stop();
           }
@@ -100,16 +101,17 @@ export const useSelectDevice = (
             const track = mediaStream.getVideoTracks()[0];
             await peer.replaceTrack(track);
             localStream.replaceTrack(track);
+            if (!activeCamera) peer.turnOffCamera();
 
             setSelectedDeviceKeyState(selectedDeviceKeys);
-            setCurrentDevice && setCurrentDevice(currentSelectedDevice);
+            setCurrentDevice(currentSelectedDevice);
           }
         }
       } catch (error) {
         console.error(error);
       }
     },
-    [peer, streams, setCurrentDevice]
+    [peer, streams, setCurrentDevice, activeCamera, activeMic]
   );
 
   const selectDeviceOptions = useMemo(() => {
