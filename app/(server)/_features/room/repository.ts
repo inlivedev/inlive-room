@@ -4,7 +4,7 @@ import { db } from '@/(server)/_shared/database/database';
 import { insertRoom, rooms } from '@/(server)/_features/room/schema';
 import { and, eq } from 'drizzle-orm';
 
-const persistentData = process.env.PERSISTENT_DATA || false;
+const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA || false;
 
 export class RoomRepo implements iRoomRepo {
   // Function to create a new room

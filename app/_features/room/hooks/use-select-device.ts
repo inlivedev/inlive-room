@@ -1,5 +1,4 @@
-import { Selection } from '@nextui-org/react';
-import { useState, useMemo, Key, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import {
@@ -17,7 +16,7 @@ export const useSelectDevice = (
   const { setCurrentDevice, activeCamera, activeMic } = useDeviceContext();
 
   const [selectedDeviceKeyState, setSelectedDeviceKeyState] = useState<
-    Set<Key>
+    Set<string>
   >(new Set([]));
 
   const selectedDeviceKeyValue = useMemo(() => {
@@ -27,7 +26,10 @@ export const useSelectDevice = (
   }, [currentActiveDevice, selectedDeviceKeyState]);
 
   const onDeviceSelectionChange = useCallback(
-    async (selectedKeys: Selection, currentSelectedDevice: MediaDeviceInfo) => {
+    async (
+      selectedKeys: Set<string>,
+      currentSelectedDevice: MediaDeviceInfo
+    ) => {
       const localStream = streams.find((stream) => {
         return stream.source === 'media' && stream.origin === 'local';
       });

@@ -19,7 +19,9 @@ export default async function Page() {
 
   let upcomingEvents: EventType.Event[] = [];
 
-  if (token && user) {
+  const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
+
+  if (token && user && persistentData) {
     const listEventsResponse: EventType.ListEventsResponse =
       await InternalApiFetcher.get(
         `/api/events?&limit=${10}&end_is_after=${now.toISOString()}&status[]=published`,

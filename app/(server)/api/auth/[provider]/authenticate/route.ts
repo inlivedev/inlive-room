@@ -10,7 +10,7 @@ import { getEarlyAccessInviteeByEmail } from '@/(server)/_features/early-access-
 import type { AuthType } from '@/_shared/types/auth';
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
-const persistentData = process.env.PERSISTENT_DATA === 'true';
+const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
 export async function GET(
   request: NextRequest,

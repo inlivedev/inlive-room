@@ -1,4 +1,4 @@
-import { Room, createAuth } from '@inlivedev/inlive-js-sdk/dist/room';
+import { Room, createAuth } from '@inlivedev/inlive-js-sdk';
 const inliveHubApiKey = process.env.INLIVE_HUB_API_KEY;
 const inliveApiOrigin = process.env.NEXT_PUBLIC_INLIVE_API_ORIGIN;
 const inliveApiVersion = process.env.NEXT_PUBLIC_INLIVE_API_VERSION;

@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs';
 import { addLog } from '@/(server)/_features/activity-log/repository';
 import { z } from 'zod';
 
-const persistentRoom = process.env.PERSISTENT_DATA === 'true';
+const persistentRoom = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
 const ActivityRequest = z.object({
   name: z.string(),

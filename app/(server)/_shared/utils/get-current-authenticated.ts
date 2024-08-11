@@ -4,7 +4,7 @@ import { getUserByEmail } from '@/(server)/_features/user/repository';
 import type { AuthType } from '@/_shared/types/auth';
 import { whitelistFeature } from '@/_shared/utils/flag';
 
-const persistentData = process.env.PERSISTENT_DATA === 'true';
+const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
 export const getCurrentAuthenticated = async (token: string) => {
   try {

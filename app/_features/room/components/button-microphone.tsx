@@ -73,8 +73,12 @@ export default function ButtonMicrophone() {
     });
 
     if (currentSelected?.kind === 'audioinput') {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       onAudioInputSelectionChange(selectedKeys, currentSelected);
     } else if (currentSelected?.kind === 'audiooutput') {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       onAudioOutputSelectionChange(selectedKeys, currentSelected);
     }
   };
