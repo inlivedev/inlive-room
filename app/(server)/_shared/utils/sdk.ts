@@ -16,17 +16,21 @@ const createSDKAuth = async () => {
   });
 };
 
-const serverSDK = Room({
-  api: {
-    baseUrl: inliveHubOrigin,
-    version: inliveHubVersion,
-  },
-});
+const getServerSDK = async () => {
+  const serverSDK = Room({
+    api: {
+      baseUrl: inliveHubOrigin,
+      version: inliveHubVersion,
+    },
+  });
 
-const sdkAuth = await createSDKAuth();
+  const sdkAuth = await createSDKAuth();
 
-if (sdkAuth) {
-  serverSDK.setAuth(sdkAuth);
-}
+  if (sdkAuth) {
+    serverSDK.setAuth(sdkAuth);
+  }
 
-export { serverSDK };
+  return serverSDK;
+};
+
+export { getServerSDK };

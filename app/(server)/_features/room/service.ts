@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
 import { generateID } from '@/(server)/_shared/utils/generateid';
-import { serverSDK } from '@/(server)/_shared/utils/sdk';
+import { getServerSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
 import { eventRepo } from '@/(server)/api/_index';
 import { ServiceError } from '../_service';
@@ -27,12 +27,19 @@ export interface iRoomRepo {
 
 export class RoomService {
   _roomRepo: iRoomRepo;
-  _sdk = serverSDK;
   _datachannels: string[];
+  _sdk: any;
 
   constructor(roomRepo: iRoomRepo) {
     this._roomRepo = roomRepo;
     this._datachannels = ['chat', 'moderator'];
+    this._sdk = null;
+  }
+
+  async getSDK() {
+    if (this._sdk) return this._sdk;
+
+    this._sdk = await getServerSDK();
   }
 
   async createClient(
@@ -40,8 +47,10 @@ export class RoomService {
     clientName: string,
     clientID?: string
   ): Promise<Client> {
+    const sdk = await this.getSDK();
+
     if (!this._roomRepo.isPersistent()) {
-      const clientResponse = await this._sdk.createClient(roomId, {
+      const clientResponse = await sdk.createClient(roomId, {
         clientName: clientName,
         enableVAD: true,
       });
@@ -107,14 +116,14 @@ export class RoomService {
       }
     }
 
-    const clientResponse = await this._sdk.createClient(roomData.id, {
+    const clientResponse = await sdk.createClient(roomData.id, {
       clientId: clientID,
       clientName: clientName,
       enableVAD: true,
     });
 
     if (clientResponse && clientResponse.code === 409 && clientID) {
-      const existingClient = await this._sdk.getClient(roomData.id, clientID);
+      const existingClient = await sdk.getClient(roomData.id, clientID);
 
       const data: Client = {
         clientID: existingClient.data.clientId,
@@ -149,6 +158,7 @@ export class RoomService {
     clientID: string,
     name: string
   ): Promise<Client> {
+    const sdk = await this.getSDK();
     const updateResp = await this._sdk.setClientName(roomID, clientID, name);
 
     if (!updateResp || !updateResp.ok) {
@@ -176,10 +186,11 @@ export class RoomService {
   ): Promise<selectRoom> {
     let retries = 0;
     const maxRetries = 3;
+    const sdk = await this.getSDK();
 
     while (retries < maxRetries) {
       const roomID = generateID();
-      const roomResp = await this._sdk.createRoom('', roomID);
+      const roomResp = await sdk.createRoom('', roomID);
 
       if (roomResp.code == 409) {
         retries++;
@@ -197,7 +208,7 @@ export class RoomService {
       }
 
       for (const datachannel of this._datachannels) {
-        const channelResponse = await this._sdk.createDataChannel(
+        const channelResponse = await sdk.createDataChannel(
           roomResp.data.id,
           datachannel,
           true
@@ -261,10 +272,12 @@ export class RoomService {
   }
 
   async joinRoom(roomId: string) {
+    const sdk = await this.getSDK();
+
     if (!this._roomRepo.isPersistent()) {
       let room;
 
-      const remoteRoom = await this._sdk.getRoom(roomId);
+      const remoteRoom = await sdk.getRoom(roomId);
       if (remoteRoom.ok) {
         room = {
           id: remoteRoom.data.id,
@@ -277,7 +290,7 @@ export class RoomService {
     }
 
     const roomPromise = this._roomRepo.getRoomById(roomId);
-    const remoteRoomPromise = this._sdk.getRoom(roomId);
+    const remoteRoomPromise = sdk.getRoom(roomId);
 
     const [room, remoteRoom] = await Promise.all([
       roomPromise,
@@ -285,7 +298,7 @@ export class RoomService {
     ]);
 
     if (room && room.id && remoteRoom.code === 404) {
-      const newRemoteRoom = await this._sdk.createRoom('', room.id);
+      const newRemoteRoom = await sdk.createRoom('', room.id);
 
       if (!newRemoteRoom || !newRemoteRoom.ok) {
         Sentry.captureMessage(
@@ -298,7 +311,7 @@ export class RoomService {
       }
 
       for (const datachannel of this._datachannels) {
-        const channelResponse = await this._sdk.createDataChannel(
+        const channelResponse = await sdk.createDataChannel(
           room.id,
           datachannel,
           true
