@@ -7,7 +7,7 @@ import View from '@/_features/room/components/view';
 import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
-import { serverSDK } from '@/(server)/_shared/utils/sdk';
+import { getServerSDK } from '@/(server)/_shared/utils/sdk';
 
 type PageProps = {
   searchParams: { debug: string | undefined };
@@ -73,9 +73,11 @@ export default async function Page({ searchParams }: PageProps) {
 
   const isModerator = roomData.createdBy === userAuth?.id;
 
+  const sdk = await getServerSDK();
+
   const setModeratorMetaPromise = async () => {
     if (isModerator) {
-      const moderatorMeta = await serverSDK.getMetadata(
+      const moderatorMeta = await sdk.getMetadata(
         roomData.id,
         'moderatorClientIDs'
       );
@@ -83,11 +85,11 @@ export default async function Page({ searchParams }: PageProps) {
 
       try {
         if (Array.isArray(moderatorClientIDs)) {
-          await serverSDK.setMetadata(roomData.id, {
+          await sdk.setMetadata(roomData.id, {
             moderatorClientIDs: [...moderatorClientIDs, userClient.clientID],
           });
         } else {
-          await serverSDK.setMetadata(roomData.id, {
+          await sdk.setMetadata(roomData.id, {
             moderatorClientIDs: [userClient.clientID],
           });
         }

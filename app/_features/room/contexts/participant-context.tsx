@@ -12,7 +12,8 @@ export type ParticipantVideo = {
   readonly source: 'media' | 'screen';
   readonly mediaStream: MediaStream;
   readonly videoElement: HTMLVideoElement;
-  readonly audioLevel: number;
+  audioLevel: number;
+  topSpeaeaker: boolean;
   pin: boolean;
   spotlight: boolean;
   fullscreen: boolean;
@@ -28,6 +29,8 @@ export type ParticipantVideo = {
 };
 
 export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
+
+const topSpeakersLimit = 3;
 
 const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.videoElement = document.createElement('video');
@@ -57,6 +60,7 @@ export function ParticipantProvider({
   const { peer } = usePeerContext();
   const { spotlights } = useMetadataContext();
   const [streams, setStreams] = useState<ParticipantVideo[]>([]);
+  const [topSpeakers, setTopSpeakers] = useState<ParticipantVideo[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
@@ -172,9 +176,44 @@ export function ParticipantProvider({
       const stream = createParticipantVideo(data.stream);
       data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
         // reordering the streams based on voice activity
-        const audioLevel = e.detail.audioLevel;
+        stream.audioLevel = e.detail.audioLevel;
+
+        if (topSpeakers.length < topSpeakersLimit) {
+          if (!topSpeakers.find((topSpeaker) => topSpeaker.id === stream.id)) {
+            topSpeakers.push(stream);
+            setTopSpeakers(topSpeakers);
+            console.log('topSpeakers', topSpeakers);
+            for (const topSpeaker of topSpeakers) {
+              console.log('topSpeaker audio level', topSpeaker.audioLevel);
+            }
+          }
+        } else {
+          // find the stream with the lowest audio level and replace it with the new stream
+          const lowestAudioLevelStream = topSpeakers.reduce((prev, current) =>
+            prev.audioLevel < current.audioLevel ? prev : current
+          );
+
+          if (stream.audioLevel > lowestAudioLevelStream.audioLevel) {
+            let isChanged = false;
+            const newTopSpeakers = topSpeakers.map((topSpeaker) => {
+              if (topSpeaker.id === lowestAudioLevelStream.id) {
+                isChanged = true;
+                return stream;
+              }
+              return topSpeaker;
+            });
+
+            if (isChanged) {
+              setTopSpeakers(newTopSpeakers);
+              console.log('topSpeakers', topSpeakers);
+            }
+          }
+        }
 
         // call setStreams with the new streams order
+        setStreams((prevState) => {
+          return orderStreams(topSpeakers, prevState);
+        });
       });
 
       setStreams((prevState) => {
@@ -190,7 +229,7 @@ export function ParticipantProvider({
         return newStreams;
       });
     });
-  }, []);
+  }, [topSpeakers]);
 
   useEffect(() => {
     if (peer && localStream) {
@@ -204,7 +243,10 @@ export function ParticipantProvider({
     }
   }, [peer, localStream, clientID, clientName]);
 
-  const newStreams = orderByPinned(checkSpotlight(streams, spotlights));
+  const newStreams = orderStreams(
+    topSpeakers,
+    checkSpotlight(streams, spotlights)
+  );
 
   return (
     <ParticipantContext.Provider value={{ streams: newStreams }}>
@@ -224,11 +266,32 @@ const checkSpotlight = (streams: ParticipantVideo[], spotlights: string[]) => {
   });
 };
 
-const orderByPinned = (streams: ParticipantVideo[]) => {
+const orderStreams = (
+  topSpeakers: ParticipantVideo[],
+  streams: ParticipantVideo[]
+) => {
   return streams.sort((streamA, streamB) => {
-    return (
-      Number(streamB.pin) - Number(streamA.pin) ||
-      Number(streamB.spotlight) - Number(streamA.spotlight)
+    const streamAIsTopSpeaker = topSpeakers.find(
+      (topSpeaker) => topSpeaker.id === streamA.id
     );
+    const streamBIsTopSpeaker = topSpeakers.find(
+      (topSpeaker) => topSpeaker.id === streamB.id
+    );
+
+    if (
+      (!streamA.pin && streamB.pin) ||
+      (!streamA.spotlight && streamB.spotlight) ||
+      (streamAIsTopSpeaker && !streamBIsTopSpeaker)
+    ) {
+      return -1;
+    } else if (
+      (streamA.pin && !streamB.pin) ||
+      (streamA.spotlight && !streamB.spotlight) ||
+      (!streamAIsTopSpeaker && streamBIsTopSpeaker)
+    ) {
+      return 1;
+    }
+
+    return 0;
   });
 };

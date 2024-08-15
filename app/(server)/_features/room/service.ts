@@ -159,7 +159,8 @@ export class RoomService {
     name: string
   ): Promise<Client> {
     const sdk = await this.getSDK();
-    const updateResp = await this._sdk.setClientName(roomID, clientID, name);
+
+    const updateResp = await sdk.setClientName(roomID, clientID, name);
 
     if (!updateResp || !updateResp.ok) {
       Sentry.captureMessage(
