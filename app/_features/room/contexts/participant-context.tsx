@@ -13,7 +13,7 @@ export type ParticipantVideo = {
   readonly mediaStream: MediaStream;
   readonly videoElement: HTMLVideoElement;
   audioLevel: number;
-  topSpeaeaker: boolean;
+  lastSpokeAt: number;
   pin: boolean;
   spotlight: boolean;
   fullscreen: boolean;
@@ -31,6 +31,7 @@ export type ParticipantVideo = {
 export type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 
 const topSpeakersLimit = 3;
+const maxLastSpokeAt = 500000;
 
 const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.videoElement = document.createElement('video');
@@ -177,26 +178,43 @@ export function ParticipantProvider({
       data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
         // reordering the streams based on voice activity
         stream.audioLevel = e.detail.audioLevel;
+        stream.lastSpokeAt = Date.now();
 
         if (topSpeakers.length < topSpeakersLimit) {
           if (!topSpeakers.find((topSpeaker) => topSpeaker.id === stream.id)) {
             topSpeakers.push(stream);
             setTopSpeakers(topSpeakers);
-            console.log('topSpeakers', topSpeakers);
-            for (const topSpeaker of topSpeakers) {
-              console.log('topSpeaker audio level', topSpeaker.audioLevel);
-            }
+            // call setStreams with the new streams order
+            setStreams((prevState) => {
+              return orderStreams(
+                topSpeakers,
+                checkSpotlight(prevState, spotlights)
+              );
+            });
           }
         } else {
           // find the stream with the lowest audio level and replace it with the new stream
-          const lowestAudioLevelStream = topSpeakers.reduce((prev, current) =>
-            prev.audioLevel < current.audioLevel ? prev : current
+          const lowestOldestAudioLevelStream = topSpeakers.reduce(
+            (prev, current) => {
+              const currentSinceSpoke = Date.now() - current.lastSpokeAt;
+              if (maxLastSpokeAt < Date.now() - currentSinceSpoke) {
+                const prevSinceSpoke = Date.now() - prev.lastSpokeAt;
+                return currentSinceSpoke < prevSinceSpoke ? current : prev;
+              }
+
+              return current.audioLevel < prev.audioLevel ? current : prev;
+            },
+            topSpeakers[0]
           );
 
-          if (stream.audioLevel > lowestAudioLevelStream.audioLevel) {
+          if (
+            maxLastSpokeAt <
+              Date.now() - lowestOldestAudioLevelStream.lastSpokeAt ||
+            stream.audioLevel > lowestOldestAudioLevelStream.audioLevel
+          ) {
             let isChanged = false;
             const newTopSpeakers = topSpeakers.map((topSpeaker) => {
-              if (topSpeaker.id === lowestAudioLevelStream.id) {
+              if (topSpeaker.id === lowestOldestAudioLevelStream.id) {
                 isChanged = true;
                 return stream;
               }
@@ -205,19 +223,20 @@ export function ParticipantProvider({
 
             if (isChanged) {
               setTopSpeakers(newTopSpeakers);
-              console.log('topSpeakers', topSpeakers);
+              // call setStreams with the new streams order
+              setStreams((prevState) => {
+                return orderStreams(
+                  topSpeakers,
+                  checkSpotlight(prevState, spotlights)
+                );
+              });
             }
           }
         }
-
-        // call setStreams with the new streams order
-        setStreams((prevState) => {
-          return orderStreams(topSpeakers, prevState);
-        });
       });
 
       setStreams((prevState) => {
-        return [...prevState, stream];
+        return checkSpotlight([...prevState, stream], spotlights);
       });
     });
 
@@ -229,7 +248,7 @@ export function ParticipantProvider({
         return newStreams;
       });
     });
-  }, [topSpeakers]);
+  }, [topSpeakers, spotlights]);
 
   useEffect(() => {
     if (peer && localStream) {
@@ -243,13 +262,8 @@ export function ParticipantProvider({
     }
   }, [peer, localStream, clientID, clientName]);
 
-  const newStreams = orderStreams(
-    topSpeakers,
-    checkSpotlight(streams, spotlights)
-  );
-
   return (
-    <ParticipantContext.Provider value={{ streams: newStreams }}>
+    <ParticipantContext.Provider value={{ streams: streams }}>
       {children}
     </ParticipantContext.Provider>
   );
@@ -270,13 +284,20 @@ const orderStreams = (
   topSpeakers: ParticipantVideo[],
   streams: ParticipantVideo[]
 ) => {
-  return streams.sort((streamA, streamB) => {
+  streams.sort((streamA, streamB) => {
     const streamAIsTopSpeaker = topSpeakers.find(
       (topSpeaker) => topSpeaker.id === streamA.id
     );
     const streamBIsTopSpeaker = topSpeakers.find(
       (topSpeaker) => topSpeaker.id === streamB.id
     );
+
+	// local stream should always be on top
+	if (streamA.origin === 'local') {
+	  return -1;
+	} else if (streamB.origin === 'local') {
+	  return 1;
+	}
 
     if (
       (!streamA.pin && streamB.pin) ||
@@ -294,4 +315,6 @@ const orderStreams = (
 
     return 0;
   });
+
+  return [...streams];
 };
