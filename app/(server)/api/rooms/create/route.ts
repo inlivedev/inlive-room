@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { roomService } from '../../_index';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
@@ -10,8 +9,7 @@ type createRoomRequest = {
 type roomType = 'meeting' | 'event';
 
 export async function POST(request: NextRequest) {
-  const cookieStore = cookies();
-  const requestToken = cookieStore.get('token');
+  const requestToken = request.cookies.get('token');
 
   try {
     const response = await getCurrentAuthenticated(requestToken?.value || '');
