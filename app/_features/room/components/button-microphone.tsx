@@ -11,7 +11,6 @@ import {
   Button,
 } from '@nextui-org/react';
 import type { Selection } from '@nextui-org/react';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';

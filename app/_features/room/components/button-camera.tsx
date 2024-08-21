@@ -10,7 +10,6 @@ import {
   Button,
 } from '@nextui-org/react';
 import type { Selection } from '@nextui-org/react';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';

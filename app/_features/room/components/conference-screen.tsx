@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo, memo } from 'react';
+import { useEffect, useRef, useState, useMemo,useCallback, memo } from 'react';
 import { Button } from '@nextui-org/react';
 import React from "react";
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import type { ParticipantVideo } from '@/_features/room/components/conference';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
@@ -13,19 +12,20 @@ import ParticipantDropdownMenu from './participant-dropdown-menu';
 
 function ConferenceScreen({
   stream,
-  debug,
+  currentAudioOutput,
+  debug
 }: {
   stream: ParticipantVideo;
+  currentAudioOutput: MediaDeviceInfo|undefined;
   debug?: boolean;
 }) {
-  return  debug?<OverlayScreen stream={stream}>
-  <VideoScreen stream={stream} />
-</OverlayScreen>:<VideoScreen stream={stream} />;
+	console.log("ConferenceScreen rendered");
+  return  <OverlayScreen stream={stream}>
+  <VideoScreen stream={stream} currentAudioOutput={currentAudioOutput} />
+</OverlayScreen>;
 }
 
-export default React.memo(ConferenceScreen,(prevStream, nextStream) => {
-	return nextStream.stream.id === prevStream.stream.id;
-  });
+export default React.memo(ConferenceScreen);
 
 function OverlayScreen({
   children,
@@ -344,10 +344,12 @@ function OverlayScreen({
 
 function VideoScreen({
   stream,
+  currentAudioOutput,
 }: {
   stream: ParticipantVideo;
+  currentAudioOutput: MediaDeviceInfo|undefined;
 }) {
-  const { currentAudioOutput } = useDeviceContext();
+
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const streamMemo = useMemo(() => stream, [stream]);
@@ -380,7 +382,7 @@ function VideoScreen({
     };
   }, [stream]);
 
-  const setSink = async () => {
+  const setSink = useCallback(async () => {
     if (
       currentAudioOutput &&
       !AudioContext.prototype.hasOwnProperty('setSinkId')
@@ -401,7 +403,7 @@ function VideoScreen({
         await videoRef.current.setSinkId(sinkId);
       }
     }
-  };
+  }, [currentAudioOutput]);
 
   useEffect(() => {
     setSink();

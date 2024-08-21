@@ -551,8 +551,6 @@ export default function Conference(){
     }
   };
 
-  
-
   const MAX_VISIBLE_PARTICIPANTS = isMobile()
     ? currentLayout === 'presentation'
       ? 4
@@ -736,10 +734,10 @@ export default function Conference(){
 						return (
 						<div
 							className={(hidden ? 'participant-item-hidden' : 'participant-item')+(stream.spotlight ? ' spotlight' : '')+(stream.pin ? ' pinned' : '')+(stream.source==='screen' ? ' screen' : ' media')}
-							key={`stream-${id}`}
+							key={`stream-${stream.id}`}
 							style={style}
 						>
-							<ConferenceScreen stream={stream}/>
+							<ConferenceScreen key={'conference-screen-'+stream.id} stream={stream} currentAudioOutput={devicesState.currentAudioOutput}/>
 						</div>
 						);
 					})}

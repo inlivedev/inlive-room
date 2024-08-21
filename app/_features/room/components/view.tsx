@@ -61,11 +61,13 @@ export default function View({
                     <EventContainer>
                       {activeView === 'exit' ? (
                         <ConferenceExit />
-                      ) : activeView === 'conference' ? (
-                        <Conference />
-                      ) : (
-                        <ConferenceLobby roomID={roomID} />
-                      )}
+                      ) : 
+					  (<div>
+                        <div className={activeView === 'conference'?'':'hidden'}><Conference/></div>
+                        <div  className={activeView === 'conference'?'hidden':''}><ConferenceLobby roomID={roomID} /></div>
+						</div>
+						)
+                      }
                     </EventContainer>
                   </ChatProvider>
                 </DataChannelProvider>
