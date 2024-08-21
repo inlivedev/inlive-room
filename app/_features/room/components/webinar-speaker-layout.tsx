@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/components/conference';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import '../styles/webinar-speaker-layout.css';

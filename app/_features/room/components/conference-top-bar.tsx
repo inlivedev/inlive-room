@@ -12,18 +12,17 @@ import {
 import { useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
-import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 import ReconnectModal from '@/_features/room/components/reconnect-modal';
 import { clientSDK } from '@/_shared/utils/sdk';
 import type { SVGElementPropsType } from '@/_shared/types/types';
-import type { Sidebar } from './conference';
+import type { Sidebar,ParticipantVideo } from './conference';
 
-export default function ConferenceTopBar({ sidebar }: { sidebar: Sidebar }) {
+export default function ConferenceTopBar({streams, sidebar }: { streams: ParticipantVideo[], sidebar: Sidebar }) {
   const { roomType, isModerator } = useMetadataContext();
-  const { streams } = useParticipantContext();
+
   const participants = streams.filter((stream) => stream.source === 'media');
 
   return (

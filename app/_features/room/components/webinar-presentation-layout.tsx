@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/components/conference';
 import '../styles/webinar-presentation-layout.css';
 
 export default function WebinarPresentationLayout({

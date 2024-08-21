@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/components/conference';
 import '../styles/meeting-presentation-layout.css';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 

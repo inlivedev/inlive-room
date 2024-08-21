@@ -1,6 +1,6 @@
 'use client';
 
-import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/components/conference';
 import ConferenceScreen from '@/_features/room/components/conference-screen';
 
 export default function SpotlightView({

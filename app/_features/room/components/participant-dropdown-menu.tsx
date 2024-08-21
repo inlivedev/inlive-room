@@ -10,7 +10,7 @@ import {
   DropdownItem,
 } from '@nextui-org/react';
 import { useClientContext } from '@/_features/room/contexts/client-context';
-import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/components/conference';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
 import CheckIcon from '@/_shared/components/icons/check-icon';

@@ -1,30 +1,31 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo, memo } from 'react';
 import { Button } from '@nextui-org/react';
+import React from "react";
 import { useDeviceContext } from '@/_features/room/contexts/device-context';
-import type { ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import type { ParticipantVideo } from '@/_features/room/components/conference';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { type SVGElementPropsType } from '@/_shared/types/types';
 import ParticipantDropdownMenu from './participant-dropdown-menu';
 
-export default function ConferenceScreen({
+function ConferenceScreen({
   stream,
-  hidden = false,
+  debug,
 }: {
   stream: ParticipantVideo;
-  hidden?: boolean;
+  debug?: boolean;
 }) {
-  return hidden ? (
-    <VideoScreen stream={stream} hidden={hidden} />
-  ) : (
-    <OverlayScreen stream={stream}>
-      <VideoScreen stream={stream} hidden={hidden} />
-    </OverlayScreen>
-  );
+  return  debug?<OverlayScreen stream={stream}>
+  <VideoScreen stream={stream} />
+</OverlayScreen>:<VideoScreen stream={stream} />;
 }
+
+export default React.memo(ConferenceScreen,(prevStream, nextStream) => {
+	return nextStream.stream.id === prevStream.stream.id;
+  });
 
 function OverlayScreen({
   children,
@@ -112,7 +113,7 @@ function OverlayScreen({
 
   return (
     <div
-      className={`group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg ${
+      className={`groupflex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg ${
         stream.fullscreen ? 'fixed-fullscreen !bg-zinc-900' : ''
       }`}
     >
@@ -343,120 +344,78 @@ function OverlayScreen({
 
 function VideoScreen({
   stream,
-  hidden = false,
 }: {
   stream: ParticipantVideo;
-  hidden: boolean;
 }) {
-  const { peer } = usePeerContext();
   const { currentAudioOutput } = useDeviceContext();
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
+  const streamMemo = useMemo(() => stream, [stream]);
+
   useEffect(() => {
     const callbackVoiceActivity = (e: CustomEventInit) => {
+      if (videoContainerRef.current === null) return;
       if (e.detail.audioLevel > 0) {
-        stream.videoElement.style.borderColor = 'green';
-        stream.videoElement.style.borderWidth = '5px';
-        stream.videoElement.style.borderStyle = 'solid';
-        stream.videoElement.style.margin = '-5px';
-        stream.videoElement.style.boxSizing = 'content-box';
+        videoContainerRef.current.style.borderColor = 'green';
+        videoContainerRef.current.style.borderWidth = '5px';
+        videoContainerRef.current.style.borderStyle = 'solid';
+        videoContainerRef.current.style.margin = '-5px';
+        videoContainerRef.current.style.boxSizing = 'content-box';
       } else {
-        stream.videoElement.style.borderColor = 'transparent';
-        stream.videoElement.style.borderWidth = '0';
-        stream.videoElement.style.borderStyle = 'none';
-        stream.videoElement.style.margin = '0';
+        videoContainerRef.current.style.borderColor = 'transparent';
+        videoContainerRef.current.style.borderWidth = '0';
+        videoContainerRef.current.style.borderStyle = 'none';
+        videoContainerRef.current.style.margin = '0';
       }
     };
 
     if (stream.origin === 'remote') {
-      peer?.observeVideo(stream.videoElement);
       stream.addEventListener('voiceactivity', callbackVoiceActivity);
     }
 
     return () => {
       if (stream.origin === 'remote') {
-        peer?.unobserveVideo(stream.videoElement);
         stream.removeEventListener('voiceactivity', callbackVoiceActivity);
       }
     };
-  }, [peer, stream]);
+  }, [stream]);
 
-  useEffect(() => {
-    let videoContainerValue: HTMLDivElement | null = null;
-
-    if (videoContainerRef.current) {
-      videoContainerValue = videoContainerRef.current;
-    }
-
-    const append = async () => {
-      const localVideoScreen =
-        stream.origin === 'local' && stream.source === 'media';
+  const setSink = async () => {
+    if (
+      currentAudioOutput &&
+      !AudioContext.prototype.hasOwnProperty('setSinkId')
+    ) {
+      const sinkId =
+        currentAudioOutput.deviceId !== 'default'
+          ? currentAudioOutput.deviceId
+          : '';
 
       if (
-        currentAudioOutput &&
-        !AudioContext.prototype.hasOwnProperty('setSinkId')
+        HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        sinkId !== videoRef.current.sinkId
       ) {
-        const sinkId =
-          currentAudioOutput.deviceId !== 'default'
-            ? currentAudioOutput.deviceId
-            : '';
-
-        if (
-          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          sinkId !== stream.videoElement.sinkId
-        ) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          await stream.videoElement.setSinkId(sinkId);
-        }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        await videoRef.current.setSinkId(sinkId);
       }
+    }
+  };
 
-      if (hidden) {
-        stream.videoElement.style.width = '0';
-        stream.videoElement.style.height = '0';
-        stream.videoElement.style.opacity = '0';
-        stream.videoElement.style.position = 'absolute';
-        stream.videoElement.style.right = '-99999px';
-      } else {
-        stream.videoElement.style.width = '100%';
-        stream.videoElement.style.height = '100%';
-        stream.videoElement.style.opacity = '1';
-        stream.videoElement.style.position = 'absolute';
-        stream.videoElement.style.right = 'initial';
-        stream.videoElement.style.borderRadius = '0.5rem';
-        stream.videoElement.style.objectFit = 'center';
-      }
-
-      stream.videoElement.style.transform = localVideoScreen
-        ? 'scaleX(-1)'
-        : 'scaleX(1)';
-      stream.videoElement.playsInline = true;
-      stream.videoElement.muted = stream.origin === 'local';
-      videoContainerValue?.appendChild(stream.videoElement);
-      await stream.videoElement.play();
-    };
-
-    append();
-
-    return () => {
-      if (videoContainerValue && stream.videoElement) {
-        videoContainerValue.removeChild(stream.videoElement);
-        videoContainerValue = null;
-      }
-    };
-  }, [stream, hidden, currentAudioOutput]);
+  useEffect(() => {
+    setSink();
+  }, [currentAudioOutput]);
 
   return (
     <div
       ref={videoContainerRef}
-      className={`${
-        hidden
-          ? 'absolute right-[99999px] h-0 w-0 opacity-0'
-          : 'grid h-full w-full grid-rows-1 items-center'
-      }`}
-    ></div>
+    >
+     <Video
+        srcObject={streamMemo.mediaStream}
+        origin={streamMemo.origin}
+      ></Video>
+    </div>
   );
 }
 
@@ -481,5 +440,48 @@ function PinIcon(props: SVGElementPropsType) {
         d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2z"
       />
     </svg>
+  );
+}
+
+function Video({
+  srcObject,
+  origin,
+}: {
+  srcObject: MediaStream;
+  origin?: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const srcObjectMemo = useMemo(() => srcObject, [srcObject]);
+
+  useEffect(() => {
+    const playVideo = async () => {
+      if (videoRef.current === null) return;
+      videoRef.current.srcObject = srcObjectMemo;
+      await videoRef.current.play().catch((err) => {
+        console.error(err);
+      });
+    };
+
+    playVideo();
+    return () => {};
+  }, [srcObjectMemo]);
+
+  const { peer } = usePeerContext();
+
+  useEffect(() => {
+    if (origin === 'remote' && videoRef.current) {
+      console.log('observe video ', origin);
+      peer?.observeVideo(videoRef.current);
+    }
+    return () => {
+      if (origin === 'remote' && videoRef.current) {
+        console.log('unobserve video ', origin);
+        peer?.unobserveVideo(videoRef.current);
+      }
+    };
+  }, [srcObjectMemo]);
+
+  return (
+    <video ref={videoRef} className="h-full w-full" playsInline autoPlay />
   );
 }

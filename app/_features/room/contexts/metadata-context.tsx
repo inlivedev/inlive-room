@@ -3,8 +3,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
-import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import type { ParticipantVideo } from '@/_features/room/components/conference';
+
+type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 
 const defaultData = {
   isModerator: false as boolean,

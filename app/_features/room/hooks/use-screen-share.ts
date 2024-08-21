@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
-import type { ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import type { ParticipantVideo } from '@/_features/room/components/conference';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 

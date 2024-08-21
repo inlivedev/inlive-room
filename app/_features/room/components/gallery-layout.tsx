@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { type ParticipantVideo } from '@/_features/room/contexts/participant-context';
+import { type ParticipantVideo } from '@/_features/room/components/conference';
 import '../styles/gallery-layout.css';
 import ConferenceScreen from './conference-screen';
 
@@ -56,7 +56,6 @@ export default function MeetingGalleryLayout({
                   <ConferenceScreen
                     key={`hidden-stream-${stream.id}`}
                     stream={stream}
-                    hidden={true}
                   />
                 );
               })}

@@ -5,14 +5,11 @@ import MoreIcon from '@/_shared/components/icons/more-icon';
 import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import ChevronRight from '@/_shared/components/icons/chevron-right';
 import { useToggle } from '@/_shared/hooks/use-toggle';
-import {
-  type ParticipantVideo,
-  useParticipantContext,
-} from '@/_features/room/contexts/participant-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ParticipantDropdownMenu from './participant-dropdown-menu';
+import type { ParticipantVideo } from './conference';
 
-export default function ParticipantListSidebar() {
+export default function ParticipantListSidebar({streams}: {streams: ParticipantVideo[]}) {
   return (
     <div className="grid h-full w-full grid-rows-[auto,1fr]">
       <div className="border-b border-black/25 px-4 py-2.5">
@@ -37,15 +34,14 @@ export default function ParticipantListSidebar() {
         </div>
       </div>
       <div className="flex-1 overflow-y-hidden px-5 py-4">
-        <ParticipantListGroup />
+        <ParticipantListGroup streams={streams} />
       </div>
     </div>
   );
 }
 
-const ParticipantListGroup = ({ show = true }) => {
+const ParticipantListGroup = ({streams, show = true }:{streams: ParticipantVideo[],show?:boolean}) => {
   const { active, toggle } = useToggle(show);
-  const { streams } = useParticipantContext();
   const participants = streams.filter((stream) => stream.source === 'media');
 
   return (
