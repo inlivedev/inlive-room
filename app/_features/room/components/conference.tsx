@@ -790,10 +790,7 @@ export default function Conference() {
                   if (
                     !hidden &&
                     layoutContainerRef.current &&
-                    (stream.source === 'screen' ||
-                      stream.spotlight ||
-                      stream.pin)
-                  ) {
+                    (stream.source === 'screen')) {
                     if (
                       layoutContainerRef.current.clientWidth >
                       layoutContainerRef.current.clientHeight
