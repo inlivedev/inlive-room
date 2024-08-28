@@ -1,0 +1,36 @@
+
+.auto-layout 
+,.gallery-layout {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  text-align: center;
+  box-sizing: content-box;
+  justify-items: stretch;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.participant-item {
+	position: relative;
+	vertical-align: middle;
+	align-self: center;
+	height: 100%;
+}
+
+.participant-item video{
+	width : '100%';
+	height: 100%;
+	opacity: 1;
+	position: absolute;
+	right: initial;
+	border-radius: 0.5rem;
+	object-fit: center;
+}
+
+.participant-item-hidden {
+  position:absolute;
+  display: none;
+  width: 0;
+  height: 0;
+}

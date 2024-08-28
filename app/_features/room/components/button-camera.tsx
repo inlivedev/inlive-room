@@ -10,26 +10,19 @@ import {
   Button,
 } from '@nextui-org/react';
 import type { Selection } from '@nextui-org/react';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
+import type { ParticipantVideo, DeviceStateType,DeviceType } from './conference';
 
-export default function ButtonCamera() {
-  const {
-    currentVideoInput,
-    videoInputs,
-    devices,
-    activeCamera,
-    setActiveCamera,
-  } = useDeviceContext();
-
+export default function ButtonCamera({streams,deviceTypes}: {streams: ParticipantVideo[],deviceTypes:DeviceType}) {
+  
   const {
     selectedDeviceKey: selectedVideoInputKey,
     selectDeviceOptions: selectVideoInputOptions,
     onDeviceSelectionChange: onVideoInputSelectionChange,
-  } = useSelectDevice(videoInputs, currentVideoInput);
+  } = useSelectDevice(streams,deviceTypes.videoInputs, deviceTypes.currentVideoInput,deviceTypes.setCurrentDevice,deviceTypes.activeCamera,deviceTypes.activeMic);
 
   const videoInputKey =
     selectedVideoInputKey.size === 0
@@ -39,7 +32,7 @@ export default function ButtonCamera() {
   const onDeviceSelectionChange = (selectedKey: Selection) => {
     if (!(selectedKey instanceof Set) || selectedKey.size === 0) return;
 
-    const currentSelected = devices.find((device) => {
+    const currentSelected = deviceTypes.devices.find((device) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       return `${device.kind}-${device.deviceId}` === selectedKey.currentKey;
@@ -53,12 +46,12 @@ export default function ButtonCamera() {
   };
 
   const handleClick = () => {
-    if (activeCamera) {
-      setActiveCamera(false);
+    if (deviceTypes.activeCamera) {
+		deviceTypes.setActiveCamera(false);
       return;
     }
 
-    setActiveCamera(true);
+    deviceTypes.setActiveCamera(true);
     return;
   };
 
@@ -71,7 +64,7 @@ export default function ButtonCamera() {
         className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
         onClick={handleClick}
       >
-        {activeCamera ? (
+        {deviceTypes.activeCamera ? (
           <CameraOnIcon width={20} height={20} />
         ) : (
           <CameraOffIcon width={20} height={20} className="text-red-500" />
@@ -94,14 +87,14 @@ export default function ButtonCamera() {
           onSelectionChange={onDeviceSelectionChange}
         >
           <DropdownSection title="Camera" className="mb-0">
-            {videoInputs.length > 0 ? (
+            {deviceTypes.videoInputs.length > 0 ? (
               selectVideoInputOptions.map((item, index) => {
                 return (
                   <DropdownItem
                     key={item.key}
                     description={
                       item.key ===
-                      `${currentVideoInput?.kind}-${currentVideoInput?.deviceId}`
+                      `${deviceTypes.currentVideoInput?.kind}-${deviceTypes.currentVideoInput?.deviceId}`
                         ? 'Currently in use'
                         : 'Switch to this device'
                     }

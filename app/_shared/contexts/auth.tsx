@@ -17,7 +17,9 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
   user: AuthType.CurrentAuthContext | null;
-}) {
+}) 
+
+{
   return (
     <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
   );

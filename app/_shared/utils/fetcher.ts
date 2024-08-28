@@ -1,4 +1,5 @@
 export type FetcherResponse = {
+  headers: Headers;
   code: number;
   ok: boolean;
 };
@@ -22,6 +23,7 @@ const createFetcher = () => {
           .json()
           .then((json) => ({
             ...json,
+            headers: response.headers,
             code: response.status,
             ok: response.ok,
           }))

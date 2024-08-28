@@ -1,8 +1,10 @@
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
+import { nolookalikesSafe } from 'nanoid-dictionary';
 
-export const generateID = (lenght?: number): string => {
+export const generateID = (lenght?: number) => {
   if (lenght === undefined) {
     lenght = 12;
   }
-  return nanoid(lenght);
+  const nanoid = customAlphabet(nolookalikesSafe, lenght);
+  return nanoid();
 };

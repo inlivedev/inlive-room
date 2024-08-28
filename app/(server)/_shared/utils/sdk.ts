@@ -26,9 +26,11 @@ const getServerSDK = async () => {
 
   const sdkAuth = await createSDKAuth();
 
-  if (sdkAuth) {
-    serverSDK.setAuth(sdkAuth);
+  if (!sdkAuth) {
+    return null;
   }
+
+  serverSDK.setAuth(sdkAuth);
 
   return serverSDK;
 };

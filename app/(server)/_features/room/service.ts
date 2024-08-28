@@ -19,7 +19,7 @@ export interface Client {
 }
 
 export interface iRoomRepo {
-  addRoom(room: insertRoom): Promise<selectRoom|undefined>;
+  addRoom(room: insertRoom): Promise<selectRoom | undefined>;
   getRoomById(id: string): Promise<insertRoom | undefined>;
   updateRoomById(room: Room): Promise<insertRoom | undefined>;
   isPersistent(): boolean;
@@ -40,6 +40,8 @@ export class RoomService {
     if (this._sdk) return this._sdk;
 
     this._sdk = await getServerSDK();
+
+    return this._sdk;
   }
 
   async createClient(
@@ -188,6 +190,9 @@ export class RoomService {
     let retries = 0;
     const maxRetries = 3;
     const sdk = await this.getSDK();
+    if (!sdk) {
+      throw new Error('Failed to get SDK, can be caused by invalid token');
+    }
 
     while (retries < maxRetries) {
       const roomID = generateID();
@@ -199,7 +204,7 @@ export class RoomService {
       }
 
       if (roomResp.code > 299) {
-        console.log(roomResp.message);
+        console.error(roomResp.message);
         Sentry.captureMessage(`Failed to create a room ${roomID}.`, 'error');
         console.log(JSON.stringify(roomResp));
         throw new Error(
@@ -240,9 +245,9 @@ export class RoomService {
           createdBy: userID,
           meta: { type },
         });
-		if (!room){
-			throw new Error('Failed to create room');
-		}
+        if (!room) {
+          throw new Error('Failed to create room');
+        }
 
         return room;
       } catch (error) {
@@ -278,56 +283,56 @@ export class RoomService {
   async joinRoom(roomId: string) {
     const sdk = await this.getSDK();
 
-	let room;
+    let room;
 
-	const remoteRoom = await sdk.getRoom(roomId);
-	if (remoteRoom.ok) {
-	room = {
-		id: remoteRoom.data.id,
-		name: remoteRoom.data.name,
-		createdBy: 0,
-	} as Room;
-	} 
+    const remoteRoom = await sdk.getRoom(roomId);
+    if (remoteRoom.ok) {
+      room = {
+        id: remoteRoom.data.id,
+        name: remoteRoom.data.name,
+        createdBy: 0,
+      } as Room;
+    }
 
-	if (this._roomRepo.isPersistent()) { 
-		room = await this._roomRepo.getRoomById(roomId);
-	}
+    if (this._roomRepo.isPersistent()) {
+      room = await this._roomRepo.getRoomById(roomId);
+    }
 
-    if (remoteRoom.code === 404){
-		if (!this._roomRepo.isPersistent() || room && room.id) {
-			const newRemoteRoom = await sdk.createRoom('', roomId);
+    if (remoteRoom.code === 404) {
+      if (!this._roomRepo.isPersistent() || (room && room.id)) {
+        const newRemoteRoom = await sdk.createRoom('', roomId);
 
-			if (!newRemoteRoom || !newRemoteRoom.ok) {
-				Sentry.captureMessage(
-					`Failed to create a room. ${newRemoteRoom.code} ${newRemoteRoom.message}`,
-					'error'
-				);
-				throw new Error(
-					'Error occured during accessing room data, please try again later'
-				);
-			}
+        if (!newRemoteRoom || !newRemoteRoom.ok) {
+          Sentry.captureMessage(
+            `Failed to create a room. ${newRemoteRoom.code} ${newRemoteRoom.message}`,
+            'error'
+          );
+          throw new Error(
+            'Error occured during accessing room data, please try again later'
+          );
+        }
 
-			room = {
-				id: newRemoteRoom.data.id,
-				name: newRemoteRoom.data.name,
-				createdBy: 0,
-			} as Room;
+        room = {
+          id: newRemoteRoom.data.id,
+          name: newRemoteRoom.data.name,
+          createdBy: 0,
+        } as Room;
 
-			for (const datachannel of this._datachannels) {
-				const channelResponse = await sdk.createDataChannel(
-					roomId,
-					datachannel,
-					true
-				);
+        for (const datachannel of this._datachannels) {
+          const channelResponse = await sdk.createDataChannel(
+            roomId,
+            datachannel,
+            true
+          );
 
-				if (!channelResponse || !channelResponse.ok) {
-					Sentry.captureMessage(
-						`Failed to create ${datachannel} data channel with room ID ${roomId}`,
-						'error'
-					);
-				}
-			}
-		}	
+          if (!channelResponse || !channelResponse.ok) {
+            Sentry.captureMessage(
+              `Failed to create ${datachannel} data channel with room ID ${roomId}`,
+              'error'
+            );
+          }
+        }
+      }
     }
 
     if (room && this._roomRepo.isPersistent()) {

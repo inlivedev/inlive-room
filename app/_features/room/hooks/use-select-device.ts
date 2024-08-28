@@ -1,19 +1,20 @@
 import { useState, useMemo, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import { useParticipantContext } from '@/_features/room/contexts/participant-context';
 import {
-  useDeviceContext,
   AudioOutputContext,
 } from '@/_features/room/contexts/device-context';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
+import { ParticipantVideo } from '../components/conference';
 
 export const useSelectDevice = (
+  streams: ParticipantVideo[],
   devices: MediaDeviceInfo[],
-  currentActiveDevice: MediaDeviceInfo | undefined
+  currentActiveDevice: MediaDeviceInfo | undefined,
+  setCurrentDevice: (deviceInfo: MediaDeviceInfo) => void,
+  activeCamera: boolean,
+  activeMic: boolean,
 ) => {
   const { peer } = usePeerContext();
-  const { streams } = useParticipantContext();
-  const { setCurrentDevice, activeCamera, activeMic } = useDeviceContext();
 
   const [selectedDeviceKeyState, setSelectedDeviceKeyState] = useState<
     Set<string>

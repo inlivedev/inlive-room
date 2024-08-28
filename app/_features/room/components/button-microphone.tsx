@@ -11,34 +11,26 @@ import {
   Button,
 } from '@nextui-org/react';
 import type { Selection } from '@nextui-org/react';
-import { useDeviceContext } from '@/_features/room/contexts/device-context';
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
+import type { ParticipantVideo,DeviceType } from './conference';
 
-export default function ButtonMicrophone() {
-  const {
-    currentAudioInput,
-    currentAudioOutput,
-    audioInputs,
-    audioOutputs,
-    devices,
-    activeMic,
-    setActiveMic,
-  } = useDeviceContext();
+export default function ButtonMicrophone({streams,deviceTypes}: {streams: ParticipantVideo[], deviceTypes:DeviceType}) {
+
 
   const {
     selectedDeviceKey: selectedAudioInputKey,
     selectDeviceOptions: selectAudioInputOptions,
     onDeviceSelectionChange: onAudioInputSelectionChange,
-  } = useSelectDevice(audioInputs, currentAudioInput);
+  } = useSelectDevice(streams,deviceTypes.audioInputs, deviceTypes.currentAudioInput,deviceTypes.setCurrentDevice,deviceTypes.activeCamera,deviceTypes.activeMic);
 
   const {
     selectedDeviceKey: selectedAudioOutputKey,
     selectDeviceOptions: selectAudioOutputOptions,
     onDeviceSelectionChange: onAudioOutputSelectionChange,
-  } = useSelectDevice(audioOutputs, currentAudioOutput);
+  } = useSelectDevice(streams,deviceTypes.audioInputs, deviceTypes.currentAudioInput,deviceTypes.setCurrentDevice,deviceTypes.activeCamera,deviceTypes.activeMic);
 
   const speakerSelectionSupport = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -66,7 +58,7 @@ export default function ButtonMicrophone() {
   const onDeviceSelectionChange = (selectedKeys: Selection) => {
     if (!(selectedKeys instanceof Set) || selectedKeys.size === 0) return;
 
-    const currentSelected = devices.find((device) => {
+    const currentSelected = deviceTypes.devices.find((device:MediaDeviceInfo) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       return `${device.kind}-${device.deviceId}` === selectedKeys.currentKey;
@@ -84,12 +76,12 @@ export default function ButtonMicrophone() {
   };
 
   const handleClick = () => {
-    if (activeMic) {
-      setActiveMic(false);
+    if (deviceTypes.activeMic) {
+      deviceTypes.setActiveMic(false);
       return;
     }
 
-    setActiveMic(true);
+    deviceTypes.setActiveMic(true);
     return;
   };
 
@@ -102,7 +94,7 @@ export default function ButtonMicrophone() {
         className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
         onClick={handleClick}
       >
-        {activeMic ? (
+        {deviceTypes.activeMic ? (
           <MicrophoneOnIcon width={20} height={20} />
         ) : (
           <MicrophoneOffIcon width={20} height={20} className="text-red-500" />
@@ -125,14 +117,14 @@ export default function ButtonMicrophone() {
           onSelectionChange={onDeviceSelectionChange}
         >
           <DropdownSection title="Microphone" showDivider>
-            {audioInputs.length > 0 ? (
+            {deviceTypes.audioInputs.length > 0 ? (
               selectAudioInputOptions.map((item, index) => {
                 return (
                   <DropdownItem
                     key={item.key}
                     description={
                       item.key ===
-                      `${currentAudioInput?.kind}-${currentAudioInput?.deviceId}`
+                      `${deviceTypes.currentAudioInput?.kind}-${deviceTypes.currentAudioInput?.deviceId}`
                         ? 'Currently in use'
                         : 'Switch to this device'
                     }
@@ -150,14 +142,14 @@ export default function ButtonMicrophone() {
             )}
           </DropdownSection>
           <DropdownSection title="Speaker" className="mb-0">
-            {audioOutputs.length > 0 ? (
+            {deviceTypes.audioOutputs.length > 0 ? (
               speakerSelectionSupport ? (
                 selectAudioOutputOptions.map((item, index) => (
                   <DropdownItem
                     key={item.key}
                     description={
                       item.key ===
-                      `${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`
+                      `${deviceTypes.currentAudioOutput?.kind}-${deviceTypes.currentAudioOutput?.deviceId}`
                         ? 'Currently in use'
                         : 'Switch to this device'
                     }
@@ -169,13 +161,13 @@ export default function ButtonMicrophone() {
                 ))
               ) : (
                 <DropdownItem
-                  key={`${currentAudioOutput?.kind}-${currentAudioOutput?.deviceId}`}
+                  key={`${deviceTypes.currentAudioOutput?.kind}-${deviceTypes.currentAudioOutput?.deviceId}`}
                   description="Currently in use"
                 >
-                  {!currentAudioOutput?.label ||
-                  currentAudioOutput?.label === 'Default'
+                  {!deviceTypes.currentAudioOutput?.label ||
+                  deviceTypes.currentAudioOutput?.label === 'Default'
                     ? 'System default speaker'
-                    : currentAudioOutput?.label}
+                    : deviceTypes.currentAudioOutput?.label}
                 </DropdownItem>
               )
             ) : (

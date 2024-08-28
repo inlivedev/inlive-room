@@ -20,6 +20,21 @@ export async function GET(request: NextRequest) {
       });
 
     if (authResponse.code === 403) {
+      if (authResponse.headers.get('X-Access-Token-Expired') === 'true') {
+        // expired token need to re-authenticate
+        return NextResponse.json(
+          {
+            code: 403,
+            message: 'Forbidden. Expired token.',
+            ok: false,
+            data: null,
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
       return NextResponse.json(
         {
           code: 403,

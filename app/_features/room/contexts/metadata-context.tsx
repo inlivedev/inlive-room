@@ -3,15 +3,17 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
-import { type ParticipantStream } from '@/_features/room/contexts/participant-context';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
+import type { ParticipantVideo } from '@/_features/room/components/conference';
+
+type ParticipantStream = Omit<ParticipantVideo, 'videoElement'>;
 
 const defaultData = {
   isModerator: false as boolean,
   moderatorClientIDs: [] as string[],
   roomType: 'meeting' as string,
-  previousLayout: 'gallery' as 'gallery' | 'presentation',
-  currentLayout: 'gallery' as 'gallery' | 'presentation',
+  previousLayout: 'auto' as 'auto' | 'gallery' |'presentation',
+  currentLayout: 'auto' as 'auto' | 'gallery' |'presentation',
   speakerClientIDs: [] as string[],
   spotlights: [] as string[],
 };
@@ -33,7 +35,7 @@ export function MetadataProvider({
   roomType: string;
   isModerator: boolean;
 }) {
-  const defaultLayout = 'gallery';
+  const defaultLayout = 'auto';
 
   const [metadataState, setMetadataState] = useState<typeof defaultData>({
     ...defaultData,
