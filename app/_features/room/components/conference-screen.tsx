@@ -113,7 +113,7 @@ function OverlayScreen({
 
   return (
     <div
-      className={`groupflex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg ${
+      className={`group absolute left-0 top-0 mx-auto flex h-full w-full max-w-full flex-col rounded-lg bg-zinc-700/70 shadow-lg ${
         stream.fullscreen ? 'fixed-fullscreen !bg-zinc-900' : ''
       }`}
     >
@@ -410,12 +410,13 @@ function VideoScreen({
   }, [currentAudioOutput]);
 
   return (
-    <div
+    <div className='h-full w-full'
       ref={videoContainerRef}
     >
      <Video
         srcObject={streamMemo.mediaStream}
         origin={streamMemo.origin}
+		source={streamMemo.source}
       ></Video>
     </div>
   );
@@ -448,9 +449,11 @@ function PinIcon(props: SVGElementPropsType) {
 function Video({
   srcObject,
   origin,
+  source,
 }: {
   srcObject: MediaStream;
-  origin?: string;
+  origin: string;
+  source: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const srcObjectMemo = useMemo(() => srcObject, [srcObject]);
@@ -464,26 +467,32 @@ function Video({
       });
     };
 
+	if (origin === 'local' && videoRef.current) {
+		videoRef.current.muted = true;
+	}
+
     playVideo();
     return () => {};
-  }, [srcObjectMemo]);
+  }, [srcObjectMemo, origin]);
 
   const { peer } = usePeerContext();
 
   useEffect(() => {
     if (origin === 'remote' && videoRef.current) {
-      console.log('observe video ', origin);
       peer?.observeVideo(videoRef.current);
     }
     return () => {
       if (origin === 'remote' && videoRef.current) {
-        console.log('unobserve video ', origin);
         peer?.unobserveVideo(videoRef.current);
       }
     };
   }, [srcObjectMemo]);
+ 
+  const style = {
+	transform: origin === 'local' && source!=='screen' ? 'scaleX(-1)' : 'scaleX(1)',
+  };
 
   return (
-    <video ref={videoRef} className="h-full w-full" playsInline autoPlay />
+    <video ref={videoRef} className="h-full w-full" playsInline autoPlay style={style} />
   );
 }

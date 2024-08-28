@@ -77,7 +77,7 @@ export default async function Page({ searchParams }: PageProps) {
 
   const setModeratorMetaPromise = async () => {
     if (isModerator) {
-      const moderatorMeta = await sdk.getMetadata(
+      const moderatorMeta = await sdk?.getMetadata(
         roomData.id,
         'moderatorClientIDs'
       );
@@ -85,11 +85,11 @@ export default async function Page({ searchParams }: PageProps) {
 
       try {
         if (Array.isArray(moderatorClientIDs)) {
-          await sdk.setMetadata(roomData.id, {
+          await sdk?.setMetadata(roomData.id, {
             moderatorClientIDs: [...moderatorClientIDs, userClient.clientID],
           });
         } else {
-          await sdk.setMetadata(roomData.id, {
+          await sdk?.setMetadata(roomData.id, {
             moderatorClientIDs: [userClient.clientID],
           });
         }

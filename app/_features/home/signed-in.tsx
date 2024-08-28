@@ -53,11 +53,7 @@ export default function SignedIn({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const firstName = user.name.split(' ')[0];
 
-  let persistentData = false;
-
-  if (process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true') {
-    persistentData = true;
-  }
+  const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
   const MeetingListView = ({
     persistent,

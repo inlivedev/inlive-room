@@ -6,6 +6,7 @@ import ButtonMicrophone from '@/_features/room/components/button-microphone';
 import ButtonCamera from '@/_features/room/components/button-camera';
 import ButtonScreenShare from '@/_features/room/components/button-screen-share';
 import ButtonChat from '@/_features/room/components/button-chat';
+import ButtonLayout from './button-layout';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
 import type { Sidebar,ParticipantVideo, DeviceStateType,DeviceType } from './conference';
 

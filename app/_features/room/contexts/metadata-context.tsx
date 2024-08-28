@@ -12,8 +12,8 @@ const defaultData = {
   isModerator: false as boolean,
   moderatorClientIDs: [] as string[],
   roomType: 'meeting' as string,
-  previousLayout: 'gallery' as 'gallery' | 'presentation',
-  currentLayout: 'gallery' as 'gallery' | 'presentation',
+  previousLayout: 'auto' as 'auto' | 'gallery' |'presentation',
+  currentLayout: 'auto' as 'auto' | 'gallery' |'presentation',
   speakerClientIDs: [] as string[],
   spotlights: [] as string[],
 };
@@ -35,7 +35,7 @@ export function MetadataProvider({
   roomType: string;
   isModerator: boolean;
 }) {
-  const defaultLayout = 'gallery';
+  const defaultLayout = 'auto';
 
   const [metadataState, setMetadataState] = useState<typeof defaultData>({
     ...defaultData,

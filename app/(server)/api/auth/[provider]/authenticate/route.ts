@@ -64,6 +64,7 @@ export async function GET(
       }
 
       const token = authResponse?.data?.token;
+      const refreshToken = authResponse?.data?.refresh_token;
 
       if (!token) {
         Sentry.captureMessage(
@@ -74,48 +75,46 @@ export async function GET(
           `Authentication error. No token credential received from the server.`
         );
       } else {
+        const currentAuth: AuthType.CurrentAuthExternalResponse =
+          await InliveApiFetcher.get('/auth/current', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            cache: 'no-cache',
+          });
+
+        if (currentAuth.code === 403) {
+          Sentry.captureMessage(
+            `Authentication error. Invalid token credential received from the server.`,
+            'error'
+          );
+
+          throw new Error('Invalid token credential received from the server.');
+        }
+
+        if (!currentAuth.ok) {
+          Sentry.captureMessage(
+            `API call error when trying to get current auth data. ${
+              authResponse?.message || ''
+            }`,
+            'error'
+          );
+
+          throw new Error(authResponse.message || '');
+        }
+
+        if (
+          !currentAuth.data.email ||
+          typeof currentAuth.data.email !== 'string' ||
+          !currentAuth.data.name ||
+          typeof currentAuth.data.name !== 'string' ||
+          !currentAuth.data.id ||
+          typeof currentAuth.data.id !== 'number'
+        ) {
+          throw new Error('Valid ID, email, name are required.');
+        }
+
         if (persistentData) {
-          const currentAuth: AuthType.CurrentAuthExternalResponse =
-            await InliveApiFetcher.get('/auth/current', {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              cache: 'no-cache',
-            });
-
-          if (currentAuth.code === 403) {
-            Sentry.captureMessage(
-              `Authentication error. Invalid token credential received from the server.`,
-              'error'
-            );
-
-            throw new Error(
-              'Invalid token credential received from the server.'
-            );
-          }
-
-          if (!currentAuth.ok) {
-            Sentry.captureMessage(
-              `API call error when trying to get current auth data. ${
-                authResponse?.message || ''
-              }`,
-              'error'
-            );
-
-            throw new Error(authResponse.message || '');
-          }
-
-          if (
-            !currentAuth.data.email ||
-            typeof currentAuth.data.email !== 'string' ||
-            !currentAuth.data.name ||
-            typeof currentAuth.data.name !== 'string' ||
-            !currentAuth.data.id ||
-            typeof currentAuth.data.id !== 'number'
-          ) {
-            throw new Error('Valid ID, email, name are required.');
-          }
-
           const existingUser = await getUserByEmail(currentAuth.data.email);
 
           if (!existingUser || existingUser?.isRegistered === false) {
@@ -164,6 +163,24 @@ export async function GET(
         response.cookies.set({
           name: 'token',
           value: token,
+          path: '/',
+          sameSite: 'lax',
+          httpOnly: true,
+          maxAge: oneWeek,
+        });
+
+        response.cookies.set({
+          name: 'refreshtoken',
+          value: refreshToken,
+          path: '/',
+          sameSite: 'lax',
+          httpOnly: true,
+          maxAge: oneWeek,
+        });
+
+        response.cookies.set({
+          name: 'userdata',
+          value: JSON.stringify(currentAuth.data),
           path: '/',
           sameSite: 'lax',
           httpOnly: true,

@@ -37,6 +37,7 @@ export declare namespace AuthType {
     message: string;
     data: {
       token: string;
+      refresh_token: string;
     };
   };
 
@@ -44,6 +45,7 @@ export declare namespace AuthType {
     message: string;
     data: {
       token: string;
+      refresh_token: string;
     } | null;
   };
 
