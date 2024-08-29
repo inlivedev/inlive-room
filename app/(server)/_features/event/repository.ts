@@ -15,6 +15,7 @@ import { PageMeta } from '@/_shared/types/types';
 import { users } from '../user/schema';
 import { EventParticipant } from './service';
 
+
 export type UpcomingEventList = Awaited<ReturnType<EventRepo['getUpcomingEvents']>>
 export type UpcomingEvent = UpcomingEventList extends Array<infer U> ? U : never;
 export class EventRepo {
@@ -519,13 +520,21 @@ export class EventRepo {
           category: sql`${eventCategory.name}`.as('eventCategory'),
           host: {
             email: sql`${users.email}`.as('hostEmail'),
-            name: sql`${users.name}`.as('hostName')
+            name: sql<string>`${users.name}`.as('hostName'),
+            id: sql`${users.id}`.as('hostID'),
           },
-          participant: {
-            name: sql<string[]>`ARRAY_AGG(DISTINCT ${otherUser.name})`.as('otherParticipantName'),
-            email: sql<string[]>`ARRAY_AGG(DISTINCT ${otherUser.email})`.as('otherParticipantEmail')
-          },
-
+          participant: 
+            sql<{
+              name:string,
+              id:number,
+              email:string,
+              pictureUrl:string,
+            }[]>`JSON_AGG(JSON_BUILD_OBJECT(
+            'name',${otherUser.name},
+            'id',${otherUser.id},
+            'email',${otherUser.email},
+            'pictureUrl',${otherUser.pictureUrl}
+            ))`.as('otherParticipants'),
         }
       )
         .from(participants)
@@ -545,7 +554,7 @@ export class EventRepo {
         .leftJoin(users, eq(users.id, events.createdBy))
         .leftJoin(otherParticipant, eq(events.id, otherParticipant.eventID))
         .leftJoin(otherUser, eq(otherUser.id, otherParticipant.userID))
-        .groupBy(participantRole.name, eventCategory.name, users.email, users.name, events.id)
+        .groupBy(participantRole.name, eventCategory.name, users.email, users.name, events.id, users.id)
         .orderBy(sql`${events.startTime} ASC`)
         .as('events')
 

@@ -70,8 +70,9 @@ export default function MeetingList({ events }: { events: UpcomingEvent[] }) {
             <ul className="flex items-center text-sm font-medium">
               <li className="relative py-2">
                 <Button
-                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${activeTab === 'today' ? 'text-zinc-100' : 'text-zinc-400'
-                    }`}
+                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
+                    activeTab === 'today' ? 'text-zinc-100' : 'text-zinc-400'
+                  }`}
                   onPress={() => setActiveTab('today')}
                 >
                   Today
@@ -82,8 +83,9 @@ export default function MeetingList({ events }: { events: UpcomingEvent[] }) {
               </li>
               <li className="relative py-2">
                 <Button
-                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${activeTab === 'upcoming' ? 'text-zinc-100' : 'text-zinc-400'
-                    }`}
+                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
+                    activeTab === 'upcoming' ? 'text-zinc-100' : 'text-zinc-400'
+                  }`}
                   onPress={() => setActiveTab('upcoming')}
                 >
                   Upcoming
@@ -149,7 +151,6 @@ const MeetingItem = ({
   activeTab: 'today' | 'upcoming';
   activeItem?: boolean;
 }) => {
-
   const { user } = useAuthContext();
 
   const startTime = new Date(event.startTime);
@@ -162,13 +163,29 @@ const MeetingItem = ({
   const startHour = startTime.getHours();
   const startMinute = startTime.getMinutes();
   const now = currentTime > startTime && currentTime < endTime;
-  const filteredEmails = event.participant.email.filter(email => email !== event.host.email);
+
+  const filteredParticipant = event.participant
+    .filter((participant) => participant.id !== event.host.id)
+    .map((participant) => {
+      if (participant.id == user!.id) {
+        return {
+          ...participant,
+          email: 'You',
+          name: 'You',
+        };
+      }
+      return {
+        ...participant,
+        name: participant.name.split(' ')[0],
+      };
+    })
+    .sort((a, b) => (a.email === 'You' ? -1 : b.email === 'You' ? 1 : 0));
 
   return (
     <Button
       as={Link}
       href={`/rooms/${event.roomId}`}
-      className={`flex h-auto min-h-0 w-full min-w-0 max-w-96 items-center gap-4 rounded px-4 py-3 antialiased ${
+      className={`flex h-auto min-h-0 w-full min-w-0 items-center gap-4 rounded px-4 py-3 antialiased ${
         activeItem
           ? 'bg-red-900 hover:bg-red-800 active:bg-red-700'
           : 'bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700'
@@ -198,8 +215,14 @@ const MeetingItem = ({
             }`}
           >
             {event.name}
-            <p  className="truncate text-sm text-zinc-500">
-              {event.host.email !== user?.email ? 'host: ' + event.host.email + ' |' : ''}  guest:{filteredEmails.join(', ')}
+            <p className="truncate text-sm text-zinc-500">
+              {event.host.id !== user?.id
+                ? 'host: ' + event.host.name.split(' ')[0] + ' |'
+                : ''}{' '}
+              guest:{' '}
+              {filteredParticipant
+                .map((participant) => participant.name)
+                .join(', ')}{' '}
             </p>
           </div>
         </div>
