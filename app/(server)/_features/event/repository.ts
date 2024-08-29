@@ -12,13 +12,13 @@ import {
 } from './schema';
 import { DBQueryConfig, SQL, and, count, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
-import { User, users } from '../user/schema';
+import { users } from '../user/schema';
 import { EventParticipant } from './service';
 
 
 export class EventRepo {
-  async addEvent(event: insertEvent) {
-    const data = await db.insert(events).values(event).returning()
+  async addEvent(event: insertEvent, _db: DB = db): Promise<selectEvent> {
+    const data = await _db.insert(events).values(event).returning()
     return data[0];
   }
 
@@ -208,8 +208,8 @@ export class EventRepo {
 
   }
 
-  async getCategoryByName(name: string) {
-    return await db.query.eventCategory.findFirst({
+  async getCategoryByName(name: string,_db: DB = db) {
+    return await _db.query.eventCategory.findFirst({
       where: ilike(eventCategory.name, name),
     });
   }
@@ -270,9 +270,10 @@ export class EventRepo {
   async updateEvent(
     userId: number,
     id: number,
-    event: insertEvent
+    event: insertEvent,
+    _db: DB = db
   ): Promise<selectEvent | undefined> {
-    const data = await db.transaction(async (tx) => {
+    const data = await _db.transaction(async (tx) => {
       if (!event.thumbnailUrl) {
         await tx
           .update(events)
@@ -334,9 +335,16 @@ export class EventRepo {
     const isNum = /^\d+$/.test(slugOrID);
 
     const res = await  _db.transaction(async (tx) => {
+      const [countParticipants] = await tx.select({ count: count() })
+      .from(participants)
+      .where(isNum? eq(participants.eventID, parseInt(slugOrID)) : eq(events.slug, slugOrID))
+
+      if(countParticipants.count == 0){
+        return { total: 0, registeree: [] }
+      }
+      
       const mainQuery =   tx.select(
         {
-          count: count(),
           user: users,
           eventID: participants.eventID,
           clientID: participants.clientID,
@@ -362,7 +370,7 @@ export class EventRepo {
       const registeree = await mainQuery
 
 
-      return { total: registeree[0].count, registeree };
+      return { total: countParticipants.count, registeree };
     });
 
     const meta: PageMeta = {
@@ -467,5 +475,4 @@ export class EventRepo {
       where: eq(participantRole.id, id),
     });
   }
-
 }

@@ -4,29 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { addLog } from '@/(server)/_features/activity-log/repository';
 import { z } from 'zod';
+import { RoomDurationMeta } from './meta';
 
 const persistentRoom = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
 const ActivityRequest = z.object({
   name: z.string(),
   meta: z.any(),
-});
-
-const RoomDurationMeta = z.object({
-  roomID: z.string(),
-  clientID: z.string(),
-  name: z.string().optional(),
-  joinTime: z
-    .string()
-    .datetime({ offset: true })
-    .transform((val) => new Date(val)),
-  leaveTime: z
-    .string()
-    .datetime({ offset: true })
-    .transform((val) => new Date(val)),
-  roomType: z.enum(['meeting', 'event']),
-  duration: z.number().default(0),
-  trigger: z.enum(['beforeunload', 'leave-button']),
 });
 
 const activityName = ['RoomDuration'];

@@ -7,8 +7,8 @@ import {
 import { UserType } from '@/_shared/types/user';
 import { eq } from 'drizzle-orm';
 
-export const addUser = (data: InsertUser) => {
-  return db.insert(users).values(data).returning();
+export const addUser = (data: InsertUser, _db: DB = db) => {
+  return _db.insert(users).values(data).returning();
 };
 
 export const getUserById = (userId: number, _db: DB = db) => {
