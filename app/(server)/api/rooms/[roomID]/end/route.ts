@@ -6,9 +6,9 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slugOrId: string } }
+  { params }: { params: { roomID: string } }
 ) {
-  const slugOrId = params.slugOrId;
+  const slugOrId = params.roomID;
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
 

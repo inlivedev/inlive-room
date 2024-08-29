@@ -129,3 +129,10 @@ export type selectRole = typeof participantRole.$inferSelect;
 export type selectCategory = typeof eventCategory.$inferSelect;
 
 export type eventStatusEnum = 'draft' | 'published' | 'cancelled' | 'completed';
+
+export enum ParticipantRole {
+  viewer = 1,
+  host = 2,
+}
+
+export type participantRoleType = keyof typeof ParticipantRole;

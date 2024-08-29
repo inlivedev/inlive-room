@@ -120,7 +120,6 @@ export async function GET(
           if (!existingUser || existingUser?.isRegistered === false) {
             const existingEarlyAccessInvitee =
               await getEarlyAccessInviteeByEmail(currentAuth.data.email);
-
             if (!existingUser) {
               const userData = {
                 email: currentAuth.data.email,

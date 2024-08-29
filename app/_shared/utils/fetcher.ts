@@ -4,7 +4,7 @@ export type FetcherResponse = {
   ok: boolean;
 };
 
-const createFetcher = () => {
+export const createFetcher = () => {
   const Fetcher = class {
     _baseUrl;
 

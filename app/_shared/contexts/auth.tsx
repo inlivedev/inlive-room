@@ -17,9 +17,11 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
   user: AuthType.CurrentAuthContext | null;
-}) 
+}) {
+  if (user && !user.pictureUrl) {
+    user.pictureUrl = 'images/avatar-icon.webp';
+  }
 
-{
   return (
     <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
   );

@@ -1,9 +1,8 @@
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
-import { eventRepo, eventService } from '@/(server)/api/_index';
+import { eventRepo } from '@/(server)/api/_index';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
-import { db } from '@/(server)/_shared/database/database';
 
 export async function GET(
   request: Request,

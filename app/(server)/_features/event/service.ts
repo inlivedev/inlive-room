@@ -10,8 +10,9 @@ import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import { ICalAttendeeStatus, ICalAttendeeRole } from 'ical-generator';
 import { addUser, getUserByEmail, getUserById } from '../user/repository';
 import { User, selectUser } from '../user/schema';
-import { db } from '@/(server)/_shared/database/database';
+import { DB, db } from '@/(server)/_shared/database/database';
 import { ServiceError } from '../_service';
+import { DrizzleError } from 'drizzle-orm';
 
 /**
  * Type used to represent all type of participant in an event
@@ -22,7 +23,7 @@ import { ServiceError } from '../_service';
  * it's used for the the event details page
  * https://www.figma.com/proto/wjeG4AE78OXVZNxjWl09yn/inlive-room?node-id=1411-4390&t=X9WZ14pNuG2M6rKG-0&page-id=214%3A591&starting-point-node-id=245%3A519
  */
-export type Participant = {
+export type EventParticipantStat = {
   clientID: string;
   name: string;
   email?: string | null;
@@ -30,6 +31,7 @@ export type Participant = {
   isJoined: boolean;
   isAttended?: boolean;
   joinDuration?: number;
+  role?: selectRole;
 };
 
 export interface EventParticipant {
@@ -223,54 +225,62 @@ export class EventService {
     email: string,
     eventID: number,
     role: string,
-    options?: Pick<insertParticipant, 'isInvited'>
-  ): Promise<EventParticipant> {
+    name?: string,
+    options?: Pick<insertParticipant, 'isInvited'>,
+    _db: DB = db
+  ): Promise<EventParticipant | undefined> {
     let user: selectUser | undefined;
 
-    const res = await db.transaction(async (tx) => {
-      user = await getUserByEmail(email, tx);
+    try {
+      const res = await _db.transaction(async (tx) => {
+        user = await getUserByEmail(email, tx);
 
-      if (!user) {
-        [user] = await addUser({
-          email: email,
-          name: email,
-          isRegistered: false,
-        });
-      }
+        if (!user) {
+          [user] = await addUser({
+            email: email,
+            name: email,
+            isRegistered: false,
+          });
+        }
 
-      if (!user) {
-        throw new ServiceError('EventError', 'Failed to register user', 500);
-      }
+        if (!user) {
+          throw new ServiceError('EventError', 'Failed to register user', 500);
+        }
 
-      const roleData = await eventRepo.getRoleByName(role, tx);
+        const roleData = await eventRepo.getRoleByName(role, tx);
 
-      const participantData = await eventRepo.insertParticipant(
-        user.id,
-        eventID,
-        {
-          clientID: generateID(12),
-          roleID: roleData?.id || 1,
-          ...options,
-        },
-        tx
-      );
+        const participantData = await eventRepo.insertParticipant(
+          user.id,
+          eventID,
+          {
+            clientID: generateID(12),
+            roleID: roleData?.id || 1,
+            ...options,
+          },
+          tx
+        );
 
+        return {
+          user,
+          roleData,
+          participantData,
+        };
+      });
       return {
-        user,
-        roleData,
-        participantData,
+        user: res.user,
+        eventID: eventID,
+        clientID: res.participantData.clientID,
+        createdAt: res.participantData.createdAt,
+        isInvited: res.participantData.isInvited,
+        updateCount: res.participantData.updateCount,
+        role: res.roleData!,
       };
-    });
-
-    return {
-      user: res.user,
-      eventID: eventID,
-      clientID: res.participantData.clientID,
-      createdAt: res.participantData.createdAt,
-      isInvited: res.participantData.isInvited,
-      updateCount: res.participantData.updateCount,
-      role: res.roleData!,
-    };
+    } catch (e) {
+      if (e instanceof DrizzleError) {
+        e.message.includes('duplicate key value violates unique constraint');
+        throw new ServiceError('EventError', `You've already registered`, 400);
+      }
+    }
   }
 }
 
