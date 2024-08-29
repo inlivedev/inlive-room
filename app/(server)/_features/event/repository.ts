@@ -491,6 +491,10 @@ export class EventRepo {
           events: {
             role: sql`${participantRole.name}`.as('role'),
             category: sql`${eventCategory.name}`.as('eventCategory'),
+            host: {
+              email : sql`${users.email}`.as('hostEmail'),
+              name : sql`${users.name}`.as('hostName')
+            },
             ...events
           },
         }
@@ -508,6 +512,7 @@ export class EventRepo {
         .limit(meta.limit)
         .leftJoin(participantRole, eq(participantRole.id, participants.roleID))
         .leftJoin(eventCategory, eq(eventCategory.id, events.categoryID))
+        .leftJoin(users, eq(users.id, events.createdBy))
         .offset(meta.page * meta.limit).as('events')
 
         const res = await db.select().from(participantEvents)
