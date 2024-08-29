@@ -1,8 +1,7 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
-import { selectParticipant } from '@/(server)/_features/event/schema';
 import { selectUser } from '@/(server)/_features/user/schema';
 import { PageMeta } from './types';
-import { Participant } from '@/(server)/_features/event/service';
+import { EventParticipantStat } from '@/(server)/_features/event/service';
 import {
   EventParticipant,
   EventDetails,
@@ -42,17 +41,9 @@ export declare namespace EventType {
     data: EventParticipant;
   };
 
-  type RegisterParticipantResponse = FetcherResponse & {
-    message: string;
-    data: {
-      event: Partial<Event>;
-      participant: selectParticipant;
-    };
-  };
-
   export type GetParticipantsResponse = FetcherResponse & {
     message: string;
-    data: Participant[];
+    data: EventParticipantStat[];
     meta: PageMeta;
   };
 
@@ -61,7 +52,7 @@ export declare namespace EventType {
     email: string;
     firstName: string;
     lastName: string;
-    createdAt: Date;
+    createdAt?: Date;
   };
 
   type GetRegistereeResponse = FetcherResponse & {
