@@ -10,12 +10,13 @@ import {
   selectEvent,
   selectParticipant,
 } from './schema';
-import { DBQueryConfig, SQL, and, count, eq, gt, ilike, inArray, isNull, sql } from 'drizzle-orm';
+import { DBQueryConfig, SQL, aliasedTable, and, count, eq, gt, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { users } from '../user/schema';
 import { EventParticipant } from './service';
 
-
+export type UpcomingEventList = Awaited<ReturnType<EventRepo['getUpcomingEvents']>>
+export type UpcomingEvent = UpcomingEventList extends Array<infer U> ? U : never;
 export class EventRepo {
   async addEvent(event: insertEvent, _db: DB = db): Promise<selectEvent> {
     const data = await _db.insert(events).values(event).returning()
@@ -208,7 +209,7 @@ export class EventRepo {
 
   }
 
-  async getCategoryByName(name: string,_db: DB = db) {
+  async getCategoryByName(name: string, _db: DB = db) {
     return await _db.query.eventCategory.findFirst({
       where: ilike(eventCategory.name, name),
     });
@@ -334,16 +335,16 @@ export class EventRepo {
   }> {
     const isNum = /^\d+$/.test(slugOrID);
 
-    const res = await  _db.transaction(async (tx) => {
+    const res = await _db.transaction(async (tx) => {
       const [countParticipants] = await tx.select({ count: count() })
-      .from(participants)
-      .where(isNum? eq(participants.eventID, parseInt(slugOrID)) : eq(events.slug, slugOrID))
+        .from(participants)
+        .where(isNum ? eq(participants.eventID, parseInt(slugOrID)) : eq(events.slug, slugOrID))
 
-      if(countParticipants.count == 0){
+      if (countParticipants.count == 0) {
         return { total: 0, registeree: [] }
       }
-      
-      const mainQuery =   tx.select(
+
+      const mainQuery = tx.select(
         {
           user: users,
           eventID: participants.eventID,
@@ -477,47 +478,78 @@ export class EventRepo {
   }
 
 
-  getUpcomingEvents(
+  async getUpcomingEvents(
     userID: number,
     meta: { page: number, limit: number } = {
       page: 1,
       limit: 10
-    }, _db: DB = db) {
+    },
+    category?: string,
+    _db: DB = db) {
     meta.page = meta.page - 1;
 
-    const upcomingEvents = _db.transaction(async (db) => {
+    const upcomingEvents = await _db.transaction(async (db) => {
+
+      // This Aliased table causes a bug with the code, which resulted in the return type to be `never`
+      const otherParticipant = aliasedTable(participants, 'otherParticipant')
+      const otherUser = aliasedTable(users, 'otherUser')
+
+      const { name, description, startTime, endTime, roomId, status,categoryID,createdAt,createdBy,id,maximumSlots,thumbnailUrl,updatedAt,uuid,slug } = events;
+
+
       const participantEvents = db.select(
+
         {
-          events: {
-            role: sql`${participantRole.name}`.as('role'),
-            category: sql`${eventCategory.name}`.as('eventCategory'),
-            host: {
-              email : sql`${users.email}`.as('hostEmail'),
-              name : sql`${users.name}`.as('hostName')
-            },
-            ...events
+          name,
+          description,
+          startTime,
+          endTime,
+          roomId,
+          status,
+          categoryID,
+          createdAt,
+          createdBy,
+          id,
+          maximumSlots,
+          thumbnailUrl,
+          updatedAt,
+          uuid,
+          slug,
+          role: sql`${participantRole.name}`.as('role'),
+          category: sql`${eventCategory.name}`.as('eventCategory'),
+          host: {
+            email: sql`${users.email}`.as('hostEmail'),
+            name: sql`${users.name}`.as('hostName')
           },
+          participant: {
+            name: sql<string[]>`ARRAY_AGG(DISTINCT ${otherUser.name})`.as('otherParticipantName'),
+            email: sql<string[]>`ARRAY_AGG(DISTINCT ${otherUser.email})`.as('otherParticipantEmail')
+          },
+
         }
       )
         .from(participants)
-        .where(
-          eq(participants.userID, userID))
         .innerJoin(
           events,
           and(
             eq(events.id, participants.eventID),
             eq(events.status, 'published'),
-            gt(events.endTime, new Date()))
+            gt(events.endTime, new Date()),
+            eq(participants.userID, userID)
+          ),
         )
         .limit(meta.limit)
+        .offset(meta.page * meta.limit)
+        .leftJoin(eventCategory, eq(eventCategory.id, events.categoryID)).where(and(category ? ilike(eventCategory.name, category) : undefined))
         .leftJoin(participantRole, eq(participantRole.id, participants.roleID))
-        .leftJoin(eventCategory, eq(eventCategory.id, events.categoryID))
         .leftJoin(users, eq(users.id, events.createdBy))
-        .offset(meta.page * meta.limit).as('events')
+        .leftJoin(otherParticipant, eq(events.id, otherParticipant.eventID))
+        .leftJoin(otherUser, eq(otherUser.id, otherParticipant.userID))
+        .groupBy(participantRole.name, eventCategory.name, users.email, users.name, events.id)
+        .orderBy(sql`${events.startTime} ASC`)
+        .as('events')
 
-        const res = await db.select().from(participantEvents)
-
-        return res
+      return await db.select().from(participantEvents)
     });
     return upcomingEvents
   }
