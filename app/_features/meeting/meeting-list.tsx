@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { Button } from '@nextui-org/react';
-import type { EventType } from '@/_shared/types/event';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 import Link from 'next/link';
 import ScheduleModal from '@/_features/meeting/schedule-modal';
+import { UpcomingEvent } from '@/(server)/_features/event/repository';
+import { useAuthContext } from '@/_shared/contexts/auth';
 
-export default function MeetingList({ events }: { events: EventType.Event[] }) {
+export default function MeetingList({ events }: { events: UpcomingEvent[] }) {
   const [activeTab, setActiveTab] = useState<'today' | 'upcoming'>('today');
 
   const { todayEvents, upcomingEvents } = events.reduce(
@@ -52,12 +53,12 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
       return { ...accumulator };
     },
     {
-      todayEvents: [] as EventType.Event[],
-      upcomingEvents: [] as EventType.Event[],
+      todayEvents: [] as UpcomingEvent[],
+      upcomingEvents: [] as UpcomingEvent[],
     }
   );
 
-  const activeEvents: EventType.Event[] = ([] =
+  const activeEvents: UpcomingEvent[] = ([] =
     activeTab === 'today' ? todayEvents : upcomingEvents);
 
   return (
@@ -146,10 +147,12 @@ const MeetingItem = ({
   activeTab,
   activeItem = false,
 }: {
-  event: EventType.Event;
+  event: UpcomingEvent;
   activeTab: 'today' | 'upcoming';
   activeItem?: boolean;
 }) => {
+  const { user } = useAuthContext();
+
   const startTime = new Date(event.startTime);
   const endTime = new Date(event.endTime);
   const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
@@ -160,6 +163,23 @@ const MeetingItem = ({
   const startHour = startTime.getHours();
   const startMinute = startTime.getMinutes();
   const now = currentTime > startTime && currentTime < endTime;
+
+  const filteredParticipant = event.participant
+    .filter((participant) => participant.id !== event.host.id)
+    .map((participant) => {
+      if (participant.id == user!.id) {
+        return {
+          ...participant,
+          email: 'You',
+          name: 'You',
+        };
+      }
+      return {
+        ...participant,
+        name: participant.name.split(' ')[0],
+      };
+    })
+    .sort((a, b) => (a.email === 'You' ? -1 : b.email === 'You' ? 1 : 0));
 
   return (
     <Button
@@ -195,6 +215,15 @@ const MeetingItem = ({
             }`}
           >
             {event.name}
+            <p className="truncate text-sm text-zinc-500">
+              {event.host.id !== user?.id
+                ? 'host: ' + event.host.name.split(' ')[0] + ' |'
+                : ''}{' '}
+              guest:{' '}
+              {filteredParticipant
+                .map((participant) => participant.name)
+                .join(', ')}{' '}
+            </p>
           </div>
         </div>
       </div>

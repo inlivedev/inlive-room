@@ -10,29 +10,31 @@ import {
   selectEvent,
   selectParticipant,
 } from './schema';
-import { DBQueryConfig, SQL, and, count, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
+import { DBQueryConfig, SQL, aliasedTable, and, count, eq, gt, ilike, inArray, isNull, sql } from 'drizzle-orm';
 import { PageMeta } from '@/_shared/types/types';
 import { users } from '../user/schema';
 import { EventParticipant } from './service';
 
 
+export type UpcomingEventList = Awaited<ReturnType<EventRepo['getUpcomingEvents']>>
+export type UpcomingEvent = UpcomingEventList extends Array<infer U> ? U : never;
 export class EventRepo {
   async addEvent(event: insertEvent, _db: DB = db): Promise<selectEvent> {
     const data = await _db.insert(events).values(event).returning()
     return data[0];
   }
 
-  async getBySlugOrID(slugOrID: string, category?: string, _db: DB = db): Promise<selectEvent | undefined>{
+  async getBySlugOrID(slugOrID: string, category?: string, _db: DB = db): Promise<selectEvent | undefined> {
     const event = await _db.transaction(async (tx) => {
       const isnum = /^\d+$/.test(slugOrID);
-      
+
       const categoryID = category ? await tx.query.eventCategory.findFirst({
         where: ilike(eventCategory.name, category)
       }) : undefined;
 
       const data = await db.query.events.findFirst({
         where: and(
-          isnum? eq(events.id, parseInt(slugOrID)) : eq(events.slug, slugOrID),
+          isnum ? eq(events.id, parseInt(slugOrID)) : eq(events.slug, slugOrID),
           isNull(events.deletedAt),
           categoryID ? eq(events.categoryID, categoryID.id) : undefined
         ),
@@ -208,7 +210,7 @@ export class EventRepo {
 
   }
 
-  async getCategoryByName(name: string,_db: DB = db) {
+  async getCategoryByName(name: string, _db: DB = db) {
     return await _db.query.eventCategory.findFirst({
       where: ilike(eventCategory.name, name),
     });
@@ -306,10 +308,10 @@ export class EventRepo {
     return data[0];
   }
 
-  async insertParticipant(userID : number, eventID: number, options:  Omit<insertParticipant,'userID' | 'eventID'>, _db: DB = db) : Promise<selectParticipant>{
-      const [participant] = await _db.insert(participants).values({userID,eventID,...options}).returning()
-      return participant
-    }
+  async insertParticipant(userID: number, eventID: number, options: Omit<insertParticipant, 'userID' | 'eventID'>, _db: DB = db): Promise<selectParticipant> {
+    const [participant] = await _db.insert(participants).values({ userID, eventID, ...options }).returning()
+    return participant
+  }
 
   async countRegistiree(eventID: number, _db: DB = db) {
     const res = await _db
@@ -328,22 +330,22 @@ export class EventRepo {
     slugOrID: string,
     paging?: { page: number; limit: number },
     _db: DB = db,
-  ) : Promise<{
+  ): Promise<{
     data: EventParticipant[],
     meta: PageMeta
   }> {
     const isNum = /^\d+$/.test(slugOrID);
 
-    const res = await  _db.transaction(async (tx) => {
+    const res = await _db.transaction(async (tx) => {
       const [countParticipants] = await tx.select({ count: count() })
-      .from(participants)
-      .where(isNum? eq(participants.eventID, parseInt(slugOrID)) : eq(events.slug, slugOrID))
+        .from(participants)
+        .where(isNum ? eq(participants.eventID, parseInt(slugOrID)) : eq(events.slug, slugOrID))
 
-      if(countParticipants.count == 0){
+      if (countParticipants.count == 0) {
         return { total: 0, registeree: [] }
       }
-      
-      const mainQuery =   tx.select(
+
+      const mainQuery = tx.select(
         {
           user: users,
           eventID: participants.eventID,
@@ -354,14 +356,14 @@ export class EventRepo {
           updateCount: participants.updateCount,
         }
       )
-      .from(participants)
-      .innerJoin(events, eq(participants.eventID, events.id))
-      .innerJoin(participantRole,eq(participants.roleID, participantRole.id))
-      .innerJoin(users, eq(participants.userID, users.id))
-      .where(isNum? eq(events.id, parseInt(slugOrID)) : eq(events.slug, slugOrID))
-      
+        .from(participants)
+        .innerJoin(events, eq(participants.eventID, events.id))
+        .innerJoin(participantRole, eq(participants.roleID, participantRole.id))
+        .innerJoin(users, eq(participants.userID, users.id))
+        .where(isNum ? eq(events.id, parseInt(slugOrID)) : eq(events.slug, slugOrID))
 
-      if(paging){
+
+      if (paging) {
         mainQuery.limit(paging.limit).offset((paging.page - 1) * paging.limit)
       }
 
@@ -380,7 +382,7 @@ export class EventRepo {
       total_record: res.total,
     };
 
-    const data : EventParticipant[]  = res.registeree.map((r) => ({
+    const data: EventParticipant[] = res.registeree.map((r) => ({
       user: r.user,
       eventID: r.eventID,
       clientID: r.clientID,
@@ -396,15 +398,15 @@ export class EventRepo {
 
 
   async getParticipantByClientId(clientID: string) {
-    const res=  await db.query.participants.findFirst({
+    const res = await db.query.participants.findFirst({
       where: eq(participants.clientID, clientID),
-      with:{
-        user:{
-          columns:{
-            name:true,
-            email:true,
-            pictureUrl:true,
-            id:true
+      with: {
+        user: {
+          columns: {
+            name: true,
+            email: true,
+            pictureUrl: true,
+            id: true
           }
         }
       }
@@ -425,7 +427,7 @@ export class EventRepo {
     } : undefined;
   }
 
-  async getParticipant(userID: number, eventID: number, _db :DB = db) {
+  async getParticipant(userID: number, eventID: number, _db: DB = db) {
     const res = await _db.query.participants.findFirst({
       where: and(eq(participants.userID, userID), eq(participants.eventID, eventID)),
     });
@@ -464,15 +466,100 @@ export class EventRepo {
     return res;
   }
 
-  async getRoleByName(name: string, _db: DB= db) {
+  async getRoleByName(name: string, _db: DB = db) {
     return _db.query.participantRole.findFirst({
       where: ilike(participantRole.name, name),
     });
   }
 
-  async getRoleByID(id: number, _db: DB= db) {
+  async getRoleByID(id: number, _db: DB = db) {
     return _db.query.participantRole.findFirst({
       where: eq(participantRole.id, id),
     });
+  }
+
+
+  async getUpcomingEvents(
+    userID: number,
+    meta: { page: number, limit: number } = {
+      page: 1,
+      limit: 10
+    },
+    category?: string,
+    _db: DB = db) {
+    meta.page = meta.page - 1;
+
+    const upcomingEvents = await _db.transaction(async (db) => {
+
+      // This Aliased table causes a bug with the code, which resulted in the return type to be `never`
+      const otherParticipant = aliasedTable(participants, 'otherParticipant')
+      const otherUser = aliasedTable(users, 'otherUser')
+
+      const { name, description, startTime, endTime, roomId, status,categoryID,createdAt,createdBy,id,maximumSlots,thumbnailUrl,updatedAt,uuid,slug } = events;
+
+
+      const participantEvents = db.select(
+
+        {
+          name,
+          description,
+          startTime,
+          endTime,
+          roomId,
+          status,
+          categoryID,
+          createdAt,
+          createdBy,
+          id,
+          maximumSlots,
+          thumbnailUrl,
+          updatedAt,
+          uuid,
+          slug,
+          role: sql`${participantRole.name}`.as('role'),
+          category: sql`${eventCategory.name}`.as('eventCategory'),
+          host: {
+            email: sql`${users.email}`.as('hostEmail'),
+            name: sql<string>`${users.name}`.as('hostName'),
+            id: sql`${users.id}`.as('hostID'),
+          },
+          participant: 
+            sql<{
+              name:string,
+              id:number,
+              email:string,
+              pictureUrl:string,
+            }[]>`JSON_AGG(JSON_BUILD_OBJECT(
+            'name',${otherUser.name},
+            'id',${otherUser.id},
+            'email',${otherUser.email},
+            'pictureUrl',${otherUser.pictureUrl}
+            ))`.as('otherParticipants'),
+        }
+      )
+        .from(participants)
+        .innerJoin(
+          events,
+          and(
+            eq(events.id, participants.eventID),
+            eq(events.status, 'published'),
+            gt(events.endTime, new Date()),
+            eq(participants.userID, userID)
+          ),
+        )
+        .limit(meta.limit)
+        .offset(meta.page * meta.limit)
+        .leftJoin(eventCategory, eq(eventCategory.id, events.categoryID)).where(and(category ? ilike(eventCategory.name, category) : undefined))
+        .leftJoin(participantRole, eq(participantRole.id, participants.roleID))
+        .leftJoin(users, eq(users.id, events.createdBy))
+        .leftJoin(otherParticipant, eq(events.id, otherParticipant.eventID))
+        .leftJoin(otherUser, eq(otherUser.id, otherParticipant.userID))
+        .groupBy(participantRole.name, eventCategory.name, users.email, users.name, events.id, users.id)
+        .orderBy(sql`${events.startTime} ASC`)
+        .as('events')
+
+      return await db.select().from(participantEvents)
+    });
+    return upcomingEvents
   }
 }

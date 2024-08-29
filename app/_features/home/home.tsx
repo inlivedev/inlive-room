@@ -4,9 +4,9 @@ import Footer from '@/_shared/components/footer/footer';
 import SignedIn from '@/_features/home/signed-in';
 import NotSignedIn from '@/_features/home/not-signed-in';
 import { useAuthContext } from '@/_shared/contexts/auth';
-import type { EventType } from '@/_shared/types/event';
+import { UpcomingEvent } from '@/(server)/_features/event/repository';
 
-export default function View({ events }: { events: EventType.Event[] }) {
+export default function View({ events }: { events: UpcomingEvent[] }) {
   const { user } = useAuthContext();
 
   return (
