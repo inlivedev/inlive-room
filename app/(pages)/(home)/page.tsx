@@ -2,8 +2,8 @@ import Home from '@/_features/home/home';
 import { cookies, headers } from 'next/headers';
 import AppContainer from '@/_shared/components/containers/app-container';
 import type { AuthType } from '@/_shared/types/auth';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import type { EventType } from '@/_shared/types/event';
+import { UpcomingEvent } from '@/(server)/_features/event/repository';
+import { eventRepo } from '@/(server)/api/_index';
 
 export default async function Page() {
   const headersList = headers();
@@ -17,22 +17,13 @@ export default async function Page() {
 
   const token = cookies().get('token')?.value ?? '';
 
-  let upcomingEvents: EventType.Event[] = [];
+  const upcomingEvents: UpcomingEvent[] = [];
 
   const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
   if (token && user && persistentData) {
-    const listEventsResponse: EventType.ListEventsResponse =
-      await InternalApiFetcher.get(
-        `/api/events?&limit=${10}&end_is_after=${now.toISOString()}&status[]=published`,
-        {
-          headers: {
-            Cookie: `token=${token}`,
-          },
-        }
-      );
-
-    upcomingEvents = listEventsResponse.data || [];
+    const events = await eventRepo.getUpcomingEvents(user.id);
+    upcomingEvents.push(...events);
   }
 
   return (

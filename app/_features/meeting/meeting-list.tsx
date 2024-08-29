@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { Button } from '@nextui-org/react';
-import type { EventType } from '@/_shared/types/event';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 import Link from 'next/link';
 import ScheduleModal from '@/_features/meeting/schedule-modal';
+import { UpcomingEvent } from '@/(server)/_features/event/repository';
+import { useAuthContext } from '@/_shared/contexts/auth';
 
-export default function MeetingList({ events }: { events: EventType.Event[] }) {
+export default function MeetingList({ events }: { events: UpcomingEvent[] }) {
   const [activeTab, setActiveTab] = useState<'today' | 'upcoming'>('today');
 
   const { todayEvents, upcomingEvents } = events.reduce(
@@ -52,12 +53,12 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
       return { ...accumulator };
     },
     {
-      todayEvents: [] as EventType.Event[],
-      upcomingEvents: [] as EventType.Event[],
+      todayEvents: [] as UpcomingEvent[],
+      upcomingEvents: [] as UpcomingEvent[],
     }
   );
 
-  const activeEvents: EventType.Event[] = ([] =
+  const activeEvents: UpcomingEvent[] = ([] =
     activeTab === 'today' ? todayEvents : upcomingEvents);
 
   return (
@@ -69,9 +70,8 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
             <ul className="flex items-center text-sm font-medium">
               <li className="relative py-2">
                 <Button
-                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
-                    activeTab === 'today' ? 'text-zinc-100' : 'text-zinc-400'
-                  }`}
+                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${activeTab === 'today' ? 'text-zinc-100' : 'text-zinc-400'
+                    }`}
                   onPress={() => setActiveTab('today')}
                 >
                   Today
@@ -82,9 +82,8 @@ export default function MeetingList({ events }: { events: EventType.Event[] }) {
               </li>
               <li className="relative py-2">
                 <Button
-                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${
-                    activeTab === 'upcoming' ? 'text-zinc-100' : 'text-zinc-400'
-                  }`}
+                  className={`h-8 min-h-0 w-full min-w-0 rounded bg-transparent px-3 py-1.5 font-medium antialiased hover:bg-zinc-800 active:bg-zinc-700 ${activeTab === 'upcoming' ? 'text-zinc-100' : 'text-zinc-400'
+                    }`}
                   onPress={() => setActiveTab('upcoming')}
                 >
                   Upcoming
@@ -146,10 +145,13 @@ const MeetingItem = ({
   activeTab,
   activeItem = false,
 }: {
-  event: EventType.Event;
+  event: UpcomingEvent;
   activeTab: 'today' | 'upcoming';
   activeItem?: boolean;
 }) => {
+
+  const { user } = useAuthContext();
+
   const startTime = new Date(event.startTime);
   const endTime = new Date(event.endTime);
   const startDate = useFormattedDateTime(event.startTime, 'en-GB', {
@@ -160,12 +162,13 @@ const MeetingItem = ({
   const startHour = startTime.getHours();
   const startMinute = startTime.getMinutes();
   const now = currentTime > startTime && currentTime < endTime;
+  const filteredEmails = event.participant.email.filter(email => email !== event.host.email);
 
   return (
     <Button
       as={Link}
       href={`/rooms/${event.roomId}`}
-      className={`flex h-auto min-h-0 w-full min-w-0 items-center gap-4 rounded px-4 py-3 antialiased ${
+      className={`flex h-auto min-h-0 w-full min-w-0 max-w-96 items-center gap-4 rounded px-4 py-3 antialiased ${
         activeItem
           ? 'bg-red-900 hover:bg-red-800 active:bg-red-700'
           : 'bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700'
@@ -195,6 +198,9 @@ const MeetingItem = ({
             }`}
           >
             {event.name}
+            <p  className="truncate text-sm text-zinc-500">
+              {event.host.email !== user?.email ? 'host: ' + event.host.email + ' |' : ''}  guest:{filteredEmails.join(', ')}
+            </p>
           </div>
         </div>
       </div>
