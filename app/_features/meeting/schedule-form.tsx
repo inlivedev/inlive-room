@@ -258,7 +258,7 @@ export default function MeetingScheduleForm() {
                 setIsDatePickerOpen(!isDatePickerOpen);
               }}
             >
-              <CalendarIcon className="h-5 w-5" />
+              <CalendarIcon className="size-5" />
             </Button>
           </div>
 

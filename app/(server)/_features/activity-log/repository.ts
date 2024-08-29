@@ -36,6 +36,7 @@ export const aggregateRoomDuration = async (
   const res = await db.execute(finalSQL);
 
   try {
+    // @ts-ignore
     const duration = res[0].total_duration as number;
     return duration;
   } catch (e) {
@@ -55,7 +56,7 @@ export const countRegisteredParticipant = async (roomID: string) => {
       )
     );
 
-  return res[0];
+  return res[0].value;
 };
 
 /**

@@ -1,4 +1,5 @@
 import type { FetcherResponse } from '@/_shared/utils/fetcher';
+import * as z from 'zod';
 
 export declare namespace AuthType {
   type CurrentAuthExternalData = {
@@ -6,6 +7,21 @@ export declare namespace AuthType {
     email: string;
     name: string;
     picture_url: string;
+  };
+
+  type RegisterAuthExternalData = FetcherResponse & {
+    data: {
+      id: number;
+      username: string;
+      password: string;
+      confirm_password: string;
+      name: string;
+      login_type: string;
+      email: string;
+      role_id: number;
+      picture_url: string;
+      is_active: boolean;
+    };
   };
 
   type CurrentAuthData = {
@@ -67,5 +83,10 @@ export declare namespace AuthType {
   type SignOutResponse = FetcherResponse & {
     message: string;
     data: null;
+  };
+
+  type RegisterAuthResponse = FetcherResponse & {
+    message: string;
+    data: RegisterAuthExternalData | null;
   };
 }

@@ -48,6 +48,7 @@ export const getCurrentAuthenticated = async (token: string) => {
           pictureUrl: response.data.picture_url,
           whitelistFeature: whitelistFeature,
           createdAt: null,
+          isRegistered: false,
         },
       };
     }
@@ -75,6 +76,7 @@ export const getCurrentAuthenticated = async (token: string) => {
         whitelistFeature: user.whitelistFeature,
         createdAt: user.createdAt,
         accountId: user.accountId,
+        isRegistered: user.isRegistered,
       },
     };
   } catch (error) {

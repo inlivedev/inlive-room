@@ -9,6 +9,7 @@ import EmailScheduledMeeting from 'emails/event/EventScheduleMeeting';
 import * as Sentry from '@sentry/node';
 import { generateDateTime } from '@/(server)/_shared/utils/generate-date-time';
 import { EventParticipant, eventService } from '../event/service';
+import { defaultLogger } from '@/(server)/_shared/logger/logger';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -56,6 +57,10 @@ class ScheduledMeetingService {
       event.id,
       'host'
     );
+
+    if (!hostParticipant) {
+      throw new Error('Failed to register host participant');
+    }
 
     if (!event) {
       return;
@@ -205,13 +210,20 @@ class ScheduledMeetingService {
     const emailCustomValue: { [key: string]: string } = {};
 
     for (const participant of participants) {
-      listParticipant.push(
-        await eventService.registerParticipant(
-          participant.email,
-          event.id,
-          'participant'
-        )
+      const res = await eventService.registerParticipant(
+        participant.email,
+        event.id,
+        'participant'
       );
+
+      if (!res) {
+        defaultLogger.captureException(
+          new Error('Failed to register participant')
+        );
+        continue;
+      }
+
+      listParticipant.push(res);
       replyEmails.push(participant.email);
     }
 
