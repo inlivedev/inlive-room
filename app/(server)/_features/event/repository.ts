@@ -14,6 +14,7 @@ import { DBQueryConfig, SQL, aliasedTable, and, count, eq, gt, ilike, inArray, i
 import { PageMeta } from '@/_shared/types/types';
 import { users } from '../user/schema';
 import { EventParticipant } from './service';
+import { rooms } from '../room/schema';
 
 
 export type UpcomingEventList = Awaited<ReturnType<EventRepo['getUpcomingEvents']>>
@@ -466,6 +467,34 @@ export class EventRepo {
     return res;
   }
 
+  getEventWithroom(roomID: string, _db: DB = db) {
+    const {
+      createdAt, createdBy, id, meta, name
+    } = rooms
+
+    return _db.select({
+      name,
+      createdAt,
+      createdBy,
+      id,
+      meta,
+
+      event: {
+        ...events,
+        category: eventCategory,
+      },
+    })
+      .from(rooms)
+      .where(eq(rooms.id, roomID))
+      .leftJoin(
+        events,
+        eq(events.roomId, rooms.id))
+      .leftJoin(
+        eventCategory,
+        eq(eventCategory.id, events.categoryID))
+      .limit(1)
+  }
+
   async getRoleByName(name: string, _db: DB = db) {
     return _db.query.participantRole.findFirst({
       where: ilike(participantRole.name, name),
@@ -495,7 +524,7 @@ export class EventRepo {
       const otherParticipant = aliasedTable(participants, 'otherParticipant')
       const otherUser = aliasedTable(users, 'otherUser')
 
-      const { name, description, startTime, endTime, roomId, status,categoryID,createdAt,createdBy,id,maximumSlots,thumbnailUrl,updatedAt,uuid,slug } = events;
+      const { name, description, startTime, endTime, roomId, status, categoryID, createdAt, createdBy, id, maximumSlots, thumbnailUrl, updatedAt, uuid, slug } = events;
 
 
       const participantEvents = db.select(
@@ -523,12 +552,12 @@ export class EventRepo {
             name: sql<string>`${users.name}`.as('hostName'),
             id: sql`${users.id}`.as('hostID'),
           },
-          participant: 
+          participant:
             sql<{
-              name:string,
-              id:number,
-              email:string,
-              pictureUrl:string,
+              name: string,
+              id: number,
+              email: string,
+              pictureUrl: string,
             }[]>`JSON_AGG(JSON_BUILD_OBJECT(
             'name',${otherUser.name},
             'id',${otherUser.id},

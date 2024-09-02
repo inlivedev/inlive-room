@@ -4,13 +4,15 @@ import { getServerSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
 import { eventRepo } from '@/(server)/api/_index';
 import { ServiceError } from '../_service';
+import { selectCategory, selectEvent } from '../event/schema';
 
-export interface Room {
-  id: string;
-  name?: string | null;
-  createdBy: number;
-  meta: { [key: string]: any };
-}
+export type Room = selectRoom & {
+  event?:
+    | (selectEvent & {
+        category?: selectCategory;
+      })
+    | null;
+};
 
 export interface Client {
   clientID: string;
