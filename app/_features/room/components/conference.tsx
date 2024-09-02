@@ -606,10 +606,14 @@ export default function Conference() {
         case 'presentation':
           max = 4;
           break;
-        case 'gallery':
-          max = 9;
+        case 'speaker':
+          max = 3;
+          break;
+        case 'multi-speakers':
+          max = 7;
           break;
         default:
+          // gallery
           max = 9;
           break;
       }
@@ -623,9 +627,6 @@ export default function Conference() {
           break;
         case 'presentation':
           max = 7;
-          break;
-        case 'gallery':
-          max = 25;
           break;
         default:
           max = 25;
@@ -732,9 +733,12 @@ export default function Conference() {
 
   const moreThanMax = streams.length > maxVisibleParticipants();
 
-  const MAX_VISIBLE_PARTICIPANTS = moreThanMax
-    ? maxVisibleParticipants() - 1
-    : maxVisibleParticipants();
+  const MAX_VISIBLE_PARTICIPANTS =
+    moreThanMax &&
+    currentLayout !== 'speaker' &&
+    currentLayout !== 'multi-speakers'
+      ? maxVisibleParticipants() - 1
+      : maxVisibleParticipants();
 
   streams.forEach((stream) => {
     if (pinnedStreams.includes(stream.id)) {
@@ -823,18 +827,18 @@ export default function Conference() {
           setStyle(style);
           break;
         case 'speaker':
-          const totalSpeakers = streams.filter((stream) =>
-            isSpeaker(stream, topSpeakers)
-          ).length;
-          const totalPinned = pinnedStreams.length + totalSpeakers;
-          if (totalPinned > 0) {
-            const span = Math.floor(
-              Math.sqrt(24 / (totalPinned > 6 ? 6 : totalPinned))
-            );
-            setPinnedSpan(span);
-          } else {
-            // what to fill in stage
-          }
+          // landscape
+          style = {
+            display: 'grid',
+            gap: '1rem',
+            gridTemplateRows: `5fr 1fr`,
+            gridTemplateColumns: `repeat(${
+              isMobile() ? 2 : 6
+            }, minmax(0, 1fr))`,
+          };
+
+          setStyle(style);
+          break;
       }
     }
 
@@ -949,9 +953,8 @@ export default function Conference() {
                             : MAX_VISIBLE_PARTICIPANTS - 1),
                       };
                     }
-                    itemStyle;
                   } else if (
-                    currentLayout !== 'presentation' &&
+                    currentLayout === 'gallery' &&
                     stream.source !== 'screen' &&
                     needDoubleGrid.current
                   ) {
@@ -960,6 +963,20 @@ export default function Conference() {
                       gridRowEnd: 'span 2',
                       gridColumnEnd: 'span 2',
                     };
+                  } else if (
+                    !hidden &&
+                    layoutContainerRef.current &&
+                    currentLayout === 'speaker'
+                  ) {
+                    if (renderedCount === 1) {
+                      itemStyle = {
+                        gridColumnEnd: 'span ' + (isMobile() ? 2 : 6),
+                      };
+                    } else if (!isMobile()) {
+                      itemStyle = {
+                        gridColumnStart: renderedCount + 1,
+                      };
+                    }
                   }
 
                   const currentRow = Math.ceil(renderedCount / columns.current);
@@ -1002,13 +1019,15 @@ export default function Conference() {
                     </div>
                   );
                 })}
-                {moreThanMax && (
-                  <div className="participant-item">
-                    <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-zinc-800 p-2 text-xs font-medium shadow-lg sm:text-sm">
-                      More <span className="hidden sm:inline">+</span>
+                {moreThanMax &&
+                  currentLayout !== 'speaker' &&
+                  currentLayout !== 'multi-speakers' && (
+                    <div className="participant-item">
+                      <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-zinc-800 p-2 text-xs font-medium shadow-lg sm:text-sm">
+                        More <span className="hidden sm:inline">+</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </div>
             {sidebar ? (

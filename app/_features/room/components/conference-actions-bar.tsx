@@ -6,21 +6,20 @@ import ButtonMicrophone from '@/_features/room/components/button-microphone';
 import ButtonCamera from '@/_features/room/components/button-camera';
 import ButtonScreenShare from '@/_features/room/components/button-screen-share';
 import ButtonChat from '@/_features/room/components/button-chat';
-import ButtonLayout from './button-layout';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
-import type { Sidebar,ParticipantVideo, DeviceStateType,DeviceType } from './conference';
+import type { Sidebar, ParticipantVideo, DeviceType } from './conference';
 
 export default function ConferenceActionsBar({
-	streams,
+  streams,
   sidebar,
   deviceTypes,
 }: {
-	streams: ParticipantVideo[],
+  streams: ParticipantVideo[];
   sidebar: Sidebar;
   deviceTypes: DeviceType;
 }) {
   const [isTouchScreen, setIsTouchScreen] = useState(true);
-	
+
   useEffect(() => {
     setIsTouchScreen(hasTouchScreen());
   }, []);
@@ -44,9 +43,6 @@ export default function ConferenceActionsBar({
           </div>
           <div className="flex h-full flex-col justify-center">
             <ButtonChat sidebar={sidebar} />
-          </div>
-		  <div className="flex h-full flex-col justify-center">
-            <ButtonLayout/>
           </div>
           <div className="flex h-full flex-col justify-center">
             <ButtonLeave streams={streams} />
