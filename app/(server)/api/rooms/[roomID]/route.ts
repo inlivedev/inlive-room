@@ -13,9 +13,9 @@ export async function GET(
 ) {
   const roomID = params.roomID;
   try {
-    const { room, event } = await roomService.joinRoom(roomID);
+    const res = await roomService.joinRoom(roomID);
 
-    if (!room) {
+    if (!res.room) {
       return NextResponse.json({
         code: 404,
         message: 'Room not found',
@@ -26,10 +26,7 @@ export async function GET(
       {
         code: 200,
         message: 'Room found',
-        data: room,
-        meta: {
-          event: event,
-        },
+        data: res,
       },
       { status: 200 }
     );

@@ -4,13 +4,15 @@ import { getServerSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
 import { eventRepo } from '@/(server)/api/_index';
 import { ServiceError } from '../_service';
+import { selectCategory, selectEvent } from '../event/schema';
 
-export interface Room {
-  id: string;
-  name?: string | null;
-  createdBy: number;
-  meta: { [key: string]: any };
-}
+export type Room = selectRoom & {
+  event?:
+    | (selectEvent & {
+        category?: selectCategory;
+      })
+    | null;
+};
 
 export interface Client {
   clientID: string;
@@ -94,27 +96,29 @@ export class RoomService {
       throw new Error('Room not found');
     }
 
-    const event = await eventRepo.getByRoomID(roomData.id);
+    const event = await eventRepo.getEventWithRoom(roomId);
 
     if (event) {
-      if (!clientID) throw new Error('Client ID is required for event room');
+      if (event.category?.name != 'meetings') {
+        if (!clientID) throw new Error('Client ID is required for event room');
 
-      const participant = await eventRepo.getParticipantByClientId(clientID);
+        const participant = await eventRepo.getParticipantByClientId(clientID);
 
-      if (!participant) {
-        throw new ServiceError(
-          'EventError',
-          'Client ID does not match any participant',
-          400
-        );
-      }
+        if (!participant) {
+          throw new ServiceError(
+            'EventError',
+            'Client ID does not match any participant',
+            400
+          );
+        }
 
-      if (participant.eventID !== event.id) {
-        throw new ServiceError(
-          'EventError',
-          'Client ID does not match the event room',
-          400
-        );
+        if (participant.eventID !== event.id) {
+          throw new ServiceError(
+            'EventError',
+            'Client ID does not match the event room',
+            400
+          );
+        }
       }
     }
 
@@ -206,7 +210,6 @@ export class RoomService {
       if (roomResp.code > 299) {
         console.error(roomResp.message);
         Sentry.captureMessage(`Failed to create a room ${roomID}.`, 'error');
-        console.log(JSON.stringify(roomResp));
         throw new Error(
           'Error during creating room, please try again later ' +
             roomResp.message
@@ -336,9 +339,16 @@ export class RoomService {
     }
 
     if (room && this._roomRepo.isPersistent()) {
-      const event = await eventRepo.getByRoomID(roomId);
+      const event = await eventRepo.getEventWithRoom(roomId);
 
-      return { room, event: event };
+      return {
+        room,
+        event: {
+          ...event,
+          category: event.category,
+          room: undefined,
+        },
+      };
     }
 
     return { room, event: undefined };

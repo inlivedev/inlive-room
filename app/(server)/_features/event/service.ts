@@ -2,6 +2,7 @@ import { eventRepo } from '@/(server)/api/_index';
 import {
   insertEvent,
   insertParticipant,
+  selectCategory,
   selectEvent,
   selectRole,
 } from './schema';
@@ -47,6 +48,7 @@ export interface EventParticipant {
 export interface EventDetails extends selectEvent {
   host?: selectUser;
   availableSlots?: number;
+  category?: selectCategory;
 }
 
 export class EventService {
