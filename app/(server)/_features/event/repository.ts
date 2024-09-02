@@ -467,7 +467,7 @@ export class EventRepo {
     return res;
   }
 
-  async getRoomWithEvent(roomID: string, _db: DB = db): Promise<
+  async getEventWithRoom(roomID: string, _db: DB = db): Promise<
     selectEvent & {
       room: selectRoom
       category: {

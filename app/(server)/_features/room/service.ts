@@ -96,7 +96,7 @@ export class RoomService {
       throw new Error('Room not found');
     }
 
-    const event = await eventRepo.getRoomWithEvent(roomId);
+    const event = await eventRepo.getEventWithRoom(roomId);
 
     if (event) {
       console.log(JSON.stringify(event));
@@ -342,7 +342,7 @@ export class RoomService {
     }
 
     if (room && this._roomRepo.isPersistent()) {
-      const event = await eventRepo.getRoomWithEvent(roomId);
+      const event = await eventRepo.getEventWithRoom(roomId);
 
       return {
         room,
