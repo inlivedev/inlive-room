@@ -12,10 +12,18 @@ const defaultData = {
   isModerator: false as boolean,
   moderatorClientIDs: [] as string[],
   roomType: 'meeting' as string,
-  previousLayout: 'auto' as 'auto' | 'gallery' |'presentation',
-  currentLayout: 'auto' as 'auto' | 'gallery' |'presentation',
+  previousLayout: 'gallery' as
+    | 'gallery'
+    | 'speaker'
+    | 'multi-speakers'
+    | 'presentation',
+  currentLayout: 'gallery' as
+    | 'gallery'
+    | 'speaker'
+    | 'multi-speakers'
+    | 'presentation',
   speakerClientIDs: [] as string[],
-  spotlights: [] as string[],
+  pinnedStreams: [] as string[],
 };
 
 const MetadataContext = createContext(defaultData);
@@ -35,7 +43,7 @@ export function MetadataProvider({
   roomType: string;
   isModerator: boolean;
 }) {
-  const defaultLayout = 'auto';
+  const defaultLayout = 'gallery';
 
   const [metadataState, setMetadataState] = useState<typeof defaultData>({
     ...defaultData,

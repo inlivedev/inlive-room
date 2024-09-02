@@ -12,7 +12,7 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
   return async (request: NextRequest, event: NextFetchEvent) => {
     const response = await middleware(request, event);
 
-	const userCookiesKey = 'user-auth';
+    const userCookiesKey = 'user-auth';
 
     if (request.nextUrl.pathname.startsWith('/health')) {
       return response;
@@ -21,32 +21,30 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
     if (response) {
       const requestToken = cookies().get('token');
 
-	  if (!requestToken) {
-		response.headers.set(userCookiesKey, JSON.stringify(null));
-		return response;
-	  }
+      if (!requestToken) {
+        response.headers.set(userCookiesKey, JSON.stringify(null));
+        return response;
+      }
 
       try {
-		const userCookies = cookies().get(userCookiesKey);
-		let userData;
+        const userCookies = cookies().get(userCookiesKey);
+        let userData;
 
-		if (!userCookies) {
-			const user: AuthType.CurrentAuthResponse = await InternalApiFetcher.get(
-			'/api/auth/current',
-			{
-				headers: {
-				Authorization: `Bearer ${requestToken?.value || ''}`,
-				},
-				cache: 'no-cache',
-			}
-			);
+        if (!userCookies) {
+          const user: AuthType.CurrentAuthResponse =
+            await InternalApiFetcher.get('/api/auth/current', {
+              headers: {
+                Authorization: `Bearer ${requestToken?.value || ''}`,
+              },
+              cache: 'no-cache',
+            });
 
-			userData = user.data ? user.data : null;
-		} else {
-			userData = userCookies.value;
-		}
-		
-		response.headers.set(userCookiesKey, JSON.stringify(userData));
+          userData = user.data ? user.data : null;
+        } else {
+          userData = userCookies.value;
+        }
+
+        response.headers.set(userCookiesKey, JSON.stringify(userData));
       } catch (error) {
         Sentry.captureException(error, {
           extra: {

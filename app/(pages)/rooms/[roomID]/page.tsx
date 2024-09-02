@@ -71,7 +71,11 @@ export default async function Page({ searchParams }: PageProps) {
     notFound();
   }
 
-  const isModerator = roomData.createdBy === userAuth?.id;
+  const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
+
+  const isModerator = persistentData
+    ? roomData.createdBy === userAuth?.id
+    : true;
 
   const sdk = await getServerSDK();
 

@@ -20,7 +20,7 @@ export default function ConferenceActionsBar({
   deviceTypes: DeviceType;
 }) {
   const [isTouchScreen, setIsTouchScreen] = useState(true);
-
+	
   useEffect(() => {
     setIsTouchScreen(hasTouchScreen());
   }, []);
@@ -44,6 +44,9 @@ export default function ConferenceActionsBar({
           </div>
           <div className="flex h-full flex-col justify-center">
             <ButtonChat sidebar={sidebar} />
+          </div>
+		  <div className="flex h-full flex-col justify-center">
+            <ButtonLayout/>
           </div>
           <div className="flex h-full flex-col justify-center">
             <ButtonLeave streams={streams} />

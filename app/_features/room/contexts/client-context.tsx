@@ -22,6 +22,8 @@ const ClientContext = createContext<ClientProviderProps>({
   roomType: ' ',
 });
 
+const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
+
 export const useClientContext = () => {
   return useContext(ClientContext);
 };
@@ -120,7 +122,7 @@ export function ClientProvider({
     const onBrowserClose = () => {
       const clientLeaveTime = new Date().toISOString();
 
-      if (!isActivityRecordedRef.current && clientJoinTime) {
+      if (!isActivityRecordedRef.current && clientJoinTime && persistentData) {
         const data = JSON.stringify({
           name: 'RoomDuration',
           meta: {
@@ -155,6 +157,10 @@ export function ClientProvider({
           throw new Error(
             response?.message || 'Failed to get response from the server'
           );
+        }
+
+        if (!persistentData) {
+          return;
         }
 
         const clientLeaveTime = new Date().toISOString();
