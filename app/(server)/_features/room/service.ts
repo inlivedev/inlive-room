@@ -99,8 +99,6 @@ export class RoomService {
     const event = await eventRepo.getEventWithRoom(roomId);
 
     if (event) {
-      console.log(JSON.stringify(event));
-
       if (event.category?.name != 'meetings') {
         if (!clientID) throw new Error('Client ID is required for event room');
 
@@ -212,7 +210,6 @@ export class RoomService {
       if (roomResp.code > 299) {
         console.error(roomResp.message);
         Sentry.captureMessage(`Failed to create a room ${roomID}.`, 'error');
-        console.log(JSON.stringify(roomResp));
         throw new Error(
           'Error during creating room, please try again later ' +
             roomResp.message
