@@ -14,7 +14,7 @@ import { DBQueryConfig, SQL, aliasedTable, and, count, eq, gt, ilike, inArray, i
 import { PageMeta } from '@/_shared/types/types';
 import { users } from '../user/schema';
 import { EventParticipant } from './service';
-import { rooms } from '../room/schema';
+import { rooms, selectRoom } from '../room/schema';
 
 
 export type UpcomingEventList = Awaited<ReturnType<EventRepo['getUpcomingEvents']>>
@@ -467,32 +467,34 @@ export class EventRepo {
     return res;
   }
 
-  getEventWithroom(roomID: string, _db: DB = db) {
-    const {
-      createdAt, createdBy, id, meta, name
-    } = rooms
+  async getRoomWithEvent(roomID: string, _db: DB = db): Promise<
+    selectEvent & {
+      room: selectRoom
+      category: {
+        name: string | null
+        id: number | null
+      } | null
+    }> {
 
-    return _db.select({
-      name,
-      createdAt,
-      createdBy,
-      id,
-      meta,
-
-      event: {
-        ...events,
-        category: eventCategory,
-      },
+    const [res] = await _db.select({
+      rooms,
+      events,
+      eventCategory
     })
-      .from(rooms)
-      .where(eq(rooms.id, roomID))
-      .leftJoin(
-        events,
-        eq(events.roomId, rooms.id))
+      .from(events)
+      .innerJoin(
+        rooms,
+        eq(events.roomId, roomID))
       .leftJoin(
         eventCategory,
         eq(eventCategory.id, events.categoryID))
       .limit(1)
+
+    return {
+      ...res.events,
+      room: res.rooms!,
+      category: res.eventCategory
+    }
   }
 
   async getRoleByName(name: string, _db: DB = db) {

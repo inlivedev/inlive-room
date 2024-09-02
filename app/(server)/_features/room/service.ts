@@ -96,27 +96,31 @@ export class RoomService {
       throw new Error('Room not found');
     }
 
-    const event = await eventRepo.getByRoomID(roomData.id);
+    const event = await eventRepo.getRoomWithEvent(roomId);
 
     if (event) {
-      if (!clientID) throw new Error('Client ID is required for event room');
+      console.log(JSON.stringify(event));
 
-      const participant = await eventRepo.getParticipantByClientId(clientID);
+      if (event.category?.name != 'meetings') {
+        if (!clientID) throw new Error('Client ID is required for event room');
 
-      if (!participant) {
-        throw new ServiceError(
-          'EventError',
-          'Client ID does not match any participant',
-          400
-        );
-      }
+        const participant = await eventRepo.getParticipantByClientId(clientID);
 
-      if (participant.eventID !== event.id) {
-        throw new ServiceError(
-          'EventError',
-          'Client ID does not match the event room',
-          400
-        );
+        if (!participant) {
+          throw new ServiceError(
+            'EventError',
+            'Client ID does not match any participant',
+            400
+          );
+        }
+
+        if (participant.eventID !== event.id) {
+          throw new ServiceError(
+            'EventError',
+            'Client ID does not match the event room',
+            400
+          );
+        }
       }
     }
 
@@ -338,9 +342,16 @@ export class RoomService {
     }
 
     if (room && this._roomRepo.isPersistent()) {
-      const event = await eventRepo.getByRoomID(roomId);
+      const event = await eventRepo.getRoomWithEvent(roomId);
 
-      return { room, event: event };
+      return {
+        room,
+        event: {
+          ...event,
+          category: event.category,
+          room: undefined,
+        },
+      };
     }
 
     return { room, event: undefined };

@@ -5,15 +5,14 @@ import {
   type NextRequest,
 } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { FetcherResponse, InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import type { EventType } from '@/_shared/types/event';
 import { customAlphabet } from 'nanoid';
 import { cookies } from 'next/headers';
-import { RoomRepo } from '@/(server)/_features/room/repository';
-import { eventRepo, roomRepo } from '@/(server)/api/_index';
+import { selectRoom } from '@/(server)/_features/room/schema';
 
 const registerClient = async (
   roomID: string,
@@ -79,8 +78,10 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
     if (response && splitPath[1] === 'rooms' && splitPath.length === 3) {
       const roomID = splitPath[2];
       let roomData: RoomType.RoomData | null = null;
-      let eventData: Omit<EventType.Event, 'host' | 'availableSlots'> | null =
-        null;
+      let eventData:
+        | Omit<EventType.Event, 'host' | 'availableSlots'>
+        | null
+        | undefined = null;
       let clientID = request.nextUrl.searchParams.get('clientID');
       let client: ClientType.ClientData = {
         clientID: '',
@@ -88,9 +89,16 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       };
 
       try {
-        const [roomWithEvent] = await eventRepo.getEventWithroom(roomID);
-        roomData = roomWithEvent;
-        eventData = roomWithEvent.event;
+        const roomResponse: FetcherResponse & {
+          data: {
+            room: selectRoom;
+            event: EventType.Event;
+          };
+        } = await InternalApiFetcher.get(`/api/rooms/${roomID}`, {
+          cache: 'no-cache',
+        });
+        roomData = roomResponse.data.room;
+        eventData = roomResponse.data.event;
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
@@ -104,7 +112,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       if (roomData) {
         let newName = '';
 
-        if (typeof roomData.meta !== 'undefined' && eventData) {
+        if (eventData) {
           const requestToken = cookies().get('token');
           if (requestToken) {
             const participantData: EventType.ParticipantResponse =
