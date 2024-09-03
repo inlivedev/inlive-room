@@ -1,6 +1,5 @@
 
-.pinned,.auto-layout 
-,.gallery-layout {
+.multispeakers-layout,.gallery-layout {
   width: 100%;
   height: 100%;
   display: grid;

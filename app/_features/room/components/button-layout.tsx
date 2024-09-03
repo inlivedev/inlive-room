@@ -30,16 +30,16 @@ export default function ButtonLayout() {
   const layoutOptions: LayoutOptions[] = [
     { key: 'gallery', label: 'Gallery' },
     { key: 'speaker', label: 'Speaker' },
-    { key: 'multi-speakers', label: 'Multi Speakers' },
+    { key: 'multispeakers', label: 'Multi Speakers' },
   ];
 
   const moderatorLayoutOptions: LayoutOptions[] = [
     { key: 'gallery-all', label: 'Gallery' },
     { key: 'speaker-all', label: 'Speaker' },
-    { key: 'multi-speakers-all', label: 'Multi Speakers' },
+    { key: 'multispeakers-all', label: 'Multi Speakers' },
   ];
 
-  const [layout, setLayout] = useState<string>('auto');
+  const [layout, setLayout] = useState<string>(currentLayout);
 
   const onLayoutSelectionChange = async (selectedKey: Selection) => {
     if (!(selectedKey instanceof Set) || selectedKey.size === 0) return;

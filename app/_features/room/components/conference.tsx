@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, act } from 'react';
 import ConferenceTopBar from '@/_features/room/components/conference-top-bar';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
@@ -15,7 +15,6 @@ import '../styles/room.css';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
-import { render } from '@react-email/components';
 
 export type Sidebar = 'participants' | 'chat' | '';
 
@@ -198,14 +197,14 @@ export default function Conference() {
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
+  const [activeLayout, setActiveLayout] = useState<string>(currentLayout);
+
   const { clientID, clientName } = useClientContext();
   const { peer } = usePeerContext();
 
   const [sidebar, setSidebar] = useState<Sidebar>('');
 
   const { pinnedStreams } = useMetadataContext();
-
-  const [pinnedSpan, setPinnedSpan] = useState<number>(0);
 
   if (streams.length > 1) {
     orderStreams(topSpeakers, streams);
@@ -492,12 +491,13 @@ export default function Conference() {
       if (!currentStream) return;
 
       if (active === true) {
-        const prevPinned = streams[0]?.pin === true ? streams[0] : undefined;
+        const prevpinnedStreams =
+          streams[0]?.pin === true ? streams[0] : undefined;
         setStreams((prevState) => {
           return orderStreams(
             topSpeakers,
             prevState.map((stream) => {
-              if (stream.id === prevPinned?.id) stream.pin = false;
+              if (stream.id === prevpinnedStreams?.id) stream.pin = false;
               if (stream.id === currentStream.id) stream.pin = true;
               return stream;
             })
@@ -602,15 +602,32 @@ export default function Conference() {
   const maxVisibleParticipants = useCallback(() => {
     let max = 0;
     if (isMobile()) {
-      switch (currentLayout) {
+      switch (activeLayout) {
         case 'presentation':
-          max = 4;
+          if (
+            currentLayout === 'multispeakers' ||
+            currentLayout === 'speaker'
+          ) {
+            max =
+              pinnedStreams.length === 0 || pinnedStreams.length > 4
+                ? 4
+                : pinnedStreams.length + 1;
+          } else {
+            max = 4;
+          }
+
           break;
         case 'speaker':
-          max = 3;
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 3
+              ? 3
+              : pinnedStreams.length;
           break;
-        case 'multi-speakers':
-          max = 7;
+        case 'multispeakers':
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 7
+              ? 7
+              : pinnedStreams.length;
           break;
         default:
           // gallery
@@ -618,15 +635,32 @@ export default function Conference() {
           break;
       }
     } else {
-      switch (currentLayout) {
+      switch (activeLayout) {
         case 'speaker':
-          max = 3;
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 3
+              ? 3
+              : pinnedStreams.length;
           break;
-        case 'multi-speakers':
-          max = 7;
+        case 'multispeakers':
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 7
+              ? 7
+              : pinnedStreams.length;
           break;
         case 'presentation':
-          max = 7;
+          if (
+            currentLayout === 'multispeakers' ||
+            currentLayout === 'speaker'
+          ) {
+            max =
+              pinnedStreams.length === 0 || pinnedStreams.length > 7
+                ? 7
+                : pinnedStreams.length + 1;
+          } else {
+            max = 7;
+          }
+
           break;
         default:
           max = 25;
@@ -635,7 +669,7 @@ export default function Conference() {
     }
     const maxVisible = streams.length > max ? max : streams.length;
     return maxVisible;
-  }, [streams, currentLayout]);
+  }, [streams, activeLayout, currentLayout, pinnedStreams]);
 
   useEffect(() => {
     const removeStream = (stream: ParticipantVideo) => {
@@ -648,6 +682,10 @@ export default function Conference() {
     };
 
     const onStreamAvailable = (data: any) => {
+      if (data.stream.source === 'screen') {
+        setActiveLayout('presentation');
+      }
+
       const stream = createParticipantVideo(data.stream);
       data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
         // reordering the streams based on voice activity
@@ -717,6 +755,10 @@ export default function Conference() {
     clientSDK.on(RoomEvent.STREAM_AVAILABLE, onStreamAvailable);
 
     const onStreamRemoved = (data: any) => {
+      if (data.stream.source === 'screen') {
+        setActiveLayout(currentLayout);
+      }
+
       removeStream(data.stream);
     };
 
@@ -729,14 +771,14 @@ export default function Conference() {
       );
       clientSDK.removeEventListener(RoomEvent.STREAM_REMOVED, onStreamRemoved);
     };
-  }, [addStream, topSpeakers, updateStreams]);
+  }, [addStream, topSpeakers, updateStreams, currentLayout]);
 
   const moreThanMax = streams.length > maxVisibleParticipants();
 
   const MAX_VISIBLE_PARTICIPANTS =
     moreThanMax &&
     currentLayout !== 'speaker' &&
-    currentLayout !== 'multi-speakers'
+    currentLayout !== 'multispeakers'
       ? maxVisibleParticipants() - 1
       : maxVisibleParticipants();
 
@@ -758,57 +800,73 @@ export default function Conference() {
     function layoutVideo() {
       if (!layoutContainerRef.current) return;
       let style;
-      switch (currentLayout) {
+      switch (activeLayout) {
         case 'presentation':
           if (
             layoutContainerRef.current.clientWidth >
             layoutContainerRef.current.clientHeight
           ) {
             // landscape
+            let rows;
+            if (
+              currentLayout === 'speaker' ||
+              currentLayout === 'multispeakers'
+            ) {
+              rows = MAX_VISIBLE_PARTICIPANTS - 1;
+            } else {
+              rows = moreThanMax
+                ? MAX_VISIBLE_PARTICIPANTS
+                : MAX_VISIBLE_PARTICIPANTS - 1;
+            }
             style = {
               display: 'grid',
               gap: '1rem',
               gridTemplateColumns: `6fr 1fr`,
-              gridTemplateRows: `repeat(${
-                moreThanMax
-                  ? MAX_VISIBLE_PARTICIPANTS
-                  : MAX_VISIBLE_PARTICIPANTS - 1
-              }, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
             };
           } else {
             // portrait
+            let rows;
+            if (
+              currentLayout === 'speaker' ||
+              currentLayout === 'multispeakers'
+            ) {
+              rows = MAX_VISIBLE_PARTICIPANTS;
+            } else {
+              rows = moreThanMax
+                ? MAX_VISIBLE_PARTICIPANTS
+                : MAX_VISIBLE_PARTICIPANTS - 1;
+            }
             style = {
               display: 'grid',
               gap: '1rem',
               gridTemplateRows: `5fr 1fr`,
-              gridTemplateColumns: `repeat(${
-                moreThanMax
-                  ? MAX_VISIBLE_PARTICIPANTS
-                  : MAX_VISIBLE_PARTICIPANTS - 1
-              }, minmax(0, 1fr))`,
+              gridTemplateColumns: `repeat(${rows}, minmax(0, 1fr))`,
             };
           }
           setStyle(style);
           break;
         case 'gallery':
+        case 'multispeakers':
           const dimensions = calculateVideoDimensions(
             layoutContainerRef.current.clientWidth,
             layoutContainerRef.current.clientHeight,
             maxVisibleParticipants()
           );
 
-          if (streams.length > 2) {
+          if (activeLayout === 'gallery' && streams.length > 2) {
             needDoubleGrid.current =
               (dimensions.columns * dimensions.rows - streams.length) % 2 !== 0;
+          } else if (
+            activeLayout === 'multispeakers' &&
+            maxVisibleParticipants() > 2
+          ) {
+            needDoubleGrid.current =
+              (dimensions.columns * dimensions.rows -
+                maxVisibleParticipants()) %
+                2 !==
+              0;
           }
-
-          console.log(
-            'needDoubleGrid.current',
-            needDoubleGrid.current,
-            dimensions.columns,
-            dimensions.rows,
-            streams.length
-          );
 
           columns.current = dimensions.columns;
           rows.current = dimensions.rows;
@@ -829,12 +887,10 @@ export default function Conference() {
         case 'speaker':
           // landscape
           style = {
-            display: 'grid',
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: '1rem',
-            gridTemplateRows: `5fr 1fr`,
-            gridTemplateColumns: `repeat(${
-              isMobile() ? 2 : 6
-            }, minmax(0, 1fr))`,
+            justifyContent: 'center',
           };
 
           setStyle(style);
@@ -845,6 +901,9 @@ export default function Conference() {
     if (streams.length > 0) layoutVideo();
 
     window.addEventListener('resize', layoutVideo);
+    if (activeLayout !== 'presentation' && activeLayout !== currentLayout) {
+      setActiveLayout(currentLayout);
+    }
 
     return () => {
       window.removeEventListener('resize', layoutVideo);
@@ -858,28 +917,27 @@ export default function Conference() {
     topSpeakers,
     isOdd,
     moreThanMax,
+    activeLayout,
   ]);
 
   let renderedCount = 0;
   const lastRowItemsCount =
-    streams.length - (rows.current - 1) * columns.current;
+    activeLayout === 'gallery'
+      ? streams.length - (rows.current - 1) * columns.current
+      : maxVisibleParticipants() - (rows.current - 1) * columns.current;
 
-  const localPinned = streams.find(
+  const localpinnedStreams = streams.find(
     (stream) => stream.pin && stream.origin === 'local'
   );
 
   let lastRowStartIndex = 0;
 
-  console.log(
-    'columns.current * rows.current > streams.length',
-    columns.current * rows.current > streams.length,
-    columns.current,
-    rows.current,
-    streams.length,
-    needDoubleGrid.current
-  );
-
-  if (columns.current * rows.current > streams.length) {
+  if (
+    (activeLayout === 'gallery' &&
+      columns.current * rows.current > streams.length) ||
+    (activeLayout === 'multispeakers' &&
+      columns.current * rows.current > maxVisibleParticipants())
+  ) {
     if (needDoubleGrid.current) {
       const totalCols = columns.current * 2;
       const itemCols = 2;
@@ -898,11 +956,11 @@ export default function Conference() {
         <div className="px-4">
           <div className="relative grid h-full w-full grid-cols-[auto,minmax(auto,max-content)]">
             <div className="grid grid-rows-[auto,1fr]">
-              {localPinned ? (
-                <div className="mb-3">
+              {localpinnedStreams ? (
+                <div className="z-20 mb-3">
                   <ConferenceNotification
                     show={true}
-                    text="You are currently being pinned. Your video is highlighted for everyone."
+                    text="You are currently being pinnedStreams. Your video is highlighted for everyone."
                   />
                 </div>
               ) : null}
@@ -929,32 +987,37 @@ export default function Conference() {
                     stream.source === 'screen'
                   ) {
                     // presentation layout
+                    let rows;
+                    if (
+                      currentLayout === 'speaker' ||
+                      currentLayout === 'multispeakers'
+                    ) {
+                      rows = MAX_VISIBLE_PARTICIPANTS - 1;
+                    } else {
+                      rows = moreThanMax
+                        ? MAX_VISIBLE_PARTICIPANTS
+                        : MAX_VISIBLE_PARTICIPANTS - 1;
+                    }
+
                     if (
                       layoutContainerRef.current.clientWidth >
                       layoutContainerRef.current.clientHeight
                     ) {
                       // landscape
+
                       itemStyle = {
                         display: 'grid',
-                        gridRowEnd:
-                          'span ' +
-                          (moreThanMax
-                            ? MAX_VISIBLE_PARTICIPANTS
-                            : MAX_VISIBLE_PARTICIPANTS - 1),
+                        gridRowEnd: 'span ' + rows,
                       };
                     } else {
                       // portrait
                       itemStyle = {
-                        display: 'grid',
-                        gridColumnEnd:
-                          'span ' +
-                          (moreThanMax
-                            ? MAX_VISIBLE_PARTICIPANTS
-                            : MAX_VISIBLE_PARTICIPANTS - 1),
+                        gridColumnEnd: 'span ' + rows,
                       };
                     }
                   } else if (
-                    currentLayout === 'gallery' &&
+                    (activeLayout === 'gallery' ||
+                      activeLayout === 'multispeakers') &&
                     stream.source !== 'screen' &&
                     needDoubleGrid.current
                   ) {
@@ -966,30 +1029,36 @@ export default function Conference() {
                   } else if (
                     !hidden &&
                     layoutContainerRef.current &&
-                    currentLayout === 'speaker'
+                    activeLayout === 'speaker'
                   ) {
                     if (renderedCount === 1) {
                       itemStyle = {
-                        gridColumnEnd: 'span ' + (isMobile() ? 2 : 6),
+                        flexBasis: '100%',
+                        height: '75%',
                       };
                     } else if (!isMobile()) {
                       itemStyle = {
-                        gridColumnStart: renderedCount + 1,
+                        width: '20%',
+                        height: '20%',
                       };
                     }
                   }
 
                   const currentRow = Math.ceil(renderedCount / columns.current);
 
-                  console.log(
-                    rows.current * columns.current !== streams.length &&
-                      currentRow === rows.current,
-                    needDoubleGrid.current,
-                    lastRowStartIndex
-                  );
-
                   if (
+                    activeLayout === 'gallery' &&
                     rows.current * columns.current !== streams.length &&
+                    currentRow === rows.current
+                  ) {
+                    // last row
+                    // @ts-ignore
+                    itemStyle.gridColumnStart = lastRowStartIndex;
+                    lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
+                  } else if (
+                    activeLayout === 'multispeakers' &&
+                    rows.current * columns.current !==
+                      maxVisibleParticipants() &&
                     currentRow === rows.current
                   ) {
                     // last row
@@ -1004,7 +1073,7 @@ export default function Conference() {
                         (hidden
                           ? 'participant-item-hidden'
                           : 'participant-item') +
-                        (stream.pin ? ' pinned' : '') +
+                        (stream.pin ? ' pinnedStreams' : '') +
                         (stream.source === 'screen' ? ' screen' : ' media')
                       }
                       key={`stream-${stream.id}`}
@@ -1021,7 +1090,7 @@ export default function Conference() {
                 })}
                 {moreThanMax &&
                   currentLayout !== 'speaker' &&
-                  currentLayout !== 'multi-speakers' && (
+                  currentLayout !== 'multispeakers' && (
                     <div className="participant-item">
                       <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-zinc-800 p-2 text-xs font-medium shadow-lg sm:text-sm">
                         More <span className="hidden sm:inline">+</span>

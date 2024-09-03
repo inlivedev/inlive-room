@@ -49,11 +49,7 @@ export default function View({
   return (
     <div className="bg-zinc-900 text-zinc-200">
       <PeerProvider roomID={roomID} client={client} debug={debug}>
-        <MetadataProvider
-          roomID={roomID}
-          roomType={roomType}
-          isModerator={isModerator}
-        >
+        <MetadataProvider roomType={roomType} isModerator={isModerator}>
           <ClientProvider roomID={roomID} client={client} roomType={roomType}>
             <DataChannelProvider>
               <ChatProvider>

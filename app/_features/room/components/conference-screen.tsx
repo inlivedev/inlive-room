@@ -379,39 +379,13 @@ function VideoScreen({
     };
   }, [stream]);
 
-  const setSink = useCallback(async () => {
-    if (
-      currentAudioOutput &&
-      !AudioContext.prototype.hasOwnProperty('setSinkId')
-    ) {
-      const sinkId =
-        currentAudioOutput.deviceId !== 'default'
-          ? currentAudioOutput.deviceId
-          : '';
-
-      if (
-        HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        sinkId !== videoRef.current.sinkId
-      ) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        await videoRef.current.setSinkId(sinkId);
-      }
-    }
-  }, [currentAudioOutput]);
-
-  useEffect(() => {
-    setSink();
-  }, [currentAudioOutput]);
-
   return (
     <div className="h-full w-full" ref={videoContainerRef}>
       <Video
         srcObject={streamMemo.mediaStream}
         origin={streamMemo.origin}
         source={streamMemo.source}
+        currentAudioOutput={currentAudioOutput}
       ></Video>
     </div>
   );
@@ -445,13 +419,43 @@ function Video({
   srcObject,
   origin,
   source,
+  currentAudioOutput,
 }: {
   srcObject: MediaStream;
   origin: string;
   source: string;
+  currentAudioOutput: MediaDeviceInfo | undefined;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const srcObjectMemo = useMemo(() => srcObject, [srcObject]);
+
+  useEffect(() => {
+    const setSink = async () => {
+      if (
+        currentAudioOutput &&
+        !AudioContext.prototype.hasOwnProperty('setSinkId')
+      ) {
+        const sinkId =
+          currentAudioOutput.deviceId !== 'default'
+            ? currentAudioOutput.deviceId
+            : '';
+
+        if (
+          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
+          videoRef.current &&
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          sinkId !== videoRef.current.sinkId
+        ) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          await videoRef.current.setSinkId(sinkId);
+        }
+      }
+    };
+
+    setSink();
+  }, [currentAudioOutput]);
 
   useEffect(() => {
     const playVideo = async () => {
