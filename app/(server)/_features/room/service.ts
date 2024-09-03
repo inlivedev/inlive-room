@@ -74,6 +74,8 @@ export class RoomService {
           `Failed to create client for the room ${roomId}.`,
           'error'
         );
+
+        console.error(clientResponse);
         throw new Error(
           'Failed to create client for the room. Please try again later!'
         );
@@ -310,6 +312,7 @@ export class RoomService {
             `Failed to create a room. ${newRemoteRoom.code} ${newRemoteRoom.message}`,
             'error'
           );
+
           throw new Error(
             'Error occured during accessing room data, please try again later'
           );

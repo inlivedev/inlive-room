@@ -89,6 +89,10 @@ export async function GET(
             'error'
           );
 
+          console.error(
+            'Authentication error. Invalid token credential received from the server.'
+          );
+
           throw new Error('Invalid token credential received from the server.');
         }
 
@@ -174,7 +178,7 @@ export async function GET(
           path: '/',
           sameSite: 'lax',
           httpOnly: true,
-          maxAge: oneWeek,
+          maxAge: oneWeek * 2,
         });
 
         response.cookies.set({

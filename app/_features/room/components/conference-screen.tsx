@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo,useCallback, memo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback, memo } from 'react';
 import { Button } from '@nextui-org/react';
-import React from "react";
+import React from 'react';
 import type { ParticipantVideo } from '@/_features/room/components/conference';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import MoreIcon from '@/_shared/components/icons/more-icon';
@@ -13,16 +13,19 @@ import ParticipantDropdownMenu from './participant-dropdown-menu';
 function ConferenceScreen({
   stream,
   currentAudioOutput,
-  debug
+  pinned,
+  debug,
 }: {
   stream: ParticipantVideo;
-  currentAudioOutput: MediaDeviceInfo|undefined;
+  currentAudioOutput: MediaDeviceInfo | undefined;
+  pinned: boolean;
   debug?: boolean;
 }) {
-	console.log("ConferenceScreen rendered");
-  return  <OverlayScreen stream={stream}>
-  <VideoScreen stream={stream} currentAudioOutput={currentAudioOutput} />
-</OverlayScreen>;
+  return (
+    <OverlayScreen stream={stream} pinned={pinned}>
+      <VideoScreen stream={stream} currentAudioOutput={currentAudioOutput} />
+    </OverlayScreen>
+  );
 }
 
 export default React.memo(ConferenceScreen);
@@ -30,9 +33,11 @@ export default React.memo(ConferenceScreen);
 function OverlayScreen({
   children,
   stream,
+  pinned,
 }: {
   children: React.ReactNode;
   stream: ParticipantVideo;
+  pinned: boolean;
 }) {
   const { peer } = usePeerContext();
   const { moderatorClientIDs } = useMetadataContext();
@@ -300,15 +305,8 @@ function OverlayScreen({
       <div className="absolute z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-lg p-2">
         <div className="flex items-center justify-between gap-3 text-[0] leading-[0]">
           <div className="flex items-center gap-1.5">
-            {stream.spotlight && (
-              <div title="Spotlighted for everyone">
-                <div className="rounded-full bg-zinc-700/70 p-1 text-zinc-200">
-                  <SparkleIcon className="h-5 w-5" />
-                </div>
-              </div>
-            )}
-            {stream.pin && (
-              <div title="Pinned for myself">
+            {pinned && (
+              <div title="Pinned">
                 <div className="rounded-full bg-zinc-700/70 p-1 text-zinc-200">
                   <PinIcon className="h-5 w-5" />
                 </div>
@@ -347,9 +345,8 @@ function VideoScreen({
   currentAudioOutput,
 }: {
   stream: ParticipantVideo;
-  currentAudioOutput: MediaDeviceInfo|undefined;
+  currentAudioOutput: MediaDeviceInfo | undefined;
 }) {
-
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const streamMemo = useMemo(() => stream, [stream]);
@@ -382,41 +379,13 @@ function VideoScreen({
     };
   }, [stream]);
 
-  const setSink = useCallback(async () => {
-    if (
-      currentAudioOutput &&
-      !AudioContext.prototype.hasOwnProperty('setSinkId')
-    ) {
-      const sinkId =
-        currentAudioOutput.deviceId !== 'default'
-          ? currentAudioOutput.deviceId
-          : '';
-
-      if (
-        HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        sinkId !== videoRef.current.sinkId
-      ) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        await videoRef.current.setSinkId(sinkId);
-      }
-    }
-  }, [currentAudioOutput]);
-
-  useEffect(() => {
-    setSink();
-  }, [currentAudioOutput]);
-
   return (
-    <div className='h-full w-full'
-      ref={videoContainerRef}
-    >
-     <Video
+    <div className="h-full w-full" ref={videoContainerRef}>
+      <Video
         srcObject={streamMemo.mediaStream}
         origin={streamMemo.origin}
-		source={streamMemo.source}
+        source={streamMemo.source}
+        currentAudioOutput={currentAudioOutput}
       ></Video>
     </div>
   );
@@ -450,13 +419,43 @@ function Video({
   srcObject,
   origin,
   source,
+  currentAudioOutput,
 }: {
   srcObject: MediaStream;
   origin: string;
   source: string;
+  currentAudioOutput: MediaDeviceInfo | undefined;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const srcObjectMemo = useMemo(() => srcObject, [srcObject]);
+
+  useEffect(() => {
+    const setSink = async () => {
+      if (
+        currentAudioOutput &&
+        !AudioContext.prototype.hasOwnProperty('setSinkId')
+      ) {
+        const sinkId =
+          currentAudioOutput.deviceId !== 'default'
+            ? currentAudioOutput.deviceId
+            : '';
+
+        if (
+          HTMLMediaElement.prototype.hasOwnProperty('setSinkId') &&
+          videoRef.current &&
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          sinkId !== videoRef.current.sinkId
+        ) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          await videoRef.current.setSinkId(sinkId);
+        }
+      }
+    };
+
+    setSink();
+  }, [currentAudioOutput]);
 
   useEffect(() => {
     const playVideo = async () => {
@@ -467,9 +466,9 @@ function Video({
       });
     };
 
-	if (origin === 'local' && videoRef.current) {
-		videoRef.current.muted = true;
-	}
+    if (origin === 'local' && videoRef.current) {
+      videoRef.current.muted = true;
+    }
 
     playVideo();
     return () => {};
@@ -486,13 +485,20 @@ function Video({
         peer?.unobserveVideo(videoRef.current);
       }
     };
-  }, [srcObjectMemo]);
- 
+  }, [srcObjectMemo, origin, peer]);
+
   const style = {
-	transform: origin === 'local' && source!=='screen' ? 'scaleX(-1)' : 'scaleX(1)',
+    transform:
+      origin === 'local' && source !== 'screen' ? 'scaleX(-1)' : 'scaleX(1)',
   };
 
   return (
-    <video ref={videoRef} className="h-full w-full" playsInline autoPlay style={style} />
+    <video
+      ref={videoRef}
+      className="h-full w-full"
+      playsInline
+      autoPlay
+      style={style}
+    />
   );
 }

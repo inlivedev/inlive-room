@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, act } from 'react';
 import ConferenceTopBar from '@/_features/room/components/conference-top-bar';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
@@ -15,7 +15,6 @@ import '../styles/room.css';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
-import { on } from 'events';
 
 export type Sidebar = 'participants' | 'chat' | '';
 
@@ -46,7 +45,6 @@ export type ParticipantVideo = {
   audioLevel: number;
   lastSpokeAt: number;
   pin: boolean;
-  spotlight: boolean;
   fullscreen: boolean;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
   readonly addEventListener: (
@@ -60,9 +58,11 @@ export type ParticipantVideo = {
 };
 
 const isMobile = () => {
+  if (typeof window === 'undefined') return false;
   if (
-    screen.orientation.type === 'landscape-primary' ||
-    screen.orientation.type === 'landscape-secondary'
+    screen.orientation &&
+    (screen.orientation.type === 'landscape-primary' ||
+      screen.orientation.type === 'landscape-secondary')
   ) {
     return window.innerWidth < 768;
   } else {
@@ -70,7 +70,21 @@ const isMobile = () => {
   }
 };
 
+const isLandscape = () => {
+  if (typeof window === 'undefined') return false;
+  if (
+    screen.orientation &&
+    (screen.orientation.type === 'landscape-primary' ||
+      screen.orientation.type === 'landscape-secondary')
+  ) {
+    return true;
+  }
+
+  return window.innerWidth > window.innerHeight;
+};
+
 const topSpeakersLimit = isMobile() ? 1 : 3;
+
 const maxLastSpokeAt = 500000;
 
 const createParticipantVideo = (stream: any): ParticipantVideo => {
@@ -78,6 +92,27 @@ const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.spotlight = false;
   stream.fullscreen = false;
   return stream;
+};
+
+const isSpeaker = (
+  stream: ParticipantVideo,
+  topSpeakers: ParticipantVideo[]
+) => {
+  if (stream.source !== 'media') return false;
+
+  const isTopSpeaker = topSpeakers.find(
+    (topSpeaker) => topSpeaker.id === stream.id
+  );
+
+  if (isTopSpeaker) {
+    if (Date.now() - stream.lastSpokeAt > maxLastSpokeAt) {
+      return false;
+    }
+
+    return true;
+  }
+
+  return false;
 };
 
 const orderStreams = (
@@ -134,17 +169,6 @@ const orderStreams = (
   return streams;
 };
 
-const checkSpotlight = (streams: ParticipantVideo[], spotlights: string[]) => {
-  return streams.map((stream) => {
-    if (spotlights.includes(stream.id)) {
-      stream.spotlight = true;
-    } else {
-      stream.spotlight = false;
-    }
-    return stream;
-  });
-};
-
 export type DeviceStateType = {
   currentAudioInput: MediaDeviceInfo | undefined;
   currentAudioOutput: MediaDeviceInfo | undefined;
@@ -168,16 +192,23 @@ export default function Conference() {
   const layoutContainerRef = useRef<HTMLDivElement>(null);
   const { currentLayout } = useMetadataContext();
 
-  const { spotlights } = useMetadataContext();
   const [streams, setStreams] = useState<ParticipantVideo[]>([]);
   const [topSpeakers, setTopSpeakers] = useState<ParticipantVideo[]>([]);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
+  const [activeLayout, setActiveLayout] = useState<string>(currentLayout);
+
   const { clientID, clientName } = useClientContext();
   const { peer } = usePeerContext();
 
   const [sidebar, setSidebar] = useState<Sidebar>('');
+
+  const { pinnedStreams } = useMetadataContext();
+
+  if (streams.length > 1) {
+    orderStreams(topSpeakers, streams);
+  }
 
   useEffect(() => {
     if (peer && localStream) {
@@ -428,24 +459,21 @@ export default function Conference() {
     };
   }, []);
 
-  const updateStreams =  useCallback(() => {
+  const updateStreams = useCallback(() => {
     setStreams((prevStreams) => {
-      return orderStreams(topSpeakers, checkSpotlight(prevStreams, spotlights));
+      return orderStreams(topSpeakers, prevStreams);
     });
-  }, [topSpeakers, spotlights]);
+  }, [topSpeakers]);
 
-  const addStream = (stream: ParticipantVideo) => {
-    setStreams((prevStreams) => {
-      const newStreams = [...prevStreams,stream];
-      return orderStreams(topSpeakers, checkSpotlight(newStreams, spotlights));
-    });
-  };
-
-  const removeStream = (stream: ParticipantVideo) => {
-    setStreams((prevStreams) =>
-      prevStreams.filter((prevStream) => prevStream.id !== stream.id)
-    );
-  };
+  const addStream = useCallback(
+    (stream: ParticipantVideo) => {
+      setStreams((prevStreams) => {
+        const newStreams = [...prevStreams, stream];
+        return orderStreams(topSpeakers, newStreams);
+      });
+    },
+    [topSpeakers]
+  );
 
   useEffect(() => {
     const onMediaInputTurnedOn = ((event: CustomEventInit) => {
@@ -463,12 +491,13 @@ export default function Conference() {
       if (!currentStream) return;
 
       if (active === true) {
-        const prevPinned = streams[0]?.pin === true ? streams[0] : undefined;
+        const prevpinnedStreams =
+          streams[0]?.pin === true ? streams[0] : undefined;
         setStreams((prevState) => {
           return orderStreams(
             topSpeakers,
             prevState.map((stream) => {
-              if (stream.id === prevPinned?.id) stream.pin = false;
+              if (stream.id === prevpinnedStreams?.id) stream.pin = false;
               if (stream.id === currentStream.id) stream.pin = true;
               return stream;
             })
@@ -570,53 +599,93 @@ export default function Conference() {
     };
   }, [streams, topSpeakers]);
 
-  let hasPinned = false;
-  let localPinned = false;
-  let totalPinned = 0;
-
-  streams.forEach((stream) => {
-    if (stream.pin) {
-      hasPinned = true;
-      totalPinned++;
-      if (stream.origin === 'local') {
-        localPinned = true;
-      }
-    }
-  });
-
-  const maxVisibleParticipants = () => {
+  const maxVisibleParticipants = useCallback(() => {
     let max = 0;
     if (isMobile()) {
-		switch (currentLayout) {
-			case 'presentation':
-				max = 4;
-				break;
-			case 'gallery':
-				max = 9;
-				break;
-			default:
-				max = 9;
-				break;
+      switch (activeLayout) {
+        case 'presentation':
+          if (
+            currentLayout === 'multispeakers' ||
+            currentLayout === 'speaker'
+          ) {
+            max =
+              pinnedStreams.length === 0 || pinnedStreams.length > 4
+                ? 4
+                : pinnedStreams.length + 1;
+          } else {
+            max = 4;
+          }
 
-		}
+          break;
+        case 'speaker':
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 3
+              ? 3
+              : pinnedStreams.length;
+          break;
+        case 'multispeakers':
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 7
+              ? 7
+              : pinnedStreams.length;
+          break;
+        default:
+          // gallery
+          max = 9;
+          break;
+      }
     } else {
-		switch (currentLayout) {
-			case 'presentation':
-				max = 7;
-				break;
-			case 'gallery':
-				max = 49;
-				break;
-			default:
-				max = 49;
-				break;
-		}
+      switch (activeLayout) {
+        case 'speaker':
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 3
+              ? 3
+              : pinnedStreams.length;
+          break;
+        case 'multispeakers':
+          max =
+            pinnedStreams.length === 0 || pinnedStreams.length > 7
+              ? 7
+              : pinnedStreams.length;
+          break;
+        case 'presentation':
+          if (
+            currentLayout === 'multispeakers' ||
+            currentLayout === 'speaker'
+          ) {
+            max =
+              pinnedStreams.length === 0 || pinnedStreams.length > 7
+                ? 7
+                : pinnedStreams.length + 1;
+          } else {
+            max = 7;
+          }
+
+          break;
+        default:
+          max = 25;
+          break;
+      }
     }
-    return streams.length > max ? max : streams.length;
-  };
+    const maxVisible = streams.length > max ? max : streams.length;
+    return maxVisible;
+  }, [streams, activeLayout, currentLayout, pinnedStreams]);
 
   useEffect(() => {
-	const onStreamAvailable = (data:any) => {
+    const removeStream = (stream: ParticipantVideo) => {
+      setStreams((prevStreams) =>
+        orderStreams(
+          topSpeakers,
+          prevStreams.filter((prevStream) => prevStream.id !== stream.id)
+        )
+      );
+    };
+
+    const onStreamAvailable = (data: any) => {
+      if (data.stream.source === 'screen') {
+        setActiveLayout('presentation');
+      }
+
       const stream = createParticipantVideo(data.stream);
       data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
         // reordering the streams based on voice activity
@@ -632,12 +701,15 @@ export default function Conference() {
         } else if (topSpeakersLimit === 1) {
           // find the top speaker and replace it with the new streams
           const topSpeaker = topSpeakers[0];
-		  const currentSinceSpoke = Date.now() - topSpeaker.lastSpokeAt;
-		  if (maxLastSpokeAt < currentSinceSpoke || stream.audioLevel > topSpeaker.audioLevel) {
-			topSpeakers[0] = stream;
+          const currentSinceSpoke = Date.now() - topSpeaker.lastSpokeAt;
+          if (
+            maxLastSpokeAt < currentSinceSpoke ||
+            stream.audioLevel > topSpeaker.audioLevel
+          ) {
+            topSpeakers[0] = stream;
             setTopSpeakers([...topSpeakers]);
             // call setStreams with the new streams order
-			updateStreams();
+            updateStreams();
           }
         } else {
           // find the stream with the lowest audio level and replace it with the new stream
@@ -652,7 +724,7 @@ export default function Conference() {
               return current.audioLevel < prev.audioLevel ? current : prev;
             },
             topSpeakers[0]
-          )
+          );
 
           if (
             maxLastSpokeAt <
@@ -668,7 +740,7 @@ export default function Conference() {
               return topSpeaker;
             });
 
-            if (isChanged) {	
+            if (isChanged) {
               setTopSpeakers(newTopSpeakers);
               // call setStreams with the new streams order
               updateStreams();
@@ -678,80 +750,204 @@ export default function Conference() {
       });
 
       addStream(stream);
-    }
+    };
 
     clientSDK.on(RoomEvent.STREAM_AVAILABLE, onStreamAvailable);
 
-	const onStreamRemoved = (data:any) => {
-		removeStream(data.stream);
-	  }
+    const onStreamRemoved = (data: any) => {
+      if (data.stream.source === 'screen') {
+        setActiveLayout(currentLayout);
+      }
+
+      removeStream(data.stream);
+    };
 
     clientSDK.on(RoomEvent.STREAM_REMOVED, onStreamRemoved);
 
-	return () => {
-	  clientSDK.removeEventListener(RoomEvent.STREAM_AVAILABLE, onStreamAvailable);
-	  clientSDK.removeEventListener(RoomEvent.STREAM_REMOVED, onStreamRemoved);
-	}
-  }, []);
+    return () => {
+      clientSDK.removeEventListener(
+        RoomEvent.STREAM_AVAILABLE,
+        onStreamAvailable
+      );
+      clientSDK.removeEventListener(RoomEvent.STREAM_REMOVED, onStreamRemoved);
+    };
+  }, [addStream, topSpeakers, updateStreams, currentLayout]);
 
   const moreThanMax = streams.length > maxVisibleParticipants();
 
-  const MAX_VISIBLE_PARTICIPANTS = moreThanMax
-    ? maxVisibleParticipants() - 1
-    : maxVisibleParticipants();
+  const MAX_VISIBLE_PARTICIPANTS =
+    moreThanMax &&
+    currentLayout !== 'speaker' &&
+    currentLayout !== 'multispeakers'
+      ? maxVisibleParticipants() - 1
+      : maxVisibleParticipants();
+
+  streams.forEach((stream) => {
+    if (pinnedStreams.includes(stream.id)) {
+      stream.pin = true;
+    } else {
+      stream.pin = false;
+    }
+  });
+
+  const isOdd = streams.length % 2 !== 0;
+
+  const columns = useRef(0);
+  const rows = useRef(0);
+  const needDoubleGrid = useRef(false);
 
   useEffect(() => {
     function layoutVideo() {
       if (!layoutContainerRef.current) return;
-      if (currentLayout === 'presentation') {
-        let style;
-        if (
-          layoutContainerRef.current.clientWidth >
-          layoutContainerRef.current.clientHeight
-        ) {
+      let style;
+      switch (activeLayout) {
+        case 'presentation':
+          if (
+            layoutContainerRef.current.clientWidth >
+            layoutContainerRef.current.clientHeight
+          ) {
+            // landscape
+            let rows;
+            if (
+              currentLayout === 'speaker' ||
+              currentLayout === 'multispeakers'
+            ) {
+              rows = MAX_VISIBLE_PARTICIPANTS - 1;
+            } else {
+              rows = moreThanMax
+                ? MAX_VISIBLE_PARTICIPANTS
+                : MAX_VISIBLE_PARTICIPANTS - 1;
+            }
+            style = {
+              display: 'grid',
+              gap: '1rem',
+              gridTemplateColumns: `6fr 1fr`,
+              gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+            };
+          } else {
+            // portrait
+            let rows;
+            if (
+              currentLayout === 'speaker' ||
+              currentLayout === 'multispeakers'
+            ) {
+              rows = MAX_VISIBLE_PARTICIPANTS;
+            } else {
+              rows = moreThanMax
+                ? MAX_VISIBLE_PARTICIPANTS
+                : MAX_VISIBLE_PARTICIPANTS - 1;
+            }
+            style = {
+              display: 'grid',
+              gap: '1rem',
+              gridTemplateRows: `5fr 1fr`,
+              gridTemplateColumns: `repeat(${rows}, minmax(0, 1fr))`,
+            };
+          }
+          setStyle(style);
+          break;
+        case 'gallery':
+        case 'multispeakers':
+          const dimensions = calculateVideoDimensions(
+            layoutContainerRef.current.clientWidth,
+            layoutContainerRef.current.clientHeight,
+            maxVisibleParticipants()
+          );
+
+          if (activeLayout === 'gallery' && streams.length > 2) {
+            needDoubleGrid.current =
+              (dimensions.columns * dimensions.rows - streams.length) % 2 !== 0;
+          } else if (
+            activeLayout === 'multispeakers' &&
+            maxVisibleParticipants() > 2
+          ) {
+            needDoubleGrid.current =
+              (dimensions.columns * dimensions.rows -
+                maxVisibleParticipants()) %
+                2 !==
+              0;
+          }
+
+          columns.current = dimensions.columns;
+          rows.current = dimensions.rows;
+
+          const columnsCount = needDoubleGrid.current
+            ? dimensions.columns * 2
+            : dimensions.columns;
+          const rowsCount = needDoubleGrid.current
+            ? dimensions.rows * 2
+            : dimensions.rows;
+
+          style = {
+            gridTemplateColumns: `repeat(${columnsCount}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))`,
+          };
+          setStyle(style);
+          break;
+        case 'speaker':
           // landscape
           style = {
-            display: 'grid',
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: '1rem',
-            gridTemplateColumns: `6fr 1fr`,
-            gridTemplateRows: `repeat(${MAX_VISIBLE_PARTICIPANTS}, minmax(0, 1fr))`,
+            justifyContent: 'center',
           };
-        } else {
-          // portrait
-          style = {
-            display: 'grid',
-            gap: '1rem',
-            gridTemplateRows: `5fr 1fr`,
-            gridTemplateColumns: `repeat(${MAX_VISIBLE_PARTICIPANTS}, minmax(0, 1fr))`,
-          };
-        }
-        setStyle(style);
-      } else {
-        const dimensions = calculateVideoDimensions(
-          layoutContainerRef.current.clientWidth,
-          layoutContainerRef.current.clientHeight,
-          maxVisibleParticipants()
-        );
-        const style = {
-          gridTemplateColumns: `repeat(${dimensions.columns}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${dimensions.rows}, minmax(0, 1fr))`,
-        };
-        setStyle(style);
+
+          setStyle(style);
+          break;
       }
     }
 
     if (streams.length > 0) layoutVideo();
 
     window.addEventListener('resize', layoutVideo);
+    if (activeLayout !== 'presentation' && activeLayout !== currentLayout) {
+      setActiveLayout(currentLayout);
+    }
 
     return () => {
       window.removeEventListener('resize', layoutVideo);
     };
-  }, [streams]);
-
-  //   const maxColumn = isMobile() ? 2 : Math.ceil(Math.sqrt(streams.length)) + 2;
+  }, [
+    streams,
+    maxVisibleParticipants,
+    MAX_VISIBLE_PARTICIPANTS,
+    currentLayout,
+    pinnedStreams,
+    topSpeakers,
+    isOdd,
+    moreThanMax,
+    activeLayout,
+  ]);
 
   let renderedCount = 0;
+  const lastRowItemsCount =
+    activeLayout === 'gallery'
+      ? streams.length - (rows.current - 1) * columns.current
+      : maxVisibleParticipants() - (rows.current - 1) * columns.current;
+
+  const localpinnedStreams = streams.find(
+    (stream) => stream.pin && stream.origin === 'local'
+  );
+
+  let lastRowStartIndex = 0;
+
+  if (
+    (activeLayout === 'gallery' &&
+      columns.current * rows.current > streams.length) ||
+    (activeLayout === 'multispeakers' &&
+      columns.current * rows.current > maxVisibleParticipants())
+  ) {
+    if (needDoubleGrid.current) {
+      const totalCols = columns.current * 2;
+      const itemCols = 2;
+      const emptyCols = totalCols - lastRowItemsCount * itemCols;
+      lastRowStartIndex = Math.floor(emptyCols / 2) + 1;
+    } else {
+      const emptyCols = columns.current - lastRowItemsCount;
+      lastRowStartIndex = Math.floor(emptyCols / 2) + 1;
+    }
+  }
 
   return (
     <div className="viewport-height grid grid-cols-[1fr,auto]">
@@ -759,54 +955,116 @@ export default function Conference() {
         <ConferenceTopBar streams={streams} sidebar={sidebar} />
         <div className="px-4">
           <div className="relative grid h-full w-full grid-cols-[auto,minmax(auto,max-content)]">
-            <div className="grid grid-rows-[auto,1fr]">
-              {localPinned ? (
-                <div className="mb-3">
+            <div className="relative grid grid-rows-[auto,1fr]">
+              {localpinnedStreams ? (
+                <div className="z-20 mb-3">
                   <ConferenceNotification
                     show={true}
-                    text="You are currently being pinned. Your video is highlighted for everyone."
+                    text="You are currently being pinnedStreams. Your video is highlighted for everyone."
                   />
                 </div>
               ) : null}
               <div
                 ref={layoutContainerRef}
                 className={
-                  currentLayout !== 'presentation' && hasPinned
-                    ? 'pinned'
-                    : currentLayout +
-                      '-layout participant-container absolute h-full w-full'
+                  currentLayout +
+                  '-layout participant-container absolute h-full w-full'
                 }
                 style={style}
               >
-                {streams.map((stream, id) => {
+                {streams.map((stream) => {
                   let hidden = false;
                   renderedCount++;
                   if (renderedCount > MAX_VISIBLE_PARTICIPANTS) {
                     hidden = true;
                   }
 
-                  let style;
+                  let itemStyle = {};
 
                   if (
                     !hidden &&
                     layoutContainerRef.current &&
-                    (stream.source === 'screen')) {
+                    stream.source === 'screen'
+                  ) {
+                    // presentation layout
+                    let rows;
+                    if (
+                      currentLayout === 'speaker' ||
+                      currentLayout === 'multispeakers'
+                    ) {
+                      rows = MAX_VISIBLE_PARTICIPANTS - 1;
+                    } else {
+                      rows = moreThanMax
+                        ? MAX_VISIBLE_PARTICIPANTS
+                        : MAX_VISIBLE_PARTICIPANTS - 1;
+                    }
+
                     if (
                       layoutContainerRef.current.clientWidth >
                       layoutContainerRef.current.clientHeight
                     ) {
                       // landscape
-                      style = {
+
+                      itemStyle = {
                         display: 'grid',
-                        gridRowEnd: 'span ' + MAX_VISIBLE_PARTICIPANTS,
+                        gridRowEnd: 'span ' + rows,
                       };
                     } else {
                       // portrait
-                      style = {
-                        display: 'grid',
-                        gridColumnEnd: 'span ' + MAX_VISIBLE_PARTICIPANTS,
+                      itemStyle = {
+                        gridColumnEnd: 'span ' + rows,
                       };
                     }
+                  } else if (
+                    (activeLayout === 'gallery' ||
+                      activeLayout === 'multispeakers') &&
+                    stream.source !== 'screen' &&
+                    needDoubleGrid.current
+                  ) {
+                    itemStyle = {
+                      display: 'grid',
+                      gridRowEnd: 'span 2',
+                      gridColumnEnd: 'span 2',
+                    };
+                  } else if (
+                    !hidden &&
+                    layoutContainerRef.current &&
+                    activeLayout === 'speaker'
+                  ) {
+                    if (renderedCount === 1) {
+                      itemStyle = {
+                        flexBasis: '100%',
+                        height: '75%',
+                      };
+                    } else if (!isMobile()) {
+                      itemStyle = {
+                        width: '20%',
+                        height: '20%',
+                      };
+                    }
+                  }
+
+                  const currentRow = Math.ceil(renderedCount / columns.current);
+
+                  if (
+                    activeLayout === 'gallery' &&
+                    rows.current * columns.current !== streams.length &&
+                    currentRow === rows.current
+                  ) {
+                    // last row
+                    // @ts-ignore
+                    itemStyle.gridColumnStart = lastRowStartIndex;
+                    lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
+                  } else if (
+                    activeLayout === 'multispeakers' &&
+                    rows.current * columns.current !==
+                      maxVisibleParticipants() &&
+                    currentRow === rows.current
+                  ) {
+                    // last row
+                    // @ts-ignore
+                    itemStyle.gridColumnStart = lastRowStartIndex;
+                    lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
                   }
 
                   return (
@@ -815,28 +1073,30 @@ export default function Conference() {
                         (hidden
                           ? 'participant-item-hidden'
                           : 'participant-item') +
-                        (stream.spotlight ? ' spotlight' : '') +
-                        (stream.pin ? ' pinned' : '') +
+                        (stream.pin ? ' pinnedStreams' : '') +
                         (stream.source === 'screen' ? ' screen' : ' media')
                       }
                       key={`stream-${stream.id}`}
-                      style={style}
+                      style={itemStyle}
                     >
                       <ConferenceScreen
                         key={'conference-screen-' + stream.id}
                         stream={stream}
+                        pinned={stream.pin}
                         currentAudioOutput={devicesState.currentAudioOutput}
                       />
                     </div>
                   );
                 })}
-                {moreThanMax && (
-                  <div className="participant-item">
-                    <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-zinc-800 p-2 text-xs font-medium shadow-lg sm:text-sm">
-                      More <span className="hidden sm:inline">+</span>
+                {moreThanMax &&
+                  currentLayout !== 'speaker' &&
+                  currentLayout !== 'multispeakers' && (
+                    <div className="participant-item">
+                      <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-zinc-800 p-2 text-xs font-medium shadow-lg sm:text-sm">
+                        More <span className="hidden sm:inline">+</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </div>
             {sidebar ? (

@@ -1,12 +1,22 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import * as Sentry from '@sentry/nextjs';
 import type { ClientType } from '@/_shared/types/client';
-import { clientSDK } from '@/_shared/utils/sdk';
+
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { UserType } from '@/_shared/types/user';
+import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
+import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
+import { remove } from 'lodash-es';
 
 type ClientProviderProps = {
   roomID: string;
@@ -21,6 +31,8 @@ const ClientContext = createContext<ClientProviderProps>({
   clientName: '',
   roomType: ' ',
 });
+
+const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
 export const useClientContext = () => {
   return useContext(ClientContext);
@@ -44,6 +56,36 @@ export function ClientProvider({
   );
   const isActivityRecordedRef = useRef(false);
 
+  const [localStreams, setLocalStreams] = useState<MediaStream[]>([]);
+
+  const { pinnedStreams } = useMetadataContext();
+
+  useEffect(() => {
+    // @ts-ignore
+    const streamAdded = (e) => {
+      console.log('localStreams', localStreams, e.stream);
+      if (e.stream.origin !== 'local') return;
+      setLocalStreams((prevStreams) => [...prevStreams, e.stream]);
+    };
+
+    clientSDK.on(RoomEvent.STREAM_AVAILABLE, streamAdded);
+
+    // @ts-ignore
+    const streamRemoved = (e) => {
+      if (e.stream.origin !== 'local') return;
+      setLocalStreams((prevStreams) =>
+        prevStreams.filter((prevStream) => prevStream.id !== e.stream.id)
+      );
+      console.log('localStreams', localStreams);
+    };
+
+    clientSDK.on(RoomEvent.STREAM_REMOVED, streamRemoved);
+
+    return () => {
+      clientSDK.removeEventListener(RoomEvent.STREAM_AVAILABLE, streamAdded);
+      clientSDK.removeEventListener(RoomEvent.STREAM_REMOVED, streamRemoved);
+    };
+  }, []);
   useEffect(() => {
     const setClientName = ((event: CustomEvent) => {
       const detail = event.detail || {};
@@ -116,11 +158,25 @@ export function ClientProvider({
     };
   }, []);
 
+  const removePinnedStream = useCallback(async () => {
+    const newPinnedStreams = pinnedStreams.filter((pinned) =>
+      localStreams.find((stream) => stream.id !== pinned)
+    );
+
+    if (newPinnedStreams.length === pinnedStreams.length) return;
+
+    console.log('newPinnedStreams', newPinnedStreams);
+    await clientSDK.setMetadata(roomID, {
+      pinnedStreams: [...newPinnedStreams],
+    });
+  }, [pinnedStreams, localStreams, roomID]);
+
   useEffect(() => {
     const onBrowserClose = () => {
+      removePinnedStream();
       const clientLeaveTime = new Date().toISOString();
 
-      if (!isActivityRecordedRef.current && clientJoinTime) {
+      if (!isActivityRecordedRef.current && clientJoinTime && persistentData) {
         const data = JSON.stringify({
           name: 'RoomDuration',
           meta: {
@@ -143,10 +199,19 @@ export function ClientProvider({
     return () => {
       window.removeEventListener('beforeunload', onBrowserClose);
     };
-  }, [client.clientID, client.clientName, clientJoinTime, roomID, roomType]);
+  }, [
+    client.clientID,
+    client.clientName,
+    clientJoinTime,
+    roomID,
+    roomType,
+    removePinnedStream,
+  ]);
 
   useEffect(() => {
     const clientLeave = async (clientID: string, roomType: string) => {
+      removePinnedStream();
+
       if (peer?.getPeerConnection()) peer.disconnect();
 
       try {
@@ -155,6 +220,10 @@ export function ClientProvider({
           throw new Error(
             response?.message || 'Failed to get response from the server'
           );
+        }
+
+        if (!persistentData) {
+          return;
         }
 
         const clientLeaveTime = new Date().toISOString();
@@ -217,6 +286,8 @@ export function ClientProvider({
     clientState.clientID,
     peer,
     roomID,
+    localStreams,
+    pinnedStreams,
   ]);
 
   return (

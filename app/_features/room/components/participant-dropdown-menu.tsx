@@ -23,7 +23,7 @@ export default function ParticipantDropdownMenu({
   children: React.ReactNode;
 }) {
   const { roomID } = useClientContext();
-  const { spotlights, isModerator } = useMetadataContext();
+  const { pinnedStreams, isModerator } = useMetadataContext();
   const { datachannels } = useDataChannelContext();
 
   const onMoreSelection = useCallback(
@@ -37,19 +37,19 @@ export default function ParticipantDropdownMenu({
             },
           })
         );
-      } else if (key === 'spotlight') {
+      } else if (key === 'pin-all') {
         try {
-          if (stream.spotlight) {
-            const newSpotlights = spotlights.filter(
-              (spotlight) => spotlight !== stream.id
+          if (stream.pin) {
+            const newPinnedStreams = pinnedStreams.filter(
+              (pinned) => pinned !== stream.id
             );
 
             await clientSDK.setMetadata(roomID, {
-              spotlights: newSpotlights,
+              pinnedStreams: [...newPinnedStreams],
             });
           } else {
             await clientSDK.setMetadata(roomID, {
-              spotlights: [...spotlights, stream.id],
+              pinnedStreams: [...pinnedStreams, stream.id],
             });
           }
         } catch (error) {
@@ -90,7 +90,7 @@ export default function ParticipantDropdownMenu({
         }
       }
     },
-    [roomID, stream, isModerator, spotlights, datachannels]
+    [roomID, stream, isModerator, pinnedStreams, datachannels]
   );
 
   return (
@@ -111,10 +111,10 @@ export default function ParticipantDropdownMenu({
           // @ts-ignore
           isModerator
             ? [
-                <DropdownItem key="spotlight">
+                <DropdownItem key="pin-all">
                   <div className="flex items-center gap-1">
-                    <span>Spotlight for everyone</span>
-                    {stream.spotlight ? (
+                    <span>Pin for everyone</span>
+                    {stream.pin ? (
                       <span>
                         <CheckIcon width={16} height={16} />
                       </span>
