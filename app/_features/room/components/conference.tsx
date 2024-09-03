@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback, act } from 'react';
+import { useEffect, useState, useRef, useCallback, CSSProperties } from 'react';
 import ConferenceTopBar from '@/_features/room/components/conference-top-bar';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
@@ -888,7 +888,7 @@ export default function Conference() {
           // landscape
           style = {
             display: 'flex',
-            flexWrap: 'wrap',
+            flexWrap: 'wrap' as CSSProperties['flexWrap'],
             gap: '1rem',
             justifyContent: 'center',
           };

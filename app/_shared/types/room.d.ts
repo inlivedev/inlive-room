@@ -10,7 +10,12 @@ export declare namespace RoomType {
     Event = 'event',
   }
 
-  type CreateGetRoomResponse = FetcherResponse & {
+  type CreateRoomResponse = FetcherResponse & {
+    message: string;
+    data: Room;
+  };
+
+  type CreateGetResponse = FetcherResponse & {
     message: string;
     data: {
       room: Room;

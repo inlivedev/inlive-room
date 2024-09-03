@@ -20,12 +20,14 @@ import MeetingList from '@/_features/meeting/meeting-list';
 import { UpcomingEvent } from '@/(server)/_features/event/repository';
 
 const createRoom = async (type: string) => {
-  const response: RoomType.CreateGetRoomResponse =
-    await InternalApiFetcher.post('/api/rooms/create', {
+  const response: RoomType.CreateRoomResponse = await InternalApiFetcher.post(
+    '/api/rooms/create',
+    {
       body: JSON.stringify({
         type: type,
       }),
-    });
+    }
+  );
 
   if (!response || !response.ok) {
     throw new Error(
