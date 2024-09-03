@@ -63,7 +63,6 @@ export function ClientProvider({
   useEffect(() => {
     // @ts-ignore
     const streamAdded = (e) => {
-      console.log('localStreams', localStreams, e.stream);
       if (e.stream.origin !== 'local') return;
       setLocalStreams((prevStreams) => [...prevStreams, e.stream]);
     };
@@ -76,7 +75,6 @@ export function ClientProvider({
       setLocalStreams((prevStreams) =>
         prevStreams.filter((prevStream) => prevStream.id !== e.stream.id)
       );
-      console.log('localStreams', localStreams);
     };
 
     clientSDK.on(RoomEvent.STREAM_REMOVED, streamRemoved);
@@ -165,7 +163,6 @@ export function ClientProvider({
 
     if (newPinnedStreams.length === pinnedStreams.length) return;
 
-    console.log('newPinnedStreams', newPinnedStreams);
     await clientSDK.setMetadata(roomID, {
       pinnedStreams: [...newPinnedStreams],
     });

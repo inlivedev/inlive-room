@@ -57,7 +57,7 @@ export type ParticipantVideo = {
   ) => void;
 };
 
-const isMobile = () => {
+export const isMobile = () => {
   if (typeof window === 'undefined') return false;
   if (
     screen.orientation &&
@@ -599,6 +599,14 @@ export default function Conference() {
     };
   }, [streams, topSpeakers]);
 
+  const [page, setPage] = useState(1);
+
+  const getPageItems = useCallback(() => {
+    const pageSize = isMobile() ? 9 : 25;
+    const pageItems = streams.slice((page - 1) * pageSize, page * pageSize);
+    return pageItems;
+  }, [page, streams]);
+
   const maxVisibleParticipants = useCallback(() => {
     let max = 0;
     if (isMobile()) {
@@ -667,9 +675,13 @@ export default function Conference() {
           break;
       }
     }
+    if (activeLayout === 'gallery') {
+      return getPageItems().length;
+    }
+
     const maxVisible = streams.length > max ? max : streams.length;
     return maxVisible;
-  }, [streams, activeLayout, currentLayout, pinnedStreams]);
+  }, [streams, activeLayout, currentLayout, pinnedStreams, getPageItems]);
 
   useEffect(() => {
     const removeStream = (stream: ParticipantVideo) => {
@@ -777,6 +789,7 @@ export default function Conference() {
 
   const MAX_VISIBLE_PARTICIPANTS =
     moreThanMax &&
+    activeLayout !== 'gallery' &&
     currentLayout !== 'speaker' &&
     currentLayout !== 'multispeakers'
       ? maxVisibleParticipants() - 1
@@ -854,9 +867,11 @@ export default function Conference() {
             maxVisibleParticipants()
           );
 
-          if (activeLayout === 'gallery' && streams.length > 2) {
+          const items = activeLayout === 'gallery' ? getPageItems() : streams;
+
+          if (activeLayout === 'gallery' && items.length > 2) {
             needDoubleGrid.current =
-              (dimensions.columns * dimensions.rows - streams.length) % 2 !== 0;
+              (dimensions.columns * dimensions.rows - items.length) % 2 !== 0;
           } else if (
             activeLayout === 'multispeakers' &&
             maxVisibleParticipants() > 2
@@ -918,6 +933,7 @@ export default function Conference() {
     isOdd,
     moreThanMax,
     activeLayout,
+    getPageItems,
   ]);
 
   let renderedCount = 0;
@@ -952,7 +968,14 @@ export default function Conference() {
   return (
     <div className="viewport-height grid grid-cols-[1fr,auto]">
       <div className="relative grid h-full grid-rows-[auto,1fr,72px] overflow-y-hidden">
-        <ConferenceTopBar streams={streams} sidebar={sidebar} />
+        <ConferenceTopBar
+          streams={streams}
+          sidebar={sidebar}
+          activeLayout={activeLayout}
+          pageSize={isMobile() ? 9 : 25}
+          page={page}
+          setPage={setPage}
+        />
         <div className="px-4">
           <div className="relative grid h-full w-full grid-cols-[auto,minmax(auto,max-content)]">
             <div className="relative grid grid-rows-[auto,1fr]">
@@ -972,123 +995,129 @@ export default function Conference() {
                 }
                 style={style}
               >
-                {streams.map((stream) => {
-                  let hidden = false;
-                  renderedCount++;
-                  if (renderedCount > MAX_VISIBLE_PARTICIPANTS) {
-                    hidden = true;
-                  }
-
-                  let itemStyle = {};
-
-                  if (
-                    !hidden &&
-                    layoutContainerRef.current &&
-                    stream.source === 'screen'
-                  ) {
-                    // presentation layout
-                    let rows;
-                    if (
-                      currentLayout === 'speaker' ||
-                      currentLayout === 'multispeakers'
-                    ) {
-                      rows = MAX_VISIBLE_PARTICIPANTS - 1;
-                    } else {
-                      rows = moreThanMax
-                        ? MAX_VISIBLE_PARTICIPANTS
-                        : MAX_VISIBLE_PARTICIPANTS - 1;
+                {(activeLayout === 'gallery' ? getPageItems() : streams).map(
+                  (stream) => {
+                    let hidden = false;
+                    renderedCount++;
+                    if (renderedCount > MAX_VISIBLE_PARTICIPANTS) {
+                      hidden = true;
                     }
 
-                    if (
-                      layoutContainerRef.current.clientWidth >
-                      layoutContainerRef.current.clientHeight
-                    ) {
-                      // landscape
+                    let itemStyle = {};
 
+                    if (
+                      !hidden &&
+                      layoutContainerRef.current &&
+                      stream.source === 'screen'
+                    ) {
+                      // presentation layout
+                      let rows;
+                      if (
+                        currentLayout === 'speaker' ||
+                        currentLayout === 'multispeakers'
+                      ) {
+                        rows = MAX_VISIBLE_PARTICIPANTS - 1;
+                      } else {
+                        rows = moreThanMax
+                          ? MAX_VISIBLE_PARTICIPANTS
+                          : MAX_VISIBLE_PARTICIPANTS - 1;
+                      }
+
+                      if (
+                        layoutContainerRef.current.clientWidth >
+                        layoutContainerRef.current.clientHeight
+                      ) {
+                        // landscape
+
+                        itemStyle = {
+                          display: 'grid',
+                          gridRowEnd: 'span ' + rows,
+                        };
+                      } else {
+                        // portrait
+                        itemStyle = {
+                          gridColumnEnd: 'span ' + rows,
+                        };
+                      }
+                    } else if (
+                      (activeLayout === 'gallery' ||
+                        activeLayout === 'multispeakers') &&
+                      stream.source !== 'screen' &&
+                      needDoubleGrid.current
+                    ) {
                       itemStyle = {
                         display: 'grid',
-                        gridRowEnd: 'span ' + rows,
+                        gridRowEnd: 'span 2',
+                        gridColumnEnd: 'span 2',
                       };
-                    } else {
-                      // portrait
-                      itemStyle = {
-                        gridColumnEnd: 'span ' + rows,
-                      };
-                    }
-                  } else if (
-                    (activeLayout === 'gallery' ||
-                      activeLayout === 'multispeakers') &&
-                    stream.source !== 'screen' &&
-                    needDoubleGrid.current
-                  ) {
-                    itemStyle = {
-                      display: 'grid',
-                      gridRowEnd: 'span 2',
-                      gridColumnEnd: 'span 2',
-                    };
-                  } else if (
-                    !hidden &&
-                    layoutContainerRef.current &&
-                    activeLayout === 'speaker'
-                  ) {
-                    if (renderedCount === 1) {
-                      itemStyle = {
-                        flexBasis: '100%',
-                        height: '75%',
-                      };
-                    } else if (!isMobile()) {
-                      itemStyle = {
-                        width: '20%',
-                        height: '20%',
-                      };
-                    }
-                  }
-
-                  const currentRow = Math.ceil(renderedCount / columns.current);
-
-                  if (
-                    activeLayout === 'gallery' &&
-                    rows.current * columns.current !== streams.length &&
-                    currentRow === rows.current
-                  ) {
-                    // last row
-                    // @ts-ignore
-                    itemStyle.gridColumnStart = lastRowStartIndex;
-                    lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
-                  } else if (
-                    activeLayout === 'multispeakers' &&
-                    rows.current * columns.current !==
-                      maxVisibleParticipants() &&
-                    currentRow === rows.current
-                  ) {
-                    // last row
-                    // @ts-ignore
-                    itemStyle.gridColumnStart = lastRowStartIndex;
-                    lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
-                  }
-
-                  return (
-                    <div
-                      className={
-                        (hidden
-                          ? 'participant-item-hidden'
-                          : 'participant-item') +
-                        (stream.pin ? ' pinnedStreams' : '') +
-                        (stream.source === 'screen' ? ' screen' : ' media')
+                    } else if (
+                      !hidden &&
+                      layoutContainerRef.current &&
+                      activeLayout === 'speaker'
+                    ) {
+                      if (renderedCount === 1) {
+                        itemStyle = {
+                          flexBasis: '100%',
+                          height: '75%',
+                        };
+                      } else if (!isMobile()) {
+                        itemStyle = {
+                          width: '20%',
+                          height: '20%',
+                        };
                       }
-                      key={`stream-${stream.id}`}
-                      style={itemStyle}
-                    >
-                      <ConferenceScreen
-                        key={'conference-screen-' + stream.id}
-                        stream={stream}
-                        pinned={stream.pin}
-                        currentAudioOutput={devicesState.currentAudioOutput}
-                      />
-                    </div>
-                  );
-                })}
+                    }
+
+                    const currentRow = Math.ceil(
+                      renderedCount / columns.current
+                    );
+
+                    if (
+                      activeLayout === 'gallery' &&
+                      rows.current * columns.current !==
+                        getPageItems().length &&
+                      currentRow === rows.current
+                    ) {
+                      // last row
+                      // @ts-ignore
+                      itemStyle.gridColumnStart = lastRowStartIndex;
+                      lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
+                    } else if (
+                      activeLayout === 'multispeakers' &&
+                      rows.current * columns.current !==
+                        maxVisibleParticipants() &&
+                      currentRow === rows.current
+                    ) {
+                      // last row
+                      // @ts-ignore
+                      itemStyle.gridColumnStart = lastRowStartIndex;
+                      lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
+                    }
+
+                    return (
+                      <div
+                        className={
+                          (hidden
+                            ? 'participant-item-hidden'
+                            : 'participant-item') +
+                          (stream.pin ? ' pinnedStreams' : '') +
+                          (stream.source === 'screen' ? ' screen' : ' media')
+                        }
+                        key={`stream-${stream.id}`}
+                        style={itemStyle}
+                      >
+                        <ConferenceScreen
+                          key={'conference-screen-' + stream.id}
+                          stream={stream}
+                          pinned={stream.pin}
+                          currentAudioOutput={devicesState.currentAudioOutput}
+                        />
+                      </div>
+                    );
+                  }
+                )}
                 {moreThanMax &&
+                  currentLayout !== 'gallery' &&
                   currentLayout !== 'speaker' &&
                   currentLayout !== 'multispeakers' && (
                     <div className="participant-item">

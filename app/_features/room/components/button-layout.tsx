@@ -16,7 +16,7 @@ import LayoutIcon from '@/_shared/components/icons/layout-icon';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
-
+import { isMobile } from './conference';
 type LayoutOptions = {
   key: string;
   label: string;
@@ -125,7 +125,7 @@ export default function ButtonLayout() {
       ))}
     </DropdownMenu>
   );
-  return (
+  return !isMobile() ? (
     <ButtonGroup variant="flat">
       <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
         <DropdownTrigger>
@@ -142,5 +142,5 @@ export default function ButtonLayout() {
         {isModerator ? moderatorOptionsRender() : nonModeratorOptionsRender()}
       </Dropdown>
     </ButtonGroup>
-  );
+  ) : null;
 }

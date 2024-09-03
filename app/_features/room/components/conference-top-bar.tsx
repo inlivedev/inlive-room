@@ -1,17 +1,8 @@
 'use client';
 
-import {
-  Button,
-  CircularProgress,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  type Selection,
-} from '@nextui-org/react';
-import { useCallback } from 'react';
+import { useState } from 'react';
+import { Button, CircularProgress } from '@nextui-org/react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 import ReconnectModal from '@/_features/room/components/reconnect-modal';
@@ -19,25 +10,44 @@ import ReconnectModal from '@/_features/room/components/reconnect-modal';
 import type { SVGElementPropsType } from '@/_shared/types/types';
 import type { Sidebar, ParticipantVideo } from './conference';
 import ButtonLayout from './button-layout';
+import GalleryPagination from './gallery-pagination';
+
 export default function ConferenceTopBar({
   streams,
   sidebar,
+  activeLayout,
+  pageSize,
+  page,
+  setPage,
 }: {
   streams: ParticipantVideo[];
   sidebar: Sidebar;
+  activeLayout: string;
+  pageSize: number;
+  page: number;
+  setPage: (page: number) => void;
 }) {
-  const { roomType, isModerator } = useMetadataContext();
-
   const participants = streams.filter((stream) => stream.source === 'media');
+  const needPagination =
+    activeLayout === 'gallery' && Math.ceil(streams.length / pageSize) > 1;
 
   return (
     <div className="flex items-center justify-between px-4 py-3">
       <div className="flex items-center">
         <ConnectionStatusOverlay></ConnectionStatusOverlay>
       </div>
+      <div className="flex items-center gap-2">
+        {needPagination && (
+          <GalleryPagination
+            totalItems={streams.length}
+            streamPerPage={pageSize}
+            page={page}
+            onChange={setPage}
+          />
+        )}
+      </div>
       <div className="flex items-center gap-2 sm:gap-3">
         <ButtonLayout />
-
         <Button
           className="h-auto min-h-0 min-w-0 gap-2 rounded-xl bg-zinc-700/70 px-2 py-1.5 text-xs font-medium tabular-nums antialiased hover:bg-zinc-600 active:bg-zinc-500"
           onClick={() => {
