@@ -15,7 +15,7 @@ export async function GET(
   try {
     const res = await roomService.joinRoom(roomID);
 
-    if (!res.room) {
+    if (!res) {
       return NextResponse.json({
         code: 404,
         message: 'Room not found',

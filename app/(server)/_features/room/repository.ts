@@ -1,7 +1,7 @@
 import type { Room } from '@/(server)/_features/room/service';
 import { iRoomRepo } from './service';
 import { db } from '@/(server)/_shared/database/database';
-import { insertRoom, rooms } from '@/(server)/_features/room/schema';
+import { insertRoom, rooms, selectRoom } from '@/(server)/_features/room/schema';
 import { and, eq } from 'drizzle-orm';
 
 const persistentData =
@@ -18,7 +18,7 @@ export class RoomRepo implements iRoomRepo {
     return data[0];
   }
 
-  async getRoomById(roomId: string): Promise<Room | undefined> {
+  async getRoomById(roomId: string): Promise<selectRoom | undefined> {
     if (!persistentData) {
       return undefined;
     }
@@ -26,7 +26,7 @@ export class RoomRepo implements iRoomRepo {
     return await db.query.rooms.findFirst({ where: eq(rooms.id, roomId) });
   }
 
-  async updateRoomById(room: Room): Promise<Room | undefined> {
+  async updateRoomById(room: Room): Promise<selectRoom | undefined> {
     if (!persistentData) {
       return undefined;
     }

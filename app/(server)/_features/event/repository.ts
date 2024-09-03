@@ -7,6 +7,7 @@ import {
   insertParticipant,
   participantRole,
   participants,
+  selectCategory,
   selectEvent,
   selectParticipant,
 } from './schema';
@@ -459,42 +460,11 @@ export class EventRepo {
       .returning();
   }
 
-  async getByRoomID(id: string): Promise<selectEvent | undefined> {
-    const res = await db.query.events.findFirst({
-      where: eq(events.roomId, id),
-    });
+  async getByRoomID(id: string, _db: DB = db): Promise<selectEvent & { category: selectCategory } | undefined> {
+    return  _db.query.events.findFirst(
+      { where: eq(events.roomId, id), with: {category: true}}
+    )
 
-    return res;
-  }
-
-  async getEventWithRoom(roomID: string, _db: DB = db): Promise<
-    selectEvent & {
-      room: selectRoom
-      category: {
-        name: string | null
-        id: number | null
-      } | null
-    }> {
-
-    const [res] = await _db.select({
-      rooms,
-      events,
-      eventCategory
-    })
-      .from(events)
-      .innerJoin(
-        rooms,
-        eq(events.roomId, roomID))
-      .leftJoin(
-        eventCategory,
-        eq(eventCategory.id, events.categoryID))
-      .limit(1)
-
-    return {
-      ...res.events,
-      room: res.rooms!,
-      category: res.eventCategory
-    }
   }
 
   async getRoleByName(name: string, _db: DB = db) {
