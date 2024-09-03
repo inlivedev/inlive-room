@@ -955,7 +955,7 @@ export default function Conference() {
         <ConferenceTopBar streams={streams} sidebar={sidebar} />
         <div className="px-4">
           <div className="relative grid h-full w-full grid-cols-[auto,minmax(auto,max-content)]">
-            <div className="grid grid-rows-[auto,1fr]">
+            <div className="relative grid grid-rows-[auto,1fr]">
               {localpinnedStreams ? (
                 <div className="z-20 mb-3">
                   <ConferenceNotification
