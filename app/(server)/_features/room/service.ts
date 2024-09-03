@@ -6,12 +6,18 @@ import { eventRepo } from '@/(server)/api/_index';
 import { ServiceError } from '../_service';
 import { selectCategory, selectEvent } from '../event/schema';
 
-export type Room = selectRoom & {
+export type Room = {
+  id: string;
+  name: string | null;
+  createdAt?: Date;
+  createdBy?: number;
+  meta?: any;
+} & {
   event?:
     | (selectEvent & {
         category?: selectCategory;
       })
-    | null;
+  ;
 };
 
 export interface Client {
@@ -98,7 +104,7 @@ export class RoomService {
       throw new Error('Room not found');
     }
 
-    const event = await eventRepo.getEventWithRoom(roomId);
+    const event = await eventRepo.getByRoomID(roomId);
 
     if (event) {
       if (event.category?.name != 'meetings') {
@@ -285,7 +291,7 @@ export class RoomService {
     );
   }
 
-  async joinRoom(roomId: string) {
+  async joinRoom(roomId: string): Promise<Room | undefined> {
     const sdk = await this.getSDK();
 
     let room;
@@ -342,18 +348,26 @@ export class RoomService {
     }
 
     if (room && this._roomRepo.isPersistent()) {
-      const event = await eventRepo.getEventWithRoom(roomId);
-
+      const event = await eventRepo.getByRoomID(roomId);
+      if (event) {
       return {
-        room,
+          ...room,
+          name:room.name || '',
         event: {
           ...event,
-          category: event.category,
-          room: undefined,
+            category: event.category || undefined
         },
       };
     }
+    }
 
-    return { room, event: undefined };
+    if(room){
+      return {
+        ...room,
+        name: room.name || '',
+      }
+    }
+
+    return undefined
   }
 }

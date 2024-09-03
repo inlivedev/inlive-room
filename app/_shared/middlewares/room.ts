@@ -89,15 +89,11 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       };
 
       try {
-        const roomResponse: FetcherResponse & {
-          data: {
-            room: selectRoom;
-            event: EventType.Event;
-          };
-        } = await InternalApiFetcher.get(`/api/rooms/${roomID}`, {
+        const roomResponse: RoomType.GetRoomResponse
+         = await InternalApiFetcher.get(`/api/rooms/${roomID}`, {
           cache: 'no-cache',
         });
-        roomData = roomResponse.data.room;
+        roomData = roomResponse.data;
         eventData = roomResponse.data.event;
       } catch (error) {
         Sentry.captureException(error, {
