@@ -35,14 +35,12 @@ const createRoom = async (type: string) => {
     );
   }
 
-  const room = response.data;
-
   Mixpanel.track('Create room', {
-    roomId: room.id,
-    createdBy: room.createdBy,
+    roomId: response.data.id,
+    createdBy: response.data.createdBy,
   });
 
-  return room;
+  return response.data;
 };
 
 export default function SignedIn({
