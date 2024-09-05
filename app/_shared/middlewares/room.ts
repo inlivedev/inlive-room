@@ -89,10 +89,10 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       };
 
       try {
-        const roomResponse: RoomType.GetRoomResponse
-         = await InternalApiFetcher.get(`/api/rooms/${roomID}`, {
-          cache: 'no-cache',
-        });
+        const roomResponse: RoomType.GetRoomResponse =
+          await InternalApiFetcher.get(`/api/rooms/${roomID}`, {
+            cache: 'no-store',
+          });
         roomData = roomResponse.data;
         eventData = roomResponse.data.event;
       } catch (error) {
