@@ -91,7 +91,8 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       try {
         const roomResponse: RoomType.GetRoomResponse =
           await InternalApiFetcher.get(`/api/rooms/${roomID}`, {
-            cache: 'no-store',
+            cache: 'no-cache',
+            next: { revalidate: 0 },
           });
         roomData = roomResponse.data;
         eventData = roomResponse.data.event;
