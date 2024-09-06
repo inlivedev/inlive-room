@@ -302,13 +302,20 @@ function OverlayScreen({
         </div>
       ) : null}
       {/* video screen overlay */}
-      <div className="absolute z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-lg p-2">
+      <div className="absolute z-20 flex h-full w-full flex-col justify-between overflow-hidden rounded-lg p-2">
         <div className="flex items-center justify-between gap-3 text-[0] leading-[0]">
           <div className="flex items-center gap-1.5">
             {pinned && (
               <div title="Pinned">
                 <div className="rounded-full bg-zinc-700/70 p-1 text-zinc-200">
                   <PinIcon className="h-5 w-5" />
+                </div>
+              </div>
+            )}
+            {stream.muted && (
+              <div title="Muted">
+                <div className="rounded-full bg-zinc-700/70 p-1 text-zinc-200">
+                  <MicOffIcon className="h-4 w-4" />
                 </div>
               </div>
             )}
@@ -351,6 +358,21 @@ function VideoScreen({
 
   const streamMemo = useMemo(() => stream, [stream]);
 
+  const [isMuted, setIsMuted] = useState(false);
+
+  useEffect(() => {
+    if (stream.origin === 'remote') {
+      const videoTrack = stream.mediaStream.getVideoTracks()[0];
+      videoTrack.addEventListener('mute', () => {
+        setIsMuted(true);
+      });
+
+      videoTrack.addEventListener('unmute', () => {
+        setIsMuted(false);
+      });
+    }
+  }, [stream]);
+
   useEffect(() => {
     const callbackVoiceActivity = (e: CustomEventInit) => {
       if (videoContainerRef.current === null) return;
@@ -381,6 +403,9 @@ function VideoScreen({
 
   return (
     <div className="h-full w-full" ref={videoContainerRef}>
+      {isMuted && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-zinc-700 shadow-lg"></div>
+      )}
       <Video
         srcObject={streamMemo.mediaStream}
         origin={streamMemo.origin}
@@ -399,6 +424,40 @@ function SparkleIcon(props: SVGElementPropsType) {
         fillRule="evenodd"
         d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5m9-3a.75.75 0 0 1 .728.568l.258 1.036a2.63 2.63 0 0 0 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258a2.63 2.63 0 0 0-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5M16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395a1.5 1.5 0 0 0-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395a1.5 1.5 0 0 0 .948-.948l.395-1.183A.75.75 0 0 1 16.5 15"
         clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function MicOffIcon(props: SVGElementPropsType) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M3.28 2.22a.75.75 0 1 0-1.06 1.06L8 9.06V12a4 4 0 0 0 6.248 3.309l1.146 1.146A5.227 5.227 0 0 1 12.25 17.5h-.5l-.216-.004A5.25 5.25 0 0 1 6.5 12.25v-.5l-.007-.102A.75.75 0 0 0 5 11.75v.5l.004.236a6.75 6.75 0 0 0 6.246 6.496v2.268l.007.102a.75.75 0 0 0 1.493-.102l.001-2.268a6.718 6.718 0 0 0 3.712-1.458l4.256 4.256a.75.75 0 0 0 1.061-1.06L3.28 2.22ZM17.196 14.014l1.146 1.146A6.725 6.725 0 0 0 19 12.25v-.5l-.007-.102a.75.75 0 0 0-1.493.102v.5l-.004.216a5.233 5.233 0 0 1-.3 1.548ZM8.138 4.956l7.792 7.792c.046-.242.07-.492.07-.748V6a4 4 0 0 0-7.862-1.044Z"
+        fill="#ffffff"
+      />
+    </svg>
+  );
+}
+
+function MicOnIcon(props: SVGElementPropsType) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18.25 11a.75.75 0 0 1 .743.648l.007.102v.5a6.75 6.75 0 0 1-6.249 6.732l-.001 2.268a.75.75 0 0 1-1.493.102l-.007-.102v-2.268a6.75 6.75 0 0 1-6.246-6.496L5 12.25v-.5a.75.75 0 0 1 1.493-.102l.007.102v.5a5.25 5.25 0 0 0 5.034 5.246l.216.004h.5a5.25 5.25 0 0 0 5.246-5.034l.004-.216v-.5a.75.75 0 0 1 .75-.75ZM12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4Z"
+        fill="#ffffff"
       />
     </svg>
   );

@@ -1,6 +1,13 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback, CSSProperties } from 'react';
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  CSSProperties,
+  useMemo,
+} from 'react';
 import ConferenceTopBar from '@/_features/room/components/conference-top-bar';
 import ConferenceActionsBar from '@/_features/room/components/conference-actions-bar';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
@@ -15,6 +22,11 @@ import '../styles/room.css';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { hasTouchScreen } from '@/_shared/utils/has-touch-screen';
+
+import {
+  videoConstraints,
+  getVideoStream,
+} from '@/_shared/utils/get-user-media';
 
 export type Sidebar = 'participants' | 'chat' | '';
 
@@ -45,6 +57,7 @@ export type ParticipantVideo = {
   audioLevel: number;
   lastSpokeAt: number;
   pin: boolean;
+  muted: boolean;
   fullscreen: boolean;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
   readonly addEventListener: (
@@ -190,7 +203,7 @@ export type DeviceType = DeviceStateType & {
 export default function Conference() {
   const [style, setStyle] = useState<React.CSSProperties>({});
   const layoutContainerRef = useRef<HTMLDivElement>(null);
-  const { currentLayout } = useMetadataContext();
+  const { currentLayout, mutedStreams } = useMetadataContext();
 
   const [streams, setStreams] = useState<ParticipantVideo[]>([]);
   const [topSpeakers, setTopSpeakers] = useState<ParticipantVideo[]>([]);
@@ -200,7 +213,7 @@ export default function Conference() {
   const [activeLayout, setActiveLayout] = useState<string>(currentLayout);
 
   const { clientID, clientName } = useClientContext();
-  const { peer } = usePeerContext();
+  const { peer, roomID } = usePeerContext();
 
   const [sidebar, setSidebar] = useState<Sidebar>('');
 
@@ -371,29 +384,58 @@ export default function Conference() {
     [devicesState]
   );
 
+  const turnOnCamera = useCallback(async () => {
+    if (!peer) return;
+
+    const stream = await getVideoStream({
+      video: videoConstraints(),
+    });
+
+    peer.turnOnCamera(stream.getVideoTracks()[0]);
+  }, [peer]);
+
   useEffect(() => {
     if (peer && localStream) {
       if (devicesState.activeCamera) {
-        peer.turnOnCamera();
+        turnOnCamera();
         return;
       }
 
-      peer.turnOffCamera();
+      peer.turnOffCamera(true);
       return;
     }
-  }, [peer, localStream, devicesState.activeCamera]);
+  }, [peer, localStream, devicesState.activeCamera, turnOnCamera]);
+
+  const setMutedStreams = useCallback(
+    (streamID: string, muted: boolean) => {
+      if (muted) {
+        clientSDK.setMetadata(roomID, {
+          mutedStreams: [...mutedStreams, streamID],
+        });
+      } else {
+        clientSDK.setMetadata(roomID, {
+          mutedStreams: mutedStreams.filter((id) => id !== streamID),
+        });
+      }
+    },
+    [roomID, mutedStreams]
+  );
 
   useEffect(() => {
     if (peer && localStream) {
       if (devicesState.activeMic) {
+        setMutedStreams(localStream.id, false);
         peer.turnOnMic();
         return;
       }
 
       peer.turnOffMic();
+
+      // set muted stream
+      setMutedStreams(localStream.id, true);
       return;
     }
-  }, [peer, localStream, devicesState.activeMic]);
+  }, [peer, localStream, devicesState.activeMic, setMutedStreams]);
 
   useEffect(() => {
     const isTouchScreen = hasTouchScreen();
@@ -601,13 +643,19 @@ export default function Conference() {
 
   const [page, setPage] = useState(1);
 
-  const getPageItems = useCallback(() => {
+  const getPageIndex = useCallback(() => {
     const pageSize = isMobile() ? 9 : 25;
-    const pageItems = streams.slice((page - 1) * pageSize, page * pageSize);
-    return pageItems;
+    const start = (page - 1) * pageSize;
+    const remainingItems = streams.length - start;
+
+    if (remainingItems <= pageSize) {
+      return { start, end: streams.length };
+    }
+
+    return { start, end: start + pageSize };
   }, [page, streams]);
 
-  const maxVisibleParticipants = useCallback(() => {
+  const maxVisibleParticipants = useMemo(() => {
     let max = 0;
     if (isMobile()) {
       switch (activeLayout) {
@@ -675,13 +723,15 @@ export default function Conference() {
           break;
       }
     }
+
     if (activeLayout === 'gallery') {
-      return getPageItems().length;
+      const { start, end } = getPageIndex();
+      return end - start;
     }
 
     const maxVisible = streams.length > max ? max : streams.length;
     return maxVisible;
-  }, [streams, activeLayout, currentLayout, pinnedStreams, getPageItems]);
+  }, [streams, activeLayout, currentLayout, pinnedStreams, getPageIndex]);
 
   useEffect(() => {
     const removeStream = (stream: ParticipantVideo) => {
@@ -785,21 +835,27 @@ export default function Conference() {
     };
   }, [addStream, topSpeakers, updateStreams, currentLayout]);
 
-  const moreThanMax = streams.length > maxVisibleParticipants();
+  const moreThanMax = streams.length > maxVisibleParticipants;
 
   const MAX_VISIBLE_PARTICIPANTS =
     moreThanMax &&
     activeLayout !== 'gallery' &&
     currentLayout !== 'speaker' &&
     currentLayout !== 'multispeakers'
-      ? maxVisibleParticipants() - 1
-      : maxVisibleParticipants();
+      ? maxVisibleParticipants - 1
+      : maxVisibleParticipants;
 
   streams.forEach((stream) => {
     if (pinnedStreams.includes(stream.id)) {
       stream.pin = true;
     } else {
       stream.pin = false;
+    }
+
+    if (mutedStreams.includes(stream.id)) {
+      stream.muted = true;
+    } else {
+      stream.muted = false;
     }
   });
 
@@ -864,21 +920,18 @@ export default function Conference() {
           const dimensions = calculateVideoDimensions(
             layoutContainerRef.current.clientWidth,
             layoutContainerRef.current.clientHeight,
-            maxVisibleParticipants()
+            maxVisibleParticipants
           );
 
-          const items = activeLayout === 'gallery' ? getPageItems() : streams;
-
-          if (activeLayout === 'gallery' && items.length > 2) {
+          if (activeLayout === 'gallery' && streams.length > 2) {
             needDoubleGrid.current =
-              (dimensions.columns * dimensions.rows - items.length) % 2 !== 0;
+              (dimensions.columns * dimensions.rows - streams.length) % 2 !== 0;
           } else if (
             activeLayout === 'multispeakers' &&
-            maxVisibleParticipants() > 2
+            maxVisibleParticipants > 2
           ) {
             needDoubleGrid.current =
-              (dimensions.columns * dimensions.rows -
-                maxVisibleParticipants()) %
+              (dimensions.columns * dimensions.rows - maxVisibleParticipants) %
                 2 !==
               0;
           }
@@ -933,14 +986,15 @@ export default function Conference() {
     isOdd,
     moreThanMax,
     activeLayout,
-    getPageItems,
+    getPageIndex,
+    page,
   ]);
 
   let renderedCount = 0;
   const lastRowItemsCount =
     activeLayout === 'gallery'
       ? streams.length - (rows.current - 1) * columns.current
-      : maxVisibleParticipants() - (rows.current - 1) * columns.current;
+      : maxVisibleParticipants - (rows.current - 1) * columns.current;
 
   const localpinnedStreams = streams.find(
     (stream) => stream.pin && stream.origin === 'local'
@@ -952,7 +1006,7 @@ export default function Conference() {
     (activeLayout === 'gallery' &&
       columns.current * rows.current > streams.length) ||
     (activeLayout === 'multispeakers' &&
-      columns.current * rows.current > maxVisibleParticipants())
+      columns.current * rows.current > maxVisibleParticipants)
   ) {
     if (needDoubleGrid.current) {
       const totalCols = columns.current * 2;
@@ -995,127 +1049,130 @@ export default function Conference() {
                 }
                 style={style}
               >
-                {(activeLayout === 'gallery' ? getPageItems() : streams).map(
-                  (stream) => {
-                    let hidden = false;
-                    renderedCount++;
-                    if (renderedCount > MAX_VISIBLE_PARTICIPANTS) {
+                {streams.map((stream, index) => {
+                  let hidden = false;
+                  renderedCount++;
+                  if (
+                    activeLayout !== 'gallery' &&
+                    renderedCount > MAX_VISIBLE_PARTICIPANTS
+                  ) {
+                    hidden = true;
+                  } else if (activeLayout === 'gallery') {
+                    const { start, end } = getPageIndex();
+                    if (index > end || index < start) {
                       hidden = true;
                     }
+                  }
 
-                    let itemStyle = {};
+                  let itemStyle = {};
+
+                  if (
+                    !hidden &&
+                    layoutContainerRef.current &&
+                    stream.source === 'screen'
+                  ) {
+                    // presentation layout
+                    let rows;
+                    if (
+                      currentLayout === 'speaker' ||
+                      currentLayout === 'multispeakers'
+                    ) {
+                      rows = MAX_VISIBLE_PARTICIPANTS - 1;
+                    } else {
+                      rows = moreThanMax
+                        ? MAX_VISIBLE_PARTICIPANTS
+                        : MAX_VISIBLE_PARTICIPANTS - 1;
+                    }
 
                     if (
-                      !hidden &&
-                      layoutContainerRef.current &&
-                      stream.source === 'screen'
+                      layoutContainerRef.current.clientWidth >
+                      layoutContainerRef.current.clientHeight
                     ) {
-                      // presentation layout
-                      let rows;
-                      if (
-                        currentLayout === 'speaker' ||
-                        currentLayout === 'multispeakers'
-                      ) {
-                        rows = MAX_VISIBLE_PARTICIPANTS - 1;
-                      } else {
-                        rows = moreThanMax
-                          ? MAX_VISIBLE_PARTICIPANTS
-                          : MAX_VISIBLE_PARTICIPANTS - 1;
-                      }
+                      // landscape
 
-                      if (
-                        layoutContainerRef.current.clientWidth >
-                        layoutContainerRef.current.clientHeight
-                      ) {
-                        // landscape
-
-                        itemStyle = {
-                          display: 'grid',
-                          gridRowEnd: 'span ' + rows,
-                        };
-                      } else {
-                        // portrait
-                        itemStyle = {
-                          gridColumnEnd: 'span ' + rows,
-                        };
-                      }
-                    } else if (
-                      (activeLayout === 'gallery' ||
-                        activeLayout === 'multispeakers') &&
-                      stream.source !== 'screen' &&
-                      needDoubleGrid.current
-                    ) {
                       itemStyle = {
                         display: 'grid',
-                        gridRowEnd: 'span 2',
-                        gridColumnEnd: 'span 2',
+                        gridRowEnd: 'span ' + rows,
                       };
-                    } else if (
-                      !hidden &&
-                      layoutContainerRef.current &&
-                      activeLayout === 'speaker'
-                    ) {
-                      if (renderedCount === 1) {
-                        itemStyle = {
-                          flexBasis: '100%',
-                          height: '75%',
-                        };
-                      } else if (!isMobile()) {
-                        itemStyle = {
-                          width: '20%',
-                          height: '20%',
-                        };
-                      }
+                    } else {
+                      // portrait
+                      itemStyle = {
+                        gridColumnEnd: 'span ' + rows,
+                      };
                     }
-
-                    const currentRow = Math.ceil(
-                      renderedCount / columns.current
-                    );
-
-                    if (
-                      activeLayout === 'gallery' &&
-                      rows.current * columns.current !==
-                        getPageItems().length &&
-                      currentRow === rows.current
-                    ) {
-                      // last row
-                      // @ts-ignore
-                      itemStyle.gridColumnStart = lastRowStartIndex;
-                      lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
-                    } else if (
-                      activeLayout === 'multispeakers' &&
-                      rows.current * columns.current !==
-                        maxVisibleParticipants() &&
-                      currentRow === rows.current
-                    ) {
-                      // last row
-                      // @ts-ignore
-                      itemStyle.gridColumnStart = lastRowStartIndex;
-                      lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
+                  } else if (
+                    (activeLayout === 'gallery' ||
+                      activeLayout === 'multispeakers') &&
+                    stream.source !== 'screen' &&
+                    needDoubleGrid.current
+                  ) {
+                    itemStyle = {
+                      display: 'grid',
+                      gridRowEnd: 'span 2',
+                      gridColumnEnd: 'span 2',
+                    };
+                  } else if (
+                    !hidden &&
+                    layoutContainerRef.current &&
+                    activeLayout === 'speaker'
+                  ) {
+                    if (renderedCount === 1) {
+                      itemStyle = {
+                        flexBasis: '100%',
+                        height: '75%',
+                      };
+                    } else if (!isMobile()) {
+                      itemStyle = {
+                        width: '20%',
+                        height: '20%',
+                      };
                     }
-
-                    return (
-                      <div
-                        className={
-                          (hidden
-                            ? 'participant-item-hidden'
-                            : 'participant-item') +
-                          (stream.pin ? ' pinnedStreams' : '') +
-                          (stream.source === 'screen' ? ' screen' : ' media')
-                        }
-                        key={`stream-${stream.id}`}
-                        style={itemStyle}
-                      >
-                        <ConferenceScreen
-                          key={'conference-screen-' + stream.id}
-                          stream={stream}
-                          pinned={stream.pin}
-                          currentAudioOutput={devicesState.currentAudioOutput}
-                        />
-                      </div>
-                    );
                   }
-                )}
+
+                  const currentRow = Math.ceil(renderedCount / columns.current);
+
+                  if (
+                    activeLayout === 'gallery' &&
+                    rows.current * columns.current !==
+                      getPageIndex().end - getPageIndex().start &&
+                    currentRow === rows.current
+                  ) {
+                    // last row
+                    // @ts-ignore
+                    itemStyle.gridColumnStart = lastRowStartIndex;
+                    lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
+                  } else if (
+                    activeLayout === 'multispeakers' &&
+                    rows.current * columns.current !== maxVisibleParticipants &&
+                    currentRow === rows.current
+                  ) {
+                    // last row
+                    // @ts-ignore
+                    itemStyle.gridColumnStart = lastRowStartIndex;
+                    lastRowStartIndex += needDoubleGrid.current ? 2 : 1;
+                  }
+
+                  return (
+                    <div
+                      className={
+                        (hidden
+                          ? 'participant-item-hidden'
+                          : 'participant-item') +
+                        (stream.pin ? ' pinnedStreams' : '') +
+                        (stream.source === 'screen' ? ' screen' : ' media')
+                      }
+                      key={`stream-${stream.id}`}
+                      style={itemStyle}
+                    >
+                      <ConferenceScreen
+                        key={'conference-screen-' + stream.id}
+                        stream={stream}
+                        pinned={stream.pin}
+                        currentAudioOutput={devicesState.currentAudioOutput}
+                      />
+                    </div>
+                  );
+                })}
                 {moreThanMax &&
                   currentLayout !== 'gallery' &&
                   currentLayout !== 'speaker' &&

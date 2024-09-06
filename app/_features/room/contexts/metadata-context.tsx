@@ -19,6 +19,7 @@ const defaultData = {
     | 'presentation',
   speakerClientIDs: [] as string[],
   pinnedStreams: [] as string[],
+  mutedStreams: [] as string[],
 };
 
 const MetadataContext = createContext(defaultData);

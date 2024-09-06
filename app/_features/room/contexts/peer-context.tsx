@@ -16,6 +16,7 @@ const PeerContext = createContext({
   peer: null as Peer | null,
   debug: false,
   connectionState: '' as ConnectionState,
+  roomID: '',
 });
 
 export const usePeerContext = () => {
@@ -184,6 +185,7 @@ export function PeerProvider({
         peer: peer,
         debug: debug,
         connectionState: connectionState,
+        roomID: roomID,
       }}
     >
       {children}
