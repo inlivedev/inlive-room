@@ -1,15 +1,25 @@
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@nextui-org/react';
+import MicOffIcon from '@/_shared/components/icons/microphone-off-icon';
+import MicOnIcon from '@/_shared/components/icons/microphone-on-icon';
+import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
+import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import MoreIcon from '@/_shared/components/icons/more-icon';
 import XFillIcon from '@/_shared/components/icons/x-fill-icon';
+import PinIcon from '@/_shared/components/icons/pin-icon';
 import ChevronRight from '@/_shared/components/icons/chevron-right';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ParticipantDropdownMenu from './participant-dropdown-menu';
 import type { ParticipantVideo } from './conference';
 
-export default function ParticipantListSidebar({streams}: {streams: ParticipantVideo[]}) {
+export default function ParticipantListSidebar({
+  streams,
+}: {
+  streams: ParticipantVideo[];
+}) {
   return (
     <div className="grid h-full w-full grid-rows-[auto,1fr]">
       <div className="border-b border-black/25 px-4 py-2.5">
@@ -40,7 +50,13 @@ export default function ParticipantListSidebar({streams}: {streams: ParticipantV
   );
 }
 
-const ParticipantListGroup = ({streams, show = true }:{streams: ParticipantVideo[],show?:boolean}) => {
+const ParticipantListGroup = ({
+  streams,
+  show = true,
+}: {
+  streams: ParticipantVideo[];
+  show?: boolean;
+}) => {
   const { active, toggle } = useToggle(show);
   const participants = streams.filter((stream) => stream.source === 'media');
 
@@ -84,6 +100,28 @@ const ParticipantsListItem = ({ stream }: { stream: ParticipantVideo }) => {
   type Identifier = { id: string; name: string };
   const identifiers: Identifier[] = [];
 
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+
+  useEffect(() => {
+    const callbackVoiceActivity = (e: CustomEventInit) => {
+      if (e.detail.audioLevel > 0) {
+        setIsVoiceActive(true);
+      } else {
+        setIsVoiceActive(false);
+      }
+    };
+
+    if (stream.origin === 'remote') {
+      stream.addEventListener('voiceactivity', callbackVoiceActivity);
+    }
+
+    return () => {
+      if (stream.origin === 'remote') {
+        stream.removeEventListener('voiceactivity', callbackVoiceActivity);
+      }
+    };
+  }, [stream]);
+
   if (isHost) {
     identifiers.push({
       id: 'host',
@@ -98,11 +136,19 @@ const ParticipantsListItem = ({ stream }: { stream: ParticipantVideo }) => {
     });
   }
 
+  const initials = useMemo(() => {
+    return stream.name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  }, [stream.name]);
+
   return (
     <div className="flex items-center gap-2.5 py-2">
       <div>
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-2xl font-semibold uppercase text-zinc-50">
-          {stream.name[0]}
+          {initials}
         </div>
       </div>
       <div className="flex-1">
@@ -131,6 +177,23 @@ const ParticipantsListItem = ({ stream }: { stream: ParticipantVideo }) => {
             })}
           </div>
         ) : null}
+      </div>
+      <div>
+        {stream.offCamera ? (
+          <CameraOffIcon className="h-5 w-5 text-zinc-900" />
+        ) : (
+          <CameraOnIcon className="h-5 w-5 text-zinc-900" />
+        )}
+      </div>
+      <div>
+        {stream.muted ? (
+          <MicOffIcon className="h-5 w-5 text-zinc-900" />
+        ) : (
+          <MicOnIcon active={isVoiceActive} className="h-5 w-5 text-zinc-900" />
+        )}
+      </div>
+      <div>
+        {stream.pin ? <PinIcon className="h-5 w-5 text-zinc-900" /> : null}
       </div>
       <div>
         <ParticipantDropdownMenu stream={stream}>

@@ -20,6 +20,7 @@ const defaultData = {
   speakerClientIDs: [] as string[],
   pinnedStreams: [] as string[],
   mutedStreams: [] as string[],
+  offCameraStreams: [] as string[],
 };
 
 const MetadataContext = createContext(defaultData);
@@ -48,7 +49,7 @@ export function MetadataProvider({
   });
 
   useEffect(() => {
-    clientSDK.on(RoomEvent.META_CHANGED, (event: any) => {
+    const handleMetadataChange = (event: any) => {
       setMetadataState((prevData) => {
         const metadata = {
           ...prevData,
@@ -57,7 +58,16 @@ export function MetadataProvider({
 
         return metadata;
       });
-    });
+    };
+
+    clientSDK.addEventListener(RoomEvent.META_CHANGED, handleMetadataChange);
+
+    return () => {
+      clientSDK.removeEventListener(
+        RoomEvent.META_CHANGED,
+        handleMetadataChange
+      );
+    };
   }, []);
 
   return (

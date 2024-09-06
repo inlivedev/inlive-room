@@ -58,6 +58,7 @@ export type ParticipantVideo = {
   lastSpokeAt: number;
   pin: boolean;
   muted: boolean;
+  offCamera: boolean;
   fullscreen: boolean;
   readonly replaceTrack: (newTrack: MediaStreamTrack) => void;
   readonly addEventListener: (
@@ -203,7 +204,8 @@ export type DeviceType = DeviceStateType & {
 export default function Conference() {
   const [style, setStyle] = useState<React.CSSProperties>({});
   const layoutContainerRef = useRef<HTMLDivElement>(null);
-  const { currentLayout, mutedStreams } = useMetadataContext();
+  const { currentLayout, mutedStreams, offCameraStreams } =
+    useMetadataContext();
 
   const [streams, setStreams] = useState<ParticipantVideo[]>([]);
   const [topSpeakers, setTopSpeakers] = useState<ParticipantVideo[]>([]);
@@ -218,10 +220,6 @@ export default function Conference() {
   const [sidebar, setSidebar] = useState<Sidebar>('');
 
   const { pinnedStreams } = useMetadataContext();
-
-  if (streams.length > 1) {
-    orderStreams(topSpeakers, streams);
-  }
 
   useEffect(() => {
     if (peer && localStream) {
@@ -384,6 +382,21 @@ export default function Conference() {
     [devicesState]
   );
 
+  const setOffCameraStreams = useCallback(
+    (streamID: string, offCamera: boolean) => {
+      if (offCamera && !offCameraStreams.includes(streamID)) {
+        clientSDK.setMetadata(roomID, {
+          offCameraStreams: [...offCameraStreams, streamID],
+        });
+      } else if (!offCamera && offCameraStreams.includes(streamID)) {
+        clientSDK.setMetadata(roomID, {
+          offCameraStreams: offCameraStreams.filter((id) => id !== streamID),
+        });
+      }
+    },
+    [roomID, offCameraStreams]
+  );
+
   const turnOnCamera = useCallback(async () => {
     if (!peer) return;
 
@@ -398,21 +411,29 @@ export default function Conference() {
     if (peer && localStream) {
       if (devicesState.activeCamera) {
         turnOnCamera();
+        setOffCameraStreams(localStream.id, false);
         return;
       }
 
       peer.turnOffCamera(true);
+      setOffCameraStreams(localStream.id, true);
       return;
     }
-  }, [peer, localStream, devicesState.activeCamera, turnOnCamera]);
+  }, [
+    peer,
+    localStream,
+    devicesState.activeCamera,
+    turnOnCamera,
+    setOffCameraStreams,
+  ]);
 
   const setMutedStreams = useCallback(
     (streamID: string, muted: boolean) => {
-      if (muted) {
+      if (muted && !mutedStreams.includes(streamID)) {
         clientSDK.setMetadata(roomID, {
           mutedStreams: [...mutedStreams, streamID],
         });
-      } else {
+      } else if (!muted && mutedStreams.includes(streamID)) {
         clientSDK.setMetadata(roomID, {
           mutedStreams: mutedStreams.filter((id) => id !== streamID),
         });
@@ -835,7 +856,10 @@ export default function Conference() {
     };
   }, [addStream, topSpeakers, updateStreams, currentLayout]);
 
-  const moreThanMax = streams.length > maxVisibleParticipants;
+  const moreThanMax = useMemo(
+    () => streams.length > maxVisibleParticipants,
+    [streams.length, maxVisibleParticipants]
+  );
 
   const MAX_VISIBLE_PARTICIPANTS =
     moreThanMax &&
@@ -845,19 +869,17 @@ export default function Conference() {
       ? maxVisibleParticipants - 1
       : maxVisibleParticipants;
 
-  streams.forEach((stream) => {
-    if (pinnedStreams.includes(stream.id)) {
-      stream.pin = true;
-    } else {
-      stream.pin = false;
-    }
-
-    if (mutedStreams.includes(stream.id)) {
-      stream.muted = true;
-    } else {
-      stream.muted = false;
-    }
-  });
+  const updatedStreams = useMemo(() => {
+    return orderStreams(
+      topSpeakers,
+      streams.map((stream) => {
+        stream.pin = pinnedStreams.includes(stream.id);
+        stream.muted = mutedStreams.includes(stream.id);
+        stream.offCamera = offCameraStreams.includes(stream.id);
+        return stream;
+      })
+    );
+  }, [streams, pinnedStreams, mutedStreams, offCameraStreams, topSpeakers]);
 
   const isOdd = streams.length % 2 !== 0;
 
@@ -996,7 +1018,7 @@ export default function Conference() {
       ? streams.length - (rows.current - 1) * columns.current
       : maxVisibleParticipants - (rows.current - 1) * columns.current;
 
-  const localpinnedStreams = streams.find(
+  const localpinnedStreams = updatedStreams.find(
     (stream) => stream.pin && stream.origin === 'local'
   );
 
@@ -1023,7 +1045,7 @@ export default function Conference() {
     <div className="viewport-height grid grid-cols-[1fr,auto]">
       <div className="relative grid h-full grid-rows-[auto,1fr,72px] overflow-y-hidden">
         <ConferenceTopBar
-          streams={streams}
+          streams={updatedStreams}
           sidebar={sidebar}
           activeLayout={activeLayout}
           pageSize={isMobile() ? 9 : 25}
@@ -1049,7 +1071,7 @@ export default function Conference() {
                 }
                 style={style}
               >
-                {streams.map((stream, index) => {
+                {updatedStreams.map((stream, index) => {
                   let hidden = false;
                   renderedCount++;
                   if (
@@ -1168,6 +1190,8 @@ export default function Conference() {
                         key={'conference-screen-' + stream.id}
                         stream={stream}
                         pinned={stream.pin}
+                        muted={stream.muted}
+                        offCamera={stream.offCamera}
                         currentAudioOutput={devicesState.currentAudioOutput}
                       />
                     </div>
@@ -1189,7 +1213,7 @@ export default function Conference() {
               <div className="ml-4 w-[360px]">
                 <RightSidebar isOpen={!!sidebar}>
                   {sidebar === 'participants' ? (
-                    <ParticipantListSidebar streams={streams} />
+                    <ParticipantListSidebar streams={updatedStreams} />
                   ) : null}
                   {sidebar === 'chat' ? <ChatSidebar /> : null}
                 </RightSidebar>
@@ -1198,7 +1222,7 @@ export default function Conference() {
           </div>
         </div>
         <ConferenceActionsBar
-          streams={streams}
+          streams={updatedStreams}
           sidebar={sidebar}
           deviceTypes={deviceTypes}
         />

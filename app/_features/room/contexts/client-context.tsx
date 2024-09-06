@@ -58,7 +58,8 @@ export function ClientProvider({
 
   const [localStreams, setLocalStreams] = useState<MediaStream[]>([]);
 
-  const { pinnedStreams } = useMetadataContext();
+  const { pinnedStreams, mutedStreams, offCameraStreams } =
+    useMetadataContext();
 
   useEffect(() => {
     // @ts-ignore
@@ -156,21 +157,29 @@ export function ClientProvider({
     };
   }, []);
 
-  const removePinnedStream = useCallback(async () => {
+  const removeStreamMetadata = useCallback(async () => {
     const newPinnedStreams = pinnedStreams.filter((pinned) =>
       localStreams.find((stream) => stream.id !== pinned)
     );
 
-    if (newPinnedStreams.length === pinnedStreams.length) return;
+    const newMutedStreams = mutedStreams.filter((muted: string) =>
+      localStreams.find((stream) => stream.id !== muted)
+    );
+
+    const newOffCameraStreams = offCameraStreams.filter((offCamera) =>
+      localStreams.find((stream) => stream.id !== offCamera)
+    );
 
     await clientSDK.setMetadata(roomID, {
       pinnedStreams: [...newPinnedStreams],
+      mutedStreams: [...newMutedStreams],
+      offCameraStreams: [...newOffCameraStreams],
     });
-  }, [pinnedStreams, localStreams, roomID]);
+  }, [pinnedStreams, mutedStreams, offCameraStreams, localStreams, roomID]);
 
   useEffect(() => {
     const onBrowserClose = () => {
-      removePinnedStream();
+      removeStreamMetadata();
       const clientLeaveTime = new Date().toISOString();
 
       if (!isActivityRecordedRef.current && clientJoinTime && persistentData) {
@@ -202,12 +211,12 @@ export function ClientProvider({
     clientJoinTime,
     roomID,
     roomType,
-    removePinnedStream,
+    removeStreamMetadata,
   ]);
 
   useEffect(() => {
     const clientLeave = async (clientID: string, roomType: string) => {
-      removePinnedStream();
+      removeStreamMetadata();
 
       if (peer?.getPeerConnection()) peer.disconnect();
 
@@ -285,6 +294,8 @@ export function ClientProvider({
     roomID,
     localStreams,
     pinnedStreams,
+    mutedStreams,
+    offCameraStreams,
   ]);
 
   return (
