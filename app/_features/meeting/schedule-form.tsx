@@ -148,7 +148,7 @@ export default function MeetingScheduleForm() {
 
   const onAddMultitpleEmails = useCallback(() => {
     const regex =
-      /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*,\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/;
+      /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*[,| ]\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/;
 
     const newEmails = getValues('csvEmails');
 
@@ -156,7 +156,14 @@ export default function MeetingScheduleForm() {
       return;
     }
 
-    const regexEmails = newEmails.split(',');
+    let regexEmails: string[];
+
+    if (newEmails.includes(',')) {
+      regexEmails = newEmails.split(',');
+    } else {
+      regexEmails = newEmails.split(' ');
+    }
+
     let existingEmails = getValues('emails').map((email) => email.email);
 
     // Check if existingEmails is empty or contains only one empty string
@@ -361,7 +368,7 @@ export default function MeetingScheduleForm() {
               id="email"
               {...register('csvEmails', {
                 pattern:
-                  /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*,\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/,
+                  /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*[,| ]\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/,
               })}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -369,9 +376,10 @@ export default function MeetingScheduleForm() {
                   onAddMultitpleEmails();
                 } else if (e.key === ',') {
                   e.preventDefault();
-                  // remove comma
+                  // remove comma and space
                   const value = getValues('csvEmails');
                   setValue('csvEmails', value.replace(',', ''));
+                  setValue('csvEmails', value.replace(' ', ''));
                   onAddMultitpleEmails();
                 }
               }}
