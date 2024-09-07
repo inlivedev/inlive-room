@@ -364,7 +364,7 @@ export default function MeetingScheduleForm() {
           <div className="relative flex w-full flex-row items-center rounded-md bg-zinc-950 outline-none ring-1 ring-zinc-800 sm:w-auto">
             <input
               className="flex-1 bg-transparent py-2.5 pl-4 text-[16px] outline-none"
-              placeholder="Add multiple email by comma"
+              placeholder="Add multiple email by comma or space"
               id="email"
               {...register('csvEmails', {
                 pattern:
@@ -377,11 +377,20 @@ export default function MeetingScheduleForm() {
                 } else if (e.key === ',' || e.key === ' ') {
                   e.preventDefault();
                   // remove comma and space
-                  const value = getValues('csvEmails');
-                  setValue('csvEmails', value.replace(',', ''));
-                  setValue('csvEmails', value.replace(' ', ''));
+                  let value = getValues('csvEmails');
+                  value = value.replaceAll(',', '');
+                  value = value.replaceAll(' ', '');
+                  setValue('csvEmails', value);
                   onAddMultitpleEmails();
                 }
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+                let text = e.clipboardData.getData('text/plain');
+                text = text.replaceAll(',', '');
+                text = text.replaceAll(' ', '');
+                setValue('csvEmails', text);
+                onAddMultitpleEmails();
               }}
             />
             <Button
