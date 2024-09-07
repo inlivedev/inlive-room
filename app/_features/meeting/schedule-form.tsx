@@ -367,6 +367,12 @@ export default function MeetingScheduleForm() {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   onAddMultitpleEmails();
+                } else if (e.key === ',') {
+                  e.preventDefault();
+                  // remove comma
+                  const value = getValues('csvEmails');
+                  setValue('csvEmails', value.replace(',', ''));
+                  onAddMultitpleEmails();
                 }
               }}
             />
