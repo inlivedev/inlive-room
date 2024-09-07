@@ -375,7 +375,6 @@ export default function MeetingScheduleForm() {
                   e.preventDefault();
                   onAddMultitpleEmails();
                 } else if (e.key === ',' || e.key === ' ') {
-                  e.preventDefault();
                   // remove comma and space from the last character only if it's a comma or space
                   let value = getValues('csvEmails');
                   if (value.endsWith(',') || value.endsWith(' ')) {
