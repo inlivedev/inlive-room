@@ -376,19 +376,19 @@ export default function MeetingScheduleForm() {
                   onAddMultitpleEmails();
                 } else if (e.key === ',' || e.key === ' ') {
                   e.preventDefault();
-                  // remove comma and space
+                  // remove comma and space from the last character only if it's a comma or space
                   let value = getValues('csvEmails');
-                  value = value.replaceAll(',', '');
-                  value = value.replaceAll(' ', '');
-                  setValue('csvEmails', value);
+                  if (value.endsWith(',') || value.endsWith(' ')) {
+                    value = value.slice(0, -1);
+                    setValue('csvEmails', value);
+                  }
+
                   onAddMultitpleEmails();
                 }
               }}
               onPaste={(e) => {
                 e.preventDefault();
-                let text = e.clipboardData.getData('text/plain');
-                text = text.replaceAll(',', '');
-                text = text.replaceAll(' ', '');
+                const text = e.clipboardData.getData('text/plain');
                 setValue('csvEmails', text);
                 onAddMultitpleEmails();
               }}
