@@ -153,7 +153,7 @@ export default function MeetingScheduleForm() {
     const newEmails = getValues('csvEmails');
 
     if (!regex.test(newEmails)) {
-      return;
+      return false;
     }
 
     let regexEmails: string[];
@@ -181,6 +181,7 @@ export default function MeetingScheduleForm() {
     });
 
     resetField('csvEmails');
+    return true;
   }, [append, getValues, remove, resetField]);
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -382,7 +383,9 @@ export default function MeetingScheduleForm() {
                     setValue('csvEmails', value);
                   }
 
-                  onAddMultitpleEmails();
+                  if (onAddMultitpleEmails()) {
+                    e.preventDefault();
+                  }
                 }
               }}
               onPaste={(e) => {
