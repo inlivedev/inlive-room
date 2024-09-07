@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button, CircularProgress } from '@nextui-org/react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';

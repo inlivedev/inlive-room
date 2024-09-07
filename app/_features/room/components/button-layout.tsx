@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dropdown,
   DropdownTrigger,
@@ -17,6 +17,7 @@ import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { isMobile } from './conference';
+
 type LayoutOptions = {
   key: string;
   label: string;
@@ -24,6 +25,8 @@ type LayoutOptions = {
 
 export default function ButtonLayout() {
   const { isModerator, currentLayout } = useMetadataContext();
+
+  const [isOnMobile, setIsOnMobile] = useState(false);
 
   const { roomID } = useClientContext();
 
@@ -125,8 +128,12 @@ export default function ButtonLayout() {
       ))}
     </DropdownMenu>
   );
-  return !isMobile() ? (
-    <ButtonGroup variant="flat">
+
+  useEffect(() => {
+    if (isMobile()) setIsOnMobile(true);
+  }, []);
+  return (
+    <ButtonGroup variant="flat" className={isOnMobile ? 'hidden' : ''}>
       <Dropdown placement="bottom" className=" ring-1 ring-zinc-800/70">
         <DropdownTrigger>
           <Button
@@ -142,5 +149,5 @@ export default function ButtonLayout() {
         {isModerator ? moderatorOptionsRender() : nonModeratorOptionsRender()}
       </Dropdown>
     </ButtonGroup>
-  ) : null;
+  );
 }

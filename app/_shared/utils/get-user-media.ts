@@ -17,11 +17,11 @@ export const getAudioStream = (
     });
 };
 
-export const getVideoStream = (
+export const getVideoStream = async (
   constraints: MediaStreamConstraints,
   retries = 2
 ) => {
-  return navigator.mediaDevices
+  const videoStream = await navigator.mediaDevices
     .getUserMedia(constraints)
     .catch(async (error): Promise<MediaStream> => {
       if (retries === 0) {
@@ -29,11 +29,25 @@ export const getVideoStream = (
       }
 
       if (error instanceof OverconstrainedError) {
-        return getVideoStream({ video: true }, retries--);
+        return await getVideoStream({ video: true }, retries--);
       }
 
       throw error;
     });
+
+  const stopCameraTrack = () => {
+    videoStream.getVideoTracks().forEach((track) => {
+      track.stop();
+    });
+  };
+
+  document.addEventListener('trigger:camera-off', stopCameraTrack);
+
+  videoStream.addEventListener('ended', () =>
+    document.removeEventListener('trigger:camera-off', stopCameraTrack)
+  );
+
+  return videoStream;
 };
 
 export const defaultVideoConstraints: MediaTrackConstraints = {
@@ -128,12 +142,26 @@ export const getUserMedia = async (constraints: MediaStreamConstraints) => {
     if (audioStream) {
       audioStream.getAudioTracks().forEach((track) => {
         mediaStream.addTrack(track);
+        track.addEventListener('ended', () => {
+          console.log('Audio track ended');
+          audioStream.getTracks().forEach((track) => {
+            track.stop();
+          });
+        });
       });
     }
 
     if (videoStream) {
       videoStream.getVideoTracks().forEach((track) => {
         mediaStream.addTrack(track);
+        console.log('Video track added', track);
+        // @ts-ignore
+        window.video = track;
+        // @ts-ignore
+        window.video2 = mediaStream.getVideoTracks()[0];
+        track.addEventListener('ended', () => {
+          console.log('Video track ended');
+        });
       });
     }
 

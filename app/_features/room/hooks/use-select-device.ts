@@ -1,8 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
-import {
-  AudioOutputContext,
-} from '@/_features/room/contexts/device-context';
+import { AudioOutputContext } from '@/_features/room/contexts/device-context';
 import { getUserMedia } from '@/_shared/utils/get-user-media';
 import { ParticipantVideo } from '../components/conference';
 
@@ -12,7 +10,7 @@ export const useSelectDevice = (
   currentActiveDevice: MediaDeviceInfo | undefined,
   setCurrentDevice: (deviceInfo: MediaDeviceInfo) => void,
   activeCamera: boolean,
-  activeMic: boolean,
+  activeMic: boolean
 ) => {
   const { peer } = usePeerContext();
 

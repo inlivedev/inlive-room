@@ -84,22 +84,7 @@ export const isMobile = () => {
   }
 };
 
-const isLandscape = () => {
-  if (typeof window === 'undefined') return false;
-  if (
-    screen.orientation &&
-    (screen.orientation.type === 'landscape-primary' ||
-      screen.orientation.type === 'landscape-secondary')
-  ) {
-    return true;
-  }
-
-  return window.innerWidth > window.innerHeight;
-};
-
-const topSpeakersLimit = isMobile() ? 1 : 3;
-
-const maxLastSpokeAt = 500000;
+const maxLastSpokeAt = 500;
 
 const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.pin = false;
@@ -212,6 +197,8 @@ export default function Conference() {
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
+  const [isOnMobile, setIsOnMobile] = useState(false);
+
   const [activeLayout, setActiveLayout] = useState<string>(currentLayout);
 
   const { clientID, clientName } = useClientContext();
@@ -220,6 +207,10 @@ export default function Conference() {
   const [sidebar, setSidebar] = useState<Sidebar>('');
 
   const { pinnedStreams } = useMetadataContext();
+
+  useEffect(() => {
+    if (isMobile()) setIsOnMobile(true);
+  }, []);
 
   useEffect(() => {
     if (peer && localStream) {
@@ -417,6 +408,7 @@ export default function Conference() {
 
       peer.turnOffCamera(true);
       setOffCameraStreams(localStream.id, true);
+      document.dispatchEvent(new Event('trigger:camera-off'));
       return;
     }
   }, [
@@ -644,7 +636,6 @@ export default function Conference() {
       }
     };
 
-    document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
     document.addEventListener('set:pin', onPinSet);
     document.addEventListener('set:fullscreen', onFullscreenSet);
     document.addEventListener('fullscreenchange', onFullScreenChange);
@@ -665,7 +656,7 @@ export default function Conference() {
   const [page, setPage] = useState(1);
 
   const getPageIndex = useCallback(() => {
-    const pageSize = isMobile() ? 9 : 25;
+    const pageSize = isOnMobile ? 9 : 25;
     const start = (page - 1) * pageSize;
     const remainingItems = streams.length - start;
 
@@ -674,11 +665,11 @@ export default function Conference() {
     }
 
     return { start, end: start + pageSize };
-  }, [page, streams]);
+  }, [page, streams, isOnMobile]);
 
   const maxVisibleParticipants = useMemo(() => {
     let max = 0;
-    if (isMobile()) {
+    if (isOnMobile) {
       switch (activeLayout) {
         case 'presentation':
           if (
@@ -752,7 +743,14 @@ export default function Conference() {
 
     const maxVisible = streams.length > max ? max : streams.length;
     return maxVisible;
-  }, [streams, activeLayout, currentLayout, pinnedStreams, getPageIndex]);
+  }, [
+    streams,
+    activeLayout,
+    currentLayout,
+    pinnedStreams,
+    getPageIndex,
+    isOnMobile,
+  ]);
 
   useEffect(() => {
     const removeStream = (stream: ParticipantVideo) => {
@@ -763,6 +761,8 @@ export default function Conference() {
         )
       );
     };
+
+    const topSpeakersLimit = isOnMobile ? 1 : 3;
 
     const onStreamAvailable = (data: any) => {
       if (data.stream.source === 'screen') {
@@ -785,10 +785,7 @@ export default function Conference() {
           // find the top speaker and replace it with the new streams
           const topSpeaker = topSpeakers[0];
           const currentSinceSpoke = Date.now() - topSpeaker.lastSpokeAt;
-          if (
-            maxLastSpokeAt < currentSinceSpoke ||
-            stream.audioLevel > topSpeaker.audioLevel
-          ) {
+          if (maxLastSpokeAt < currentSinceSpoke) {
             topSpeakers[0] = stream;
             setTopSpeakers([...topSpeakers]);
             // call setStreams with the new streams order
@@ -804,7 +801,7 @@ export default function Conference() {
                 return currentSinceSpoke < prevSinceSpoke ? current : prev;
               }
 
-              return current.audioLevel < prev.audioLevel ? current : prev;
+              return current;
             },
             topSpeakers[0]
           );
@@ -854,7 +851,7 @@ export default function Conference() {
       );
       clientSDK.removeEventListener(RoomEvent.STREAM_REMOVED, onStreamRemoved);
     };
-  }, [addStream, topSpeakers, updateStreams, currentLayout]);
+  }, [addStream, topSpeakers, updateStreams, currentLayout, isOnMobile]);
 
   const moreThanMax = useMemo(
     () => streams.length > maxVisibleParticipants,
@@ -1048,7 +1045,7 @@ export default function Conference() {
           streams={updatedStreams}
           sidebar={sidebar}
           activeLayout={activeLayout}
-          pageSize={isMobile() ? 9 : 25}
+          pageSize={isOnMobile ? 9 : 25}
           page={page}
           setPage={setPage}
         />
@@ -1143,7 +1140,7 @@ export default function Conference() {
                         flexBasis: '100%',
                         height: '75%',
                       };
-                    } else if (!isMobile()) {
+                    } else if (!isOnMobile) {
                       itemStyle = {
                         width: '20%',
                         height: '20%',

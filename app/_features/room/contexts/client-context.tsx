@@ -16,7 +16,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { UserType } from '@/_shared/types/user';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import { remove } from 'lodash-es';
+import { ParticipantVideo } from '@/_features/room/components/conference';
 
 type ClientProviderProps = {
   roomID: string;
@@ -56,7 +56,7 @@ export function ClientProvider({
   );
   const isActivityRecordedRef = useRef(false);
 
-  const [localStreams, setLocalStreams] = useState<MediaStream[]>([]);
+  const [localStreams, setLocalStreams] = useState<ParticipantVideo[]>([]);
 
   const { pinnedStreams, mutedStreams, offCameraStreams } =
     useMetadataContext();
@@ -229,6 +229,13 @@ export function ClientProvider({
         }
 
         if (!persistentData) {
+          document.dispatchEvent(
+            new CustomEvent('set:conference-view', {
+              detail: {
+                view: 'exit',
+              },
+            })
+          );
           return;
         }
 
@@ -296,6 +303,7 @@ export function ClientProvider({
     pinnedStreams,
     mutedStreams,
     offCameraStreams,
+    removeStreamMetadata,
   ]);
 
   return (
