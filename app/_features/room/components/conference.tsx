@@ -686,10 +686,7 @@ export default function Conference() {
 
           break;
         case 'speaker':
-          max =
-            pinnedStreams.length === 0 || pinnedStreams.length > 3
-              ? 3
-              : pinnedStreams.length;
+          max = 3;
           break;
         case 'multispeakers':
           max =
@@ -705,10 +702,7 @@ export default function Conference() {
     } else {
       switch (activeLayout) {
         case 'speaker':
-          max =
-            pinnedStreams.length === 0 || pinnedStreams.length > 3
-              ? 3
-              : pinnedStreams.length;
+          max = 4;
           break;
         case 'multispeakers':
           max =
@@ -858,13 +852,7 @@ export default function Conference() {
     [streams.length, maxVisibleParticipants]
   );
 
-  const MAX_VISIBLE_PARTICIPANTS =
-    moreThanMax &&
-    activeLayout !== 'gallery' &&
-    currentLayout !== 'speaker' &&
-    currentLayout !== 'multispeakers'
-      ? maxVisibleParticipants - 1
-      : maxVisibleParticipants;
+  maxVisibleParticipants;
 
   const updatedStreams = useMemo(() => {
     return orderStreams(
@@ -895,17 +883,7 @@ export default function Conference() {
             layoutContainerRef.current.clientHeight
           ) {
             // landscape
-            let rows;
-            if (
-              currentLayout === 'speaker' ||
-              currentLayout === 'multispeakers'
-            ) {
-              rows = MAX_VISIBLE_PARTICIPANTS - 1;
-            } else {
-              rows = moreThanMax
-                ? MAX_VISIBLE_PARTICIPANTS
-                : MAX_VISIBLE_PARTICIPANTS - 1;
-            }
+            const rows = maxVisibleParticipants - 1;
             style = {
               display: 'grid',
               gap: '1rem',
@@ -914,17 +892,7 @@ export default function Conference() {
             };
           } else {
             // portrait
-            let rows;
-            if (
-              currentLayout === 'speaker' ||
-              currentLayout === 'multispeakers'
-            ) {
-              rows = MAX_VISIBLE_PARTICIPANTS;
-            } else {
-              rows = moreThanMax
-                ? MAX_VISIBLE_PARTICIPANTS
-                : MAX_VISIBLE_PARTICIPANTS - 1;
-            }
+            const rows = maxVisibleParticipants - 1;
             style = {
               display: 'grid',
               gap: '1rem',
@@ -998,7 +966,6 @@ export default function Conference() {
   }, [
     streams,
     maxVisibleParticipants,
-    MAX_VISIBLE_PARTICIPANTS,
     currentLayout,
     pinnedStreams,
     topSpeakers,
@@ -1052,14 +1019,6 @@ export default function Conference() {
         <div className="px-4">
           <div className="relative grid h-full w-full grid-cols-[auto,minmax(auto,max-content)]">
             <div className="relative grid grid-rows-[auto,1fr]">
-              {localpinnedStreams ? (
-                <div className="z-20 mb-3">
-                  <ConferenceNotification
-                    show={true}
-                    text="You are currently being pinnedStreams. Your video is highlighted for everyone."
-                  />
-                </div>
-              ) : null}
               <div
                 ref={layoutContainerRef}
                 className={
@@ -1073,7 +1032,7 @@ export default function Conference() {
                   renderedCount++;
                   if (
                     activeLayout !== 'gallery' &&
-                    renderedCount > MAX_VISIBLE_PARTICIPANTS
+                    renderedCount > maxVisibleParticipants
                   ) {
                     hidden = true;
                   } else if (activeLayout === 'gallery') {
@@ -1091,17 +1050,7 @@ export default function Conference() {
                     stream.source === 'screen'
                   ) {
                     // presentation layout
-                    let rows;
-                    if (
-                      currentLayout === 'speaker' ||
-                      currentLayout === 'multispeakers'
-                    ) {
-                      rows = MAX_VISIBLE_PARTICIPANTS - 1;
-                    } else {
-                      rows = moreThanMax
-                        ? MAX_VISIBLE_PARTICIPANTS
-                        : MAX_VISIBLE_PARTICIPANTS - 1;
-                    }
+                    const rows = maxVisibleParticipants - 1;
 
                     if (
                       layoutContainerRef.current.clientWidth >
