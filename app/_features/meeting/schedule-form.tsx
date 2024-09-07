@@ -374,7 +374,7 @@ export default function MeetingScheduleForm() {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   onAddMultitpleEmails();
-                } else if (e.key === ',') {
+                } else if (e.key === ',' || e.key === ' ') {
                   e.preventDefault();
                   // remove comma and space
                   const value = getValues('csvEmails');
@@ -400,8 +400,8 @@ export default function MeetingScheduleForm() {
           </div>
           {formState.errors.csvEmails && (
             <p className="mx-1 mt-1 text-xs font-medium text-red-400">
-              Invalid email address. please make sure to separate emails by
-              commas.
+              Invalid email address. Check the format and separate emails by
+              comma or space.
             </p>
           )}
         </div>
