@@ -55,7 +55,8 @@ export const useSelectDevice = (
 
       try {
         if (currentSelectedDevice.kind === 'audioinput') {
-          for (const audioTrack of localStream.mediaStream.getAudioTracks()) {
+          const audioTrack = localStream.mediaStream.getAudioTracks()[0];
+          if (audioTrack) {
             audioTrack.stop();
           }
 
@@ -64,9 +65,11 @@ export const useSelectDevice = (
           });
 
           if (peer && mediaStream) {
-            const track = mediaStream.getAudioTracks()[0];
-            await peer.replaceTrack(track);
-            localStream.replaceTrack(track);
+            const newTrack = mediaStream.getAudioTracks()[0];
+            if (audioTrack) {
+              await peer.replaceTrack(audioTrack, newTrack);
+            }
+            localStream.replaceTrack(newTrack);
             if (!activeMic) peer.turnOffMic();
 
             setSelectedDeviceKeyState(selectedDeviceKeys);
@@ -90,7 +93,8 @@ export const useSelectDevice = (
           setSelectedDeviceKeyState(selectedDeviceKeys);
           setCurrentDevice(currentSelectedDevice);
         } else if (currentSelectedDevice.kind === 'videoinput') {
-          for (const videoTrack of localStream.mediaStream.getVideoTracks()) {
+          const videoTrack = localStream.mediaStream.getVideoTracks()[0];
+          if (videoTrack) {
             videoTrack.stop();
           }
 
@@ -100,7 +104,9 @@ export const useSelectDevice = (
 
           if (peer && mediaStream) {
             const track = mediaStream.getVideoTracks()[0];
-            await peer.replaceTrack(track);
+            if (videoTrack) {
+              await peer.replaceTrack(videoTrack, track);
+            }
             localStream.replaceTrack(track);
             if (!activeCamera) peer.turnOffCamera();
 
