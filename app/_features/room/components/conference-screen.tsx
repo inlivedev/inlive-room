@@ -501,12 +501,13 @@ function Video({
   const { peer } = usePeerContext();
 
   useEffect(() => {
-    if (origin === 'remote' && videoRef.current) {
-      peer?.observeVideo(videoRef.current);
+    const videoElement = videoRef.current;
+    if (origin === 'remote' && videoElement) {
+      peer?.observeVideo(videoElement);
     }
     return () => {
-      if (origin === 'remote' && videoRef.current) {
-        peer?.unobserveVideo(videoRef.current);
+      if (origin === 'remote' && videoElement) {
+        peer?.unobserveVideo(videoElement);
       }
     };
   }, [srcObjectMemo, origin, peer]);
