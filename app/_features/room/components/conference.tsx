@@ -690,8 +690,8 @@ export default function Conference() {
           break;
         case 'multispeakers':
           max =
-            pinnedStreams.length === 0 || pinnedStreams.length > 7
-              ? 7
+            pinnedStreams.length === 0 || pinnedStreams.length > 6
+              ? 6
               : pinnedStreams.length;
           break;
         default:
@@ -706,8 +706,8 @@ export default function Conference() {
           break;
         case 'multispeakers':
           max =
-            pinnedStreams.length === 0 || pinnedStreams.length > 7
-              ? 7
+            pinnedStreams.length === 0 || pinnedStreams.length > 9
+              ? 9
               : pinnedStreams.length;
           break;
         case 'presentation':
