@@ -219,19 +219,17 @@ export function ClientProvider({
       removeStreamMetadata();
 
       if (peer?.getPeerConnection()) {
-        peer.getAllStreams().forEach((stream: ParticipantVideo) => {
-          if (stream.origin === 'local') {
-            stream.mediaStream.getTracks().forEach((track) => {
-              track.stop();
-              if (track.kind === 'audio') {
-                document.dispatchEvent(new Event('trigger:microphone-off'));
-              } else {
-                document.dispatchEvent(new Event('trigger:camera-off'));
-              }
-            });
-          }
-        });
-
+        peer
+          .getPeerConnection()
+          ?.getSenders()
+          .forEach((sender) => {
+            sender.track?.stop();
+            if (sender.track?.kind === 'audio') {
+              document.dispatchEvent(new Event('trigger:microphone-off'));
+            } else if (sender.track?.kind === 'video') {
+              document.dispatchEvent(new Event('trigger:camera-off'));
+            }
+          });
         peer.disconnect();
       }
 
