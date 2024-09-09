@@ -218,7 +218,22 @@ export function ClientProvider({
     const clientLeave = async (clientID: string, roomType: string) => {
       removeStreamMetadata();
 
-      if (peer?.getPeerConnection()) peer.disconnect();
+      if (peer?.getPeerConnection()) {
+        peer.getAllStreams().forEach((stream: ParticipantVideo) => {
+          if (stream.origin === 'local') {
+            stream.mediaStream.getTracks().forEach((track) => {
+              track.stop();
+              if (track.kind === 'audio') {
+                document.dispatchEvent(new Event('trigger:microphone-off'));
+              } else {
+                document.dispatchEvent(new Event('trigger:camera-off'));
+              }
+            });
+          }
+        });
+
+        peer.disconnect();
+      }
 
       try {
         const response = await clientSDK.leaveRoom(roomID, clientID, false);

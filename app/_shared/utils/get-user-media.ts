@@ -1,8 +1,8 @@
-export const getAudioStream = (
+export const getAudioStream = async (
   constraints: MediaStreamConstraints,
   retries = 2
 ) => {
-  return navigator.mediaDevices
+  const audioStream = await navigator.mediaDevices
     .getUserMedia(constraints)
     .catch(async (error): Promise<MediaStream> => {
       if (retries === 0) {
@@ -10,11 +10,25 @@ export const getAudioStream = (
       }
 
       if (error instanceof OverconstrainedError) {
-        return getAudioStream({ audio: true }, retries--);
+        return await getAudioStream({ audio: true }, retries--);
       }
 
       throw error;
     });
+
+  const stopAudioTrack = () => {
+    audioStream.getAudioTracks().forEach((track) => {
+      track.stop();
+    });
+  };
+
+  document.addEventListener('trigger:microphone-off', stopAudioTrack);
+
+  audioStream.addEventListener('ended', () =>
+    document.removeEventListener('trigger:microphone-off', stopAudioTrack)
+  );
+
+  return audioStream;
 };
 
 export const getVideoStream = async (
