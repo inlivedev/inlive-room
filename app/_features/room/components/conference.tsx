@@ -1037,7 +1037,7 @@ export default function Conference() {
                     hidden = true;
                   } else if (activeLayout === 'gallery') {
                     const { start, end } = getPageIndex();
-                    if (index > end || index < start) {
+                    if (index >= end || index < start) {
                       hidden = true;
                     }
                   }
