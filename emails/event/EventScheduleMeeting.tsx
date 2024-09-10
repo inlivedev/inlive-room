@@ -30,8 +30,6 @@ type ScheduledMeetingMeta = {
 
 export default function EmailScheduledMeeting({
   event = dummyEvent,
-  host
-  participant = {clientId: ""},
   host = {
     name : ""
   }
