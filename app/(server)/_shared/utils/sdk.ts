@@ -12,7 +12,7 @@ const createSDKAuth = async () => {
     apiVersion: inliveApiVersion,
     baseUrl: inliveApiOrigin,
     apiKey: inliveHubApiKey,
-    expirySeconds: 3600,
+    expirySeconds: 3600 * 24 * 30,
   });
 };
 

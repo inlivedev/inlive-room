@@ -15,22 +15,40 @@ import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
-import type { ParticipantVideo,DeviceType } from './conference';
+import type { ParticipantVideo, DeviceType } from './conference';
 
-export default function ButtonMicrophone({streams,deviceTypes}: {streams: ParticipantVideo[], deviceTypes:DeviceType}) {
-
-
+export default function ButtonMicrophone({
+  streams,
+  deviceTypes,
+}: {
+  streams: ParticipantVideo[];
+  deviceTypes: DeviceType;
+}) {
   const {
     selectedDeviceKey: selectedAudioInputKey,
     selectDeviceOptions: selectAudioInputOptions,
     onDeviceSelectionChange: onAudioInputSelectionChange,
-  } = useSelectDevice(streams,deviceTypes.audioInputs, deviceTypes.currentAudioInput,deviceTypes.setCurrentDevice,deviceTypes.activeCamera,deviceTypes.activeMic);
+  } = useSelectDevice(
+    streams,
+    deviceTypes.audioInputs,
+    deviceTypes.currentAudioInput,
+    deviceTypes.setCurrentDevice,
+    deviceTypes.activeCamera,
+    deviceTypes.activeMic
+  );
 
   const {
     selectedDeviceKey: selectedAudioOutputKey,
     selectDeviceOptions: selectAudioOutputOptions,
     onDeviceSelectionChange: onAudioOutputSelectionChange,
-  } = useSelectDevice(streams,deviceTypes.audioInputs, deviceTypes.currentAudioInput,deviceTypes.setCurrentDevice,deviceTypes.activeCamera,deviceTypes.activeMic);
+  } = useSelectDevice(
+    streams,
+    deviceTypes.audioInputs,
+    deviceTypes.currentAudioInput,
+    deviceTypes.setCurrentDevice,
+    deviceTypes.activeCamera,
+    deviceTypes.activeMic
+  );
 
   const speakerSelectionSupport = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -58,11 +76,13 @@ export default function ButtonMicrophone({streams,deviceTypes}: {streams: Partic
   const onDeviceSelectionChange = (selectedKeys: Selection) => {
     if (!(selectedKeys instanceof Set) || selectedKeys.size === 0) return;
 
-    const currentSelected = deviceTypes.devices.find((device:MediaDeviceInfo) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      return `${device.kind}-${device.deviceId}` === selectedKeys.currentKey;
-    });
+    const currentSelected = deviceTypes.devices.find(
+      (device: MediaDeviceInfo) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        return `${device.kind}-${device.deviceId}` === selectedKeys.currentKey;
+      }
+    );
 
     if (currentSelected?.kind === 'audioinput') {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

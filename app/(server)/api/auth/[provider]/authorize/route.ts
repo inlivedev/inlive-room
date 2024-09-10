@@ -40,14 +40,14 @@ export async function POST(
         `Authorization error when trying to authorize to ${provider} SSO`
       );
     } else {
-      const oneHour = 3600;
+      const oneMonth = 3600 * 24 * 30;
 
       cookies().set({
         name: 'state',
         value: oauthState,
         path: relativeRedirectUri,
         sameSite: 'lax',
-        maxAge: oneHour,
+        maxAge: oneMonth,
         httpOnly: true,
       });
 
@@ -56,7 +56,7 @@ export async function POST(
         value: pathname,
         path: relativeRedirectUri,
         sameSite: 'lax',
-        maxAge: oneHour,
+        maxAge: oneMonth,
         httpOnly: true,
       });
 

@@ -148,15 +148,22 @@ export default function MeetingScheduleForm() {
 
   const onAddMultitpleEmails = useCallback(() => {
     const regex =
-      /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\s*,\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+      /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*[,| ]\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/;
 
     const newEmails = getValues('csvEmails');
 
     if (!regex.test(newEmails)) {
-      return;
+      return false;
     }
 
-    const regexEmails = newEmails.split(',');
+    let regexEmails: string[];
+
+    if (newEmails.includes(',')) {
+      regexEmails = newEmails.split(',');
+    } else {
+      regexEmails = newEmails.split(' ');
+    }
+
     let existingEmails = getValues('emails').map((email) => email.email);
 
     // Check if existingEmails is empty or contains only one empty string
@@ -174,6 +181,7 @@ export default function MeetingScheduleForm() {
     });
 
     resetField('csvEmails');
+    return true;
   }, [append, getValues, remove, resetField]);
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -357,17 +365,34 @@ export default function MeetingScheduleForm() {
           <div className="relative flex w-full flex-row items-center rounded-md bg-zinc-950 outline-none ring-1 ring-zinc-800 sm:w-auto">
             <input
               className="flex-1 bg-transparent py-2.5 pl-4 text-[16px] outline-none"
-              placeholder="Add multiple email by comma"
+              placeholder="Add multiple email by comma or space"
               id="email"
               {...register('csvEmails', {
                 pattern:
-                  /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\s*,\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                  /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*[,| ]\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/,
               })}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   onAddMultitpleEmails();
+                } else if (e.key === ',' || e.key === ' ') {
+                  // remove comma and space from the last character only if it's a comma or space
+                  let value = getValues('csvEmails');
+                  if (value.endsWith(',') || value.endsWith(' ')) {
+                    value = value.slice(0, -1);
+                    setValue('csvEmails', value);
+                  }
+
+                  if (onAddMultitpleEmails()) {
+                    e.preventDefault();
+                  }
                 }
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+                const text = e.clipboardData.getData('text/plain');
+                setValue('csvEmails', text);
+                onAddMultitpleEmails();
               }}
             />
             <Button
@@ -386,8 +411,8 @@ export default function MeetingScheduleForm() {
           </div>
           {formState.errors.csvEmails && (
             <p className="mx-1 mt-1 text-xs font-medium text-red-400">
-              Invalid email address. please make sure to separate emails by
-              commas.
+              Invalid email address. Check the format and separate emails by
+              comma or space.
             </p>
           )}
         </div>

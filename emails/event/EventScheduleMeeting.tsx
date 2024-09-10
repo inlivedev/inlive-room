@@ -31,6 +31,10 @@ type ScheduledMeetingMeta = {
 export default function EmailScheduledMeeting({
   event = dummyEvent,
   host
+  participant = {clientId: ""},
+  host = {
+    name : ""
+  }
 }: ScheduledMeetingMeta) {
   const startDate = Intl.DateTimeFormat('en-GB', {
     year: 'numeric',
@@ -66,7 +70,7 @@ export default function EmailScheduledMeeting({
         />
       </Head>
       <Tailwind>
-        <Body className="bg-zinc-900 text-zinc-100 my-auto mx-auto px-2">
+        <Body className="bg-zinc-100 text-zinc-900 my-auto mx-auto px-2">
 
           <Container className=" my-[40px] mx-auto p-[20px] max-w-[465px]">
 
@@ -79,7 +83,7 @@ export default function EmailScheduledMeeting({
                       height={24}></Img>
                   </div>
                   <div style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                    <h1 className="text-lg font-semibold tracking-wide text-zinc-100">
+                    <h1 className="text-lg font-semibold tracking-wide text-zinc-900">
                       inLive Room
                     </h1>
                   </div>
@@ -87,7 +91,7 @@ export default function EmailScheduledMeeting({
 
                 <Column
                   align='right'>
-                  <h1 className="font-medium text-zinc-400 text-[14px]">
+                  <h1 className="font-medium text-zinc-600 text-[14px]">
                     inLive Meeting Invitation
                   </h1>
                 </Column>
@@ -95,10 +99,10 @@ export default function EmailScheduledMeeting({
             </section>
 
             <div>
-              <h2 className=" font-semibold text-[14px] text-zinc-100">
+              <h2 className=" font-semibold text-[14px] text-zinc-900">
                 Hi there!
               </h2>
-              <h2 className=' font-semibold text-[14px] text-zinc-100'>
+              <h2 className=' font-semibold text-[14px] text-zinc-900'>
                 {host.name} has scheduled a meeting with you.
               </h2>
 
@@ -108,26 +112,26 @@ export default function EmailScheduledMeeting({
 
                   {event.name.trim() != '' && (
                     <div>
-                      <b className="block text-[14px] font-semibold text-zinc-100 py-4">
+                      <b className="block text-[14px] font-semibold text-zinc-900 py-4">
                         {event.name}
                       </b>
                     </div>
                   )}
 
                   <div className='py-2'>
-                    <b className="block text-[12px] font-semibold text-zinc-100">
+                    <b className="block text-[12px] font-semibold text-zinc-900">
                       Hosted by
                     </b>
-                    <div className="mt-0.5 block text-[10px] text-zinc-300">
+                    <div className="mt-0.5 block text-[10px] text-zinc-600">
                       {host?.name}
                     </div>
                   </div>
 
                   <div>
-                    <b className="block text-[12px] font-semibold text-zinc-100">
+                    <b className="block text-[12px] font-semibold text-zinc-900">
                       {startDate}
                     </b>
-                    <div className="mt-0.5 block text-[10px] lowercase text-zinc-300">
+                    <div className="mt-0.5 block text-[10px] lowercase text-zinc-600">
                       {startTime} to {endTime}
                     </div>
                   </div>

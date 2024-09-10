@@ -1,10 +1,15 @@
 import type { SVGElementPropsType } from '@/_shared/types/types';
 
-export default function MicrophoneOnIcon(props: SVGElementPropsType) {
+export default function MicrophoneOnIcon({
+  active = false,
+  ...props
+}: {
+  active?: boolean;
+} & SVGElementPropsType) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      fill="currentcolor"
+      fill={`${active ? 'green' : 'currentcolor'}`}
       viewBox="0 0 256 256"
       {...props}
     >

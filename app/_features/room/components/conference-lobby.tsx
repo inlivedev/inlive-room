@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Button, Spinner } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
@@ -6,7 +6,11 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
-import { getUserMedia } from '@/_shared/utils/get-user-media';
+import {
+  getUserMedia,
+  videoConstraints,
+  audioConstraints,
+} from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
 
@@ -58,59 +62,6 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
     document.dispatchEvent(new CustomEvent('open:set-display-name-modal'));
   }, []);
 
-  const videoConstraints = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-
-    const selectedVideoInputId = window.sessionStorage.getItem(
-      'device:selected-video-input-id'
-    );
-
-    const defaultVideoConstraints: MediaTrackConstraints = {
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-      advanced: [
-        {
-          frameRate: { min: 30 },
-        },
-        { height: { min: 360 } },
-        { width: { min: 720 } },
-        { frameRate: { max: 30 } },
-        { width: { max: 1280 } },
-        { height: { max: 720 } },
-        { aspectRatio: { exact: 1.77778 } },
-      ],
-    };
-
-    if (selectedVideoInputId) {
-      defaultVideoConstraints['deviceId'] = { exact: selectedVideoInputId };
-    }
-
-    return defaultVideoConstraints;
-  }, []);
-
-  const audioConstraints = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-
-    const selectedAudioInputId = window.sessionStorage.getItem(
-      'device:selected-audio-input-id'
-    );
-
-    const defaultConstraints = {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    };
-
-    if (selectedAudioInputId) {
-      return {
-        deviceId: { exact: selectedAudioInputId },
-        ...defaultConstraints,
-      };
-    }
-
-    return defaultConstraints;
-  }, []);
-
   const openConferenceRoom = useCallback(async () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
@@ -141,8 +92,8 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
             }
 
             const mediaStream = await getUserMedia({
-              video: videoInput ? videoConstraints : false,
-              audio: audioConstraints,
+              video: videoInput ? videoConstraints() : false,
+              audio: audioConstraints(),
             });
 
             return mediaStream;
@@ -189,7 +140,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
         }
       }
     }
-  }, [videoConstraints, audioConstraints, roomID, isSubmitting]);
+  }, [roomID, isSubmitting]);
 
   const isError = !clientID || !clientName;
 

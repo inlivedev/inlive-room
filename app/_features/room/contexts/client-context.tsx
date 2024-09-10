@@ -16,7 +16,7 @@ import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { UserType } from '@/_shared/types/user';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
-import { remove } from 'lodash-es';
+import { ParticipantVideo } from '@/_features/room/components/conference';
 
 type ClientProviderProps = {
   roomID: string;
@@ -56,9 +56,10 @@ export function ClientProvider({
   );
   const isActivityRecordedRef = useRef(false);
 
-  const [localStreams, setLocalStreams] = useState<MediaStream[]>([]);
+  const [localStreams, setLocalStreams] = useState<ParticipantVideo[]>([]);
 
-  const { pinnedStreams } = useMetadataContext();
+  const { pinnedStreams, mutedStreams, offCameraStreams } =
+    useMetadataContext();
 
   useEffect(() => {
     // @ts-ignore
@@ -156,21 +157,29 @@ export function ClientProvider({
     };
   }, []);
 
-  const removePinnedStream = useCallback(async () => {
+  const removeStreamMetadata = useCallback(async () => {
     const newPinnedStreams = pinnedStreams.filter((pinned) =>
       localStreams.find((stream) => stream.id !== pinned)
     );
 
-    if (newPinnedStreams.length === pinnedStreams.length) return;
+    const newMutedStreams = mutedStreams.filter((muted: string) =>
+      localStreams.find((stream) => stream.id !== muted)
+    );
+
+    const newOffCameraStreams = offCameraStreams.filter((offCamera) =>
+      localStreams.find((stream) => stream.id !== offCamera)
+    );
 
     await clientSDK.setMetadata(roomID, {
       pinnedStreams: [...newPinnedStreams],
+      mutedStreams: [...newMutedStreams],
+      offCameraStreams: [...newOffCameraStreams],
     });
-  }, [pinnedStreams, localStreams, roomID]);
+  }, [pinnedStreams, mutedStreams, offCameraStreams, localStreams, roomID]);
 
   useEffect(() => {
     const onBrowserClose = () => {
-      removePinnedStream();
+      removeStreamMetadata();
       const clientLeaveTime = new Date().toISOString();
 
       if (!isActivityRecordedRef.current && clientJoinTime && persistentData) {
@@ -202,14 +211,27 @@ export function ClientProvider({
     clientJoinTime,
     roomID,
     roomType,
-    removePinnedStream,
+    removeStreamMetadata,
   ]);
 
   useEffect(() => {
     const clientLeave = async (clientID: string, roomType: string) => {
-      removePinnedStream();
+      removeStreamMetadata();
 
-      if (peer?.getPeerConnection()) peer.disconnect();
+      if (peer?.getPeerConnection()) {
+        peer
+          .getPeerConnection()
+          ?.getSenders()
+          .forEach((sender) => {
+            sender.track?.stop();
+            if (sender.track?.kind === 'audio') {
+              document.dispatchEvent(new Event('trigger:microphone-off'));
+            } else if (sender.track?.kind === 'video') {
+              document.dispatchEvent(new Event('trigger:camera-off'));
+            }
+          });
+        peer.disconnect();
+      }
 
       try {
         const response = await clientSDK.leaveRoom(roomID, clientID, false);
@@ -220,6 +242,13 @@ export function ClientProvider({
         }
 
         if (!persistentData) {
+          document.dispatchEvent(
+            new CustomEvent('set:conference-view', {
+              detail: {
+                view: 'exit',
+              },
+            })
+          );
           return;
         }
 
@@ -285,6 +314,9 @@ export function ClientProvider({
     roomID,
     localStreams,
     pinnedStreams,
+    mutedStreams,
+    offCameraStreams,
+    removeStreamMetadata,
   ]);
 
   return (
