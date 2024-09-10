@@ -100,7 +100,7 @@ class ScheduledMeetingService {
     );
 
     // Send Email to Host
-    const joinRoomURL = `${BASE_URL}/rooms/${event.roomId}?clientID=${hostParticipant.clientID}`;
+    const joinRoomURL = `${BASE_URL}/rooms/${event.roomId}`;
 
     const description = generateScheduledMeetingDescription({
       startTime: event.startTime,
@@ -134,9 +134,6 @@ class ScheduledMeetingService {
         },
         host: {
           name: host.name,
-        },
-        participant: {
-          clientId: hostParticipant.clientID,
         },
       })
     );
@@ -269,9 +266,6 @@ class ScheduledMeetingService {
           },
           host: {
             name: host.name,
-          },
-          participant: {
-            clientId: participant.clientID,
           },
         })
       );
