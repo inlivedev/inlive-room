@@ -1,5 +1,4 @@
 import { Html, Tailwind, Body, Img, Head, Font, Container, Button, Row, Column } from '@react-email/components';
-import { EventType } from '@/_shared/types/event';
 import * as React from "react";
 
 
@@ -27,14 +26,10 @@ type ScheduledMeetingMeta = {
   host: {
     name: string;
   };
-  participant: {
-    clientId: string;
-  }
 }
 
 export default function EmailScheduledMeeting({
   event = dummyEvent,
-  participant = {clientId: ""},
   host = {
     name : ""
   }
@@ -143,8 +138,8 @@ export default function EmailScheduledMeeting({
               </div>
 
               <Button
-                className="rounded-md bg-red-800 py-2 text-[14px] antialiase text-zinc-200 w-full text-center justify-center mt-2"
-                href={`${APP_ORIGIN}/rooms/${event.roomID}?clientID=${participant.clientId}`}>
+                className="rounded-md bg-red-800 py-2 text-[14px] antialiase text-zinc-100 w-full text-center justify-center mt-2"
+                href={`${APP_ORIGIN}/rooms/${event.roomID}`}>
                 Join Meeting
               </Button>
 

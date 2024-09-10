@@ -1,4 +1,3 @@
-import { selectParticipant } from '@/(server)/_features/event/schema';
 import { EventParticipant } from '@/(server)/_features/event/service';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { eventService } from '@/(server)/api/_index';

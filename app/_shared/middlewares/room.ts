@@ -5,14 +5,13 @@ import {
   type NextRequest,
 } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
-import { FetcherResponse, InternalApiFetcher } from '@/_shared/utils/fetcher';
+import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import type { EventType } from '@/_shared/types/event';
 import { customAlphabet } from 'nanoid';
 import { cookies } from 'next/headers';
-import { selectRoom } from '@/(server)/_features/room/schema';
 
 const registerClient = async (
   roomID: string,
@@ -109,7 +108,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       if (roomData) {
         let newName = '';
 
-        if (eventData) {
+        if (eventData && eventData.category?.name != 'meetings') {
           const requestToken = cookies().get('token');
           if (requestToken) {
             const participantData: EventType.ParticipantResponse =
@@ -155,7 +154,11 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           clientID
         );
 
-        if (!registeredClient && eventData) {
+        if (
+          !registeredClient &&
+          eventData &&
+          eventData.category?.name != 'meetings'
+        ) {
           const url = request.nextUrl.clone();
           url.pathname = `/events/${eventData?.slug}`;
           url.searchParams.append('error', 'invalidClientID');
