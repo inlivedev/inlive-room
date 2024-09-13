@@ -18,6 +18,7 @@ type ViewProps = {
   roomType: string;
   isModerator: boolean;
   debug: boolean;
+  viewOnly: boolean;
 };
 
 export default function View({
@@ -26,6 +27,7 @@ export default function View({
   roomType,
   isModerator,
   debug,
+  viewOnly,
 }: ViewProps) {
   const [activeView, setActiveView] = useState<string>('lobby');
 
@@ -48,7 +50,12 @@ export default function View({
 
   return (
     <div className="bg-zinc-900 text-zinc-200">
-      <PeerProvider roomID={roomID} client={client} debug={debug}>
+      <PeerProvider
+        roomID={roomID}
+        client={client}
+        debug={debug}
+        viewOnly={viewOnly}
+      >
         <MetadataProvider roomType={roomType} isModerator={isModerator}>
           <ClientProvider roomID={roomID} client={client} roomType={roomType}>
             <DataChannelProvider>
@@ -59,12 +66,20 @@ export default function View({
                   ) : (
                     <div>
                       <div
-                        className={activeView === 'conference' ? '' : 'hidden'}
+                        className={
+                          viewOnly || activeView === 'conference'
+                            ? ''
+                            : 'hidden'
+                        }
                       >
-                        <Conference />
+                        <Conference viewOnly={viewOnly} />
                       </div>
                       <div
-                        className={activeView === 'conference' ? 'hidden' : ''}
+                        className={
+                          viewOnly || activeView === 'conference'
+                            ? 'hidden'
+                            : ''
+                        }
                       >
                         <ConferenceLobby roomID={roomID} />
                       </div>

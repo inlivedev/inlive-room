@@ -10,7 +10,7 @@ import type { ClientType } from '@/_shared/types/client';
 import { getServerSDK } from '@/(server)/_shared/utils/sdk';
 
 type PageProps = {
-  searchParams: { debug: string | undefined };
+  searchParams: { debug: string | undefined; viewOnly: string | undefined };
 };
 
 export const generateMetadata = (): Metadata | null => {
@@ -53,6 +53,8 @@ export default async function Page({ searchParams }: PageProps) {
   const userAuthHeader = headersList.get('user-auth');
   const userClientHeader = headersList.get('user-client');
   const debug = searchParams.debug === 'true';
+
+  const viewOnly = searchParams.viewOnly === 'true';
 
   const roomData: RoomType.RoomData | null =
     typeof roomDataHeader === 'string'
@@ -127,6 +129,7 @@ export default async function Page({ searchParams }: PageProps) {
         roomType={roomType}
         isModerator={isModerator}
         debug={debug}
+        viewOnly={viewOnly}
       />
     </AppContainer>
   );

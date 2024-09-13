@@ -28,6 +28,7 @@ type PeerProviderProps = {
   roomID: string;
   client: ClientType.ClientData;
   debug: boolean;
+  viewOnly: boolean;
 };
 
 export function PeerProvider({
@@ -35,6 +36,7 @@ export function PeerProvider({
   roomID,
   client,
   debug = false,
+  viewOnly = false,
 }: PeerProviderProps) {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [connectionState, setConnectionState] =
@@ -45,6 +47,9 @@ export function PeerProvider({
       const createPeer = async () => {
         const peer = await clientSDK.createPeer(roomID, client.clientID);
         setPeer(peer);
+        if (viewOnly) {
+          await peer.startViewOnly();
+        }
       };
 
       createPeer();
@@ -56,7 +61,7 @@ export function PeerProvider({
         setPeer(null);
       }
     };
-  }, [roomID, client, peer]);
+  }, [roomID, client, peer, viewOnly]);
 
   useEffect(() => {
     const peerConnection = peer?.getPeerConnection();

@@ -94,7 +94,8 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
             next: { revalidate: 0 },
           });
         roomData = roomResponse.data;
-        eventData = roomResponse.data.event;
+        if (roomResponse.data && roomResponse.data.event)
+          eventData = roomResponse.data.event;
       } catch (error) {
         Sentry.captureException(error, {
           extra: {

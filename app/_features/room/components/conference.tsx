@@ -84,7 +84,7 @@ export const isMobile = () => {
   }
 };
 
-const maxLastSpokeAt = 500;
+const maxLastSpokeAt = 1000;
 
 const createParticipantVideo = (stream: any): ParticipantVideo => {
   stream.pin = false;
@@ -119,12 +119,8 @@ const orderStreams = (
   streams: ParticipantVideo[]
 ) => {
   streams.sort((streamA, streamB) => {
-    const streamAIsTopSpeaker = topSpeakers.find(
-      (topSpeaker) => topSpeaker.id === streamA.id
-    );
-    const streamBIsTopSpeaker = topSpeakers.find(
-      (topSpeaker) => topSpeaker.id === streamB.id
-    );
+    const streamAIsTopSpeaker = isSpeaker(streamA, topSpeakers);
+    const streamBIsTopSpeaker = isSpeaker(streamB, topSpeakers);
 
     if (streamA.fullscreen && !streamB.fullscreen) {
       return -1;
@@ -142,17 +138,9 @@ const orderStreams = (
       return 1;
     }
 
-    if (
-      streamA.origin === 'local' &&
-      streamA.source === 'media' &&
-      streamBIsTopSpeaker
-    ) {
+    if (streamA.origin === 'local' && streamA.source === 'media') {
       return -1;
-    } else if (
-      streamB.origin === 'local' &&
-      streamB.source === 'media' &&
-      streamAIsTopSpeaker
-    ) {
+    } else if (streamB.origin === 'local' && streamB.source === 'media') {
       return 1;
     }
 
@@ -186,7 +174,7 @@ export type DeviceType = DeviceStateType & {
   setActiveCamera: (active?: boolean) => void;
 };
 
-export default function Conference() {
+export default function Conference({ viewOnly }: { viewOnly: boolean }) {
   const [style, setStyle] = useState<React.CSSProperties>({});
   const layoutContainerRef = useRef<HTMLDivElement>(null);
   const { currentLayout, mutedStreams, offCameraStreams } =
@@ -787,27 +775,23 @@ export default function Conference() {
           }
         } else {
           // find the stream with the lowest audio level and replace it with the new stream
-          const lowestOldestAudioLevelStream = topSpeakers.reduce(
-            (prev, current) => {
-              const currentSinceSpoke = Date.now() - current.lastSpokeAt;
-              if (maxLastSpokeAt < currentSinceSpoke) {
-                const prevSinceSpoke = Date.now() - prev.lastSpokeAt;
-                return currentSinceSpoke < prevSinceSpoke ? current : prev;
-              }
+          const oldestAudioLevelStream = topSpeakers.reduce((prev, current) => {
+            const currentSinceSpoke = Date.now() - current.lastSpokeAt;
+            if (maxLastSpokeAt < currentSinceSpoke) {
+              const prevSinceSpoke = Date.now() - prev.lastSpokeAt;
+              return currentSinceSpoke < prevSinceSpoke ? current : prev;
+            }
 
-              return current;
-            },
-            topSpeakers[0]
-          );
+            return current;
+          }, topSpeakers[0]);
 
           if (
             maxLastSpokeAt <
-              Date.now() - lowestOldestAudioLevelStream.lastSpokeAt ||
-            stream.audioLevel > lowestOldestAudioLevelStream.audioLevel
+            Date.now() - oldestAudioLevelStream.lastSpokeAt
           ) {
             let isChanged = false;
             const newTopSpeakers = topSpeakers.map((topSpeaker) => {
-              if (topSpeaker.id === lowestOldestAudioLevelStream.id) {
+              if (topSpeaker.id === oldestAudioLevelStream.id) {
                 isChanged = true;
                 return stream;
               }
@@ -982,10 +966,6 @@ export default function Conference() {
       ? streams.length - (rows.current - 1) * columns.current
       : maxVisibleParticipants - (rows.current - 1) * columns.current;
 
-  const localpinnedStreams = updatedStreams.find(
-    (stream) => stream.pin && stream.origin === 'local'
-  );
-
   let lastRowStartIndex = 0;
 
   if (
@@ -1007,15 +987,23 @@ export default function Conference() {
 
   return (
     <div className="viewport-height grid grid-cols-[1fr,auto]">
-      <div className="relative grid h-full grid-rows-[auto,1fr,72px] overflow-y-hidden">
-        <ConferenceTopBar
-          streams={updatedStreams}
-          sidebar={sidebar}
-          activeLayout={activeLayout}
-          pageSize={isOnMobile ? 9 : 25}
-          page={page}
-          setPage={setPage}
-        />
+      <div
+        className={
+          !viewOnly
+            ? 'relative grid h-full grid-rows-[auto,1fr,72px] overflow-y-hidden'
+            : 'relative grid h-full'
+        }
+      >
+        {!viewOnly && (
+          <ConferenceTopBar
+            streams={updatedStreams}
+            sidebar={sidebar}
+            activeLayout={activeLayout}
+            pageSize={isOnMobile ? 9 : 25}
+            page={page}
+            setPage={setPage}
+          />
+        )}
         <div className="px-4">
           <div className="relative grid h-full w-full grid-cols-[auto,minmax(auto,max-content)]">
             <div className="relative grid grid-rows-[auto,1fr]">
@@ -1155,7 +1143,7 @@ export default function Conference() {
                   )}
               </div>
             </div>
-            {sidebar ? (
+            {!viewOnly && sidebar ? (
               <div className="ml-4 w-[360px]">
                 <RightSidebar isOpen={!!sidebar}>
                   {sidebar === 'participants' ? (
@@ -1167,11 +1155,13 @@ export default function Conference() {
             ) : null}
           </div>
         </div>
-        <ConferenceActionsBar
-          streams={updatedStreams}
-          sidebar={sidebar}
-          deviceTypes={deviceTypes}
-        />
+        {!viewOnly && (
+          <ConferenceActionsBar
+            streams={updatedStreams}
+            sidebar={sidebar}
+            deviceTypes={deviceTypes}
+          />
+        )}
       </div>
     </div>
   );
