@@ -421,6 +421,7 @@ function VideoScreen({
         origin={streamMemo.origin}
         source={streamMemo.source}
         currentAudioOutput={currentAudioOutput}
+        offCamera={offCamera}
       ></Video>
     </div>
   );
@@ -444,13 +445,16 @@ function Video({
   origin,
   source,
   currentAudioOutput,
+  offCamera,
 }: {
   srcObject: MediaStream;
   origin: string;
   source: string;
   currentAudioOutput: MediaDeviceInfo | undefined;
+  offCamera: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const srcObjectMemo = useMemo(() => srcObject, [srcObject]);
 
   useEffect(() => {
@@ -482,21 +486,33 @@ function Video({
   }, [currentAudioOutput]);
 
   useEffect(() => {
-    const playVideo = async () => {
-      if (videoRef.current === null) return;
-      videoRef.current.srcObject = srcObjectMemo;
-      await videoRef.current.play().catch((err) => {
-        console.error(err);
-      });
+    const playMedia = async () => {
+      if (offCamera) {
+        if (audioRef.current === null) return;
+        audioRef.current.srcObject = srcObjectMemo;
+        await audioRef.current.play().catch((err) => {
+          console.error(err);
+        });
+      } else {
+        if (videoRef.current === null) return;
+        videoRef.current.srcObject = srcObjectMemo;
+        await videoRef.current.play().catch((err) => {
+          console.error(err);
+        });
+      }
     };
 
     if (origin === 'local' && videoRef.current) {
       videoRef.current.muted = true;
     }
 
-    playVideo();
+    if (origin === 'local' && audioRef.current) {
+      audioRef.current.muted = true;
+    }
+
+    playMedia();
     return () => {};
-  }, [srcObjectMemo, origin]);
+  }, [srcObjectMemo, origin, offCamera]);
 
   const { peer } = usePeerContext();
 
@@ -516,6 +532,10 @@ function Video({
     transform:
       origin === 'local' && source !== 'screen' ? 'scaleX(-1)' : 'scaleX(1)',
   };
+
+  if (offCamera) {
+    return <audio ref={audioRef} autoPlay />;
+  }
 
   return (
     <video
