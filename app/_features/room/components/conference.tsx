@@ -13,7 +13,6 @@ import ConferenceActionsBar from '@/_features/room/components/conference-actions
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 
-import ConferenceNotification from './ conference-notification';
 import ParticipantListSidebar from './participant-list-sidebar';
 import RightSidebar from './right-sidebar';
 import ChatSidebar from './chat-sidebar';
@@ -27,6 +26,7 @@ import {
   videoConstraints,
   getVideoStream,
 } from '@/_shared/utils/get-user-media';
+import { on } from 'events';
 
 export type Sidebar = 'participants' | 'chat' | '';
 
@@ -99,19 +99,7 @@ const isSpeaker = (
 ) => {
   if (stream.source !== 'media') return false;
 
-  const isTopSpeaker = topSpeakers.find(
-    (topSpeaker) => topSpeaker.id === stream.id
-  );
-
-  if (isTopSpeaker) {
-    if (Date.now() - stream.lastSpokeAt > maxLastSpokeAt) {
-      return false;
-    }
-
-    return true;
-  }
-
-  return false;
+  return topSpeakers.find((topSpeaker) => topSpeaker.id === stream.id);
 };
 
 const orderStreams = (
@@ -136,6 +124,8 @@ const orderStreams = (
       return -1;
     } else if (!streamA.pin && streamB.pin) {
       return 1;
+    } else if (streamA.pin && streamB.pin) {
+      return 0;
     }
 
     if (streamA.origin === 'local' && streamA.source === 'media') {
@@ -148,6 +138,8 @@ const orderStreams = (
       return -1;
     } else if (!streamAIsTopSpeaker && streamBIsTopSpeaker) {
       return 1;
+    } else if (streamAIsTopSpeaker && streamBIsTopSpeaker) {
+      return 0;
     }
 
     return 0;
@@ -502,12 +494,6 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
     };
   }, []);
 
-  const updateStreams = useCallback(() => {
-    setStreams((prevStreams) => {
-      return orderStreams(topSpeakers, prevStreams);
-    });
-  }, [topSpeakers]);
-
   const addStream = useCallback(
     (stream: ParticipantVideo) => {
       setStreams((prevStreams) => {
@@ -752,7 +738,8 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
       }
 
       const stream = createParticipantVideo(data.stream);
-      data.stream.addEventListener('voiceactivity', (e: CustomEventInit) => {
+
+      const onVoiceActivity = (e: CustomEventInit) => {
         // reordering the streams based on voice activity
         stream.audioLevel = e.detail.audioLevel;
         stream.lastSpokeAt = Date.now();
@@ -760,8 +747,10 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
         if (topSpeakers.length < topSpeakersLimit) {
           if (!topSpeakers.find((topSpeaker) => topSpeaker.id === stream.id)) {
             topSpeakers.push(stream);
-            setTopSpeakers(topSpeakers);
-            updateStreams();
+            setTopSpeakers([...topSpeakers]);
+            setStreams((prevStreams) => {
+              return orderStreams(topSpeakers, prevStreams);
+            });
           }
         } else if (topSpeakersLimit === 1) {
           // find the top speaker and replace it with the new streams
@@ -771,41 +760,39 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
             topSpeakers[0] = stream;
             setTopSpeakers([...topSpeakers]);
             // call setStreams with the new streams order
-            updateStreams();
+            setStreams((prevStreams) => {
+              return orderStreams(topSpeakers, prevStreams);
+            });
           }
         } else {
           // find the stream with the lowest audio level and replace it with the new stream
           const oldestAudioLevelStream = topSpeakers.reduce((prev, current) => {
             const currentSinceSpoke = Date.now() - current.lastSpokeAt;
-            if (maxLastSpokeAt < currentSinceSpoke) {
-              const prevSinceSpoke = Date.now() - prev.lastSpokeAt;
-              return currentSinceSpoke < prevSinceSpoke ? current : prev;
-            }
-
-            return current;
+            const prevSinceSpoke = Date.now() - prev.lastSpokeAt;
+            return currentSinceSpoke > prevSinceSpoke ? current : prev;
           }, topSpeakers[0]);
 
           if (
-            maxLastSpokeAt <
-            Date.now() - oldestAudioLevelStream.lastSpokeAt
+            !topSpeakers.find((topSpeaker) => topSpeaker.id === stream.id) &&
+            maxLastSpokeAt < Date.now() - oldestAudioLevelStream.lastSpokeAt
           ) {
-            let isChanged = false;
             const newTopSpeakers = topSpeakers.map((topSpeaker) => {
               if (topSpeaker.id === oldestAudioLevelStream.id) {
-                isChanged = true;
                 return stream;
               }
               return topSpeaker;
             });
 
-            if (isChanged) {
-              setTopSpeakers(newTopSpeakers);
-              // call setStreams with the new streams order
-              updateStreams();
-            }
+            setTopSpeakers([...newTopSpeakers]);
+            // call setStreams with the new streams order
+            setStreams((prevStreams) => {
+              return orderStreams(newTopSpeakers, prevStreams);
+            });
           }
         }
-      });
+      };
+
+      data.stream.addEventListener('voiceactivity', onVoiceActivity);
 
       addStream(stream);
     };
@@ -829,7 +816,7 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
       );
       clientSDK.removeEventListener(RoomEvent.STREAM_REMOVED, onStreamRemoved);
     };
-  }, [addStream, topSpeakers, updateStreams, currentLayout, isOnMobile]);
+  }, [addStream, topSpeakers, currentLayout, isOnMobile]);
 
   const moreThanMax = useMemo(
     () => streams.length > maxVisibleParticipants,
