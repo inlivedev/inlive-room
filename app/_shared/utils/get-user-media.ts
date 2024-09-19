@@ -138,7 +138,8 @@ export const getUserMedia = async (constraints: MediaStreamConstraints) => {
     });
 
     const videoStreamPromise = new Promise<MediaStream | null>((resolve) => {
-      if (typeof videoConstraints === 'undefined') return resolve(null);
+      if (typeof videoConstraints === 'undefined' || videoConstraints === false)
+        return resolve(null);
 
       return resolve(
         getVideoStream({

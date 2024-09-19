@@ -86,14 +86,19 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
             );
 
             if (!audioInput) {
-              throw new Error(
+              const err = new Error(
                 'Your device needs to have an active microphone in order to continue'
               );
+              alert(err);
+              throw err;
             }
 
+            const aConstrains = audioConstraints();
+
             const mediaStream = await getUserMedia({
-              video: videoInput ? videoConstraints() : false,
-              audio: audioConstraints(),
+              //   video: videoInput ? videoConstraints() : false,
+              video: false,
+              audio: aConstrains,
             });
 
             return mediaStream;
