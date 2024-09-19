@@ -733,7 +733,6 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
     const topSpeakersLimit = isOnMobile ? 1 : 3;
 
     const onStreamAvailable = (data: any) => {
-      console.log('stream available', data);
       if (data.stream.source === 'screen') {
         setActiveLayout('presentation');
       }
