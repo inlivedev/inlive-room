@@ -488,13 +488,13 @@ function Video({
   useEffect(() => {
     const playMedia = async () => {
       if (offCamera) {
-        if (audioRef.current === null) return;
+        if (audioRef.current === null) throw new Error('Audio ref is null');
         audioRef.current.srcObject = srcObjectMemo;
         await audioRef.current.play().catch((err) => {
           console.error(err);
         });
       } else {
-        if (videoRef.current === null) return;
+        if (videoRef.current === null) throw new Error('Video ref is null');
         videoRef.current.srcObject = srcObjectMemo;
         await videoRef.current.play().catch((err) => {
           console.error(err);
@@ -511,12 +511,15 @@ function Video({
     }
 
     playMedia();
+
     return () => {};
   }, [srcObjectMemo, origin, offCamera]);
 
   const { peer } = usePeerContext();
 
   useEffect(() => {
+    if (offCamera) return;
+
     const videoElement = videoRef.current;
     if (origin === 'remote' && videoElement) {
       peer?.observeVideo(videoElement);
@@ -526,7 +529,7 @@ function Video({
         peer?.unobserveVideo(videoElement);
       }
     };
-  }, [srcObjectMemo, origin, peer]);
+  }, [srcObjectMemo, origin, peer, offCamera]);
 
   const style = {
     transform:
