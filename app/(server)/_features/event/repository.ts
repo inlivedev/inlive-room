@@ -15,7 +15,6 @@ import { DBQueryConfig, SQL, aliasedTable, and, count, eq, gt, ilike, inArray, i
 import { PageMeta } from '@/_shared/types/types';
 import { users } from '../user/schema';
 import { EventParticipant } from './service';
-import { rooms, selectRoom } from '../room/schema';
 
 
 export type UpcomingEventList = Awaited<ReturnType<EventRepo['getUpcomingEvents']>>
@@ -315,6 +314,8 @@ export class EventRepo {
     return participant
   }
 
+
+
   async countRegistiree(eventID: number, _db: DB = db) {
     const res = await _db
       .select({
@@ -461,8 +462,8 @@ export class EventRepo {
   }
 
   async getByRoomID(id: string, _db: DB = db): Promise<selectEvent & { category: selectCategory } | undefined> {
-    return  _db.query.events.findFirst(
-      { where: eq(events.roomId, id), with: {category: true}}
+    return _db.query.events.findFirst(
+      { where: eq(events.roomId, id), with: { category: true } }
     )
 
   }
@@ -563,4 +564,43 @@ export class EventRepo {
     });
     return upcomingEvents
   }
+  async removeParticipant(eventID: number, emails: string[], _db: DB = db): Promise<EventParticipant[]> {
+    const res = await _db.transaction(async (tx) => {
+      const userList = await tx.select({
+        id: users.id,
+        emails: users.email
+      }).from(users)
+        .where(inArray(users.email, emails))
+
+
+      const ids = userList.map((val) => val.id)
+
+      const removedParticipant = await tx.select()
+      .from(participants)
+      .where(
+        and(eq(participants.eventID, eventID), 
+        inArray(participants.userID, ids)))
+      .innerJoin(users, eq(participants.userID, users.id))
+      .leftJoin(participantRole,eq(participantRole.id,participants.roleID))
+
+
+
+      await tx.delete(participants).where( and(eq(participants.eventID, eventID), 
+        inArray(participants.userID, ids)))
+
+
+      return removedParticipant.map((val)=>{
+         const participantData = val.event_participants
+
+        return {
+          user: val.users,
+          role: val.participant_role!,
+        ...participantData
+        }
+      })
+    })
+
+    return res
+  }
+
 }

@@ -2,7 +2,11 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import { eventRepo, roomService } from '@/(server)/api/_index';
 import { selectEvent } from '../event/schema';
 import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
-import { ICalAttendeeRole, ICalAttendeeStatus } from 'ical-generator';
+import {
+  ICalAttendeeRole,
+  ICalAttendeeStatus,
+  ICalEventStatus,
+} from 'ical-generator';
 import { sendEmail } from '@/(server)/_shared/mailer/mailer';
 import { render } from '@react-email/components';
 import EmailScheduledMeeting from 'emails/event/EventScheduleMeeting';
@@ -10,11 +14,15 @@ import * as Sentry from '@sentry/node';
 import { generateDateTime } from '@/(server)/_shared/utils/generate-date-time';
 import { EventParticipant, eventService } from '../event/service';
 import { defaultLogger } from '@/(server)/_shared/logger/logger';
+import { updateScheduledMeetingRequestSchema } from '@/(server)/api/scheduled-meeting/route';
+import * as z from 'zod';
+import { db } from '@/(server)/_shared/database/database';
+import { ServiceError } from '../_service';
+import EmailScheduledMeetingCancelled from 'emails/event/EventScheduleMeetingCancelled';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 class ScheduledMeetingService {
-  //
   async createScheduledMeeting(
     data: {
       title: string;
@@ -30,7 +38,7 @@ class ScheduledMeetingService {
       name: string;
       email: string;
     },
-    emails: string[]
+    emails?: string[]
   ) {
     const category = await eventRepo.getCategoryByName('meetings');
 
@@ -73,31 +81,33 @@ class ScheduledMeetingService {
       [key: string]: string;
     } = {};
 
-    for (const email of emails) {
-      ICS.addParticipant({
-        name: email,
-        email: email,
-        rsvp: true,
-        status: ICalAttendeeStatus.NEEDSACTION,
-        role: ICalAttendeeRole.REQ,
-      });
-
-      replyEmails.push(email);
-    }
-
-    emailCustomValue['h:Reply-To'] = replyEmails.join(', ');
-
-    await this.inviteParticipants(
-      event,
-      emails.map((email) => {
-        return {
-          name: '',
+    if (emails) {
+      for (const email of emails) {
+        ICS.addParticipant({
+          name: email,
           email: email,
-        };
-      }),
-      host,
-      ICS
-    );
+          rsvp: true,
+          status: ICalAttendeeStatus.NEEDSACTION,
+          role: ICalAttendeeRole.REQ,
+        });
+
+        replyEmails.push(email);
+      }
+
+      emailCustomValue['h:Reply-To'] = replyEmails.join(', ');
+
+      await this.inviteParticipants(
+        event,
+        emails.map((email) => {
+          return {
+            name: '',
+            email: email,
+          };
+        }),
+        host,
+        ICS
+      );
+    }
 
     // Send Email to Host
     const joinRoomURL = `${BASE_URL}/rooms/${event.roomId}`;
@@ -210,7 +220,7 @@ class ScheduledMeetingService {
       const res = await eventService.registerParticipant(
         participant.email,
         event.id,
-        'participant'
+        'viewer'
       );
 
       if (!res) {
@@ -315,6 +325,218 @@ class ScheduledMeetingService {
         },
       });
     }
+  }
+
+  async updateScheduledMeeting(
+    newEvent: z.infer<typeof updateScheduledMeetingRequestSchema>,
+    host: {
+      userID: number;
+      name: string;
+      email: string;
+    }
+  ) {
+    if (!(newEvent.id || newEvent.slug)) {
+      throw new ServiceError('ScheduledMeeting', 'Slug or ID is required', 400);
+    }
+
+    return db.transaction(async (tx) => {
+      const category = await eventRepo.getCategoryByName('meetings', tx);
+
+      if (!category) {
+        throw new ServiceError(
+          'ScheduledMeeting',
+          'Meeting category not found',
+          404
+        );
+      }
+
+      const slugOrId = newEvent.id?.toString() || newEvent.slug;
+      if (!slugOrId) {
+        throw new ServiceError('ScheduledMeeting', 'Invalid slug or ID', 400);
+      }
+
+      const event = await eventRepo.getBySlugOrID(slugOrId, undefined, tx);
+
+      if (!event) {
+        throw new ServiceError('ScheduledMeeting', 'Event not found', 404);
+      }
+
+      if (event.createdBy != host.userID) {
+        throw new ServiceError('ScheduleMeeting', 'Event not found', 404);
+      }
+
+      // Update Event Data
+      const updatedEvent = await eventRepo.updateEvent(host.userID, event.id, {
+        categoryID: event.categoryID,
+        endTime: newEvent.endTime,
+        startTime: newEvent.startTime,
+        name: newEvent.title,
+        slug: event.slug,
+      });
+
+      if (!updatedEvent) {
+        throw new ServiceError(
+          'ScheduledMeeting',
+          'No Scheduled Meeting to be updated',
+          404
+        );
+      }
+
+      const ICS = new DefaultICS(updatedEvent, host);
+      const joinRoomURL = `${BASE_URL}/rooms/${updatedEvent.roomId}`;
+
+      const description = generateScheduledMeetingDescription({
+        startTime: updatedEvent.startTime,
+        endTime: updatedEvent.endTime,
+        joinRoomURL: joinRoomURL,
+        host: host.name,
+        event: updatedEvent,
+      });
+
+      const summary = generateScheduledMeetingSummary({
+        startTime: updatedEvent.startTime,
+        endTime: updatedEvent.endTime,
+        joinRoomURL: joinRoomURL,
+        host: host.name,
+        event: updatedEvent,
+      });
+
+      ICS.addDescription(description)
+        .addLink(joinRoomURL)
+        .addLocation(joinRoomURL)
+        .addSummary(summary);
+
+      const emails = newEvent.emails || [];
+      emails.push(host.email);
+
+      const oldParticipants = await eventRepo.getRegisteredParticipants(
+        updatedEvent.slug,
+        undefined,
+        tx
+      );
+
+      const removedParticipantEmails = oldParticipants.data
+        .filter((participant) => !emails.includes(participant.user.email))
+        .map((participant) => participant.user.email);
+
+      const newEmails = emails.filter(
+        (email) =>
+          !oldParticipants.data.some(
+            (participant) => participant.user.email === email
+          )
+      );
+
+      const existingParticipants = oldParticipants.data
+        .filter((participant) => emails.includes(participant.user.email))
+        .map((participant) => participant);
+
+      // Update existing participants
+      await eventRepo.updateParticipantCount(updatedEvent.id);
+
+      const newParticipants: EventParticipant[] = [];
+
+      // Add new participants
+      newEmails.forEach(async (val) => {
+        const registeredParticipant = await eventService.registerParticipant(
+          val,
+          updatedEvent.id,
+          'viewer'
+        );
+
+        if (registeredParticipant) {
+          newParticipants.push(registeredParticipant);
+        }
+      });
+
+      // Remove participants not in the new list
+      const removedParticipants = await eventRepo.removeParticipant(
+        updatedEvent.id,
+        removedParticipantEmails
+      );
+      removedParticipants.forEach(async (val) => {
+        const cancelledICS = ICS.createCopy();
+        cancelledICS.setSequence(val.updateCount);
+        cancelledICS.setStatus(ICalEventStatus.CANCELLED);
+        // send cancelled email
+        const cancelledEmailTemplate = render(
+          EmailScheduledMeetingCancelled({
+            event: {
+              endTime: updatedEvent.endTime,
+              name: updatedEvent.name,
+              roomID: updatedEvent.roomId!,
+              slug: updatedEvent.slug,
+              startTime: updatedEvent.startTime,
+            },
+            host: {
+              name: host.name,
+            },
+          })
+        );
+
+        const res = await sendEmail(
+          {
+            html: cancelledEmailTemplate,
+          },
+          {
+            destination: val.user.email,
+            inlineAttachment: {
+              data: Buffer.from(cancelledICS.icalCalendar.toString(), 'utf-8'),
+              filename: 'invite.ics',
+              contentType:
+                'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+              contentDisposition: 'inline; filename=invite.ics',
+              contentTransferEncoding: 'base64',
+            },
+            subject: `Meeting invitation has cancelled : ${updatedEvent.name}`,
+          }
+        );
+      });
+
+      // Send Invited Email
+      const invitedParticipants: EventParticipant[] = [
+        ...existingParticipants,
+        ...newParticipants,
+      ];
+
+      invitedParticipants.forEach(async (val) => {
+        ICS.setSequence(val.updateCount);
+        // send cancelled email
+        const cancelledEmailTemplate = render(
+          EmailScheduledMeeting({
+            event: {
+              endTime: updatedEvent.endTime,
+              name: updatedEvent.name,
+              roomID: updatedEvent.roomId!,
+              slug: updatedEvent.slug,
+              startTime: updatedEvent.startTime,
+            },
+            host: {
+              name: host.name,
+            },
+          })
+        );
+
+        const res = await sendEmail(
+          {
+            html: cancelledEmailTemplate,
+          },
+          {
+            destination: val.user.email,
+            inlineAttachment: {
+              data: Buffer.from(ICS.icalCalendar.toString(), 'utf-8'),
+              filename: 'invite.ics',
+              contentType:
+                'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+              contentDisposition: 'inline; filename=invite.ics',
+              contentTransferEncoding: 'base64',
+            },
+            subject: `Meeting invitation has updated : ${updatedEvent.name}`,
+          }
+        );
+      });
+
+      return event;
+    });
   }
 }
 

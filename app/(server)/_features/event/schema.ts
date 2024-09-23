@@ -10,7 +10,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { rooms } from '../room/schema';
 import { users } from '../user/schema';
-import { relations } from 'drizzle-orm';
+import { relations, SQL, sql } from 'drizzle-orm';
 import { primaryKey } from 'drizzle-orm/pg-core';
 
 export const statusEnum = pgEnum('event_status_enum', [
@@ -64,7 +64,10 @@ export const participants = pgTable(
       .default(1)
       .notNull(),
     isInvited: boolean('is_invited').default(false).notNull(),
-    updateCount: integer('update_count').default(0).notNull(),
+    updateCount: integer('update_count')
+      .default(0)
+      .notNull()
+      .$onUpdateFn((): SQL => sql`${participants.updateCount} + 1`),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
     clientID: text('client_id').notNull(),
