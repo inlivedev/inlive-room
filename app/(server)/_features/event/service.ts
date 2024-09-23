@@ -2,6 +2,7 @@ import { eventRepo } from '@/(server)/api/_index';
 import {
   insertEvent,
   insertParticipant,
+  participants,
   selectCategory,
   selectEvent,
   selectRole,
@@ -10,10 +11,11 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import { ICalAttendeeStatus, ICalAttendeeRole } from 'ical-generator';
 import { addUser, getUserByEmail, getUserById } from '../user/repository';
-import { User, selectUser } from '../user/schema';
+import { User, selectUser, users } from '../user/schema';
 import { DB, db } from '@/(server)/_shared/database/database';
 import { ServiceError } from '../_service';
-import { DrizzleError } from 'drizzle-orm';
+import { DrizzleError, inArray } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 /**
  * Type used to represent all type of participant in an event
@@ -105,7 +107,8 @@ export class EventService {
 
   async getEventBySlugOrID(
     slugOrID: string,
-    category?: string
+    category?: string,
+    _db: DB = db
   ): Promise<EventDetails | undefined> {
     const data = await db.transaction(async (tx) => {
       const event = await eventRepo.getBySlugOrID(slugOrID, category, tx);
@@ -138,6 +141,44 @@ export class EventService {
       host: data.host,
       availableSlots: availableSlots,
     };
+  }
+
+  async getParticipantsByEmails(
+    emails: string[],
+    eventSlugOrID: string,
+    _db: DB = db
+  ) {
+    _db.transaction(async (tx) => {
+      const event = await this.getEventBySlugOrID(eventSlugOrID, undefined, tx);
+
+      if (!event) {
+        throw new ServiceError('EventService', 'Not found', 404);
+      }
+
+      return _db
+        .select()
+        .from(participants)
+        .innerJoin(users, eq(participants.userID, users.id))
+        .where(
+          and(inArray(users.email, emails), eq(participants.eventID, event.id))
+        );
+    });
+  }
+
+  async getAllParticipants(eventSlugOrID: string, _db: DB = db) {
+    _db.transaction(async (tx) => {
+      const event = await this.getEventBySlugOrID(eventSlugOrID, undefined, tx);
+
+      if (!event) {
+        throw new ServiceError('EventService', 'Not found', 404);
+      }
+
+      return _db
+        .select()
+        .from(participants)
+        .innerJoin(users, eq(participants.userID, users.id))
+        .where(eq(participants.eventID, event.id));
+    });
   }
 
   async getParticipantByEmail(
