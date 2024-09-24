@@ -260,15 +260,29 @@ export default function MeetingScheduleForm() {
             {APP_ORIGIN}/rooms/{formData?.event.roomId}
           </div>
 
-          <Button
-            as={Link}
-            href={`
+          <div className="flex flex-row gap-2">
+            <Button
+              as={Link}
+              href={`
             ${APP_ORIGIN}/rooms/${formData?.event.roomId}
             `}
-            className="flex h-9  w-fit min-w-0 items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
-          >
-            Go to Meeting Room
-          </Button>
+              className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
+            >
+              Go to Meeting Room
+            </Button>
+
+            {existingEvent?.category?.name == 'webinar' && (
+              <Button
+                as={Link}
+                href={`
+            ${APP_ORIGIN}/webinars/${formData?.event.slug}
+            `}
+                className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-zinc-700 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500"
+              >
+                Go to Webinar Page
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="text-sm">
