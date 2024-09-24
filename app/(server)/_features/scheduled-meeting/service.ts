@@ -14,11 +14,21 @@ import * as Sentry from '@sentry/node';
 import { generateDateTime } from '@/(server)/_shared/utils/generate-date-time';
 import { EventParticipant, eventService } from '../event/service';
 import { defaultLogger } from '@/(server)/_shared/logger/logger';
-import { updateScheduledMeetingRequestSchema } from '@/(server)/api/scheduled-meeting/route';
 import * as z from 'zod';
 import { db } from '@/(server)/_shared/database/database';
 import { ServiceError } from '../_service';
 import EmailScheduledMeetingCancelled from 'emails/event/EventScheduleMeetingCancelled';
+
+export const updateScheduledMeetingRequestSchema = z.object({
+  id: z.number().optional(),
+  slug: z.string().optional(),
+  title: z.string().max(255),
+  description: z.string().optional(),
+  startTime: z.coerce.date(),
+  endTime: z.coerce.date(),
+  maximumSlots: z.number().max(100).int().optional(),
+  emails: z.array(z.string().email()).max(100).optional(),
+});
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 

@@ -14,17 +14,6 @@ const createScheduledMeetingRequestSchema = z.object({
   emails: z.array(z.string().email()).max(100).optional(),
 });
 
-export const updateScheduledMeetingRequestSchema = z.object({
-  id: z.number().optional(),
-  slug: z.string().optional(),
-  title: z.string().max(255),
-  description: z.string().optional(),
-  startTime: z.coerce.date(),
-  endTime: z.coerce.date(),
-  maximumSlots: z.number().max(100).int().optional(),
-  emails: z.array(z.string().email()).max(100).optional(),
-});
-
 export async function POST(request: Request) {
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
