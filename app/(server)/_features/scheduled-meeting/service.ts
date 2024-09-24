@@ -5,6 +5,7 @@ import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import {
   ICalAttendeeRole,
   ICalAttendeeStatus,
+  ICalCalendarMethod,
   ICalEventStatus,
 } from 'ical-generator';
 import { sendEmail } from '@/(server)/_shared/mailer/mailer';
@@ -483,6 +484,7 @@ class ScheduledMeetingService {
           const cancelledICS = ICS.createCopy();
           cancelledICS.setSequence(val.updateCount);
           cancelledICS.setStatus(ICalEventStatus.CANCELLED);
+          cancelledICS.setMethod(ICalCalendarMethod.CANCEL);
           // send cancelled email
           const cancelledEmailTemplate = render(
             EmailScheduledMeetingCancelled({

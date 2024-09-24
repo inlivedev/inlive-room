@@ -99,6 +99,10 @@ export class DefaultICS {
     return this;
   }
 
+  setMethod(method: ICalCalendarMethod) {
+    this.icalCalendar.method(method);
+  }
+
   createCopy() {
     const copy = new DefaultICS(this.event, this.host);
     copy.event = this.event;
