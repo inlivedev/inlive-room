@@ -64,7 +64,6 @@ export default function ScheduleModal() {
       onOpenChange={onOpenChange}
       isKeyboardDismissDisabled
       isDismissable={false}
-      hideCloseButton={editMode}
       scrollBehavior="inside"
     >
       <ModalContent className="p-2">
