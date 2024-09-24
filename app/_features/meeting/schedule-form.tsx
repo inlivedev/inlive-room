@@ -347,7 +347,7 @@ export default function MeetingScheduleForm() {
             <Button
               as={Link}
               href={`
-            ${APP_ORIGIN}/rooms/${formData?.event.roomId}
+            ${APP_ORIGIN}/rooms/${existingEvent?.roomId}
             `}
               className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
             >
@@ -358,7 +358,7 @@ export default function MeetingScheduleForm() {
               <Button
                 as={Link}
                 href={`
-            ${APP_ORIGIN}/webinars/${formData?.event.slug}
+            ${APP_ORIGIN}/webinars/${existingEvent?.slug}
             `}
                 className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-zinc-700 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500"
               >
@@ -391,7 +391,7 @@ export default function MeetingScheduleForm() {
           <p className="font-semibold">Host</p>
           <p>
             {existingEvent?.host?.name} -{' '}
-            <span className="text-zinc-400">{formData?.event.host?.email}</span>
+            <span className="text-zinc-400">{existingEvent?.host?.email}</span>
           </p>
         </div>
 
