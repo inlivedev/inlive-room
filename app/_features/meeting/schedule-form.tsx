@@ -51,6 +51,8 @@ export default function MeetingScheduleForm() {
     undefined | EventParticipant[]
   >();
 
+  const [enableResceduleButton, setEnableRescheduleButton] = useState(true);
+
   const [showAllParticipants, setShowAllParticipants] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -262,6 +264,12 @@ export default function MeetingScheduleForm() {
     }
   }, [formData, setValue, user?.email]);
 
+  useEffect(() => {
+    if (existingEvent) {
+      setEnableRescheduleButton(false);
+    }
+  }, [existingEvent]);
+
   const {
     fields: emails,
     append,
@@ -270,6 +278,11 @@ export default function MeetingScheduleForm() {
     control,
     name: 'emails',
   });
+
+  function cancelEdit() {
+    setEditMode(false);
+    setEnableRescheduleButton(false);
+  }
 
   const onAddMultitpleEmails = useCallback(() => {
     const regex =
@@ -451,6 +464,9 @@ export default function MeetingScheduleForm() {
                       participants: existingParticipants,
                     });
                     setEditMode(true);
+                    setTimeout(() => {
+                      setEnableRescheduleButton(true);
+                    }, 1500);
                   }
                 }}
               >
@@ -732,7 +748,7 @@ export default function MeetingScheduleForm() {
               reset();
               {
                 formData
-                  ? setEditMode(false)
+                  ? cancelEdit()
                   : document.dispatchEvent(
                       new CustomEvent('close:schedule-meeting-modal')
                     );
@@ -747,7 +763,7 @@ export default function MeetingScheduleForm() {
             type="submit"
             form="scheduleForm"
             className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
-            isDisabled={isSubmitting}
+            isDisabled={isSubmitting || !enableResceduleButton}
           >
             {isSubmitting ? (
               <div className="flex gap-2">
