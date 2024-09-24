@@ -26,8 +26,9 @@ import {
   EventDetails,
   EventParticipant,
 } from '@/(server)/_features/event/service';
-import { env } from 'process';
 import Link from 'next/link';
+import CopyIcon from '@/_shared/components/icons/copy-icon';
+import { SVGElementPropsType } from '@/_shared/types/types';
 
 type InputsType = {
   title: string;
@@ -44,6 +45,9 @@ export default function MeetingScheduleForm() {
   const [existingEvent, setExistingEvent] = useState<
     undefined | EventDetails
   >();
+
+  const [showAllParticipants, setShowAllParticipants] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -325,37 +329,63 @@ export default function MeetingScheduleForm() {
           </p>
         </div>
 
-        <div className="text-sm">
-          <p>Participants</p>
-          {formData?.participants
-            // .filter((val) => val.user.email !== formData.event.host?.email)
-            .map((val) => (
-              <p key={val.user.email}>
-                {val.user.name} -{' '}
-                <span className="text-zinc-400">{val.user.email}</span>
-              </p>
-            ))}
-        </div>
-
-        {formData?.event.createdBy == user?.id && (
-          <div className="fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700 p-2 sm:relative sm:border-none sm:p-0">
-            <Button
-              disabled
-              className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-            >
-              Cancel schedule
-            </Button>
-            <Button
-              disabled
-              className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-              onPress={() => {
-                setEditMode(true);
-              }}
-            >
-              Edit schedule
-            </Button>
+        {formData?.participants && formData.participants.length > 0 && (
+          <div className="text-sm">
+            <p>Participants</p>
+            {(() => {
+              return (
+                <>
+                  {formData.participants.slice(0, 3).map((val) => (
+                    <p key={val.user.email}>
+                      {val.user.name} -{' '}
+                      <span className="text-zinc-400">{val.user.email}</span>
+                    </p>
+                  ))}
+                  {formData.participants.length > 3 && (
+                    <p
+                      className="cursor-pointer text-red-500 hover:underline"
+                      onClick={() =>
+                        setShowAllParticipants(!showAllParticipants)
+                      }
+                    >
+                      {showAllParticipants
+                        ? 'Show less'
+                        : `+${formData.participants.length - 3} more`}
+                    </p>
+                  )}
+                  {showAllParticipants &&
+                    formData.participants.slice(3).map((val) => (
+                      <p key={val.user.email}>
+                        {val.user.name} -{' '}
+                        <span className="text-zinc-400">{val.user.email}</span>
+                      </p>
+                    ))}
+                </>
+              );
+            })()}
           </div>
         )}
+
+        {formData?.event.createdBy == user?.id &&
+          existingEvent?.category?.name == 'meetings' && (
+            <div className="pb-safe fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700 p-2 sm:relative sm:border-none sm:p-0">
+              <Button
+                disabled={true}
+                className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
+              >
+                Cancel schedule
+              </Button>
+              <Button
+                disabled={true}
+                className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
+                onPress={() => {
+                  // setEditMode(true);
+                }}
+              >
+                Edit schedule
+              </Button>
+            </div>
+          )}
       </div>
 
       <form
@@ -758,4 +788,15 @@ async function retryRequest(
   } else {
     return retryRequest(requestFunction, maxRetries - 1);
   }
+}
+
+function CheckIcon(props: SVGElementPropsType) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" {...props}>
+      <path
+        fill="currentColor"
+        d="M104 196a12.2 12.2 0 0 1-8.5-3.5l-56-56a12 12 0 0 1 17-17L104 167L207.5 63.5a12 12 0 0 1 17 17l-112 112a12.2 12.2 0 0 1-8.5 3.5Z"
+      />
+    </svg>
+  );
 }
