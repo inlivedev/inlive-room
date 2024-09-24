@@ -345,6 +345,7 @@ export class EventRepo {
     const res = await _db.transaction(async (tx) => {
       const [countParticipants] = await tx.select({ count: count() })
         .from(participants)
+        .innerJoin(events,isNum ? eq(events.id, parseInt(slugOrID)) : eq(events.slug, slugOrID))
         .where(isNum ? eq(participants.eventID, parseInt(slugOrID)) : eq(events.slug, slugOrID))
 
       if (countParticipants.count == 0) {
@@ -568,6 +569,10 @@ export class EventRepo {
     return upcomingEvents
   }
   async removeParticipant(eventID: number, emails: string[], _db: DB = db): Promise<EventParticipant[]> {
+    if(emails.length == 0 ){
+      return []
+    }
+
     const res = await _db.transaction(async (tx) => {
       const userList = await tx.select({
         id: users.id,
