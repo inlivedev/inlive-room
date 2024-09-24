@@ -474,61 +474,66 @@ class ScheduledMeetingService {
       });
 
       // Remove participants not in the new list
-      const removedParticipants = await eventRepo.removeParticipant(
-        updatedEvent.id,
-        removedParticipantEmails
-      );
-      removedParticipants.forEach(async (val) => {
-        const cancelledICS = ICS.createCopy();
-        cancelledICS.setSequence(val.updateCount);
-        cancelledICS.setStatus(ICalEventStatus.CANCELLED);
-        // send cancelled email
-        const cancelledEmailTemplate = render(
-          EmailScheduledMeetingCancelled({
-            event: {
-              endTime: updatedEvent.endTime,
-              name: updatedEvent.name,
-              roomID: updatedEvent.roomId!,
-              slug: updatedEvent.slug,
-              startTime: updatedEvent.startTime,
-            },
-            host: {
-              name: host.name,
-            },
-          })
+      if (removedParticipantEmails) {
+        const removedParticipants = await eventRepo.removeParticipant(
+          updatedEvent.id,
+          removedParticipantEmails
         );
+        removedParticipants.forEach(async (val) => {
+          const cancelledICS = ICS.createCopy();
+          cancelledICS.setSequence(val.updateCount);
+          cancelledICS.setStatus(ICalEventStatus.CANCELLED);
+          // send cancelled email
+          const cancelledEmailTemplate = render(
+            EmailScheduledMeetingCancelled({
+              event: {
+                endTime: updatedEvent.endTime,
+                name: updatedEvent.name,
+                roomID: updatedEvent.roomId!,
+                slug: updatedEvent.slug,
+                startTime: updatedEvent.startTime,
+              },
+              host: {
+                name: host.name,
+              },
+            })
+          );
 
-        const res = await sendEmail(
-          {
-            html: cancelledEmailTemplate,
-          },
-          {
-            destination: val.user.email,
-            inlineAttachment: {
-              data: Buffer.from(cancelledICS.icalCalendar.toString(), 'utf-8'),
-              filename: 'invite.ics',
-              contentType:
-                'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
-              contentDisposition: 'inline; filename=invite.ics',
-              contentTransferEncoding: 'base64',
+          const res = await sendEmail(
+            {
+              html: cancelledEmailTemplate,
             },
-            subject: `Meeting invitation has cancelled : ${updatedEvent.name}`,
+            {
+              destination: val.user.email,
+              inlineAttachment: {
+                data: Buffer.from(
+                  cancelledICS.icalCalendar.toString(),
+                  'utf-8'
+                ),
+                filename: 'invite.ics',
+                contentType:
+                  'application/ics; charset=utf-8; method=REQUEST; name=invite.ics',
+                contentDisposition: 'inline; filename=invite.ics',
+                contentTransferEncoding: 'base64',
+              },
+              subject: `Meeting invitation has cancelled : ${updatedEvent.name}`,
+            }
+          );
+
+          if (res && res.status >= 400) {
+            Sentry.captureEvent({
+              message: 'failed send scheduled meeting email',
+              level: 'info',
+              extra: {
+                name: val.user.name,
+                email: val.user.email,
+                event,
+                res,
+              },
+            });
           }
-        );
-
-        if (res && res.status >= 400) {
-          Sentry.captureEvent({
-            message: 'failed send scheduled meeting email',
-            level: 'info',
-            extra: {
-              name: val.user.name,
-              email: val.user.email,
-              event,
-              res,
-            },
-          });
-        }
-      });
+        });
+      }
 
       // Send Invited Email
       const invitedParticipants: EventParticipant[] = [

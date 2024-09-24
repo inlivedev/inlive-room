@@ -3,8 +3,8 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-au
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import * as Sentry from '@sentry/nextjs';
 import { eventRepo } from '../../_index';
+import { defaultLogger } from '@/(server)/_shared/logger/logger';
 
 const updateScheduledMeetingRequestSchema = z.object({
   id: z.number().optional(),
@@ -146,6 +146,8 @@ export async function PUT(
       { status: 201 }
     );
   } catch (e) {
+    defaultLogger.captureException(e);
+
     if (e instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -156,8 +158,6 @@ export async function PUT(
         { status: 400 }
       );
     }
-
-    Sentry.captureException(e);
 
     return NextResponse.json(
       {
