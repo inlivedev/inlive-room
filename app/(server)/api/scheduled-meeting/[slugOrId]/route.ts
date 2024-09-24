@@ -5,7 +5,6 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import * as Sentry from '@sentry/nextjs';
 import { eventRepo } from '../../_index';
-import { exit } from 'process';
 
 const updateScheduledMeetingRequestSchema = z.object({
   id: z.number().optional(),
@@ -18,10 +17,25 @@ const updateScheduledMeetingRequestSchema = z.object({
   emails: z.array(z.string().email()).max(100).optional(),
 });
 
+const ENABLE_EDIT_MEETING =
+  process.env.NEXT_PUBLIC_ENABLE_EDIT_MEETING == 'true';
+
 export async function PUT(
   request: Request,
   { params }: { params: { slugOrId: string } }
 ) {
+  if (!ENABLE_EDIT_MEETING) {
+    return NextResponse.json(
+      {
+        code: 400,
+        message: 'feature not enabled',
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
   const slugOrID = decodeURIComponent(params.slugOrId);
   const cookieStore = cookies();
   const requestToken = cookieStore.get('token');
@@ -65,17 +79,27 @@ export async function PUT(
     }
 
     if (existingEvent.createdBy != user.id) {
-      return NextResponse.json({
-        code: 404,
-        message: 'Scheduled Meeting not found',
-      });
+      return NextResponse.json(
+        {
+          code: 404,
+          message: 'Scheduled Meeting not found',
+        },
+        {
+          status: 404,
+        }
+      );
     }
 
     if (existingEvent.category.name != 'meetings') {
-      return NextResponse.json({
-        code: 400,
-        message: 'Make sure event is Scheduled Meeting',
-      });
+      return NextResponse.json(
+        {
+          code: 400,
+          message: 'Make sure event is Scheduled Meeting',
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
     const { title, description, startTime, endTime, maximumSlots, emails } =

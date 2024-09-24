@@ -40,6 +40,8 @@ type InputsType = {
 };
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
+const ENABLE_EDIT_MEETING =
+  process.env.NEXT_PUBLIC_ENABLE_EDIT_MEETING == 'true';
 
 export default function MeetingScheduleForm() {
   const [existingEvent, setExistingEvent] = useState<
