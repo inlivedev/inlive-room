@@ -481,7 +481,7 @@ export default function MeetingScheduleForm() {
         id="scheduleForm"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className="flex flex-col gap-2 overflow-y-auto overflow-x-hidden sm:max-h-max">
+        <div className="flex max-h-dvh flex-col gap-2 overflow-y-auto overflow-x-hidden sm:max-h-max">
           {selectedEmails.length < 1 && displayError && (
             <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
               Please input atleast one email address
