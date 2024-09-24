@@ -256,8 +256,30 @@ export default function MeetingScheduleForm() {
     <div className="h-full">
       <div className={editMode ? 'hidden' : `flex flex-col gap-8 p-1`}>
         <div className="flex flex-col gap-2">
-          <div className="w-full rounded-md p-2 text-xs ring-1 ring-zinc-700">
+          <div className="flex w-full flex-row items-center justify-between rounded-md p-2 text-xs ring-1 ring-zinc-700">
             {APP_ORIGIN}/rooms/{formData?.event.roomId}
+            <Button
+              onPress={() => {
+                navigator.clipboard
+                  .writeText(`${APP_ORIGIN}/rooms/${formData?.event.roomId}`)
+                  .then(() => {
+                    setCopySuccess(true);
+
+                    setTimeout(() => {
+                      setCopySuccess(false);
+                    }, 1500);
+                  });
+              }}
+              isIconOnly
+              className="h-5 w-5 bg-transparent p-0"
+            >
+              {!copySuccess && (
+                <CopyIcon className="h-5 w-5" width={20} height={20} />
+              )}
+              {copySuccess && (
+                <CheckIcon className="h-5 w-5" width={20} height={20} />
+              )}
+            </Button>
           </div>
 
           <div className="flex flex-row gap-2">
