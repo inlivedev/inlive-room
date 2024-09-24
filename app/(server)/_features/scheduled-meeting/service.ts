@@ -12,12 +12,13 @@ import { render } from '@react-email/components';
 import EmailScheduledMeeting from 'emails/event/EventScheduleMeeting';
 import * as Sentry from '@sentry/node';
 import { generateDateTime } from '@/(server)/_shared/utils/generate-date-time';
-import { EventParticipant, eventService } from '../event/service';
+import { EventDetails, EventParticipant, eventService } from '../event/service';
 import { defaultLogger } from '@/(server)/_shared/logger/logger';
 import * as z from 'zod';
 import { db } from '@/(server)/_shared/database/database';
 import { ServiceError } from '../_service';
 import EmailScheduledMeetingCancelled from 'emails/event/EventScheduleMeetingCancelled';
+import { getUserById } from '../user/repository';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -38,7 +39,15 @@ class ScheduledMeetingService {
       email: string;
     },
     emails?: string[]
-  ) {
+  ): Promise<
+    | {
+        event: EventDetails;
+        participants: EventParticipant[] | undefined;
+      }
+    | undefined
+  > {
+    let invitedParticipants: EventParticipant[] | undefined = [];
+
     const category = await eventRepo.getCategoryByName('meetings');
 
     if (!category) {
@@ -95,7 +104,7 @@ class ScheduledMeetingService {
 
       emailCustomValue['h:Reply-To'] = replyEmails.join(', ');
 
-      await this.inviteParticipants(
+      invitedParticipants = await this.inviteParticipants(
         event,
         emails.map((email) => {
           return {
@@ -191,7 +200,10 @@ class ScheduledMeetingService {
       },
     });
 
-    return event;
+    return {
+      event: { ...event, host: hostParticipant.user, category: category },
+      participants: invitedParticipants,
+    };
   }
 
   async inviteParticipants(
@@ -205,9 +217,9 @@ class ScheduledMeetingService {
       email: string;
     },
     ICS: DefaultICS
-  ) {
+  ): Promise<EventParticipant[] | undefined> {
     if (!event.roomId) {
-      return;
+      return undefined;
     }
 
     const listParticipant: EventParticipant[] = [];
@@ -309,8 +321,6 @@ class ScheduledMeetingService {
             res,
           },
         });
-
-        return;
       }
 
       Sentry.captureEvent({
@@ -324,6 +334,7 @@ class ScheduledMeetingService {
         },
       });
     }
+    return listParticipant;
   }
 
   async updateScheduledMeeting(
@@ -343,7 +354,13 @@ class ScheduledMeetingService {
       email: string;
     },
     emails: string[]
-  ) {
+  ): Promise<
+    | {
+        event: EventDetails;
+        participants: EventParticipant[] | undefined;
+      }
+    | undefined
+  > {
     if (!(newEvent.id || newEvent.slug)) {
       throw new ServiceError('ScheduledMeeting', 'Slug or ID is required', 400);
     }
@@ -498,6 +515,19 @@ class ScheduledMeetingService {
             subject: `Meeting invitation has cancelled : ${updatedEvent.name}`,
           }
         );
+
+        if (res && res.status >= 400) {
+          Sentry.captureEvent({
+            message: 'failed send scheduled meeting email',
+            level: 'info',
+            extra: {
+              name: val.user.name,
+              email: val.user.email,
+              event,
+              res,
+            },
+          });
+        }
       });
 
       // Send Invited Email
@@ -541,9 +571,31 @@ class ScheduledMeetingService {
             subject: `Meeting invitation has updated : ${updatedEvent.name}`,
           }
         );
+
+        if (res && res.status >= 400) {
+          Sentry.captureEvent({
+            message: 'failed send scheduled meeting email',
+            level: 'info',
+            extra: {
+              name: val.user.name,
+              email: val.user.email,
+              event,
+              res,
+            },
+          });
+        }
       });
 
-      return event;
+      const hostUser = await getUserById(event.createdBy);
+
+      return {
+        event: {
+          ...event,
+          category: category,
+          host: hostUser,
+        },
+        participants: invitedParticipants,
+      };
     });
   }
 }
