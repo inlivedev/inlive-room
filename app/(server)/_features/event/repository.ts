@@ -39,6 +39,9 @@ export class EventRepo {
           isNull(events.deletedAt),
           categoryID ? eq(events.categoryID, categoryID.id) : undefined
         ),
+        with: {
+          category: true
+        }
 
       });
 
