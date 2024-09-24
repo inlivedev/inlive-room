@@ -149,7 +149,11 @@ export default function MeetingScheduleForm() {
                 reset();
                 setExistingEvent(val.data.event);
                 setEditMode(false);
-                setExistingParticipants(val.data.participants);
+                setExistingParticipants(
+                  val.data.participants.filter(
+                    (val) => val.user.email != user?.email
+                  )
+                );
               }
             }
           )
@@ -179,7 +183,11 @@ export default function MeetingScheduleForm() {
               reset();
               setExistingEvent(val.data.event);
               setEditMode(false);
-              setExistingParticipants(val.data.participants);
+              setExistingParticipants(
+                val.data.participants.filter(
+                  (val) => val.user.email != user?.email
+                )
+              );
             }
           }
         );
@@ -223,10 +231,6 @@ export default function MeetingScheduleForm() {
     },
     [user?.email]
   );
-
-  useEffect(() => {
-    console.log(existingEvent);
-  }, [existingEvent]);
 
   document.addEventListener('edit:schedule-meeting', fillForm as EventListener);
 
