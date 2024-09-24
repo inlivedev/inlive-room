@@ -20,8 +20,7 @@ import { generateID } from '@/(server)/_shared/utils/generateid';
 import MailPlus from '@/_shared/components/icons/mail-plus-icon';
 import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import { useAuthContext } from '@/_shared/contexts/auth';
-import { InternalApiFetcher } from '@/_shared/utils/fetcher';
-import { EventType } from '@/_shared/types/event';
+import { FetcherResponse, InternalApiFetcher } from '@/_shared/utils/fetcher';
 import {
   EventDetails,
   EventParticipant,
@@ -128,21 +127,65 @@ export default function MeetingScheduleForm() {
         emails: data.emails.map((email) => email.email),
       };
 
-      const createEventResp: EventType.CreateEventResponse =
-        await InternalApiFetcher.post('/api/scheduled-meeting', {
+      if (existingEvent) {
+        InternalApiFetcher.put(`/api/scheduled-meeting/${existingEvent.id}`, {
           body: JSON.stringify(bodyData),
           headers: undefined,
-        });
+        })
+          .then(
+            (
+              val: FetcherResponse & {
+                data: {
+                  event: EventDetails;
+                  participants: EventParticipant[];
+                };
+              }
+            ) => {
+              if (!val.ok) {
+                setErrorMessage(
+                  'Failed to update the meeting please try again later'
+                );
+              } else {
+                reset();
+                setExistingEvent(val.data.event);
+                setEditMode(false);
+                setExistingParticipants(val.data.participants);
+              }
+            }
+          )
+          .finally(() => {
+            setIsSubmitting(false);
+          });
+      } else {
+        InternalApiFetcher.post('/api/scheduled-meeting', {
+          body: JSON.stringify(bodyData),
+          headers: undefined,
+        }).then(
+          (
+            val: FetcherResponse & {
+              data: {
+                event: EventDetails;
+                participants: EventParticipant[];
+              };
+            }
+          ) => {
+            if (!val.ok) {
+              setErrorMessage(
+                'Failed to create meeting please try again later'
+              );
+            }
 
-      if (!createEventResp.ok) {
-        setErrorMessage('Failed to create meeting please try again later');
-      }
+            if (val.ok) {
+              reset();
+              setExistingEvent(val.data.event);
+              setEditMode(false);
+              setExistingParticipants(val.data.participants);
+            }
+          }
+        );
 
-      if (createEventResp.ok) {
-        reset();
-        document.dispatchEvent(new CustomEvent('close:schedule-meeting-modal'));
+        setIsSubmitting(false);
       }
-      setIsSubmitting(false);
     }
   };
 
@@ -169,8 +212,6 @@ export default function MeetingScheduleForm() {
     (
       e: CustomEvent<{ event: EventDetails; participants: EventParticipant[] }>
     ) => {
-      console.log(e.detail);
-
       setEditMode(false);
       setExistingEvent(e.detail.event);
 
@@ -179,10 +220,8 @@ export default function MeetingScheduleForm() {
       );
 
       setExistingParticipants(e.detail.participants);
-
-      console.log(existingEvent, editMode);
     },
-    [editMode, existingEvent, user?.email]
+    [user?.email]
   );
 
   useEffect(() => {
@@ -392,17 +431,23 @@ export default function MeetingScheduleForm() {
         {existingEvent?.createdBy == user?.id &&
           existingEvent?.category?.name == 'meetings' && (
             <div className="pb-safe fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700 p-2 sm:relative sm:border-none sm:p-0">
-              <Button className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500">
+              <Button
+                disabled
+                className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
+              >
                 Cancel schedule
               </Button>
               <Button
+                disabled={!ENABLE_EDIT_MEETING}
                 className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
                 onPress={() => {
-                  setFormData({
-                    event: existingEvent,
-                    participants: existingParticipants,
-                  });
-                  setEditMode(true);
+                  if (ENABLE_EDIT_MEETING) {
+                    setFormData({
+                      event: existingEvent,
+                      participants: existingParticipants,
+                    });
+                    setEditMode(true);
+                  }
                 }}
               >
                 Edit schedule
