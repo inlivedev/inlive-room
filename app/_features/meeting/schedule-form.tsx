@@ -46,6 +46,10 @@ export default function MeetingScheduleForm() {
     undefined | EventDetails
   >();
 
+  const [existingParticipants, setExistingParticipants] = useState<
+    undefined | EventParticipant[]
+  >();
+
   const [showAllParticipants, setShowAllParticipants] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -63,7 +67,7 @@ export default function MeetingScheduleForm() {
 
   const [formData, setFormData] = useState<{
     event: EventDetails;
-    participants: EventParticipant[];
+    participants: EventParticipant[] | undefined;
   } | null>(null);
 
   const [editMode, setEditMode] = useState<boolean>(true);
@@ -163,6 +167,8 @@ export default function MeetingScheduleForm() {
     (
       e: CustomEvent<{ event: EventDetails; participants: EventParticipant[] }>
     ) => {
+      console.log(e.detail);
+
       setEditMode(false);
       setExistingEvent(e.detail.event);
 
@@ -170,10 +176,16 @@ export default function MeetingScheduleForm() {
         (val) => val.user.email != user?.email
       );
 
-      setFormData(e.detail);
+      setExistingParticipants(e.detail.participants);
+
+      console.log(existingEvent, editMode);
     },
-    [user?.email]
+    [editMode, existingEvent, user?.email]
   );
+
+  useEffect(() => {
+    console.log(existingEvent);
+  }, [existingEvent]);
 
   document.addEventListener('edit:schedule-meeting', fillForm as EventListener);
 
@@ -196,12 +208,12 @@ export default function MeetingScheduleForm() {
       setValue('startTime', parseTimeDateToString(startTime));
       setValue('endTime', parseTimeDateToString(endTime));
       setValue('title', event.name);
-      setValue(
-        'emails',
-        participants.map((p) => ({ email: p.user.email, id: p.user.email }))
-      );
-
-      // setFormData(null); // Reset formData after populating the form
+      if (participants) {
+        setValue(
+          'emails',
+          participants.map((p) => ({ email: p.user.email, id: p.user.email }))
+        );
+      }
     }
   }, [formData, setValue, user?.email]);
 
@@ -261,11 +273,11 @@ export default function MeetingScheduleForm() {
       <div className={editMode ? 'hidden' : `flex flex-col gap-8 p-1`}>
         <div className="flex flex-col gap-2">
           <div className="flex w-full flex-row items-center justify-between rounded-md p-2 text-xs ring-1 ring-zinc-700">
-            {APP_ORIGIN}/rooms/{formData?.event.roomId}
+            {APP_ORIGIN}/rooms/{existingEvent?.roomId}
             <Button
               onPress={() => {
                 navigator.clipboard
-                  .writeText(`${APP_ORIGIN}/rooms/${formData?.event.roomId}`)
+                  .writeText(`${APP_ORIGIN}/rooms/${existingEvent?.roomId}`)
                   .then(() => {
                     setCopySuccess(true);
 
@@ -312,36 +324,45 @@ export default function MeetingScheduleForm() {
         </div>
 
         <div className="text-sm">
-          <p className=" font-bold">{formData?.event.name} </p>
+          <p className=" font-bold">{existingEvent?.name} </p>
           <div className="text-zinc-300">
-            <p>{getValues('date')}</p>
-            <p>
-              {getValues('startTime')} - {getValues('endTime')}
-            </p>
+            {existingEvent && (
+              <div>
+                <p>{parseDateToString(new Date(existingEvent.startTime))}</p>
+                <p>
+                  {parseTimeDateToString(
+                    new Date(existingEvent.startTime),
+                    true
+                  )}{' '}
+                  -{' '}
+                  {parseTimeDateToString(new Date(existingEvent.endTime), true)}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="text-sm">
-          <p>Host</p>
+          <p className="font-semibold">Host</p>
           <p>
-            {formData?.event.host?.name} -{' '}
+            {existingEvent?.host?.name} -{' '}
             <span className="text-zinc-400">{formData?.event.host?.email}</span>
           </p>
         </div>
 
-        {formData?.participants && formData.participants.length > 0 && (
+        {existingParticipants && existingParticipants.length > 0 && (
           <div className="text-sm">
-            <p>Participants</p>
+            <p className="font-semibold">Participants</p>
             {(() => {
               return (
                 <>
-                  {formData.participants.slice(0, 3).map((val) => (
+                  {existingParticipants.slice(0, 3).map((val) => (
                     <p key={val.user.email}>
                       {val.user.name} -{' '}
                       <span className="text-zinc-400">{val.user.email}</span>
                     </p>
                   ))}
-                  {formData.participants.length > 3 && (
+                  {existingParticipants.length > 3 && (
                     <p
                       className="cursor-pointer text-red-500 hover:underline"
                       onClick={() =>
@@ -350,11 +371,11 @@ export default function MeetingScheduleForm() {
                     >
                       {showAllParticipants
                         ? 'Show less'
-                        : `+${formData.participants.length - 3} more`}
+                        : `+${existingParticipants.length - 3} more`}
                     </p>
                   )}
                   {showAllParticipants &&
-                    formData.participants.slice(3).map((val) => (
+                    existingParticipants.slice(3).map((val) => (
                       <p key={val.user.email}>
                         {val.user.name} -{' '}
                         <span className="text-zinc-400">{val.user.email}</span>
@@ -366,20 +387,20 @@ export default function MeetingScheduleForm() {
           </div>
         )}
 
-        {formData?.event.createdBy == user?.id &&
+        {existingEvent?.createdBy == user?.id &&
           existingEvent?.category?.name == 'meetings' && (
             <div className="pb-safe fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700 p-2 sm:relative sm:border-none sm:p-0">
-              <Button
-                disabled={true}
-                className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
-              >
+              <Button className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500">
                 Cancel schedule
               </Button>
               <Button
-                disabled={true}
                 className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
                 onPress={() => {
-                  // setEditMode(true);
+                  setFormData({
+                    event: existingEvent,
+                    participants: existingParticipants,
+                  });
+                  setEditMode(true);
                 }}
               >
                 Edit schedule
@@ -698,7 +719,7 @@ export default function MeetingScheduleForm() {
   );
 }
 
-function parseDateToString(date: Date) {
+function parseDateToString(date?: Date) {
   const eventTime = Intl.DateTimeFormat('en-GB', {
     weekday: 'long',
     day: 'numeric',
@@ -764,15 +785,21 @@ function parseTimeStringToDate(time: string): Date {
   }
 }
 
-function parseTimeDateToString(date?: Date) {
+function parseTimeDateToString(date?: Date, AM = false) {
   if (!date) {
     return '';
   }
 
-  return `${date.getHours().toString().padStart(2, '0')}:${date
-    .getMinutes()
-    .toString()
-    .padStart(2, '0')}`;
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  let period = '';
+
+  if (AM) {
+    period = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; // Convert to 12-hour format
+  }
+
+  return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`.trim();
 }
 
 async function retryRequest(
