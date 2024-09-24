@@ -64,10 +64,7 @@ export const participants = pgTable(
       .default(1)
       .notNull(),
     isInvited: boolean('is_invited').default(false).notNull(),
-    updateCount: integer('update_count')
-      .default(0)
-      .notNull()
-      .$onUpdateFn((): SQL => sql`${participants.updateCount} + 1`),
+    updateCount: integer('update_count').default(0).notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
     clientID: text('client_id').notNull(),
