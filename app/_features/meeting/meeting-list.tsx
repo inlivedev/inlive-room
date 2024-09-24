@@ -1,11 +1,16 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@nextui-org/react';
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 import Link from 'next/link';
 import ScheduleModal from '@/_features/meeting/schedule-modal';
 import { UpcomingEvent } from '@/(server)/_features/event/repository';
 import { useAuthContext } from '@/_shared/contexts/auth';
+import { FetcherResponse, InternalApiFetcher } from '@/_shared/utils/fetcher';
+import {
+  EventDetails,
+  EventParticipant,
+} from '@/(server)/_features/event/service';
 
 export default function MeetingList({ events }: { events: UpcomingEvent[] }) {
   const [activeTab, setActiveTab] = useState<'today' | 'upcoming'>('today');
@@ -108,7 +113,7 @@ export default function MeetingList({ events }: { events: UpcomingEvent[] }) {
           </div>
         </nav>
         {activeEvents.length > 0 ? (
-          <div className="relative">
+          <div>
             <ul className="flex h-[310px] flex-col gap-4 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-8 pt-4">
               {activeEvents.map((event, index) => {
                 const active = index === 0 && activeTab === 'today';
@@ -124,7 +129,6 @@ export default function MeetingList({ events }: { events: UpcomingEvent[] }) {
                 );
               })}
             </ul>
-            <div className="absolute bottom-0 left-0 h-8 w-full bg-gradient-to-t from-zinc-900 to-zinc-900/30"></div>
           </div>
         ) : (
           <div className="flex h-[300px] flex-col items-center justify-center p-4 text-center md:p-6">
@@ -184,13 +188,43 @@ const MeetingItem = ({
   return (
     <Button
       as={Link}
-      href={`/rooms/${event.roomId}`}
+      href="#"
+      onPress={async () => {
+        document.dispatchEvent(
+          new CustomEvent('open:schedule-meeting-modal-detail')
+        );
+
+        Promise.all([
+          InternalApiFetcher.get(`/api/events/${event.id}`),
+          InternalApiFetcher.get(`/api/events/${event.id}/details/registeree`),
+        ])
+          .then(([selectedEventResponse, participantsResponse]) => {
+            const selectedEvent: FetcherResponse & { data: EventDetails } =
+              selectedEventResponse;
+            const participants: FetcherResponse & {
+              data: EventParticipant[];
+            } = participantsResponse;
+
+            document.dispatchEvent(
+              new CustomEvent('edit:schedule-meeting', {
+                detail: {
+                  event: selectedEvent.data,
+                  participants: participants.data,
+                },
+              })
+            );
+          })
+          .catch((error) => {
+            console.error('Error fetching event data:', error);
+          });
+      }}
       className={`flex h-auto min-h-0 w-full min-w-0 items-center gap-4 rounded px-4 py-3 antialiased ${
         activeItem
           ? 'bg-red-900 hover:bg-red-800 active:bg-red-700'
           : 'bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700'
       }`}
     >
+      {/* Date */}
       <div className="flex flex-col gap-0.5">
         {activeTab === 'upcoming' ? (
           <span className="block text-xs font-medium text-zinc-400">
@@ -207,6 +241,7 @@ const MeetingItem = ({
           {startMinute.toString().padStart(2, '0')}
         </b>
       </div>
+      {/* Event Title */}
       <div className="flex-1 truncate">
         <div className="flex flex-col gap-0.5">
           <div
@@ -229,7 +264,7 @@ const MeetingItem = ({
       </div>
       {activeItem && now ? (
         <div>
-          <b className="rounded-lg bg-red-950 px-3 py-0.5 text-[10px] font-medium leading-[14px] text-red-200">
+          <b className="rounded-lg bg-red-950 px-3 py-0.5 text-[10px] font-medium leading-[14px] text-red-200 hover:hidden">
             Now
           </b>
         </div>
