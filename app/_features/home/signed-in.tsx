@@ -65,7 +65,7 @@ export default function SignedIn({
     if (persistent) {
       return (
         <div className="flex items-center justify-center md:px-5 lg:px-10">
-          <div className="flex max-w-lg flex-1 flex-col gap-4">
+          <div className="flex w-full max-w-lg flex-1 flex-col gap-4">
             <MeetingList events={events} />
           </div>
         </div>
