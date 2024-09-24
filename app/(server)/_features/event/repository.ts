@@ -25,7 +25,7 @@ export class EventRepo {
     return data[0];
   }
 
-  async getBySlugOrID(slugOrID: string, category?: string, _db: DB = db): Promise<selectEvent | undefined> {
+  async getBySlugOrID(slugOrID: string, category?: string, _db: DB = db) {
     const event = await _db.transaction(async (tx) => {
       const isnum = /^\d+$/.test(slugOrID);
 

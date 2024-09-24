@@ -19,17 +19,6 @@ import { db } from '@/(server)/_shared/database/database';
 import { ServiceError } from '../_service';
 import EmailScheduledMeetingCancelled from 'emails/event/EventScheduleMeetingCancelled';
 
-export const updateScheduledMeetingRequestSchema = z.object({
-  id: z.number().optional(),
-  slug: z.string().optional(),
-  title: z.string().max(255),
-  description: z.string().optional(),
-  startTime: z.coerce.date(),
-  endTime: z.coerce.date(),
-  maximumSlots: z.number().max(100).int().optional(),
-  emails: z.array(z.string().email()).max(100).optional(),
-});
-
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
 class ScheduledMeetingService {
@@ -338,12 +327,22 @@ class ScheduledMeetingService {
   }
 
   async updateScheduledMeeting(
-    newEvent: z.infer<typeof updateScheduledMeetingRequestSchema>,
+    newEvent: {
+      id: number;
+      slug: string;
+      title: string;
+      startTime: Date;
+      endTime: Date;
+      createdBy: number;
+      description?: string;
+      maximumSlots?: number;
+    },
     host: {
       userID: number;
       name: string;
       email: string;
-    }
+    },
+    emails: string[]
   ) {
     if (!(newEvent.id || newEvent.slug)) {
       throw new ServiceError('ScheduledMeeting', 'Slug or ID is required', 400);
@@ -416,7 +415,6 @@ class ScheduledMeetingService {
         .addLocation(joinRoomURL)
         .addSummary(summary);
 
-      const emails = newEvent.emails || [];
       emails.push(host.email);
 
       const oldParticipants = await eventRepo.getRegisteredParticipants(
