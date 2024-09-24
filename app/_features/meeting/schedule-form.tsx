@@ -802,21 +802,6 @@ function parseTimeDateToString(date?: Date, AM = false) {
   return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`.trim();
 }
 
-async function retryRequest(
-  requestFunction: () => Promise<any>,
-  maxRetries: number
-) {
-  const response = await requestFunction();
-
-  if (response.ok) {
-    return response;
-  } else if (maxRetries === 0) {
-    throw new Error('Request failed after maximum retries');
-  } else {
-    return retryRequest(requestFunction, maxRetries - 1);
-  }
-}
-
 function CheckIcon(props: SVGElementPropsType) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" {...props}>
