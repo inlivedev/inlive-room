@@ -105,9 +105,8 @@ export class DefaultICS {
 
   createCopy() {
     const copy = new DefaultICS(this.event, this.host);
-    copy.event = this.event;
+    copy.event = structuredClone(this.event);
     copy.host = this.host;
-    copy.icalCalendar = this.icalCalendar;
 
     return copy;
   }

@@ -545,8 +545,9 @@ class ScheduledMeetingService {
 
       invitedParticipants.forEach(async (val) => {
         ICS.setSequence(val.updateCount);
-        // send cancelled email
-        const cancelledEmailTemplate = render(
+        ICS.setStatus(ICalEventStatus.TENTATIVE);
+        ICS.setMethod(ICalCalendarMethod.REQUEST);
+        const inviteTemplate = render(
           EmailScheduledMeeting({
             event: {
               endTime: updatedEvent.endTime,
@@ -563,7 +564,7 @@ class ScheduledMeetingService {
 
         const res = await sendEmail(
           {
-            html: cancelledEmailTemplate,
+            html: inviteTemplate,
           },
           {
             destination: val.user.email,
