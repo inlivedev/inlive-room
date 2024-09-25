@@ -1,22 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  Modal,
-  ModalBody,
-  useDisclosure,
-  ModalContent,
-  ModalHeader,
-} from '@nextui-org/react';
 import MeetingScheduleForm from '@/_features/meeting/schedule-form';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function ScheduleModal() {
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-  const [editMode, setEditMode] = useState(true);
-  const [size, setSize] = useState<'full' | 'md'>('md');
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
   });
+
+  const [isOpen, setIsOpen] = useState(false); // New state for modal visibility
 
   useEffect(() => {
     // Handler to update the screen size
@@ -35,54 +28,47 @@ export default function ScheduleModal() {
 
   useEffect(() => {
     const openModal = () => {
-      if (screenSize.width < 640) {
-        setSize('full');
-      } else {
-        setSize('md');
-      }
-      onOpen();
+      setIsOpen(true); // Set modal to open
     };
 
     document.addEventListener('open:schedule-meeting-modal', openModal);
-    document.addEventListener('close:schedule-meeting-modal', onClose);
+    document.addEventListener('close:schedule-meeting-modal', () => {
+      setIsOpen(false); // Set modal to close
+    });
 
     document.addEventListener('open:schedule-meeting-modal-detail', () => {
-      setEditMode(false);
       openModal();
     });
 
     return () => {
       document.removeEventListener('open:schedule-meeting-modal', openModal);
-      document.removeEventListener('close:schedule-meeting-modal', onClose);
+      document.removeEventListener('close:schedule-meeting-modal', () => {
+        setIsOpen(false);
+      });
     };
-  }, [onClose, onOpen, screenSize.width]);
+  }, [screenSize.width]);
 
   return (
-    <Modal
-      size={size}
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      isKeyboardDismissDisabled
-      isDismissable={false}
-      scrollBehavior="inside"
-    >
-      <ModalContent className="p-2">
-        <ModalHeader className="flex flex-col">
-          {editMode ? (
-            <div>
-              <h2>Schedule a Meeting</h2>
-              <p className="text-sm font-normal text-zinc-400">
-                Send a personal email to schedule a meeting
-              </p>
+    <>
+      {isOpen && (
+        <div className="invisible absolute left-0 top-0 z-20 h-[100vh] w-[100vw] bg-black/50 sm:visible"></div>
+      )}
+      {isOpen && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1, ease: 'easeInOut' }}
+          >
+            <div
+              className={`fixed inset-0 z-50 h-full w-full rounded-md bg-zinc-900 p-4 sm:left-1/2 sm:top-1/2 sm:h-fit sm:w-fit sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2`}
+            >
+              <MeetingScheduleForm></MeetingScheduleForm>
             </div>
-          ) : (
-            <h2>Event Details</h2>
-          )}
-        </ModalHeader>
-        <ModalBody>
-          <MeetingScheduleForm></MeetingScheduleForm>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+          </motion.div>
+        </AnimatePresence>
+      )}
+    </>
   );
 }
