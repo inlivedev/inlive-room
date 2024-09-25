@@ -701,7 +701,10 @@ export default function MeetingScheduleForm() {
                   </span>
 
                   <button
-                    onClick={() => remove(index)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      remove(index);
+                    }}
                     className="ml-2 focus:outline-none"
                     aria-label="Remove email"
                   >
