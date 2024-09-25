@@ -12,12 +12,12 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef, KeyboardEvent } from 'react';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import DatePicker from 'react-datepicker';
 import '@/_shared/styles/date-picker.css';
 import { generateID } from '@/(server)/_shared/utils/generateid';
-import MailPlus from '@/_shared/components/icons/mail-plus-icon';
+
 import XFillIcon from '@/_shared/components/icons/x-fill-icon';
 import { useAuthContext } from '@/_shared/contexts/auth';
 import { FetcherResponse, InternalApiFetcher } from '@/_shared/utils/fetcher';
@@ -29,13 +29,19 @@ import Link from 'next/link';
 import CopyIcon from '@/_shared/components/icons/copy-icon';
 import { SVGElementPropsType } from '@/_shared/types/types';
 
+type Email = {
+  address: string;
+  id: string | undefined;
+  name: string | undefined;
+};
+
 type InputsType = {
   title: string;
   date: string;
   startTime: string;
   endTime: string;
-  csvEmails: string;
-  emails: { email: string; id: string | undefined }[];
+  emails: Email[];
+  emailInput: string;
 };
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN;
@@ -79,9 +85,9 @@ export default function MeetingScheduleForm() {
     register,
     setValue,
     control,
-    formState,
+    setError,
+    clearErrors,
     getValues,
-    resetField,
     handleSubmit,
     reset,
   } = useForm<InputsType>({
@@ -89,7 +95,6 @@ export default function MeetingScheduleForm() {
       date: parseDateToString(today),
       startTime: parseTimeDateToString(startTime),
       endTime: parseTimeDateToString(endTime),
-      csvEmails: '',
       emails: [],
       title: user ? user.name + ' Meeting' : '',
     },
@@ -126,7 +131,7 @@ export default function MeetingScheduleForm() {
         status: 'published',
         type: 'meeting',
         maximumSlots: data.emails.length,
-        emails: data.emails.map((email) => email.email),
+        emails: data.emails.map((email) => email.address),
       };
 
       if (existingEvent) {
@@ -258,7 +263,11 @@ export default function MeetingScheduleForm() {
       if (participants) {
         setValue(
           'emails',
-          participants.map((p) => ({ email: p.user.email, id: p.user.email }))
+          participants.map((p) => ({
+            address: p.user.email,
+            id: p.user.email,
+            name: p.user.name,
+          }))
         );
       }
     }
@@ -270,6 +279,16 @@ export default function MeetingScheduleForm() {
     }
   }, [existingEvent]);
 
+  function cancelEdit() {
+    setEditMode(false);
+    setEnableRescheduleButton(false);
+  }
+
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isStartTimeOpen, setIsStartTimeOpen] = useState(false);
+  const [isEndTimeOpen, setIsEndTimeOpen] = useState(false);
+
+  // Email Input Chips Component
   const {
     fields: emails,
     append,
@@ -279,52 +298,67 @@ export default function MeetingScheduleForm() {
     name: 'emails',
   });
 
-  function cancelEdit() {
-    setEditMode(false);
-    setEnableRescheduleButton(false);
-  }
+  const validateEmail = (email: string): boolean => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
 
-  const onAddMultitpleEmails = useCallback(() => {
-    const regex =
-      /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*[,| ]\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/;
-
-    const newEmails = getValues('csvEmails');
-
-    if (!regex.test(newEmails)) {
-      return false;
+  const parseEmail = (input: string): Email | null => {
+    const match = input.match(/^(?:(.+?)\s*<(.+@.+)>|(.+@.+))$/);
+    if (match) {
+      if (match[3]) {
+        return { name: undefined, address: match[3], id: generateID() };
+      } else {
+        return { name: match[1], address: match[2], id: generateID() };
+      }
     }
+    return null;
+  };
 
-    let regexEmails: string[];
+  const addEmail = (input: string) => {
+    const trimmedInput = input.trim();
+    if (trimmedInput) {
+      const emailData = parseEmail(trimmedInput);
+      if (emailData && validateEmail(emailData.address)) {
+        const emailList = getValues('emails');
 
-    if (newEmails.includes(',')) {
-      regexEmails = newEmails.split(',');
-    } else {
-      regexEmails = newEmails.split(' ');
+        if (!emailList.some((email) => email.address === emailData.address)) {
+          append(emailData);
+        } else {
+          setError('emailInput', {
+            type: 'manual',
+            message: `Email ${emailData.address} is already in the list`,
+          });
+        }
+        setValue('emailInput', '');
+        clearErrors('emailInput');
+      } else {
+        setError('emailInput', {
+          type: 'manual',
+          message: `Invalid email format: ${trimmedInput}`,
+        });
+      }
     }
+  };
 
-    let existingEmails = getValues('emails').map((email) => email.email);
-
-    // Check if existingEmails is empty or contains only one empty string
-    if (existingEmails.length === 1 && existingEmails[0] === '') {
-      remove(0);
-      existingEmails = [];
+  const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addEmail(getValues('emailInput'));
     }
+  };
 
-    regexEmails.forEach((email) => {
-      const emailTrimmed = email.trim();
-
-      if (!existingEmails.includes(emailTrimmed)) {
-        append({ email: emailTrimmed, id: generateID(6) });
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const pastedEmails = pastedText.split(/,\s*/);
+    pastedEmails.forEach((email) => {
+      const trimmedEmail = email.trim();
+      if (trimmedEmail) {
+        addEmail(trimmedEmail);
       }
     });
-
-    resetField('csvEmails');
-    return true;
-  }, [append, getValues, remove, resetField]);
-
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [isStartTimeOpen, setIsStartTimeOpen] = useState(false);
-  const [isEndTimeOpen, setIsEndTimeOpen] = useState(false);
+  };
 
   return (
     <div className="h-full">
@@ -480,8 +514,13 @@ export default function MeetingScheduleForm() {
         className={editMode ? `flex flex-col gap-2` : 'hidden'}
         id="scheduleForm"
         onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent form submission on 'Enter'
+          }
+        }}
       >
-        <div className="flex max-h-dvh flex-col gap-2 overflow-y-auto overflow-x-hidden sm:max-h-max">
+        <div className="m-2 flex max-h-dvh flex-col gap-2 overflow-y-auto overflow-x-hidden sm:max-h-max">
           {selectedEmails.length < 1 && displayError && (
             <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
               Please input atleast one email address
@@ -499,7 +538,7 @@ export default function MeetingScheduleForm() {
               id="title"
               type="text"
               placeholder="Meeting Title"
-              className="block w-full cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-base shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+              className="mx-1 block cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
               {...register('title')}
             />
           </div>
@@ -508,10 +547,10 @@ export default function MeetingScheduleForm() {
 
           <div className="flex flex-row flex-wrap gap-2">
             {/* datepicker form */}
-            <div className="relative flex w-full flex-row items-center justify-center bg-zinc-950 outline-none ring-1 ring-zinc-800">
+            <div className="relative mx-1 flex w-full flex-row items-center justify-center rounded-md bg-zinc-950 outline-none ring-1 ring-zinc-800">
               <Popover
                 placement="bottom"
-                shouldCloseOnInteractOutside={(e) => {
+                shouldCloseOnInteractOutside={() => {
                   return false;
                 }}
                 isOpen={isDatePickerOpen}
@@ -535,7 +574,7 @@ export default function MeetingScheduleForm() {
               </Popover>
               <input
                 id="event-date"
-                className="z-10 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-base shadow-sm  outline-none disabled:cursor-not-allowed disabled:bg-zinc-800"
+                className="z-10 mx-1 block flex-1 cursor-pointer rounded-md bg-transparent py-2.5 pl-4 pr-9 text-base shadow-sm outline-none  focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
                 type="text"
                 {...register('date')}
                 onClick={() => {
@@ -561,7 +600,7 @@ export default function MeetingScheduleForm() {
             <div className="relative flex flex-1 items-center justify-center">
               <Popover
                 placement="bottom"
-                shouldCloseOnInteractOutside={(e) => {
+                shouldCloseOnInteractOutside={() => {
                   return false;
                 }}
                 isOpen={isStartTimeOpen}
@@ -590,7 +629,7 @@ export default function MeetingScheduleForm() {
               </Popover>
               <input
                 id="time"
-                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
                 type="time"
                 onClick={() => {
                   setIsDatePickerOpen(false);
@@ -605,7 +644,7 @@ export default function MeetingScheduleForm() {
             <div className="relative flex flex-1 items-center justify-center">
               <Popover
                 placement="bottom"
-                shouldCloseOnInteractOutside={(e) => {
+                shouldCloseOnInteractOutside={() => {
                   return false;
                 }}
                 isOpen={isEndTimeOpen}
@@ -635,7 +674,7 @@ export default function MeetingScheduleForm() {
               </Popover>
               <input
                 id="time"
-                className="block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
                 type="time"
                 onClick={() => {
                   setIsDatePickerOpen(false);
@@ -649,96 +688,40 @@ export default function MeetingScheduleForm() {
 
           <div className="flex flex-col gap-2">
             <label htmlFor="email">Email</label>
-            <div className="relative flex w-full flex-row items-center rounded-md bg-zinc-950 outline-none ring-1 ring-zinc-800 sm:w-auto">
+            <div className="mx-1 flex flex-wrap items-center rounded-md bg-zinc-950 p-2 ring-1 ring-zinc-800 focus-within:ring-1 focus-within:ring-red-500">
+              {emails.map((email, index) => (
+                <div
+                  key={index}
+                  className="m-1 flex items-center rounded-md bg-zinc-300 px-3 py-1 text-sm text-zinc-800"
+                >
+                  <span>
+                    {email.name
+                      ? `${email.name} <${email.address}>`
+                      : email.address}
+                  </span>
+
+                  <button
+                    onClick={() => remove(index)}
+                    className="ml-2 focus:outline-none"
+                    aria-label="Remove email"
+                  >
+                    <XFillIcon width={14} height={14} />
+                  </button>
+                </div>
+              ))}
               <input
-                className="flex-1 bg-transparent py-2.5 pl-4 text-[16px] outline-none"
-                placeholder="Add multiple email by comma or space"
-                id="email"
-                {...register('csvEmails', {
-                  pattern:
-                    /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}\s*[,| ]\s*)*[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,15}$/,
-                })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    onAddMultitpleEmails();
-                  } else if (e.key === ',' || e.key === ' ') {
-                    // remove comma and space from the last character only if it's a comma or space
-                    let value = getValues('csvEmails');
-                    if (value.endsWith(',') || value.endsWith(' ')) {
-                      value = value.slice(0, -1);
-                      setValue('csvEmails', value);
-                    }
-
-                    if (onAddMultitpleEmails()) {
-                      e.preventDefault();
-                    }
-                  }
-                }}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const text = e.clipboardData.getData('text/plain');
-                  setValue('csvEmails', text);
-                  onAddMultitpleEmails();
-                }}
+                type="text"
+                onKeyDown={handleInputKeyDown}
+                onPaste={handlePaste}
+                className="min-w-[200px] grow border-none bg-zinc-950 focus:outline-none"
+                placeholder="Enter email addresses"
+                {...register('emailInput')}
               />
-              <Button
-                isDisabled={
-                  formState.errors.csvEmails !== undefined ||
-                  getValues('csvEmails') === ''
-                }
-                className="
-                rounded-none bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600
-              "
-                onClick={onAddMultitpleEmails}
-                isIconOnly
-              >
-                <MailPlus className=" text-white" width={20} height={20} />
-              </Button>
             </div>
-            {formState.errors.csvEmails && (
-              <p className="mx-1 mt-1 text-xs font-medium text-red-400">
-                Invalid email address. Check the format and separate emails by
-                comma or space.
-              </p>
-            )}
-          </div>
-
-          <div className="mt-2 max-h-60 overflow-x-hidden overflow-y-scroll rounded-md ring-1 ring-zinc-800">
-            <table className="w-full rounded-md ">
-              <tbody className="">
-                {emails.length == 0 && (
-                  <tr
-                    className="
-        odd:bg-zinc-800 even:bg-zinc-900 hover:bg-red-800"
-                  >
-                    <td className="p-2 text-center text-sm">
-                      Added email will appear here
-                    </td>
-                  </tr>
-                )}
-
-                {emails.map((email, index) => (
-                  <tr
-                    key={email.id}
-                    className="
-          odd:bg-zinc-800 even:bg-zinc-900 hover:bg-red-800"
-                  >
-                    <td className="flex flex-row items-center p-2 text-sm">
-                      <p className="flex-1">{email.email}</p>
-                    </td>
-                    <td>
-                      <span
-                        className="cursor-pointer"
-                        onClick={() => remove(index)}
-                      >
-                        <XFillIcon height={12} width={12} />
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <p className="mt-2 text-sm text-gray-500">
+              Enter email addresses separated by commas. Valid formats:
+              email@domain.com or User Name &lt;email@domain.com&gt;
+            </p>
           </div>
         </div>
 
