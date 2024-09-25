@@ -12,7 +12,7 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form';
-import { useCallback, useState, useEffect, useRef, KeyboardEvent } from 'react';
+import { useCallback, useState, useEffect, KeyboardEvent } from 'react';
 import CalendarIcon from '@/_shared/components/icons/calendar-icon';
 import DatePicker from 'react-datepicker';
 import '@/_shared/styles/date-picker.css';
@@ -364,6 +364,19 @@ export default function MeetingScheduleForm() {
     <div className="h-full">
       <div className={editMode ? 'hidden' : `flex flex-col gap-8 p-1`}>
         <div className="flex flex-col gap-2">
+          <div className="flex flex-row justify-between py-4">
+            <h2 className="text-large font-semibold">Event Details</h2>
+            <button
+              onClick={() => {
+                document.dispatchEvent(
+                  new CustomEvent('close:schedule-meeting-modal')
+                );
+              }}
+            >
+              <XFillIcon width={14} height={14}></XFillIcon>
+            </button>
+          </div>
+
           <div className="flex w-full flex-row items-center justify-between rounded-md p-2 text-xs ring-1 ring-zinc-700">
             {APP_ORIGIN}/rooms/{existingEvent?.roomId}
             <Button
@@ -481,7 +494,7 @@ export default function MeetingScheduleForm() {
 
         {existingEvent?.createdBy == user?.id &&
           existingEvent?.category?.name == 'meetings' && (
-            <div className="pb-safe fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700 p-2 sm:relative sm:border-none sm:p-0">
+            <div className="pb-safe fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700  p-2 sm:relative sm:border-none sm:p-0">
               <Button
                 disabled
                 className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
@@ -520,6 +533,23 @@ export default function MeetingScheduleForm() {
           }
         }}
       >
+        <div className="mx-2 flex flex-row justify-between py-4">
+          <div>
+            <h2 className="text-large font-semibold">Schedule a Meeting</h2>
+            <p className="text-sm font-normal text-zinc-400">
+              Send a personal email to schedule a meeting
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              document.dispatchEvent(
+                new CustomEvent('close:schedule-meeting-modal')
+              );
+            }}
+          >
+            <XFillIcon width={14} height={14}></XFillIcon>
+          </button>
+        </div>
         <div className="m-2 flex max-h-dvh flex-col gap-2 overflow-y-auto overflow-x-hidden sm:max-h-max">
           {selectedEmails.length < 1 && displayError && (
             <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
@@ -728,7 +758,7 @@ export default function MeetingScheduleForm() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700 p-2 sm:relative sm:border-none sm:p-0">
+        <div className="fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700  p-2 sm:relative sm:border-none sm:p-0">
           <Button
             onPress={() => {
               reset();
