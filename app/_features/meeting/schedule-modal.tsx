@@ -51,22 +51,27 @@ export default function ScheduleModal() {
   return (
     <>
       {isOpen && (
-        <div className="invisible absolute left-0 top-0 z-20 h-[100vh] w-[100vw] bg-black/50 sm:visible"></div>
+        <div className="invisible absolute left-0 top-0 z-20 h-[100vh] w-[100vw] bg-black/50 sm:visible" />
       )}
       {isOpen && (
         <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0.8 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.1, ease: 'easeInOut' }}
+          <div
+            className={`fixed inset-0 z-50 h-full w-full  sm:left-1/2 sm:top-1/2 sm:h-fit sm:w-fit sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2`}
           >
-            <div
-              className={`fixed inset-0 z-50 h-full w-full rounded-md bg-zinc-900 p-4 sm:left-1/2 sm:top-1/2 sm:h-fit sm:w-fit sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2`}
+            <motion.div
+              className="h-full w-full rounded-md bg-zinc-900 p-4 "
+              initial={{
+                opacity: 0,
+                scale: screenSize.width <= 640 ? 0.99 : 0.8,
+                originY: screenSize.width <= 640 ? 4 : 0,
+              }}
+              animate={{ opacity: 1, scale: 1, originY: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <MeetingScheduleForm></MeetingScheduleForm>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </AnimatePresence>
       )}
     </>
