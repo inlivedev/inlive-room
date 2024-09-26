@@ -62,7 +62,7 @@ export default function ScheduleModal() {
               className="h-full w-full rounded-md bg-zinc-900 p-4 "
               initial={{
                 opacity: 0,
-                scale: screenSize.width <= 640 ? 0.99 : 0.8,
+                scale: screenSize.width <= 640 ? 0.99 : 0.95,
                 originY: screenSize.width <= 640 ? 4 : 0,
               }}
               animate={{ opacity: 1, scale: 1, originY: 0 }}
