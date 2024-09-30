@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/nextjs';
 import { generateID } from '@/(server)/_shared/utils/generateid';
 import { getServerSDK } from '@/(server)/_shared/utils/sdk';
 import { insertRoom, selectRoom } from './schema';
-import { eventRepo } from '@/(server)/api/_index';
+import { eventRepo, roomRepo } from '@/(server)/api/_index';
 import { ServiceError } from '../_service';
 import { selectCategory, selectEvent } from '../event/schema';
 
@@ -14,10 +14,9 @@ export type Room = {
   meta?: any;
 } & {
   event?:
-    | (selectEvent & {
+    | selectEvent & {
         category?: selectCategory;
-      })
-  ;
+      };
 };
 
 export interface Client {
@@ -36,7 +35,7 @@ export interface iRoomRepo {
 export class RoomService {
   _roomRepo: iRoomRepo;
   _datachannels: string[];
-  _sdk: any;
+  _sdk: null | Awaited<ReturnType<typeof getServerSDK>>;
 
   constructor(roomRepo: iRoomRepo) {
     this._roomRepo = roomRepo;
@@ -58,6 +57,10 @@ export class RoomService {
     clientID?: string
   ): Promise<Client> {
     const sdk = await this.getSDK();
+
+    if (!sdk) {
+      throw new ServiceError('RoomService', 'sdk not initialized', 500);
+    }
 
     if (!this._roomRepo.isPersistent()) {
       const clientResponse = await sdk.createClient(roomId, {
@@ -173,6 +176,10 @@ export class RoomService {
     name: string
   ): Promise<Client> {
     const sdk = await this.getSDK();
+
+    if (!sdk) {
+      throw new ServiceError('RoomService', 'sdk not initialized', 500);
+    }
 
     const updateResp = await sdk.setClientName(roomID, clientID, name);
 
@@ -294,80 +301,59 @@ export class RoomService {
   async joinRoom(roomId: string): Promise<Room | undefined> {
     const sdk = await this.getSDK();
 
-    let room;
-
-    const remoteRoom = await sdk.getRoom(roomId);
-    if (remoteRoom.ok) {
-      room = {
-        id: remoteRoom.data.id,
-        name: remoteRoom.data.name,
-        createdBy: 0,
-      } as Room;
+    if (!sdk) {
+      throw new ServiceError('RoomService', 'sdk not initialized', 500);
     }
 
-    if (this._roomRepo.isPersistent()) {
-      room = await this._roomRepo.getRoomById(roomId);
+    const persistent = this._roomRepo.isPersistent();
+
+    if (!persistent) {
+      const remoteRoom = await sdk.getRoom(roomId);
+
+      if (remoteRoom.code == 404 || !remoteRoom.data.id) {
+        return undefined;
+      }
+
+      return remoteRoom.data;
     }
 
-    if (remoteRoom.code === 404) {
-      if (!this._roomRepo.isPersistent() || (room && room.id)) {
-        const newRemoteRoom = await sdk.createRoom('', roomId);
+    const room = await roomRepo.getRoomById(roomId);
 
-        if (!newRemoteRoom || !newRemoteRoom.ok) {
-          Sentry.captureMessage(
-            `Failed to create a room. ${newRemoteRoom.code} ${newRemoteRoom.message}`,
-            'error'
+    if (!room) {
+      return undefined;
+    }
+
+    const event = await eventRepo.getByRoomID(room.id);
+    let remoteRoom = await sdk.getRoom(roomId);
+
+    if (remoteRoom.code == 404 || !remoteRoom.data.id) {
+      remoteRoom = await sdk.createRoom('', roomId);
+
+      if (remoteRoom.code != 201 || !remoteRoom.data.id) {
+        throw new ServiceError(
+          'RoomService',
+          'Failed to create room please try again',
+          500
+        );
+      }
+
+      for (const datachannel of this._datachannels) {
+        const channelResponse = await sdk.createDataChannel(
+          remoteRoom.data.id,
+          datachannel,
+          true
+        );
+
+        if (!channelResponse || !channelResponse.ok) {
+          Sentry.captureException(
+            new Error(
+              `Failed to create ${datachannel} data channel with room ID ${remoteRoom.data.id}`
+            )
           );
-
-          throw new Error(
-            'Error occured during accessing room data, please try again later'
-          );
-        }
-
-        room = {
-          id: newRemoteRoom.data.id,
-          name: newRemoteRoom.data.name,
-          createdBy: 0,
-        } as Room;
-
-        for (const datachannel of this._datachannels) {
-          const channelResponse = await sdk.createDataChannel(
-            roomId,
-            datachannel,
-            true
-          );
-
-          if (!channelResponse || !channelResponse.ok) {
-            Sentry.captureMessage(
-              `Failed to create ${datachannel} data channel with room ID ${roomId}`,
-              'error'
-            );
-          }
         }
       }
     }
 
-    if (room && this._roomRepo.isPersistent()) {
-      const event = await eventRepo.getByRoomID(roomId);
-      if (event) {
-      return {
-          ...room,
-          name:room.name || '',
-        event: {
-          ...event,
-            category: event.category || undefined
-        },
-      };
-    }
-    }
-
-    if(room){
-      return {
-        ...room,
-        name: room.name || '',
-      }
-    }
-
-    return undefined
+    return { ...room, event };
   }
 }
