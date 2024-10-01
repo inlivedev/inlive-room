@@ -66,7 +66,7 @@ export default function ScheduleModal() {
                 originY: screenSize.width <= 640 ? 4 : 0,
               }}
               animate={{ opacity: 1, scale: 1, originY: 0 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, scale: 0.95, originY: 0 }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <MeetingScheduleForm></MeetingScheduleForm>
