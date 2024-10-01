@@ -187,8 +187,6 @@ const MeetingItem = ({
 
   return (
     <Button
-      as={Link}
-      href="#"
       onPress={async () => {
         document.dispatchEvent(
           new CustomEvent('open:schedule-meeting-modal-detail')
