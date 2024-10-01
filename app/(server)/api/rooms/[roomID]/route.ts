@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+export const fetchCache = 'default-no-store';
+
 /**
  * Join endpoints to check if room exist in database, and check if room is created in remote
  */
