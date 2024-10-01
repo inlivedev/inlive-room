@@ -365,7 +365,18 @@ export default function MeetingScheduleForm() {
       <div className={editMode ? 'hidden' : `flex flex-col gap-8 p-1`}>
         <div className="flex flex-col gap-2">
           <div className="flex flex-row justify-between py-4">
-            <h2 className="text-large font-semibold">Event Details</h2>
+            <h2 className="text-large font-semibold">
+              {(() => {
+                switch (existingEvent?.category?.name) {
+                  case 'webinar':
+                    return 'Webinar Details';
+                  case 'meetings':
+                    return 'Scheduled meeting Details';
+                  default:
+                    return 'Event Details';
+                }
+              })()}
+            </h2>
             <button
               onClick={() => {
                 document.dispatchEvent(
