@@ -45,7 +45,6 @@ export async function GET(
     }
 
     defaultLogger.captureException(error);
-    console.log(error);
     return NextResponse.json(
       {
         code: 500,
