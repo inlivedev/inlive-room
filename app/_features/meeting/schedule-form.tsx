@@ -647,94 +647,108 @@ export default function MeetingScheduleForm() {
                 <CalendarIcon className="size-5" />
               </Button>
             </div>
-
-            {/* timepicker form */}
-            <div className="relative flex flex-1 items-center justify-center">
-              <Popover
-                placement="bottom"
-                shouldCloseOnInteractOutside={() => {
-                  return false;
-                }}
-                isOpen={isStartTimeOpen}
-                className="hidden sm:block"
-              >
-                <PopoverTrigger>
-                  <p className="absolute inset-0 -z-10"></p>
-                </PopoverTrigger>
-                <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
-                  {/* content */}
-                  <DatePicker
-                    selected={selectedStartTime}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeFormat="HH:mm"
-                    onChange={(date) => {
-                      if (date) {
-                        setValue('startTime', parseTimeDateToString(date));
-                        setIsStartTimeOpen(false);
-                      }
-                    }}
-                    inline
-                  />
-                </PopoverContent>
-              </Popover>
-              <input
-                id="time"
-                className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
-                type="time"
-                onClick={() => {
-                  setIsDatePickerOpen(false);
-                  setIsEndTimeOpen(false);
-                  setIsStartTimeOpen(!isStartTimeOpen);
-                }}
-                {...register('startTime')}
-              />
-            </div>
-
-            {/* timepicker form */}
-            <div className="relative flex flex-1 items-center justify-center">
-              <Popover
-                placement="bottom"
-                shouldCloseOnInteractOutside={() => {
-                  return false;
-                }}
-                isOpen={isEndTimeOpen}
-                className="hidden sm:block"
-              >
-                <PopoverTrigger>
-                  <p className="absolute inset-0 -z-10"></p>
-                </PopoverTrigger>
-                <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
-                  {/* content */}
-                  <DatePicker
-                    selected={selectedEndTime}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    excludeTimes={[startOfDay, selectedStartTime]}
-                    timeFormat="HH:mm"
-                    onChange={(date) => {
-                      if (date) {
-                        setValue('endTime', parseTimeDateToString(date));
-                        setIsEndTimeOpen(false);
-                      }
-                    }}
-                    inline
-                  />
-                </PopoverContent>
-              </Popover>
-              <input
-                id="time"
-                className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
-                type="time"
-                onClick={() => {
-                  setIsDatePickerOpen(false);
-                  setIsStartTimeOpen(false);
-                  setIsEndTimeOpen(!isEndTimeOpen);
-                }}
-                {...register('endTime')}
-              />
+            <div className="flex w-full flex-row items-center gap-2">
+              {/* timepicker form */}
+              <div className="relative flex flex-1 items-center justify-center">
+                <Popover
+                  placement="bottom"
+                  shouldCloseOnInteractOutside={() => {
+                    return false;
+                  }}
+                  isOpen={isStartTimeOpen}
+                  className="hidden sm:block"
+                >
+                  <PopoverTrigger>
+                    <p className="absolute inset-0 -z-10"></p>
+                  </PopoverTrigger>
+                  <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
+                    {/* content */}
+                    <DatePicker
+                      selected={selectedStartTime}
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={15}
+                      timeFormat="HH:mm"
+                      onChange={(date) => {
+                        if (date) {
+                          setValue('startTime', parseTimeDateToString(date));
+                          setIsStartTimeOpen(false);
+                        }
+                      }}
+                      inline
+                    />
+                  </PopoverContent>
+                </Popover>
+                <input
+                  id="time"
+                  className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                  type="time"
+                  onClick={() => {
+                    setIsDatePickerOpen(false);
+                    setIsEndTimeOpen(false);
+                    setIsStartTimeOpen(!isStartTimeOpen);
+                  }}
+                  {...register('startTime')}
+                />
+              </div>
+              <div className="flex h-full items-center">-</div>
+              {/* timepicker form */}
+              <div className="relative flex flex-1 items-center justify-center">
+                <Popover
+                  placement="bottom"
+                  shouldCloseOnInteractOutside={() => {
+                    return false;
+                  }}
+                  isOpen={isEndTimeOpen}
+                  className="hidden sm:block"
+                >
+                  <PopoverTrigger>
+                    <p className="absolute inset-0 -z-10"></p>
+                  </PopoverTrigger>
+                  <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
+                    {/* content */}
+                    <DatePicker
+                      selected={selectedEndTime}
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={15}
+                      excludeTimes={[startOfDay, selectedStartTime]}
+                      timeFormat="HH:mm"
+                      onChange={(date) => {
+                        if (date) {
+                          setValue('endTime', parseTimeDateToString(date));
+                          setIsEndTimeOpen(false);
+                        }
+                      }}
+                      inline
+                    />
+                  </PopoverContent>
+                </Popover>
+                <input
+                  id="time"
+                  className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                  type="time"
+                  onClick={() => {
+                    setIsDatePickerOpen(false);
+                    setIsStartTimeOpen(false);
+                    setIsEndTimeOpen(!isEndTimeOpen);
+                  }}
+                  {...register('endTime', {
+                    validate: {
+                      isAfterStartTime: (value) => {
+                        const startTime = parseTimeStringToDate(
+                          getValues('startTime')
+                        );
+                        const endTime = parseTimeStringToDate(value);
+                        return (
+                          endTime > startTime ||
+                          'End time must be after start time'
+                        );
+                      },
+                    },
+                  })}
+                />
+              </div>
             </div>
           </div>
 
