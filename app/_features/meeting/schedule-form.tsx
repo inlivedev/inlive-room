@@ -90,6 +90,7 @@ export default function MeetingScheduleForm() {
     getValues,
     handleSubmit,
     reset,
+    formState,
   } = useForm<InputsType>({
     defaultValues: {
       date: parseDateToString(today),
@@ -101,7 +102,6 @@ export default function MeetingScheduleForm() {
     mode: 'all',
   });
 
-  const [displayError, setDisplayError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
@@ -110,11 +110,9 @@ export default function MeetingScheduleForm() {
   const onSubmit: SubmitHandler<InputsType> = async (data, e) => {
     const submitEvent = e as React.SyntheticEvent<HTMLFormElement, SubmitEvent>;
     const submitter = submitEvent.nativeEvent.submitter;
+    setIsSubmitting(true);
 
-    if (submitter && !isSubmitting) {
-      setIsSubmitting(true);
-      setDisplayError(true);
-
+    if (submitter) {
       const startTime = parseStringDateToDate(data.date);
       startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
       startTime.setMinutes(parseTimeStringToDate(data.startTime).getMinutes());
@@ -548,7 +546,9 @@ export default function MeetingScheduleForm() {
       <form
         className={editMode ? `flex flex-col gap-2` : 'hidden'}
         id="scheduleForm"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={(e) => {
+          handleSubmit(onSubmit)(e);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.preventDefault(); // Prevent form submission on 'Enter'
@@ -573,17 +573,29 @@ export default function MeetingScheduleForm() {
           </button>
         </div>
         <div className="m-2 flex max-h-dvh flex-col gap-2 overflow-y-auto overflow-x-hidden sm:max-h-max">
-          {selectedEmails.length < 1 && displayError && (
-            <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
-              Please input atleast one email address
-            </p>
-          )}
-
-          {displayError && errorMessage && (
+          {errorMessage && (
             <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
               {errorMessage}
             </p>
           )}
+          {(() => {
+            const renderedErrors = new Set();
+            return Object.entries(formState.errors).map(([field, error]) => {
+              if (error && !renderedErrors.has(field)) {
+                renderedErrors.add(field); // Track rendered error
+                return (
+                  <p
+                    key={field}
+                    className="rounded-md bg-red-700/50 p-2 text-xs text-red-200"
+                  >
+                    {error.message}
+                  </p>
+                );
+              }
+              return null;
+            });
+          })()}
+
           <div className="flex flex-col gap-2">
             <label htmlFor="title">Title</label>
             <input
@@ -591,7 +603,9 @@ export default function MeetingScheduleForm() {
               type="text"
               placeholder="Meeting Title"
               className="mx-1 block cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
-              {...register('title')}
+              {...register('title', {
+                required: { value: true, message: 'Meeting title is required' },
+              })}
             />
           </div>
 
@@ -814,7 +828,7 @@ export default function MeetingScheduleForm() {
           <Button
             type="submit"
             form="scheduleForm"
-            className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
+            className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500 disabled:bg-red-900 disabled:text-red-300"
             isDisabled={isSubmitting || !enableResceduleButton}
           >
             {isSubmitting ? (
