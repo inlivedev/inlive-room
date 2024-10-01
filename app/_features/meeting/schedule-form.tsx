@@ -90,6 +90,7 @@ export default function MeetingScheduleForm() {
     getValues,
     handleSubmit,
     reset,
+    formState,
   } = useForm<InputsType>({
     defaultValues: {
       date: parseDateToString(today),
@@ -101,7 +102,6 @@ export default function MeetingScheduleForm() {
     mode: 'all',
   });
 
-  const [displayError, setDisplayError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
@@ -110,11 +110,9 @@ export default function MeetingScheduleForm() {
   const onSubmit: SubmitHandler<InputsType> = async (data, e) => {
     const submitEvent = e as React.SyntheticEvent<HTMLFormElement, SubmitEvent>;
     const submitter = submitEvent.nativeEvent.submitter;
+    setIsSubmitting(true);
 
-    if (submitter && !isSubmitting) {
-      setIsSubmitting(true);
-      setDisplayError(true);
-
+    if (submitter) {
       const startTime = parseStringDateToDate(data.date);
       startTime.setHours(parseTimeStringToDate(data.startTime).getHours());
       startTime.setMinutes(parseTimeStringToDate(data.startTime).getMinutes());
@@ -135,79 +133,76 @@ export default function MeetingScheduleForm() {
       };
 
       if (existingEvent) {
-        InternalApiFetcher.put(`/api/scheduled-meeting/${existingEvent.id}`, {
-          body: JSON.stringify(bodyData),
-          headers: undefined,
-        })
-          .then(
-            (
-              val: FetcherResponse & {
-                data: {
-                  event: EventDetails;
-                  participants: EventParticipant[];
-                };
-              }
-            ) => {
-              if (!val.ok) {
-                setErrorMessage(
-                  'Failed to update the meeting please try again later'
-                );
-              } else {
-                reset();
-                setExistingEvent(val.data.event);
-                setEditMode(false);
-                setExistingParticipants(
-                  val.data.participants.filter(
-                    (val) => val.user.email != user?.email
-                  )
-                );
-              }
+        try {
+          const val: FetcherResponse & {
+            data: {
+              event: EventDetails;
+              participants: EventParticipant[];
+            };
+          } = await InternalApiFetcher.put(
+            `/api/scheduled-meeting/${existingEvent.id}`,
+            {
+              body: JSON.stringify(bodyData),
+              headers: undefined,
             }
-          )
-          .finally(() => {
-            setIsSubmitting(false);
-          });
-      } else {
-        InternalApiFetcher.post('/api/scheduled-meeting', {
-          body: JSON.stringify(bodyData),
-          headers: undefined,
-        }).then(
-          (
-            val: FetcherResponse & {
-              data: {
-                event: EventDetails;
-                participants: EventParticipant[];
-              };
-            }
-          ) => {
-            if (!val.ok) {
-              setErrorMessage(
-                'Failed to create meeting please try again later'
-              );
-            }
+          );
 
-            if (val.ok) {
-              reset();
-              setExistingEvent(val.data.event);
-              setEditMode(false);
-              setExistingParticipants(
-                val.data.participants.filter(
-                  (val) => val.user.email != user?.email
-                )
-              );
-            }
+          if (!val.ok) {
+            setErrorMessage(
+              'Failed to update the meeting please try again later'
+            );
+          } else {
+            reset();
+            setExistingEvent(val.data.event);
+            setEditMode(false);
+            setExistingParticipants(
+              val.data.participants.filter(
+                (val) => val.user.email != user?.email
+              )
+            );
           }
-        );
+        } catch (error) {
+          setErrorMessage(
+            'Failed to update the meeting please try again later'
+          );
+        } finally {
+          setIsSubmitting(false);
+        }
+      } else {
+        try {
+          const val: FetcherResponse & {
+            data: {
+              event: EventDetails;
+              participants: EventParticipant[];
+            };
+          } = await InternalApiFetcher.post('/api/scheduled-meeting', {
+            body: JSON.stringify(bodyData),
+            headers: undefined,
+          });
 
-        setIsSubmitting(false);
+          if (!val.ok) {
+            setErrorMessage('Failed to create meeting please try again later');
+          } else {
+            reset();
+            setExistingEvent(val.data.event);
+            setEditMode(false);
+            setExistingParticipants(
+              val.data.participants.filter(
+                (val) => val.user.email != user?.email
+              )
+            );
+          }
+        } catch (error) {
+          setErrorMessage('Failed to create meeting please try again later');
+        } finally {
+          setIsSubmitting(false);
+        }
       }
     }
+    setTimeout(() => {
+      setIsSubmitting(false);
+    }, 1000);
   };
-
-  register('emails', {
-    required: 'Please add at least one email address',
-    validate: (emails) => emails.length > 0,
-  });
 
   const selectedDate = parseStringDateToDate(
     useWatch({ control, name: 'date' })
@@ -220,8 +215,6 @@ export default function MeetingScheduleForm() {
   const selectedEndTime = parseTimeStringToDate(
     useWatch({ control, name: 'endTime' })
   );
-
-  const selectedEmails = useWatch({ control, name: 'emails' });
 
   const fillForm = useCallback(
     (
@@ -240,15 +233,6 @@ export default function MeetingScheduleForm() {
   );
 
   document.addEventListener('edit:schedule-meeting', fillForm as EventListener);
-
-  useEffect(() => {
-    return () => {
-      document.removeEventListener(
-        'edit:schedule-meeting',
-        fillForm as EventListener
-      );
-    };
-  }, [fillForm]);
 
   useEffect(() => {
     if (formData) {
@@ -365,7 +349,18 @@ export default function MeetingScheduleForm() {
       <div className={editMode ? 'hidden' : `flex flex-col gap-8 p-1`}>
         <div className="flex flex-col gap-2">
           <div className="flex flex-row justify-between py-4">
-            <h2 className="text-large font-semibold">Event Details</h2>
+            <h2 className="text-large font-semibold">
+              {(() => {
+                switch (existingEvent?.category?.name) {
+                  case 'webinar':
+                    return 'Webinar Details';
+                  case 'meetings':
+                    return 'Scheduled meeting Details';
+                  default:
+                    return 'Event Details';
+                }
+              })()}
+            </h2>
             <button
               onClick={() => {
                 document.dispatchEvent(
@@ -415,15 +410,29 @@ export default function MeetingScheduleForm() {
             </Button>
 
             {existingEvent?.category?.name == 'webinar' && (
-              <Button
-                as={Link}
-                href={`
+              <>
+                {existingEvent.createdBy == user?.id ? (
+                  <Button
+                    as={Link}
+                    href={`
             ${APP_ORIGIN}/webinars/${existingEvent?.slug}
             `}
-                className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-zinc-700 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500"
-              >
-                Go to Webinar Page
-              </Button>
+                    className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-zinc-700 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500"
+                  >
+                    Edit Webinar
+                  </Button>
+                ) : (
+                  <Button
+                    as={Link}
+                    href={`
+          ${APP_ORIGIN}/webinars/${existingEvent?.slug}/edit
+          `}
+                    className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-zinc-700 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500"
+                  >
+                    Go to Webinar Page
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -526,7 +535,9 @@ export default function MeetingScheduleForm() {
       <form
         className={editMode ? `flex flex-col gap-2` : 'hidden'}
         id="scheduleForm"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={(e) => {
+          handleSubmit(onSubmit)(e);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.preventDefault(); // Prevent form submission on 'Enter'
@@ -551,17 +562,29 @@ export default function MeetingScheduleForm() {
           </button>
         </div>
         <div className="m-2 flex max-h-dvh flex-col gap-2 overflow-y-auto overflow-x-hidden sm:max-h-max">
-          {selectedEmails.length < 1 && displayError && (
-            <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
-              Please input atleast one email address
-            </p>
-          )}
-
-          {displayError && errorMessage && (
+          {errorMessage && (
             <p className="rounded-md bg-red-700/50 p-2 text-xs text-red-200">
               {errorMessage}
             </p>
           )}
+          {(() => {
+            const renderedErrors = new Set();
+            return Object.entries(formState.errors).map(([field, error]) => {
+              if (error && !renderedErrors.has(field)) {
+                renderedErrors.add(field); // Track rendered error
+                return (
+                  <p
+                    key={field}
+                    className="rounded-md bg-red-700/50 p-2 text-xs text-red-200"
+                  >
+                    {error.message}
+                  </p>
+                );
+              }
+              return null;
+            });
+          })()}
+
           <div className="flex flex-col gap-2">
             <label htmlFor="title">Title</label>
             <input
@@ -569,7 +592,9 @@ export default function MeetingScheduleForm() {
               type="text"
               placeholder="Meeting Title"
               className="mx-1 block cursor-pointer rounded-md bg-zinc-950 px-4 py-2.5 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
-              {...register('title')}
+              {...register('title', {
+                required: { value: true, message: 'Meeting title is required' },
+              })}
             />
           </div>
 
@@ -625,94 +650,108 @@ export default function MeetingScheduleForm() {
                 <CalendarIcon className="size-5" />
               </Button>
             </div>
-
-            {/* timepicker form */}
-            <div className="relative flex flex-1 items-center justify-center">
-              <Popover
-                placement="bottom"
-                shouldCloseOnInteractOutside={() => {
-                  return false;
-                }}
-                isOpen={isStartTimeOpen}
-                className="hidden sm:block"
-              >
-                <PopoverTrigger>
-                  <p className="absolute inset-0 -z-10"></p>
-                </PopoverTrigger>
-                <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
-                  {/* content */}
-                  <DatePicker
-                    selected={selectedStartTime}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeFormat="HH:mm"
-                    onChange={(date) => {
-                      if (date) {
-                        setValue('startTime', parseTimeDateToString(date));
-                        setIsStartTimeOpen(false);
-                      }
-                    }}
-                    inline
-                  />
-                </PopoverContent>
-              </Popover>
-              <input
-                id="time"
-                className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
-                type="time"
-                onClick={() => {
-                  setIsDatePickerOpen(false);
-                  setIsEndTimeOpen(false);
-                  setIsStartTimeOpen(!isStartTimeOpen);
-                }}
-                {...register('startTime')}
-              />
-            </div>
-
-            {/* timepicker form */}
-            <div className="relative flex flex-1 items-center justify-center">
-              <Popover
-                placement="bottom"
-                shouldCloseOnInteractOutside={() => {
-                  return false;
-                }}
-                isOpen={isEndTimeOpen}
-                className="hidden sm:block"
-              >
-                <PopoverTrigger>
-                  <p className="absolute inset-0 -z-10"></p>
-                </PopoverTrigger>
-                <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
-                  {/* content */}
-                  <DatePicker
-                    selected={selectedEndTime}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    excludeTimes={[startOfDay, selectedStartTime]}
-                    timeFormat="HH:mm"
-                    onChange={(date) => {
-                      if (date) {
-                        setValue('endTime', parseTimeDateToString(date));
-                        setIsEndTimeOpen(false);
-                      }
-                    }}
-                    inline
-                  />
-                </PopoverContent>
-              </Popover>
-              <input
-                id="time"
-                className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
-                type="time"
-                onClick={() => {
-                  setIsDatePickerOpen(false);
-                  setIsStartTimeOpen(false);
-                  setIsEndTimeOpen(!isEndTimeOpen);
-                }}
-                {...register('endTime')}
-              />
+            <div className="flex w-full flex-row items-center gap-2">
+              {/* timepicker form */}
+              <div className="relative flex flex-1 items-center justify-center">
+                <Popover
+                  placement="bottom"
+                  shouldCloseOnInteractOutside={() => {
+                    return false;
+                  }}
+                  isOpen={isStartTimeOpen}
+                  className="hidden sm:block"
+                >
+                  <PopoverTrigger>
+                    <p className="absolute inset-0 -z-10"></p>
+                  </PopoverTrigger>
+                  <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
+                    {/* content */}
+                    <DatePicker
+                      selected={selectedStartTime}
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={15}
+                      timeFormat="HH:mm"
+                      onChange={(date) => {
+                        if (date) {
+                          setValue('startTime', parseTimeDateToString(date));
+                          setIsStartTimeOpen(false);
+                        }
+                      }}
+                      inline
+                    />
+                  </PopoverContent>
+                </Popover>
+                <input
+                  id="time"
+                  className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                  type="time"
+                  onClick={() => {
+                    setIsDatePickerOpen(false);
+                    setIsEndTimeOpen(false);
+                    setIsStartTimeOpen(!isStartTimeOpen);
+                  }}
+                  {...register('startTime')}
+                />
+              </div>
+              <div className="flex h-full items-center">-</div>
+              {/* timepicker form */}
+              <div className="relative flex flex-1 items-center justify-center">
+                <Popover
+                  placement="bottom"
+                  shouldCloseOnInteractOutside={() => {
+                    return false;
+                  }}
+                  isOpen={isEndTimeOpen}
+                  className="hidden sm:block"
+                >
+                  <PopoverTrigger>
+                    <p className="absolute inset-0 -z-10"></p>
+                  </PopoverTrigger>
+                  <PopoverContent className="inset-0 max-h-[340px] w-full max-w-[400px] flex-none rounded-md p-2">
+                    {/* content */}
+                    <DatePicker
+                      selected={selectedEndTime}
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={15}
+                      excludeTimes={[startOfDay, selectedStartTime]}
+                      timeFormat="HH:mm"
+                      onChange={(date) => {
+                        if (date) {
+                          setValue('endTime', parseTimeDateToString(date));
+                          setIsEndTimeOpen(false);
+                        }
+                      }}
+                      inline
+                    />
+                  </PopoverContent>
+                </Popover>
+                <input
+                  id="time"
+                  className="mx-1 block w-full flex-1 cursor-pointer rounded-md bg-zinc-950 py-2.5 pl-4 pr-9 text-base shadow-sm outline-none ring-1 ring-zinc-800 focus-within:ring-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800"
+                  type="time"
+                  onClick={() => {
+                    setIsDatePickerOpen(false);
+                    setIsStartTimeOpen(false);
+                    setIsEndTimeOpen(!isEndTimeOpen);
+                  }}
+                  {...register('endTime', {
+                    validate: {
+                      isAfterStartTime: (value) => {
+                        const startTime = parseTimeStringToDate(
+                          getValues('startTime')
+                        );
+                        const endTime = parseTimeStringToDate(value);
+                        return (
+                          endTime > startTime ||
+                          'End time must be after start time'
+                        );
+                      },
+                    },
+                  })}
+                />
+              </div>
             </div>
           </div>
 
@@ -747,13 +786,13 @@ export default function MeetingScheduleForm() {
                 onKeyDown={handleInputKeyDown}
                 onPaste={handlePaste}
                 className="min-w-[200px] grow border-none bg-zinc-950 focus:outline-none"
-                placeholder="Enter email addresses"
+                placeholder="Enter email addresses separated by commas. "
                 {...register('emailInput')}
               />
             </div>
             <p className="mt-2 text-sm text-gray-500">
-              Enter email addresses separated by commas. Valid formats:
-              email@domain.com or User Name &lt;email@domain.com&gt;
+              Valid formats: email@domain.com or User Name
+              &lt;email@domain.com&gt;
             </p>
           </div>
         </div>
@@ -778,7 +817,7 @@ export default function MeetingScheduleForm() {
           <Button
             type="submit"
             form="scheduleForm"
-            className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500"
+            className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium antialiased hover:bg-red-600 active:bg-red-500 disabled:bg-red-900 disabled:text-red-300"
             isDisabled={isSubmitting || !enableResceduleButton}
           >
             {isSubmitting ? (
@@ -790,10 +829,12 @@ export default function MeetingScheduleForm() {
                     wrapper: 'w-4 h-4',
                   }}
                 />
-                <span>{existingEvent ? 'Rescheduling' : 'Scheduling'}</span>
+                <span>
+                  {existingEvent ? 'Updating Schedule' : 'Scheduling'}
+                </span>
               </div>
             ) : (
-              <span>{existingEvent ? 'Reschedule' : 'Schedule'}</span>
+              <span>{existingEvent ? 'Update Schedule' : 'Set Schedule'}</span>
             )}
           </Button>
         </div>

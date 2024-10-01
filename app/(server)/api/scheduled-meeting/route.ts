@@ -1,9 +1,9 @@
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import * as Sentry from '@sentry/nextjs';
 import * as z from 'zod';
 import { scheduledMeetingService } from '@/(server)/_features/scheduled-meeting/service';
+import { defaultLogger } from '@/(server)/_shared/logger/logger';
 
 const createScheduledMeetingRequestSchema = z.object({
   title: z.string().max(255),
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
       );
     }
 
-    Sentry.captureException(e);
+    defaultLogger.captureException(e);
 
     return NextResponse.json(
       {

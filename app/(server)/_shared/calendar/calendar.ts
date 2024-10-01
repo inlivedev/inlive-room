@@ -5,6 +5,7 @@ import ical, {
   ICalAttendeeStatus,
   ICalCalendar,
   ICalCalendarMethod,
+  ICalDescription,
   ICalEventStatus,
 } from 'ical-generator';
 
@@ -69,7 +70,7 @@ export class DefaultICS {
     return this;
   }
 
-  addSummary(summary: string) {
+  setSummary(summary: string) {
     this.icalCalendar.events()[0].summary(summary);
 
     return this;
@@ -101,6 +102,14 @@ export class DefaultICS {
 
   setMethod(method: ICalCalendarMethod) {
     this.icalCalendar.method(method);
+
+    return this;
+  }
+
+  setDescription(desc: ICalDescription) {
+    this.icalCalendar.events()[0].description(desc);
+
+    return this;
   }
 
   createCopy() {

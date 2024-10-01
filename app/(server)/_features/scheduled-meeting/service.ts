@@ -1,5 +1,5 @@
 import { generateID } from '@/(server)/_shared/utils/generateid';
-import { eventRepo, roomService } from '@/(server)/api/_index';
+import { eventRepo, roomRepo, roomService } from '@/(server)/api/_index';
 import { selectEvent } from '../event/schema';
 import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import {
@@ -15,11 +15,11 @@ import * as Sentry from '@sentry/node';
 import { generateDateTime } from '@/(server)/_shared/utils/generate-date-time';
 import { EventDetails, EventParticipant, eventService } from '../event/service';
 import { defaultLogger } from '@/(server)/_shared/logger/logger';
-import * as z from 'zod';
 import { db } from '@/(server)/_shared/database/database';
 import { ServiceError } from '../_service';
 import EmailScheduledMeetingCancelled from 'emails/event/EventScheduleMeetingCancelled';
 import { getUserById } from '../user/repository';
+import { selectUser } from '../user/schema';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -90,7 +90,7 @@ class ScheduledMeetingService {
       [key: string]: string;
     } = {};
 
-    if (emails) {
+    if (emails && emails.length > 0) {
       for (const email of emails) {
         ICS.addParticipant({
           name: email,
@@ -140,7 +140,7 @@ class ScheduledMeetingService {
     ICS.addDescription(description)
       .addLink(joinRoomURL)
       .addLocation(joinRoomURL)
-      .addSummary(summary);
+      .setSummary(summary);
 
     const emailTemplate = render(
       EmailScheduledMeeting({
@@ -274,7 +274,7 @@ class ScheduledMeetingService {
         .addDescription(description)
         .addLink(joinRoomURL)
         .addLocation(joinRoomURL)
-        .addSummary(summary);
+        .setSummary(summary);
 
       // Send Email Function
       const emailTemplate = render(
@@ -431,7 +431,7 @@ class ScheduledMeetingService {
       ICS.addDescription(description)
         .addLink(joinRoomURL)
         .addLocation(joinRoomURL)
-        .addSummary(summary);
+        .setSummary(summary);
 
       emails.push(host.email);
 
@@ -485,6 +485,8 @@ class ScheduledMeetingService {
           cancelledICS.setSequence(val.updateCount);
           cancelledICS.setStatus(ICalEventStatus.CANCELLED);
           cancelledICS.setMethod(ICalCalendarMethod.CANCEL);
+          cancelledICS.setDescription({ plain: '' });
+          cancelledICS.setSummary('');
           // send cancelled email
           const cancelledEmailTemplate = render(
             EmailScheduledMeetingCancelled({
@@ -542,6 +544,16 @@ class ScheduledMeetingService {
         ...existingParticipants,
         ...newParticipants,
       ];
+
+      ICS.addParticipants(
+        invitedParticipants.map((participant) => ({
+          name: participant.user.name,
+          email: participant.user.email,
+          rsvp: true,
+          status: ICalAttendeeStatus.NEEDSACTION,
+          role: ICalAttendeeRole.REQ,
+        }))
+      );
 
       invitedParticipants.forEach(async (val) => {
         ICS.setSequence(val.updateCount);
