@@ -216,8 +216,6 @@ export default function MeetingScheduleForm() {
     useWatch({ control, name: 'endTime' })
   );
 
-  const selectedEmails = useWatch({ control, name: 'emails' });
-
   const fillForm = useCallback(
     (
       e: CustomEvent<{ event: EventDetails; participants: EventParticipant[] }>
