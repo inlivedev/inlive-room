@@ -58,25 +58,30 @@ export class DefaultICS {
     return this;
   }
 
-  addLink(link: string) {
+  setLink(link: string) {
     this.icalCalendar.events()[0].url(link);
 
     return this;
   }
 
-  addLocation(location: string) {
+  setLocation(location: string) {
     this.icalCalendar.events()[0].location(location);
 
     return this;
   }
 
+  /**
+   * Set the Summary of the ICS
+   *
+   * The ICS Summary represents the Event Title in Calendar App
+   */
   setSummary(summary: string) {
     this.icalCalendar.events()[0].summary(summary);
 
     return this;
   }
 
-  addParticipant(participants: ICalAttendeeData) {
+  addAttendee(participants: ICalAttendeeData) {
     this.icalCalendar.events()[0].attendees([participants]);
 
     return this;
@@ -114,8 +119,11 @@ export class DefaultICS {
 
   createCopy() {
     const copy = new DefaultICS(this.event, this.host);
-    copy.event = structuredClone(this.event);
+    copy.event = this.event;
     copy.host = this.host;
+    copy.icalCalendar.events()[0] = copy.icalCalendar.createEvent(
+      this.icalCalendar.events()[0]
+    );
 
     return copy;
   }
