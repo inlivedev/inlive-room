@@ -203,14 +203,14 @@ const MeetingItem = ({
               data: EventParticipant[];
             } = participantsResponse;
 
-            document.dispatchEvent(
-              new CustomEvent('edit:schedule-meeting', {
-                detail: {
-                  event: selectedEvent.data,
-                  participants: participants.data,
-                },
-              })
-            );
+            const customEvent = new CustomEvent('edit:schedule-meeting', {
+              detail: {
+                event: selectedEvent.data,
+                participants: participants.data,
+              },
+            });
+
+            document.dispatchEvent(customEvent);
           })
           .catch((error) => {
             console.error('Error fetching event data:', error);

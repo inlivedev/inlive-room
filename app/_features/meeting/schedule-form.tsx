@@ -235,15 +235,6 @@ export default function MeetingScheduleForm() {
   document.addEventListener('edit:schedule-meeting', fillForm as EventListener);
 
   useEffect(() => {
-    return () => {
-      document.removeEventListener(
-        'edit:schedule-meeting',
-        fillForm as EventListener
-      );
-    };
-  }, [fillForm]);
-
-  useEffect(() => {
     if (formData) {
       const { event, participants } = formData;
       const startTime = new Date(event.startTime);
