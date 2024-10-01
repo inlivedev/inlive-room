@@ -299,6 +299,14 @@ export class RoomService {
   }
 
   async joinRoom(roomId: string): Promise<Room | undefined> {
+    Sentry.captureEvent({
+      message: 'join room function called',
+      level: 'info',
+      extra: {
+        roomID: roomId,
+      },
+    });
+
     const sdk = await this.getSDK();
 
     if (!sdk) {
@@ -313,6 +321,15 @@ export class RoomService {
       if (remoteRoom.code == 404 || !remoteRoom.data.id) {
         return undefined;
       }
+
+      Sentry.captureEvent({
+        message: 'join room function called',
+        level: 'info',
+        extra: {
+          roomID: roomId,
+          room: remoteRoom.data,
+        },
+      });
 
       return remoteRoom.data;
     }
@@ -353,6 +370,16 @@ export class RoomService {
         }
       }
     }
+
+    Sentry.captureEvent({
+      message: 'join room function called',
+      level: 'info',
+      extra: {
+        roomID: roomId,
+        room: remoteRoom.data,
+        event: event,
+      },
+    });
 
     return { ...room, event };
   }
