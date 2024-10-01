@@ -815,10 +815,12 @@ export default function MeetingScheduleForm() {
                     wrapper: 'w-4 h-4',
                   }}
                 />
-                <span>{existingEvent ? 'Rescheduling' : 'Scheduling'}</span>
+                <span>
+                  {existingEvent ? 'Updating Schedule' : 'Scheduling'}
+                </span>
               </div>
             ) : (
-              <span>{existingEvent ? 'Reschedule' : 'Schedule'}</span>
+              <span>{existingEvent ? 'Update Schedule' : 'Set Schedule'}</span>
             )}
           </Button>
         </div>
