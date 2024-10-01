@@ -1,8 +1,10 @@
+import { ServiceError } from '@/(server)/_features/_service';
+import { defaultLogger } from '@/(server)/_shared/logger/logger';
 import { roomService } from '@/(server)/api/_index';
-import { isError } from 'lodash-es';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const fetchCache = 'default-no-store';
 
@@ -33,20 +35,25 @@ export async function GET(
       { status: 200 }
     );
   } catch (error) {
-    if (!isError(error)) {
-      const response = {
-        code: 500,
-        message: 'an error has occured on our side please try again later',
-      };
-
-      return NextResponse.json(response, { status: 500 });
+    if (error instanceof ServiceError) {
+      return NextResponse.json(
+        {
+          code: error.code,
+          ok: false,
+          message: error.message,
+        },
+        { status: error.code }
+      );
     }
 
-    const response = {
-      code: 500,
-      message: error.message,
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    defaultLogger.captureException(error);
+    return NextResponse.json(
+      {
+        code: 500,
+        ok: false,
+        message: 'An error has occured on our side please try again later',
+      },
+      { status: 500 }
+    );
   }
 }
