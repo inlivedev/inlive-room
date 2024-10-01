@@ -772,13 +772,13 @@ export default function MeetingScheduleForm() {
                 onKeyDown={handleInputKeyDown}
                 onPaste={handlePaste}
                 className="min-w-[200px] grow border-none bg-zinc-950 focus:outline-none"
-                placeholder="Enter email addresses"
+                placeholder="Enter email addresses separated by commas. "
                 {...register('emailInput')}
               />
             </div>
             <p className="mt-2 text-sm text-gray-500">
-              Enter email addresses separated by commas. Valid formats:
-              email@domain.com or User Name &lt;email@domain.com&gt;
+              Valid formats: email@domain.com or User Name
+              &lt;email@domain.com&gt;
             </p>
           </div>
         </div>
