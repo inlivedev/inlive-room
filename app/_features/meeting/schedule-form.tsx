@@ -135,79 +135,76 @@ export default function MeetingScheduleForm() {
       };
 
       if (existingEvent) {
-        InternalApiFetcher.put(`/api/scheduled-meeting/${existingEvent.id}`, {
-          body: JSON.stringify(bodyData),
-          headers: undefined,
-        })
-          .then(
-            (
-              val: FetcherResponse & {
-                data: {
-                  event: EventDetails;
-                  participants: EventParticipant[];
-                };
-              }
-            ) => {
-              if (!val.ok) {
-                setErrorMessage(
-                  'Failed to update the meeting please try again later'
-                );
-              } else {
-                reset();
-                setExistingEvent(val.data.event);
-                setEditMode(false);
-                setExistingParticipants(
-                  val.data.participants.filter(
-                    (val) => val.user.email != user?.email
-                  )
-                );
-              }
+        try {
+          const val: FetcherResponse & {
+            data: {
+              event: EventDetails;
+              participants: EventParticipant[];
+            };
+          } = await InternalApiFetcher.put(
+            `/api/scheduled-meeting/${existingEvent.id}`,
+            {
+              body: JSON.stringify(bodyData),
+              headers: undefined,
             }
-          )
-          .finally(() => {
-            setIsSubmitting(false);
-          });
-      } else {
-        InternalApiFetcher.post('/api/scheduled-meeting', {
-          body: JSON.stringify(bodyData),
-          headers: undefined,
-        }).then(
-          (
-            val: FetcherResponse & {
-              data: {
-                event: EventDetails;
-                participants: EventParticipant[];
-              };
-            }
-          ) => {
-            if (!val.ok) {
-              setErrorMessage(
-                'Failed to create meeting please try again later'
-              );
-            }
+          );
 
-            if (val.ok) {
-              reset();
-              setExistingEvent(val.data.event);
-              setEditMode(false);
-              setExistingParticipants(
-                val.data.participants.filter(
-                  (val) => val.user.email != user?.email
-                )
-              );
-            }
+          if (!val.ok) {
+            setErrorMessage(
+              'Failed to update the meeting please try again later'
+            );
+          } else {
+            reset();
+            setExistingEvent(val.data.event);
+            setEditMode(false);
+            setExistingParticipants(
+              val.data.participants.filter(
+                (val) => val.user.email != user?.email
+              )
+            );
           }
-        );
+        } catch (error) {
+          setErrorMessage(
+            'Failed to update the meeting please try again later'
+          );
+        } finally {
+          setIsSubmitting(false);
+        }
+      } else {
+        try {
+          const val: FetcherResponse & {
+            data: {
+              event: EventDetails;
+              participants: EventParticipant[];
+            };
+          } = await InternalApiFetcher.post('/api/scheduled-meeting', {
+            body: JSON.stringify(bodyData),
+            headers: undefined,
+          });
 
-        setIsSubmitting(false);
+          if (!val.ok) {
+            setErrorMessage('Failed to create meeting please try again later');
+          } else {
+            reset();
+            setExistingEvent(val.data.event);
+            setEditMode(false);
+            setExistingParticipants(
+              val.data.participants.filter(
+                (val) => val.user.email != user?.email
+              )
+            );
+          }
+        } catch (error) {
+          setErrorMessage('Failed to create meeting please try again later');
+        } finally {
+          setIsSubmitting(false);
+        }
       }
     }
+    setTimeout(() => {
+      setIsSubmitting(false);
+    }, 1000);
   };
-
-  register('emails', {
-    required: 'Please add at least one email address',
-    validate: (emails) => emails.length > 0,
-  });
 
   const selectedDate = parseStringDateToDate(
     useWatch({ control, name: 'date' })
