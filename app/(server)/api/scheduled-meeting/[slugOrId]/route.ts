@@ -244,12 +244,12 @@ export async function DELETE(
 
     return NextResponse.json(
       {
-        code: 204,
+        code: 200,
         ok: true,
         data: deletedEvent,
         message: 'success',
       },
-      { status: 204 }
+      { status: 200 }
     );
   } catch (e) {
     defaultLogger.captureException(e);
