@@ -1,10 +1,16 @@
 'use client';
 import {
   Button,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Popover,
   PopoverContent,
   PopoverTrigger,
   Spinner,
+  useDisclosure,
 } from '@nextui-org/react';
 import {
   SubmitHandler,
@@ -28,6 +34,8 @@ import {
 import Link from 'next/link';
 import CopyIcon from '@/_shared/components/icons/copy-icon';
 import { SVGElementPropsType } from '@/_shared/types/types';
+import WarningIcon from '@/_shared/components/icons/warning-icon';
+import * as Sentry from '@sentry/nextjs';
 
 type Email = {
   address: string;
@@ -442,6 +450,8 @@ export default function MeetingScheduleForm() {
           <div className="text-zinc-300">
             {existingEvent && (
               <div>
+                <CancelMeetingModal meetingDetails={existingEvent} />
+
                 <p>{parseDateToString(new Date(existingEvent.startTime))}</p>
                 <p>
                   {parseTimeDateToString(
@@ -505,7 +515,11 @@ export default function MeetingScheduleForm() {
           existingEvent?.category?.name == 'meetings' && (
             <div className="pb-safe fixed bottom-0 right-0 flex w-full gap-2 border-t border-zinc-700  p-2 sm:relative sm:border-none sm:p-0">
               <Button
-                disabled
+                onPress={() => {
+                  document.dispatchEvent(
+                    new CustomEvent('open:meeting-cancel-modal')
+                  );
+                }}
                 className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600 disabled:bg-zinc-950 disabled:text-zinc-500"
               >
                 Cancel schedule
@@ -934,5 +948,124 @@ function CheckIcon(props: SVGElementPropsType) {
         d="M104 196a12.2 12.2 0 0 1-8.5-3.5l-56-56a12 12 0 0 1 17-17L104 167L207.5 63.5a12 12 0 0 1 17 17l-112 112a12.2 12.2 0 0 1-8.5 3.5Z"
       />
     </svg>
+  );
+}
+
+function CancelMeetingModal({
+  meetingDetails,
+}: {
+  meetingDetails?: EventDetails;
+}) {
+  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+  const [isCanceling, setIsCanceling] = useState(false);
+
+  useEffect(() => {
+    const openModal = () => {
+      onOpen();
+    };
+
+    document.addEventListener('open:meeting-cancel-modal', openModal);
+
+    return () => {
+      document.removeEventListener('open:meeting-cancel-modal', openModal);
+    };
+  }, [onOpen]);
+
+  return (
+    <>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          <ModalHeader>
+            <h3>Cancel Scheduled Meeting</h3>
+          </ModalHeader>
+          <ModalBody>
+            <div>
+              <div className="flex gap-2">
+                <div className="flex items-center rounded bg-red-950 p-2  text-red-200 ring-1 ring-red-900">
+                  <WarningIcon height={20} width={20}></WarningIcon>
+                </div>
+                <p className="flex w-full items-center gap-2 rounded bg-red-950 p-2 text-sm text-red-200 ring-1 ring-red-900">
+                  This action cannot be undone!
+                </p>
+              </div>
+              <p className="mt-4 text-sm">
+                Are you sure you want to cancel this meeting?
+              </p>
+              <p className="mt-1 text-sm">
+                Cancelling it will make meeting room unavailable
+              </p>
+            </div>
+
+            <div className="mt-2 rounded-md p-2 text-sm ring-1 ring-zinc-800">
+              <p className=" font-bold">{meetingDetails?.name} </p>
+              <div className="text-zinc-300">
+                {meetingDetails && (
+                  <div>
+                    <p>
+                      {parseDateToString(new Date(meetingDetails.startTime))}
+                    </p>
+                    <p>
+                      {parseTimeDateToString(
+                        new Date(meetingDetails.startTime),
+                        true
+                      )}{' '}
+                      -{' '}
+                      {parseTimeDateToString(
+                        new Date(meetingDetails.endTime),
+                        true
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              onPress={onClose}
+              className="flex min-w-0 basis-1/2 items-center gap-1.5 rounded-md bg-zinc-800 text-base font-medium text-zinc-100 antialiased hover:bg-zinc-700 active:bg-zinc-600"
+            >
+              Close
+            </Button>
+            <Button
+              onPress={async () => {
+                setIsCanceling(true);
+                try {
+                  const response = await InternalApiFetcher.delete(
+                    `/api/scheduled-meeting/${meetingDetails?.id}`
+                  );
+
+                  if (response.ok) {
+                    window.location.reload();
+                  } else {
+                    alert('Failed to cancel event, please try again later');
+                  }
+                } catch (error) {
+                  Sentry.captureException(error);
+                } finally {
+                  setIsCanceling(false);
+                }
+              }}
+              className="w-full basis-1/2 rounded-md bg-red-800 px-6 py-2 text-base font-medium text-zinc-100 antialiased hover:bg-red-700 active:bg-red-600"
+            >
+              {isCanceling ? (
+                <div className="flex gap-2">
+                  <Spinner
+                    classNames={{
+                      circle1: 'border-b-zinc-200',
+                      circle2: 'border-b-zinc-200',
+                      wrapper: 'w-4 h-4',
+                    }}
+                  />
+                  <span>Cancelling...</span>
+                </div>
+              ) : (
+                <span>Cancel this meeting</span>
+              )}
+            </Button>{' '}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
