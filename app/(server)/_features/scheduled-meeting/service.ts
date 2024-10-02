@@ -496,6 +496,9 @@ class ScheduledMeetingService {
         throw new ServiceError('ScheduleMeeting', 'Host not found', 404);
       }
 
+      // Don't forget to push the host into the email list
+      emails.push(hostUser.email);
+
       // Update Event Data
       const updatedEvent = await eventRepo.updateEvent(
         host.userID,
