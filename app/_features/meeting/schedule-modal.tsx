@@ -67,7 +67,7 @@ export default function ScheduleModal() {
               }}
               animate={{ opacity: 1, scale: 1, originY: 0 }}
               exit={{ opacity: 0, scale: 0.95, originY: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
             >
               <MeetingScheduleForm></MeetingScheduleForm>
             </motion.div>

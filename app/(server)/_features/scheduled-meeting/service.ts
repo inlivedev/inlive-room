@@ -1,5 +1,5 @@
 import { generateID } from '@/(server)/_shared/utils/generateid';
-import { eventRepo, roomService } from '@/(server)/api/_index';
+import { eventRepo, roomRepo, roomService } from '@/(server)/api/_index';
 import { selectEvent } from '../event/schema';
 import { DefaultICS } from '@/(server)/_shared/calendar/calendar';
 import {
@@ -19,7 +19,7 @@ import { DB, db } from '@/(server)/_shared/database/database';
 import { ServiceError } from '../_service';
 import { getUserByEmail } from '../user/repository';
 import EmailScheduledMeetingCancelled from 'emails/event/EventScheduleMeetingCancelled';
-import { join } from 'path';
+import { selectUser } from '../user/schema';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_ORIGIN;
 
@@ -205,6 +205,96 @@ class ScheduledMeetingService {
       event: { ...event, host: hostParticipant.user, category: category },
       participants: invitedParticipants,
     };
+  }
+
+  async cancelScheduledMeeting(
+    slugOrID: string,
+    user: selectUser
+  ): Promise<EventDetails | undefined> {
+    return await db.transaction(async (trx) => {
+      const existingEvent = await eventRepo.getBySlugOrID(
+        slugOrID,
+        undefined,
+        trx
+      );
+
+      if (!existingEvent) {
+        throw new ServiceError('ScheduledMeeting', 'Event not found', 404);
+      }
+
+      if (existingEvent.createdBy != user.id) {
+        throw new ServiceError('ScheduledMeeting', 'Event not found', 404);
+      }
+
+      if (existingEvent.category.name != 'meetings') {
+        throw new ServiceError('ScheduledMeeting', 'Event not found', 404);
+      }
+
+      if (existingEvent.roomId) {
+        await roomRepo.removeRoom(existingEvent.roomId, user.id);
+      }
+
+      const hostUser = await eventRepo.getEventHostByEventId(existingEvent.id);
+
+      existingEvent.status = 'cancelled';
+      existingEvent.roomId = null;
+      const updatedEvent = await eventRepo.updateEvent(
+        user.id,
+        existingEvent.id,
+        existingEvent,
+        trx
+      );
+
+      if (!updatedEvent) {
+        throw new ServiceError('ScheduledMeeting', 'Event not found', 404);
+      }
+
+      const participants = await eventRepo.getRegisteredParticipants(
+        existingEvent.id.toString(),
+        undefined,
+        trx
+      );
+
+      const ICS = new DefaultICS(updatedEvent, { ...user });
+      ICS.setDescription({
+        plain: generateCancelledMeetingDesc(updatedEvent),
+      });
+      ICS.setSummary(`${updatedEvent.name}`);
+      ICS.setStatus(ICalEventStatus.CANCELLED);
+      ICS.setMethod(ICalCalendarMethod.CANCEL);
+      // Send cancellation email to participants
+      participants.data.forEach(async (participant) => {
+        ICS.setSequence(participant.updateCount);
+
+        const emailCancelledTemplate = render(
+          EmailScheduledMeetingCancelled({
+            event: { ...updatedEvent, roomID: updatedEvent.roomId! },
+            host: {
+              name: hostUser ? hostUser.name : '',
+            },
+          })
+        );
+
+        sendEmail(
+          { html: emailCancelledTemplate },
+          {
+            destination: participant.user.email,
+            keyValues: undefined,
+            inlineAttachment: {
+              data: Buffer.from(ICS.icalCalendar.toString(), 'utf-8'),
+              filename: 'invite.ics',
+              contentType:
+                'application/ics; charset=utf-8; method=CANCEL; name=invite.ics',
+              contentDisposition: 'inline; filename=invite.ics',
+              contentTransferEncoding: 'base64',
+            },
+            subject: `Meeting invitation has cancelled : ${updatedEvent.name}`,
+          }
+        );
+      });
+
+      return updatedEvent;
+    });
   }
 
   async inviteParticipants(

@@ -241,23 +241,21 @@ const MeetingItem = ({
       </div>
       {/* Event Title */}
       <div className="flex-1 truncate">
-        <div className="flex flex-col gap-0.5">
-          <div
-            className={`truncate text-base ${
-              activeItem ? 'text-zinc-100' : 'text-zinc-200'
-            }`}
-          >
-            {event.name}
-            <p className="truncate text-sm text-zinc-500">
-              {event.host.id !== user?.id
-                ? 'host: ' + event.host.name.split(' ')[0] + ' |'
-                : ''}{' '}
-              guest:{' '}
-              {filteredParticipant
-                .map((participant) => participant.name)
-                .join(', ')}{' '}
-            </p>
-          </div>
+        <div
+          className={`flex flex-col justify-start truncate text-left text-base ${
+            activeItem ? 'text-zinc-100' : 'text-zinc-200'
+          }`}
+        >
+          {event.name}
+          <p className="truncate  text-sm text-zinc-500">
+            {event.host.id !== user?.id
+              ? 'host: ' + event.host.name.split(' ')[0] + ' |'
+              : ''}{' '}
+            guest:{' '}
+            {filteredParticipant
+              .map((participant) => participant.name)
+              .join(', ')}{' '}
+          </p>
         </div>
       </div>
       {activeItem && now ? (
