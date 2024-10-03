@@ -130,6 +130,8 @@ export class RoomService {
             400
           );
         }
+
+        clientName = participant.name;
       }
     }
 
