@@ -17,21 +17,16 @@ const registerClient = async (
   roomID: string,
   clientName: string,
   clientID?: string | null
-) => {
+): Promise<RoomType.CreateClientResponse | undefined> => {
   try {
-    const response: RoomType.CreateClientResponse =
-      await InternalApiFetcher.post(`/api/rooms/${roomID}/register`, {
-        body: JSON.stringify({
-          name: clientName,
-          clientID: clientID,
-        }),
-      });
-
-    return response;
+    return await InternalApiFetcher.post(`/api/rooms/${roomID}/register`, {
+      body: JSON.stringify({ name: clientName, clientID }),
+    });
   } catch (error) {
     Sentry.captureException(error, {
       extra: {
-        message: `API call error when trying to register a client in middleware`,
+        message:
+          'API call error when trying to register a client in middleware',
       },
     });
     console.error(error);
@@ -41,7 +36,7 @@ const registerClient = async (
 const getClientName = (
   request: NextRequest,
   response: Awaited<ReturnType<NextMiddleware>>
-) => {
+): string => {
   if (!response) return '';
 
   const userAuthHeader = response.headers.get('user-auth');
@@ -50,23 +45,34 @@ const getClientName = (
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const userName = user ? user.name : '';
+  const userName = user?.name || '';
   const clientName = request.cookies.get('client_name')?.value || '';
-  return clientName ? clientName : userName;
+  return clientName || userName;
 };
 
-const generateName = (name = '') => {
+const generateName = (name = ''): string => {
   if (name.trim().length > 0) return name;
 
   const alphabets = 'abcdefghijklmnopqrstuvwxyz';
   const numbers = '012345789'; // number 6 is removed
 
-  const generatedAlphabets = customAlphabet(alphabets, 4);
-  const generatedNumbers = customAlphabet(numbers, 2);
-  const id = generatedAlphabets() + generatedNumbers();
+  const generateAlphabets = customAlphabet(alphabets, 4);
+  const generateNumbers = customAlphabet(numbers, 2);
+  const id = generateAlphabets() + generateNumbers();
 
-  const result = `guest-${id}`;
-  return result;
+  return `guest-${id}`;
+};
+
+const handleEventRedirect = (
+  request: NextRequest,
+  eventData: Omit<EventType.Event, 'host' | 'availableSlots'>,
+  error: string,
+  destination: 'webinars'
+): NextResponse => {
+  const url = request.nextUrl.clone();
+  url.pathname = `/${destination}/${eventData.slug}`;
+  url.searchParams.append('error', error);
+  return NextResponse.redirect(url);
 };
 
 export function withRoomMiddleware(middleware: NextMiddleware) {
@@ -79,13 +85,9 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       let roomData: RoomType.RoomData | null = null;
       let eventData:
         | Omit<EventType.Event, 'host' | 'availableSlots'>
-        | null
-        | undefined = null;
+        | undefined = undefined;
       let clientID = request.nextUrl.searchParams.get('clientID');
-      let client: ClientType.ClientData = {
-        clientID: '',
-        clientName: '',
-      };
+      let client: ClientType.ClientData = { clientID: '', clientName: '' };
 
       try {
         const roomResponse: RoomType.GetRoomResponse =
@@ -94,13 +96,12 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
             next: { revalidate: 0 },
           });
         roomData = roomResponse.data;
-        if (roomResponse.data && roomResponse.data.event)
-          eventData = roomResponse.data.event;
+        eventData = roomResponse.data?.event;
       } catch (error) {
         Sentry.captureException(error, {
           extra: {
             message:
-              'API call error when trying to join to the room in middleware',
+              'API call error when trying to join the room in middleware',
           },
         });
         console.error(error);
@@ -109,16 +110,14 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
       if (roomData) {
         let newName = '';
 
-        if (eventData && eventData.category?.name != 'meetings') {
+        if (eventData && eventData.category?.name !== 'meetings') {
           const requestToken = cookies().get('token');
           if (requestToken) {
             const participantData: EventType.ParticipantResponse =
               await InternalApiFetcher.get(
                 `/api/events/${eventData.id}/client`,
                 {
-                  headers: {
-                    Cookie: `token=${requestToken.value}`,
-                  },
+                  headers: { Cookie: `token=${requestToken.value}` },
                   cache: 'no-cache',
                 }
               );
@@ -130,17 +129,21 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
           }
 
           if (eventData.status === 'completed') {
-            const url = request.nextUrl.clone();
-            url.pathname = `/events/${eventData.slug}`;
-            url.searchParams.append('error', 'eventCompleted');
-            return NextResponse.redirect(url);
+            return handleEventRedirect(
+              request,
+              eventData,
+              'eventCompleted',
+              'webinars'
+            );
           }
 
-          if (!clientID && eventData.category?.name !== 'meetings') {
-            const url = request.nextUrl.clone();
-            url.pathname = `/events/${eventData.slug}`;
-            url.searchParams.append('error', 'noClientID');
-            return NextResponse.redirect(url);
+          if (!clientID) {
+            return handleEventRedirect(
+              request,
+              eventData,
+              'noClientID',
+              'webinars'
+            );
           }
         }
 
@@ -156,14 +159,16 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         );
 
         if (
-          !registeredClient &&
+          registeredClient?.code === 400 &&
           eventData &&
-          eventData.category?.name != 'meetings'
+          eventData.category?.name !== 'meetings'
         ) {
-          const url = request.nextUrl.clone();
-          url.pathname = `/events/${eventData?.slug}`;
-          url.searchParams.append('error', 'invalidClientID');
-          return NextResponse.redirect(url);
+          return handleEventRedirect(
+            request,
+            eventData,
+            'invalidClientID',
+            'webinars'
+          );
         }
 
         client = {
