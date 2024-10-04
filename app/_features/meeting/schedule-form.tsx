@@ -105,7 +105,7 @@ export default function MeetingScheduleForm() {
       startTime: parseTimeDateToString(startTime),
       endTime: parseTimeDateToString(endTime),
       emails: [],
-      title: user ? user.name + ' Meeting' : '',
+      title: user ? user.name + "'s Meeting" : '',
     },
     mode: 'all',
   });
@@ -423,8 +423,8 @@ export default function MeetingScheduleForm() {
                   <Button
                     as={Link}
                     href={`
-            ${APP_ORIGIN}/webinars/${existingEvent?.slug}
-            `}
+                      ${APP_ORIGIN}/webinars/${existingEvent?.slug}/edit
+                      `}
                     className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-zinc-700 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500"
                   >
                     Edit Webinar
@@ -433,7 +433,7 @@ export default function MeetingScheduleForm() {
                   <Button
                     as={Link}
                     href={`
-          ${APP_ORIGIN}/webinars/${existingEvent?.slug}/edit
+                    ${APP_ORIGIN}/webinars/${existingEvent?.slug}
           `}
                     className="flex h-9  w-fit min-w-0 basis-1/2 items-center gap-2 rounded-md bg-zinc-700 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-600 active:bg-zinc-500"
                   >
@@ -559,12 +559,23 @@ export default function MeetingScheduleForm() {
         }}
       >
         <div className="mx-2 flex flex-row justify-between py-4">
-          <div>
-            <h2 className="text-large font-semibold">Schedule a Meeting</h2>
-            <p className="text-sm font-normal text-zinc-400">
-              Send a personal email to schedule a meeting
-            </p>
-          </div>
+          {!existingEvent ? (
+            <div>
+              <h2 className="text-large font-semibold">Schedule a Meeting</h2>
+              <p className="text-sm font-normal text-zinc-400">
+                Send a personal email to schedule a meeting
+              </p>
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-large font-semibold">
+                Edit meeting schedule
+              </h2>
+              <p className="text-sm font-normal text-zinc-400">
+                Update your meeting details or reschedule
+              </p>
+            </div>
+          )}
           <button
             onClick={() => {
               document.dispatchEvent(
@@ -612,7 +623,7 @@ export default function MeetingScheduleForm() {
             />
           </div>
 
-          <label>Time</label>
+          <label>Date and time</label>
 
           <div className="flex flex-row flex-wrap gap-2">
             {/* datepicker form */}
@@ -770,7 +781,7 @@ export default function MeetingScheduleForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Invite participants</label>
             <div className="mx-1 flex flex-wrap items-center rounded-md bg-zinc-950 p-2 ring-1 ring-zinc-800 focus-within:ring-1 focus-within:ring-red-500">
               {emails.map((email, index) => (
                 <div
@@ -800,7 +811,11 @@ export default function MeetingScheduleForm() {
                 onKeyDown={handleInputKeyDown}
                 onPaste={handlePaste}
                 className="min-w-[200px] grow border-none bg-zinc-950 focus:outline-none"
-                placeholder="Enter email addresses separated by commas. "
+                placeholder={
+                  emails.length > 0
+                    ? ''
+                    : 'Enter email addresses separated by commas'
+                }
                 {...register('emailInput')}
               />
             </div>
