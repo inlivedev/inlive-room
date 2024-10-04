@@ -561,9 +561,11 @@ export default function MeetingScheduleForm() {
         <div className="mx-2 flex flex-row justify-between py-4">
           {!existingEvent ? (
             <div>
-              <h2 className="text-large font-semibold">Schedule a Meeting</h2>
+              <h2 className="text-large font-semibold">
+                Create meeting schedule
+              </h2>
               <p className="text-sm font-normal text-zinc-400">
-                Send a personal email to schedule a meeting
+                Set your meeting details and invite participants by email
               </p>
             </div>
           ) : (
