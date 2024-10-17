@@ -95,6 +95,11 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
             cache: 'no-store',
             next: { revalidate: 0 },
           });
+
+        if (roomResponse.code === 404) {
+          return response;
+        }
+
         roomData = roomResponse.data;
         eventData = roomResponse.data?.event;
       } catch (error) {
