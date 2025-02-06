@@ -112,8 +112,7 @@ export async function GET(
           typeof currentAuth.data.email !== 'string' ||
           !currentAuth.data.name ||
           typeof currentAuth.data.name !== 'string' ||
-          !currentAuth.data.id ||
-          typeof currentAuth.data.id !== 'number'
+          !currentAuth.data.id
         ) {
           throw new Error('Valid ID, email, name are required.');
         }
