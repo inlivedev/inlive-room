@@ -26,7 +26,9 @@ import {
   videoConstraints,
   getVideoStream,
 } from '@/_shared/utils/get-user-media';
-import { on } from 'events';
+// import Recorder from './recorder';
+// import recorder from './recorder';
+// import Recorder from './recorder';
 
 export type Sidebar = 'participants' | 'chat' | '';
 
@@ -166,7 +168,13 @@ export type DeviceType = DeviceStateType & {
   setActiveCamera: (active?: boolean) => void;
 };
 
-export default function Conference({ viewOnly }: { viewOnly: boolean }) {
+export default function Conference({
+  viewOnly,
+  streamid,
+}: {
+  viewOnly: boolean;
+  streamid: string;
+}) {
   const [style, setStyle] = useState<React.CSSProperties>({});
   const layoutContainerRef = useRef<HTMLDivElement>(null);
   const { currentLayout, mutedStreams, offCameraStreams } =
@@ -176,6 +184,9 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
   const [topSpeakers, setTopSpeakers] = useState<ParticipantVideo[]>([]);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+
+  // const [recorder, setRecorder] = useState<Recorder | null>(new Recorder());
+  // const [recording, setRecording] = useState(false);
 
   const [isOnMobile, setIsOnMobile] = useState(false);
 
@@ -215,6 +226,14 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
     activeMic: false,
     activeCamera: false,
   });
+
+  // useEffect(() => {
+  //   console.log('is recording', recording);
+  //   if (recorder && viewOnly && streamid !== '' && recording) {
+  //     recorder.start(streamid);
+  //   }
+  //   setRecording(true);
+  // }, [recorder, viewOnly, streamid, recording]);
 
   const hasJoined = useRef<boolean>(false);
 
@@ -371,6 +390,34 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
   const turnOnCamera = useCallback(async () => {
     if (!peer) return;
 
+    // Check if screen capture permission is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('This browser does not support camera capture.');
+      return false;
+    }
+
+    // Request screen capture permission
+    try {
+      // We make an initial permission request
+      const permission = await navigator.permissions.query({
+        name: 'camera' as PermissionName,
+      });
+      if (permission.state === 'denied') {
+        alert(
+          "You need to allow camera access to continue. You've denied camera access and need to allow it in your browser settings."
+        );
+        return false;
+      }
+    } catch (permError: any) {
+      // Some browsers might not support the permissions API for screen sharing
+      // We'll continue anyway as getDisplayMedia will handle the permission
+      alert(
+        "We couldn't check your camera permission access. It will try to request permission. Error: " +
+          permError.message
+      );
+      console.error(permError);
+    }
+
     const stream = await getVideoStream({
       video: videoConstraints(),
     });
@@ -417,8 +464,8 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
   useEffect(() => {
     if (peer && localStream) {
       if (devicesState.activeMic) {
-        setMutedStreams(localStream.id, false);
         peer.turnOnMic();
+        setMutedStreams(localStream.id, false);
         return;
       }
 
@@ -474,6 +521,7 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
 
     if (localStream && !devicesState.activeMic) {
       peer.turnOffMic();
+      setMutedStreams(localStream.id, true);
       hasJoined.current = true;
     }
   }, [peer, localStream, devicesState.activeMic]);
