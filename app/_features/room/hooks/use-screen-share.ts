@@ -45,6 +45,37 @@ export const useScreenShare = () => {
       try {
         if (!peer) return false;
 
+        // Check if screen capture permission is available
+        if (
+          !navigator.mediaDevices ||
+          !navigator.mediaDevices.getDisplayMedia
+        ) {
+          alert('This browser does not support screen sharing.');
+          return false;
+        }
+
+        // Request screen capture permission
+        try {
+          // We make an initial permission request
+          const permission = await navigator.permissions.query({
+            name: 'display-capture' as PermissionName,
+          });
+          if (permission.state === 'denied') {
+            alert(
+              'You need to allow screen sharing to continue. Please check your settings.'
+            );
+            return false;
+          }
+        } catch (permError: any) {
+          // Some browsers might not support the permissions API for screen sharing
+          // We'll continue anyway as getDisplayMedia will handle the permission
+          alert(
+            "We couldn't check your screen sharing permissions. Error: " +
+              permError.message
+          );
+          console.error(permError);
+        }
+
         const withAudio = config.withAudio
           ? {
               echoCancellation: true,
@@ -63,21 +94,35 @@ export const useScreenShare = () => {
           selfBrowserSurface: 'exclude',
         };
 
-        const mediaStream = await navigator.mediaDevices.getDisplayMedia(
-          constraints
-        );
+        try {
+          const mediaStream = await navigator.mediaDevices.getDisplayMedia(
+            constraints
+          );
 
-        peer.addStream(mediaStream.id, {
-          clientId: clientID,
-          name: clientName,
-          origin: 'local',
-          source: 'screen',
-          mediaStream: mediaStream,
-        });
+          peer.addStream(mediaStream.id, {
+            clientId: clientID,
+            name: clientName,
+            origin: 'local',
+            source: 'screen',
+            mediaStream: mediaStream,
+          });
 
-        return true;
-      } catch (error) {
+          return true;
+        } catch (mediaError: any) {
+          if (mediaError.name === 'NotAllowedError') {
+            alert(
+              'You need to allow screen sharing to continue. Please check your settings. Error: ' +
+                mediaError.message
+            );
+          } else {
+            alert('An unexpected error occurred. Error: ' + mediaError.message);
+          }
+          console.error(mediaError);
+          return false;
+        }
+      } catch (error: any) {
         console.error(error);
+        alert('An unexpected error occurred. Error: ' + error.message);
         return false;
       }
     },
