@@ -390,34 +390,6 @@ export default function Conference({
   const turnOnCamera = useCallback(async () => {
     if (!peer) return;
 
-    // Check if screen capture permission is available
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert('This browser does not support camera capture.');
-      return false;
-    }
-
-    // Request screen capture permission
-    try {
-      // We make an initial permission request
-      const permission = await navigator.permissions.query({
-        name: 'camera' as PermissionName,
-      });
-      if (permission.state === 'denied') {
-        alert(
-          "You need to allow camera access to continue. You've denied camera access and need to allow it in your browser settings."
-        );
-        return false;
-      }
-    } catch (permError: any) {
-      // Some browsers might not support the permissions API for screen sharing
-      // We'll continue anyway as getDisplayMedia will handle the permission
-      alert(
-        "We couldn't check your camera permission access. It will try to request permission. Error: " +
-          permError.message
-      );
-      console.error(permError);
-    }
-
     const stream = await getVideoStream({
       video: videoConstraints(),
     });
@@ -427,9 +399,65 @@ export default function Conference({
 
   useEffect(() => {
     if (peer && localStream) {
+      const revertCameraState = () => {
+        setOffCameraStreams(localStream.id, true);
+        deviceTypes.setActiveCamera(false);
+        document.dispatchEvent(new Event('trigger:camera-off'));
+      };
+
       if (devicesState.activeCamera) {
-        turnOnCamera();
-        setOffCameraStreams(localStream.id, false);
+        try {
+          // Check if screen capture permission is available
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('This browser does not support camera capture.');
+            console.error('This browser does not support camera capture.');
+            return;
+          }
+
+          const cameraPermission = false;
+
+          // Request screen capture permission
+          // We make an initial permission request
+          navigator.permissions
+            .query({
+              name: 'camera' as PermissionName,
+            })
+            .then((permission) => {
+              if (permission.state === 'denied') {
+                alert(
+                  "You need to allow camera access to continue. You've denied camera access and need to allow it in your browser settings."
+                );
+                revertCameraState();
+                return;
+              }
+              turnOnCamera();
+              setOffCameraStreams(localStream.id, false);
+            })
+            .catch((permError) => {
+              // Some browsers might not support the permissions API for screen sharing
+              // We'll continue anyway as getUserMedia will handle the permission
+              try {
+                turnOnCamera();
+                setOffCameraStreams(localStream.id, false);
+              } catch (error: any) {
+                revertCameraState();
+                alert(
+                  "We couldn't access your camera. Please allow the camera access. Error: " +
+                    permError.message
+                );
+                console.error(permError);
+              }
+            });
+        } catch (error: any) {
+          if (error.name === 'NotAllowedError') {
+            alert('You need to allow camera access to turn on the camera.');
+            console.error(error);
+          }
+          // revert the camera state to off
+          revertCameraState();
+
+          console.error(error);
+        }
         return;
       }
 
@@ -444,6 +472,7 @@ export default function Conference({
     devicesState.activeCamera,
     turnOnCamera,
     setOffCameraStreams,
+    deviceTypes,
   ]);
 
   const setMutedStreams = useCallback(
@@ -463,9 +492,24 @@ export default function Conference({
 
   useEffect(() => {
     if (peer && localStream) {
+      const revertMicState = () => {
+        setMutedStreams(localStream.id, true);
+        deviceTypes.setActiveMic(false);
+      };
       if (devicesState.activeMic) {
-        peer.turnOnMic();
-        setMutedStreams(localStream.id, false);
+        try {
+          peer.turnOnMic();
+          setMutedStreams(localStream.id, false);
+        } catch (error: any) {
+          if (error.name === 'NotAllowedError') {
+            alert(
+              'You need to allow microphone access to turn on the microphone.'
+            );
+            console.error(error);
+            // revert the mic state to off
+            revertMicState();
+          }
+        }
         return;
       }
 

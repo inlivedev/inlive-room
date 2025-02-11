@@ -14,15 +14,31 @@ import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
-import type { ParticipantVideo, DeviceStateType,DeviceType } from './conference';
+import type {
+  ParticipantVideo,
+  DeviceStateType,
+  DeviceType,
+} from './conference';
 
-export default function ButtonCamera({streams,deviceTypes}: {streams: ParticipantVideo[],deviceTypes:DeviceType}) {
-  
+export default function ButtonCamera({
+  streams,
+  deviceTypes,
+}: {
+  streams: ParticipantVideo[];
+  deviceTypes: DeviceType;
+}) {
   const {
     selectedDeviceKey: selectedVideoInputKey,
     selectDeviceOptions: selectVideoInputOptions,
     onDeviceSelectionChange: onVideoInputSelectionChange,
-  } = useSelectDevice(streams,deviceTypes.videoInputs, deviceTypes.currentVideoInput,deviceTypes.setCurrentDevice,deviceTypes.activeCamera,deviceTypes.activeMic);
+  } = useSelectDevice(
+    streams,
+    deviceTypes.videoInputs,
+    deviceTypes.currentVideoInput,
+    deviceTypes.setCurrentDevice,
+    deviceTypes.activeCamera,
+    deviceTypes.activeMic
+  );
 
   const videoInputKey =
     selectedVideoInputKey.size === 0
@@ -47,7 +63,7 @@ export default function ButtonCamera({streams,deviceTypes}: {streams: Participan
 
   const handleClick = () => {
     if (deviceTypes.activeCamera) {
-		deviceTypes.setActiveCamera(false);
+      deviceTypes.setActiveCamera(false);
       return;
     }
 
