@@ -10,11 +10,11 @@ import type { ClientType } from '@/_shared/types/client';
 import { getServerSDK } from '@/(server)/_shared/utils/sdk';
 
 type PageProps = {
-  searchParams: { debug: string | undefined; viewOnly: string | undefined };
+  searchParams: Promise<{ debug?: string; viewOnly?: string }>;
 };
 
-export const generateMetadata = (): Metadata | null => {
-  const headersList = headers();
+export const generateMetadata = async (): Promise<Metadata | null> => {
+  const headersList = await headers();
   const roomDataHeader = headersList.get('room-data');
   const roomData: RoomType.RoomData | null =
     typeof roomDataHeader === 'string'
@@ -48,13 +48,13 @@ export const generateMetadata = (): Metadata | null => {
 };
 
 export default async function Page({ searchParams }: PageProps) {
-  const headersList = headers();
+  const headersList = await headers();
   const roomDataHeader = headersList.get('room-data');
   const userAuthHeader = headersList.get('user-auth');
   const userClientHeader = headersList.get('user-client');
-  const debug = searchParams.debug === 'true';
+  const debug = (await searchParams).debug === 'true';
 
-  const viewOnly = searchParams.viewOnly === 'true';
+  const viewOnly = (await searchParams).viewOnly === 'true';
 
   const roomData: RoomType.RoomData | null =
     typeof roomDataHeader === 'string'

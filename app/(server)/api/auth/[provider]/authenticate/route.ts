@@ -14,7 +14,7 @@ const persistentData = process.env.NEXT_PUBLIC_PERSISTENT_DATA === 'true';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { provider: string } }
+  { params }: { params: Promise<{ provider: string }> }
 ) {
   try {
     const url = new URL(request.url);
@@ -23,7 +23,7 @@ export async function GET(
     const stateParam = url.searchParams.get('state') || '';
     const stateCookie = request.cookies.get('state')?.value || '';
     const pathnameCookie = request.cookies.get('pathname')?.value || '';
-    const provider = params.provider;
+    const provider = (await params).provider;
 
     if (stateParam === stateCookie) {
       const body = {

@@ -15,7 +15,7 @@ const createScheduledMeetingRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
 
   if (!requestToken) {

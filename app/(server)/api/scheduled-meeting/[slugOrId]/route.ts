@@ -22,7 +22,7 @@ const ENABLE_EDIT_MEETING =
 
 export async function PUT(
   request: Request,
-  { params }: { params: { slugOrId: string } }
+  { params }: { params: Promise<{ slugOrId: string }> }
 ) {
   if (!ENABLE_EDIT_MEETING) {
     return NextResponse.json(
@@ -36,8 +36,8 @@ export async function PUT(
     );
   }
 
-  const slugOrID = decodeURIComponent(params.slugOrId);
-  const cookieStore = cookies();
+  const slugOrID = decodeURIComponent((await params).slugOrId);
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
 
   if (!requestToken) {
@@ -172,7 +172,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { slugOrId: string } }
+  { params }: { params: Promise<{ slugOrId: string }> }
 ) {
   if (!ENABLE_EDIT_MEETING) {
     return NextResponse.json(
@@ -186,8 +186,8 @@ export async function DELETE(
     );
   }
 
-  const slugOrID = decodeURIComponent(params.slugOrId);
-  const cookieStore = cookies();
+  const slugOrID = decodeURIComponent((await params).slugOrId);
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
 
   if (!requestToken) {

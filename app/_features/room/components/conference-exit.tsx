@@ -1,4 +1,4 @@
-import { Button } from '@nextui-org/react';
+import { Button, Link } from '@nextui-org/react';
 import Header from '@/_shared/components/header/header';
 
 export default function ConferenceExit() {
@@ -17,12 +17,12 @@ export default function ConferenceExit() {
             </Button>
           </div>
           <div>
-            <a
+            <Link
               href="/"
               className="block h-9 w-52 rounded-md bg-zinc-800 px-3 py-2 text-sm font-medium antialiased  hover:bg-zinc-700 active:bg-zinc-600 md:w-auto"
             >
               Back to Homepage
-            </a>
+            </Link>
           </div>
         </div>
       </main>

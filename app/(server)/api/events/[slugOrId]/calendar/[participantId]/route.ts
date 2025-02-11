@@ -5,10 +5,10 @@ import { GenerateIcal } from '../../..';
 
 export async function GET(
   _: Request,
-  { params }: { params: { slugOrId: string; participantId: number } }
+  { params }: { params: Promise<{ slugOrId: string; participantId: number }> }
 ) {
-  const slug = decodeURIComponent(params.slugOrId);
-  const participantId = params.participantId;
+  const slug = decodeURIComponent((await params).slugOrId);
+  const participantId = (await params).participantId;
 
   try {
     const event = await eventRepo.getBySlugOrID(slug);

@@ -6,10 +6,10 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { slugOrId: string } }
+  { params }: { params: Promise<{ slugOrId: string }> }
 ) {
-  const slugOrId = decodeURIComponent(params.slugOrId);
-  const requestToken = cookies().get('token');
+  const slugOrId = decodeURIComponent((await params).slugOrId);
+  const requestToken = (await cookies()).get('token');
 
   if (!requestToken) {
     return NextResponse.json(

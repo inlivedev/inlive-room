@@ -6,16 +6,14 @@ import { UpcomingEvent } from '@/(server)/_features/event/repository';
 import { eventRepo } from '@/(server)/api/_index';
 
 export default async function Page() {
-  const headersList = headers();
+  const headersList = await headers();
   const userAuthHeader = headersList.get('user-auth');
   const user: AuthType.CurrentAuthData | null =
     typeof userAuthHeader === 'string'
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const now = new Date();
-
-  const token = cookies().get('token')?.value ?? '';
+  const token = (await cookies()).get('token')?.value ?? '';
 
   const upcomingEvents: UpcomingEvent[] = [];
 

@@ -6,10 +6,10 @@ import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-au
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slugOrId: string } }
+  { params }: { params: Promise<{ slugOrId: string }> }
 ) {
-  const slug = decodeURIComponent(params.slugOrId);
-  const cookieStore = cookies();
+  const slug = decodeURIComponent((await params).slugOrId);
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
   try {
     let userID = undefined;

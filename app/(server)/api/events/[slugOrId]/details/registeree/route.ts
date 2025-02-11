@@ -6,10 +6,10 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function GET(
   request: Request,
-  { params }: { params: { slugOrId: string } }
+  { params }: { params: Promise<{ slugOrId: string }> }
 ) {
-  const slugOrId = decodeURIComponent(params.slugOrId);
-  const cookieStore = cookies();
+  const slugOrId = decodeURIComponent((await params).slugOrId);
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') ?? '1');

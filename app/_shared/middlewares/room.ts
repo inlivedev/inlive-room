@@ -116,7 +116,7 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         let newName = '';
 
         if (eventData && eventData.category?.name !== 'meetings') {
-          const requestToken = cookies().get('token');
+          const requestToken = (await cookies()).get('token');
           if (requestToken) {
             const participantData: EventType.ParticipantResponse =
               await InternalApiFetcher.get(

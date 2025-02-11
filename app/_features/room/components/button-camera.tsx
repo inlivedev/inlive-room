@@ -14,11 +14,7 @@ import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
-import type {
-  ParticipantVideo,
-  DeviceStateType,
-  DeviceType,
-} from './conference';
+import type { ParticipantVideo, DeviceType } from './conference';
 
 export default function ButtonCamera({
   streams,

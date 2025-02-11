@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 const IS_PROD = process.env.NEXT_PUBLIC_APP_ENV === 'production';
 const MIXPANEL_TOKEN = process.env.NEXT_PUBLIC_MIXPANEL_TOKEN || '';
 
-if (typeof window !== 'undefined' && IS_PROD) {
+if (typeof window !== 'undefined' && IS_PROD && MIXPANEL_TOKEN !== '') {
   mixpanel.init(MIXPANEL_TOKEN, { debug: !IS_PROD });
 }
 

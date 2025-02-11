@@ -13,9 +13,9 @@ export const fetchCache = 'default-no-store';
  */
 export async function GET(
   _: Request,
-  { params }: { params: { roomID: string } }
+  { params }: { params: Promise<{ roomID: string }> }
 ) {
-  const roomID = params.roomID;
+  const roomID = (await params).roomID;
   try {
     const res = await roomService.joinRoom(roomID);
 

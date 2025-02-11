@@ -11,7 +11,7 @@ interface RegisterClientRequest {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { roomID: string } }
+  { params }: { params: Promise<{ roomID: string }> }
 ) {
   const reqBody = (await request.json()) as RegisterClientRequest | undefined;
 
@@ -26,7 +26,9 @@ export async function POST(
 
   try {
     const clientData = await roomService.createClient(
-      params.roomID,
+      (
+        await params
+      ).roomID,
       reqBody.name,
       reqBody.clientID
     );

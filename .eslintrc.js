@@ -1,7 +1,7 @@
 module.exports = {
   plugins: ['prettier', 'tailwindcss'],
   extends: [
-    'next',
+    'next/typescript',
     'next/core-web-vitals',
     'plugin:tailwindcss/recommended',
     'prettier',

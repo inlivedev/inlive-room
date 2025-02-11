@@ -8,10 +8,10 @@ const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || '';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { provider: string } }
+  { params }: { params: Promise<{ provider: string }> }
 ) {
   try {
-    const provider = params.provider;
+    const provider = (await params).provider;
     const { pathname = '' } = await request.json();
     const oauthState = crypto.randomUUID();
     const relativeRedirectUri = `/api/auth/${provider}/authenticate`;
@@ -42,7 +42,7 @@ export async function POST(
     } else {
       const oneMonth = 3600 * 24 * 30;
 
-      cookies().set({
+      (await cookies()).set({
         name: 'state',
         value: oauthState,
         path: relativeRedirectUri,
@@ -51,7 +51,7 @@ export async function POST(
         httpOnly: true,
       });
 
-      cookies().set({
+      (await cookies()).set({
         name: 'pathname',
         value: pathname,
         path: relativeRedirectUri,

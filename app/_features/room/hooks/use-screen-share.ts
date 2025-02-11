@@ -109,7 +109,12 @@ export const useScreenShare = () => {
 
           return true;
         } catch (mediaError: any) {
-          if (mediaError.name !== 'NotAllowedError') {
+          if (mediaError.name === 'NotAllowedError') {
+            alert(
+              'You need to allow screen sharing to continue. Please check your settings. Error: ' +
+                mediaError.message
+            );
+          } else {
             alert('An unexpected error occurred. Error: ' + mediaError.message);
           }
           console.error(mediaError);

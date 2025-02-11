@@ -19,7 +19,8 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
     }
 
     if (response) {
-      const requestToken = cookies().get('token');
+      const cookiesAwaited = await cookies();
+      const requestToken = cookiesAwaited.get('token');
 
       if (!requestToken) {
         response.headers.set(userCookiesKey, JSON.stringify(null));
@@ -27,7 +28,7 @@ export function withAuthMiddleware(middleware: NextMiddleware) {
       }
 
       try {
-        const userCookies = cookies().get(userCookiesKey);
+        const userCookies = cookiesAwaited.get(userCookiesKey);
         let userData;
 
         if (!userCookies) {

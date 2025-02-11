@@ -16,7 +16,7 @@ const ActivityRequest = z.object({
 const activityName = ['RoomDuration'];
 
 export async function POST(request: NextRequest) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
 
   try {

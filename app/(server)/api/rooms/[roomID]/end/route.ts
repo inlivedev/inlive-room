@@ -6,10 +6,10 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { roomID: string } }
+  { params }: { params: Promise<{ roomID: string }> }
 ) {
-  const slugOrId = params.roomID;
-  const cookieStore = cookies();
+  const slugOrId = (await params).roomID;
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
 
   try {

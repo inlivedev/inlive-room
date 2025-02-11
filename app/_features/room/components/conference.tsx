@@ -408,8 +408,6 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
             return;
           }
 
-          const cameraPermission = false;
-
           // Request screen capture permission
           // We make an initial permission request
           navigator.permissions

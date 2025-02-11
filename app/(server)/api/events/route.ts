@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 import { getCurrentAuthenticated } from '@/(server)/_shared/utils/get-current-authenticated';
 
 export async function GET(req: Request) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const requestToken = cookieStore.get('token');
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get('page') ?? '1');

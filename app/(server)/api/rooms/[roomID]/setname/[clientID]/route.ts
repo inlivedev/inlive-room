@@ -8,7 +8,7 @@ type SetClientName = {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { roomID: string; clientID: string } }
+  { params }: { params: Promise<{ roomID: string; clientID: string }> }
 ) {
   try {
     const body = (await request.json()) as SetClientName;
@@ -30,10 +30,10 @@ export async function PUT(
         message: 'Current pathname is not valid',
       });
     }
-
+    const paramsAwaited = await params;
     const setNameResponse = await roomService.setClientName(
-      params.roomID,
-      params.clientID,
+      paramsAwaited.roomID,
+      paramsAwaited.clientID,
       clientName
     );
 
