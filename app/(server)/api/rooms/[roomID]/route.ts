@@ -20,10 +20,14 @@ export async function GET(
     const res = await roomService.joinRoom(roomID);
 
     if (!res) {
-      return NextResponse.json({
-        code: 404,
-        message: 'Room not found',
-      });
+      // set status code to 404
+      return NextResponse.json(
+        {
+          code: 404,
+          message: 'Room not found',
+        },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(

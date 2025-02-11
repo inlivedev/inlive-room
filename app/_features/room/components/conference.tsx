@@ -168,13 +168,7 @@ export type DeviceType = DeviceStateType & {
   setActiveCamera: (active?: boolean) => void;
 };
 
-export default function Conference({
-  viewOnly,
-  streamid,
-}: {
-  viewOnly: boolean;
-  streamid: string;
-}) {
+export default function Conference({ viewOnly }: { viewOnly: boolean }) {
   const [style, setStyle] = useState<React.CSSProperties>({});
   const layoutContainerRef = useRef<HTMLDivElement>(null);
   const { currentLayout, mutedStreams, offCameraStreams } =
