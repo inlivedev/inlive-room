@@ -217,6 +217,7 @@ export function ClientProvider({
   useEffect(() => {
     const clientLeave = async (clientID: string, roomType: string) => {
       removeStreamMetadata();
+      peer?.turnOffCamera(true);
 
       if (peer?.getPeerConnection()) {
         peer
