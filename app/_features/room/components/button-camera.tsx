@@ -59,11 +59,10 @@ export default function ButtonCamera({
 
   const handleClick = () => {
     if (deviceTypes.activeCamera) {
-      deviceTypes.setActiveCamera(false);
+      document.dispatchEvent(new Event('trigger:camera-off'));
       return;
     }
-
-    deviceTypes.setActiveCamera(true);
+    document.dispatchEvent(new Event('trigger:camera-on'));
     return;
   };
 

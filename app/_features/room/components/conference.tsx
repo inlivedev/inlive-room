@@ -26,7 +26,6 @@ import {
   videoConstraints,
   getVideoStream,
 } from '@/_shared/utils/get-user-media';
-import { set } from 'zod';
 // import Recorder from './recorder';
 // import recorder from './recorder';
 // import Recorder from './recorder';
@@ -385,9 +384,8 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
   const revertCameraState = useCallback(() => {
     if (!localStream) return;
     setOffCameraStreams(localStream.id, true);
-    deviceTypes.setActiveCamera(false);
     document.dispatchEvent(new Event('trigger:camera-off'));
-  }, [localStream, setOffCameraStreams, deviceTypes]);
+  }, [localStream, setOffCameraStreams]);
 
   const turnOnCamera = useCallback(async () => {
     if (!peer) return;
@@ -403,8 +401,6 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
       }
 
       setOffCameraStreams(localStream.id, false);
-
-      document.dispatchEvent(new Event('trigger:camera-on'));
     } catch (error: any) {
       revertCameraState();
       alert(
@@ -462,7 +458,6 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
 
       peer.turnOffCamera(true);
       setOffCameraStreams(localStream.id, true);
-      document.dispatchEvent(new Event('trigger:camera-off'));
       return;
     }
   }, [
@@ -496,6 +491,13 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
         setMutedStreams(localStream.id, true);
         deviceTypes.setActiveMic(false);
       };
+
+      if (localStream.getAudioTracks().length == 0)
+        return console.error('No audio tracks found in the local stream');
+
+      const audioTrack = localStream.getAudioTracks()[0];
+
+      if (audioTrack.readyState === 'ended') return;
 
       if (devicesState.activeMic) {
         try {
@@ -676,6 +678,16 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
       }
     };
 
+    const onCameraOff = () => {
+      setActiveCamera(false);
+    };
+
+    const onCameraOn = () => {
+      setActiveCamera(true);
+    };
+
+    document.addEventListener('trigger:camera-off', onCameraOff);
+    document.addEventListener('trigger:camera-on', onCameraOn);
     document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
     document.addEventListener('set:pin', onPinSet);
     document.addEventListener('set:fullscreen', onFullscreenSet);
@@ -683,6 +695,8 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
     document.addEventListener('webkitfullscreenchange', onFullScreenChange);
 
     return () => {
+      document.removeEventListener('trigger:camera-off', onCameraOff);
+      document.removeEventListener('trigger:camera-on', onCameraOn);
       document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
       document.removeEventListener('set:pin', onPinSet);
       document.removeEventListener('set:fullscreen', onFullscreenSet);

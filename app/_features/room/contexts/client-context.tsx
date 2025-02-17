@@ -18,6 +18,8 @@ import { clientSDK, RoomEvent } from '@/_shared/utils/sdk';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import { ParticipantVideo } from '@/_features/room/components/conference';
 
+type Peer = Awaited<ReturnType<typeof clientSDK.createPeer>>;
+
 type ClientProviderProps = {
   roomID: string;
   clientID: string;
@@ -215,12 +217,16 @@ export function ClientProvider({
   ]);
 
   useEffect(() => {
-    const clientLeave = async (clientID: string, roomType: string) => {
+    const clientLeave = async (
+      clientID: string,
+      roomType: string,
+      peerObjt: Peer
+    ) => {
       removeStreamMetadata();
-      peer?.turnOffCamera(true);
+      peerObjt?.turnOffCamera(true);
 
-      if (peer?.getPeerConnection()) {
-        peer
+      if (peerObjt?.getPeerConnection()) {
+        peerObjt
           .getPeerConnection()
           ?.getSenders()
           .forEach((sender) => {
@@ -231,7 +237,7 @@ export function ClientProvider({
               document.dispatchEvent(new Event('trigger:camera-off'));
             }
           });
-        peer.disconnect();
+        peerObjt.disconnect();
       }
 
       try {
@@ -298,7 +304,9 @@ export function ClientProvider({
       const detail = event.detail || {};
       const clientID = detail.clientID;
       const roomType = detail.roomType;
-      clientLeave(clientID, roomType);
+      if (!peer) return;
+
+      clientLeave(clientID, roomType, peer);
     }) as EventListener;
 
     document.addEventListener('trigger:client-leave', handleClientLeave);
