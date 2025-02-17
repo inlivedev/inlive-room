@@ -69,11 +69,11 @@ export const useScreenShare = () => {
         } catch (permError: any) {
           // Some browsers might not support the permissions API for screen sharing
           // We'll continue anyway as getDisplayMedia will handle the permission
-          alert(
+
+          console.error(
             "We couldn't check your screen sharing permissions. Error: " +
               permError.message
           );
-          console.error(permError);
         }
 
         const withAudio = config.withAudio
