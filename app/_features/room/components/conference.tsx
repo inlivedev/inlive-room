@@ -26,6 +26,7 @@ import {
   videoConstraints,
   getVideoStream,
 } from '@/_shared/utils/get-user-media';
+import { set } from 'zod';
 // import Recorder from './recorder';
 // import recorder from './recorder';
 // import Recorder from './recorder';
@@ -381,34 +382,50 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
     [roomID, offCameraStreams]
   );
 
+  const revertCameraState = useCallback(() => {
+    if (!localStream) return;
+    setOffCameraStreams(localStream.id, true);
+    deviceTypes.setActiveCamera(false);
+    document.dispatchEvent(new Event('trigger:camera-off'));
+  }, [localStream, setOffCameraStreams, deviceTypes]);
+
   const turnOnCamera = useCallback(async () => {
     if (!peer) return;
+    try {
+      const stream = await getVideoStream({
+        video: videoConstraints(),
+      });
 
-    const stream = await getVideoStream({
-      video: videoConstraints(),
-    });
+      peer.turnOnCamera(stream.getVideoTracks()[0]);
 
-    peer.turnOnCamera(stream.getVideoTracks()[0]);
-  }, [peer]);
+      if (!localStream) {
+        return;
+      }
+
+      setOffCameraStreams(localStream.id, false);
+
+      document.dispatchEvent(new Event('trigger:camera-on'));
+    } catch (error: any) {
+      revertCameraState();
+      alert(
+        "You need to allow camera access to turn on the camera. If you don't see a prompt, please check your browser settings, or reload this page."
+      );
+      console.error('Error on turn on camera: ' + error);
+    }
+  }, [localStream, peer, revertCameraState, setOffCameraStreams]);
 
   useEffect(() => {
     if (peer && localStream) {
-      const revertCameraState = () => {
-        setOffCameraStreams(localStream.id, true);
-        deviceTypes.setActiveCamera(false);
-        document.dispatchEvent(new Event('trigger:camera-off'));
-      };
-
       if (devicesState.activeCamera) {
         try {
-          // Check if screen capture permission is available
+          // Check if camera capture permission is available
           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             alert('This browser does not support camera capture.');
             console.error('This browser does not support camera capture.');
             return;
           }
 
-          // Request screen capture permission
+          // Request camera capture permission
           // We make an initial permission request
           navigator.permissions
             .query({
@@ -422,23 +439,13 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
                 revertCameraState();
                 return;
               }
+
               turnOnCamera();
-              setOffCameraStreams(localStream.id, false);
             })
             .catch((permError) => {
               // Some browsers might not support the permissions API for screen sharing
               // We'll continue anyway as getUserMedia will handle the permission
-              try {
-                turnOnCamera();
-                setOffCameraStreams(localStream.id, false);
-              } catch (error: any) {
-                revertCameraState();
-                alert(
-                  "We couldn't access your camera. Please allow the camera access. Error: " +
-                    permError.message
-                );
-                console.error(permError);
-              }
+              turnOnCamera();
             });
         } catch (error: any) {
           if (error.name === 'NotAllowedError') {
@@ -465,6 +472,7 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
     turnOnCamera,
     setOffCameraStreams,
     deviceTypes,
+    revertCameraState,
   ]);
 
   const setMutedStreams = useCallback(
@@ -488,6 +496,7 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
         setMutedStreams(localStream.id, true);
         deviceTypes.setActiveMic(false);
       };
+
       if (devicesState.activeMic) {
         try {
           peer.turnOnMic();
@@ -502,6 +511,7 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
             revertMicState();
           }
         }
+
         return;
       }
 
@@ -511,7 +521,7 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
       setMutedStreams(localStream.id, true);
       return;
     }
-  }, [peer, localStream, devicesState.activeMic, setMutedStreams]);
+  }, [peer, localStream, devicesState.activeMic, setMutedStreams, deviceTypes]);
 
   useEffect(() => {
     const isTouchScreen = hasTouchScreen();
@@ -529,38 +539,10 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
   }, [peer, localStream]);
 
   useEffect(() => {
-    const onMediaInputTurnedOn = ((event: CustomEvent) => {
-      const detail = event.detail || {};
-      const mediaInput = detail.mediaInput;
-
-      if (mediaInput instanceof MediaStream) {
-        setLocalStream(mediaInput);
-      }
-    }) as EventListener;
-
-    document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
-
-    return () => {
-      document.removeEventListener('turnon:media-input', onMediaInputTurnedOn);
-    };
-  }, []);
-
-  useEffect(() => {
     if (localStream) {
       getDevices(localStream);
     }
   }, [localStream, getDevices]);
-
-  useEffect(() => {
-    if (!peer) return;
-    if (hasJoined.current) return;
-
-    if (localStream && !devicesState.activeMic) {
-      peer.turnOffMic();
-      setMutedStreams(localStream.id, true);
-      hasJoined.current = true;
-    }
-  }, [peer, localStream, devicesState.activeMic]);
 
   useEffect(() => {
     const openRightSidebar = ((event: CustomEventInit) => {
@@ -694,6 +676,7 @@ export default function Conference({ viewOnly }: { viewOnly: boolean }) {
       }
     };
 
+    document.addEventListener('turnon:media-input', onMediaInputTurnedOn);
     document.addEventListener('set:pin', onPinSet);
     document.addEventListener('set:fullscreen', onFullscreenSet);
     document.addEventListener('fullscreenchange', onFullScreenChange);
