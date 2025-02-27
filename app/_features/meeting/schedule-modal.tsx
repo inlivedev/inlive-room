@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import MeetingScheduleForm from '@/_features/meeting/schedule-form';
 import { AnimatePresence, motion } from 'framer-motion';
+import { type } from 'os';
 
 export default function ScheduleModal() {
   const [screenSize, setScreenSize] = useState({
-    width: window.innerWidth,
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
   });
 
   const [isOpen, setIsOpen] = useState(false); // New state for modal visibility

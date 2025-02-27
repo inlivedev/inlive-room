@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, CircularProgress } from '@nextui-org/react';
+import { Button, CircularProgress } from "@heroui/react";
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import PlugConnectedFillIcon from '@/_shared/components/icons/plug-connected-fill-icon';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';

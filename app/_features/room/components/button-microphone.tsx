@@ -9,8 +9,8 @@ import {
   DropdownItem,
   ButtonGroup,
   Button,
-} from '@nextui-org/react';
-import type { Selection } from '@nextui-org/react';
+} from "@heroui/react";
+import type { Selection } from "@heroui/react";
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';

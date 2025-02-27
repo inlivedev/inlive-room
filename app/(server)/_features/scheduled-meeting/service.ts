@@ -142,7 +142,7 @@ class ScheduledMeetingService {
       .setLocation(joinRoomURL)
       .setSummary(summary);
 
-    const emailTemplate = render(
+    const emailTemplate = await render(
       EmailScheduledMeeting({
         event: {
           endTime: event.endTime,
@@ -266,7 +266,7 @@ class ScheduledMeetingService {
       participants.data.forEach(async (participant) => {
         ICS.setSequence(participant.updateCount);
 
-        const emailCancelledTemplate = render(
+        const emailCancelledTemplate = await render(
           EmailScheduledMeetingCancelled({
             event: { ...updatedEvent, roomID: updatedEvent.roomId! },
             host: {
@@ -367,7 +367,7 @@ class ScheduledMeetingService {
         .setSummary(summary);
 
       // Send Email Function
-      const emailTemplate = render(
+      const emailTemplate = await render(
         EmailScheduledMeeting({
           event: {
             endTime: event.endTime,
@@ -544,7 +544,7 @@ class ScheduledMeetingService {
       addAttendees(invitedParticipants, ICalAttendeeStatus.NEEDSACTION);
       addAttendees(removedParticipants, ICalAttendeeStatus.DECLINED);
 
-      const emailInviteTemplate = render(
+      const emailInviteTemplate = await render(
         EmailScheduledMeeting({
           event: {
             endTime: oldEvent.endTime,
@@ -559,7 +559,7 @@ class ScheduledMeetingService {
         })
       );
 
-      const emailCancelledTemplate = render(
+      const emailCancelledTemplate = await render(
         EmailScheduledMeetingCancelled({
           event: { ...updatedEvent, roomID: updatedEvent.roomId! },
           host: {

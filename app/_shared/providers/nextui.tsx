@@ -1,9 +1,9 @@
 'use client';
 
 import type { ComponentProps } from 'react';
-import { NextUIProvider as NextUIClientProvider } from '@nextui-org/react';
+import { HeroUIProvider as NextUIClientProvider } from "@heroui/react";
 
-export default function NextUIProvider({
+export default function HeroUIProvider({
   children,
   ...otherProps
 }: ComponentProps<typeof NextUIClientProvider>) {

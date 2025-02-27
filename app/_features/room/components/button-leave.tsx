@@ -8,7 +8,7 @@ import {
   DropdownItem,
   ButtonGroup,
   Button,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import HangUpIcon from '@/_shared/components/icons/hang-up-icon';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';

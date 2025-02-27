@@ -8,8 +8,8 @@ import {
   DropdownItem,
   ButtonGroup,
   Button,
-} from '@nextui-org/react';
-import type { Selection } from '@nextui-org/react';
+} from "@heroui/react";
+import type { Selection } from "@heroui/react";
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';

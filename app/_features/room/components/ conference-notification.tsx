@@ -1,4 +1,4 @@
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import { useToggle } from '@/_shared/hooks/use-toggle';
 
 export default function ConferenceNotification({

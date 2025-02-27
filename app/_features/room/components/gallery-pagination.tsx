@@ -3,7 +3,7 @@ import {
   PaginationItemType,
   PaginationItemRenderProps,
   cn,
-} from '@nextui-org/react';
+} from "@heroui/react";
 
 import type { SVGElementPropsType } from '@/_shared/types/types';
 import { isMobile } from './conference';

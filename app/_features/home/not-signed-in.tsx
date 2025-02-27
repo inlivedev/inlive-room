@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import JoinRoomField from '@/_features/home/join-room-field';
 import TablerArrowRightIcon from '@/_shared/components/icons/tabler-arrow-right-icon';
 import TablerCircleArrowDownIcon from '@/_shared/components/icons/tabler-circle-arrow-down-icon';

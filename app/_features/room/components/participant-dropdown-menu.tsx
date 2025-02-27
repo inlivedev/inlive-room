@@ -8,7 +8,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { type ParticipantVideo } from '@/_features/room/components/conference';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';

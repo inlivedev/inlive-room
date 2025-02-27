@@ -9,7 +9,7 @@ import {
   DropdownMenu,
   DropdownItem,
   DropdownSection,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import * as Sentry from '@sentry/nextjs';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';

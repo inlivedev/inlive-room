@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import MicOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import MicOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';

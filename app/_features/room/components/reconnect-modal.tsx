@@ -9,7 +9,7 @@ import {
   ModalFooter,
   Button,
   ModalHeader,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 

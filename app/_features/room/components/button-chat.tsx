@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import { useChatContext } from '@/_features/room/contexts/chat-context';
 import ChatIcon from '@/_shared/components/icons/chat-icon';
 import ChatIconWithCircle from '@/_shared/components/icons/chat-icon-with-circle';

@@ -9,7 +9,7 @@ import {
   ModalBody,
   Spinner,
   useDisclosure,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';

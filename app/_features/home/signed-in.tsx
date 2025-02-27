@@ -8,7 +8,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Spinner,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import * as Sentry from '@sentry/nextjs';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import type { RoomType } from '@/_shared/types/room';

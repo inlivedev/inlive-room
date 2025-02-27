@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import linkifyHtml from 'linkify-html';
 import { useForm, type SubmitHandler, useWatch } from 'react-hook-form';
 import { useChatContext } from '@/_features/room/contexts/chat-context';

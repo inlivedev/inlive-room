@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { Button, Spinner } from '@nextui-org/react';
+import { Button, Spinner } from "@heroui/react";
 import Header from '@/_shared/components/header/header';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';

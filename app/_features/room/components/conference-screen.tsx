@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import React from 'react';
 import type { ParticipantVideo } from '@/_features/room/components/conference';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';

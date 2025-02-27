@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import { useFormattedDateTime } from '@/_shared/hooks/use-formatted-datetime';
 import Link from 'next/link';
 import ScheduleModal from '@/_features/meeting/schedule-modal';

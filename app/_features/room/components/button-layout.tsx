@@ -9,9 +9,9 @@ import {
   DropdownItem,
   ButtonGroup,
   Button,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { clientSDK } from '@/_shared/utils/sdk';
-import type { Selection } from '@nextui-org/react';
+import type { Selection } from "@heroui/react";
 import LayoutIcon from '@/_shared/components/icons/layout-icon';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';

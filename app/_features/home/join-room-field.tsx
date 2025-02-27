@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import { useForm, type SubmitHandler, useWatch } from 'react-hook-form';
 import { useNavigate } from '@/_shared/hooks/use-navigate';
 import TablerArrowRightIcon from '@/_shared/components/icons/tabler-arrow-right-icon';

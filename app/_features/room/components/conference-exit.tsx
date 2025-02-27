@@ -1,4 +1,4 @@
-import { Button, Link } from '@nextui-org/react';
+import { Button, Link } from "@heroui/react";
 import Header from '@/_shared/components/header/header';
 
 export default function ConferenceExit() {

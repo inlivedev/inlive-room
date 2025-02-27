@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
   Spinner,
   useDisclosure,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import {
   SubmitHandler,
   useFieldArray,
