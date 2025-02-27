@@ -4,13 +4,12 @@ const { withSentryConfig } = require('@sentry/nextjs');
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: false,
-  experimental: {
-    serverComponentsExternalPackages: [
-      '@react-email/components',
-      '@react-email/render',
-      '@react-email/tailwind',
-    ],
-  },
+  serverExternalPackages: [
+    '@react-email/components',
+    '@react-email/render',
+    '@react-email/tailwind',
+  ],
+  experimental: {},
 };
 
 module.exports = withSentryConfig(module.exports, {
@@ -36,7 +35,7 @@ module.exports = withSentryConfig(module.exports, {
   // tunnelRoute: "/monitoring",
 
   // Hides source maps from generated client bundles
-  hideSourceMaps: true,
+  hideSourceMaps: false,
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,
