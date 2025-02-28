@@ -9,7 +9,7 @@ import {
   ModalBody,
   Spinner,
   useDisclosure,
-} from "@heroui/react";
+} from '@heroui/react';
 import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import { useInput } from '@/_shared/hooks/use-input';
@@ -173,7 +173,7 @@ export default function SetDisplayNameModal({ roomID }: Props) {
               <Button
                 variant="flat"
                 className="rounded-md bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 active:bg-zinc-600"
-                onClick={() => onCloseModal()}
+                onPress={() => onCloseModal()}
               >
                 Cancel
               </Button>

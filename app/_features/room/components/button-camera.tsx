@@ -8,8 +8,8 @@ import {
   DropdownItem,
   ButtonGroup,
   Button,
-} from "@heroui/react";
-import type { Selection } from "@heroui/react";
+} from '@heroui/react';
+import type { Selection } from '@heroui/react';
 import CameraOnIcon from '@/_shared/components/icons/camera-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
@@ -73,7 +73,7 @@ export default function ButtonCamera({
         variant="flat"
         aria-label="Toggle Video Camera"
         className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-        onClick={handleClick}
+        onPress={handleClick}
       >
         {deviceTypes.activeCamera ? (
           <CameraOnIcon width={20} height={20} />

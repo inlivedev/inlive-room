@@ -9,4 +9,10 @@ export const clientSDK = Room({
     baseUrl: inliveHubOrigin,
     version: inliveHubVersion,
   },
+  media: {
+    screen: {
+      svc: false,
+      videoCodecs: ['video/VP9', 'video/VP8', 'video/H264'],
+    },
+  },
 });

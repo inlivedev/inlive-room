@@ -8,7 +8,7 @@ import {
   ModalHeader,
   ModalBody,
   useDisclosure,
-} from "@heroui/react";
+} from '@heroui/react';
 import * as Sentry from '@sentry/nextjs';
 import { InternalApiFetcher } from '@/_shared/utils/fetcher';
 import type { AuthType } from '@/_shared/types/auth';
@@ -103,7 +103,7 @@ export default function SignInModal({
                 startContent={provider.icon}
                 variant="flat"
                 className="bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600"
-                onClick={() => handleSignIn(provider.name)}
+                onPress={() => handleSignIn(provider.name)}
                 isDisabled={isSubmitting}
                 aria-disabled={isSubmitting}
                 disabled={isSubmitting}

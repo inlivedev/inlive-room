@@ -40,95 +40,6 @@ export const useScreenShare = () => {
     });
   }, [peer, setActive, setInActive]);
 
-  const startScreenCapture = useCallback(
-    async (config = { withAudio: true }) => {
-      try {
-        if (!peer) return false;
-
-        // Check if screen capture permission is available
-        if (
-          !navigator.mediaDevices ||
-          !navigator.mediaDevices.getDisplayMedia
-        ) {
-          alert('This browser does not support screen sharing.');
-          return false;
-        }
-
-        // Request screen capture permission
-        try {
-          // We make an initial permission request
-          const permission = await navigator.permissions.query({
-            name: 'display-capture' as PermissionName,
-          });
-          if (permission.state === 'denied') {
-            alert(
-              'You need to allow screen sharing to continue. Please check your settings.'
-            );
-            return false;
-          }
-        } catch (permError: any) {
-          // Some browsers might not support the permissions API for screen sharing
-          // We'll continue anyway as getDisplayMedia will handle the permission
-
-          console.error(
-            "We couldn't check your screen sharing permissions. Error: " +
-              permError.message
-          );
-        }
-
-        const withAudio = config.withAudio
-          ? {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true,
-            }
-          : false;
-
-        const constraints = {
-          video: {
-            displaySurface: 'monitor',
-          },
-          audio: withAudio,
-          systemAudio: 'exclude',
-          surfaceSwitching: 'include',
-          selfBrowserSurface: 'exclude',
-        };
-
-        try {
-          const mediaStream = await navigator.mediaDevices.getDisplayMedia(
-            constraints
-          );
-
-          peer.addStream(mediaStream.id, {
-            clientId: clientID,
-            name: clientName,
-            origin: 'local',
-            source: 'screen',
-            mediaStream: mediaStream,
-          });
-
-          return true;
-        } catch (mediaError: any) {
-          if (mediaError.name === 'NotAllowedError') {
-            alert(
-              'You need to allow screen sharing to continue. Please check your settings. Error: ' +
-                mediaError.message
-            );
-          } else {
-            alert('An unexpected error occurred. Error: ' + mediaError.message);
-          }
-          console.error(mediaError);
-          return false;
-        }
-      } catch (error: any) {
-        console.error(error);
-        alert('An unexpected error occurred. Error: ' + error.message);
-        return false;
-      }
-    },
-    [clientID, clientName, peer]
-  );
-
   const stopScreenCapture = useCallback(
     (specifyStream?: ParticipantVideo) => {
       try {
@@ -155,10 +66,14 @@ export const useScreenShare = () => {
         for (const screenStream of screenStreams) {
           for (const screenTrack of screenStream.mediaStream.getTracks()) {
             for (const transceiver of peerConnection.getTransceivers()) {
-              if (transceiver.sender.track === screenTrack) {
+              if (
+                transceiver.sender.track &&
+                transceiver.sender.track.id === screenTrack.id
+              ) {
                 transceiver.sender.track.stop();
                 peerConnection.removeTrack(transceiver.sender);
                 peer.removeStream(screenStream.id);
+                transceiver.stop();
               }
             }
           }
@@ -171,6 +86,31 @@ export const useScreenShare = () => {
       }
     },
     [peer]
+  );
+
+  const startScreenCapture = useCallback(
+    async (mediaStream: MediaStream) => {
+      mediaStream.getTracks().forEach((track) => {
+        track.addEventListener('ended', () => {
+          stopScreenCapture();
+        });
+      });
+
+      try {
+        if (!peer) return false;
+        peer.addStream(mediaStream.id, {
+          clientId: clientID,
+          name: clientName,
+          origin: 'local',
+          source: 'screen',
+          mediaStream: mediaStream,
+        });
+      } catch (error: any) {
+        stopScreenCapture();
+        throw new Error(error.message);
+      }
+    },
+    [clientID, clientName, peer, stopScreenCapture]
   );
 
   return { startScreenCapture, stopScreenCapture, screenCaptureActive: active };

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from "@heroui/react";
+import { Button } from '@heroui/react';
 import linkifyHtml from 'linkify-html';
 import { useForm, type SubmitHandler, useWatch } from 'react-hook-form';
 import { useChatContext } from '@/_features/room/contexts/chat-context';
@@ -18,7 +18,7 @@ export default function ChatSidebar() {
           <div className="text-[0px] leading-[0]">
             <Button
               className="h-auto min-h-0 min-w-0 rounded-full bg-transparent p-1.5 text-zinc-900 antialiased hover:bg-zinc-200 active:bg-zinc-100"
-              onClick={() =>
+              onPress={() =>
                 document.dispatchEvent(
                   new CustomEvent('close:right-sidebar', {
                     detail: { menu: 'chat' },

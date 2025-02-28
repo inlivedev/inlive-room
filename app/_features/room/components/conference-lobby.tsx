@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { Button, Spinner } from "@heroui/react";
+import { Button, Spinner } from '@heroui/react';
 import Header from '@/_shared/components/header/header';
 import { copyToClipboard } from '@/_shared/utils/copy-to-clipboard';
 import { useToggle } from '@/_shared/hooks/use-toggle';
@@ -194,7 +194,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                 <div className="flex-1">
                   <Button
                     className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                    onClick={() =>
+                    onPress={() =>
                       handleCopy(roomID, setCopiedIDActive, setCopiedIDInActive)
                     }
                   >
@@ -205,7 +205,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                 <div className="flex-1">
                   <Button
                     className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                    onClick={() =>
+                    onPress={() =>
                       handleCopy(
                         `${APP_ORIGIN}/rooms/${roomID}`,
                         setCopiedLinkActive,
@@ -245,7 +245,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                 <div className="flex items-center">
                   <Button
                     className="flex h-9 min-w-0 items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium antialiased hover:bg-zinc-700 active:bg-zinc-600"
-                    onClick={openUpdateClientForm}
+                    onPress={openUpdateClientForm}
                   >
                     Edit name
                   </Button>
@@ -270,7 +270,7 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
                 <div className="mx-auto w-full max-w-xl px-4 lg:px-0">
                   <Button
                     className="w-full rounded-lg bg-red-700 px-4 py-2 font-semibold text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500"
-                    onClick={openConferenceRoom}
+                    onPress={openConferenceRoom}
                     isDisabled={isSubmitting || isError}
                     aria-disabled={isSubmitting || isError}
                     disabled={isSubmitting || isError}

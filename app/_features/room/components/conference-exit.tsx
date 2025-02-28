@@ -1,4 +1,4 @@
-import { Button, Link } from "@heroui/react";
+import { Button, Link } from '@heroui/react';
 import Header from '@/_shared/components/header/header';
 
 export default function ConferenceExit() {
@@ -11,7 +11,7 @@ export default function ConferenceExit() {
           <div className="md:order-2">
             <Button
               className="h-9 w-52 rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-zinc-200 antialiased hover:bg-red-600 active:bg-red-500 md:w-auto"
-              onClick={() => window.location.reload()}
+              onPress={() => window.location.reload()}
             >
               Rejoin to Room
             </Button>

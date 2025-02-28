@@ -9,7 +9,7 @@ import {
   ModalFooter,
   Button,
   ModalHeader,
-} from "@heroui/react";
+} from '@heroui/react';
 import { usePeerContext } from '@/_features/room/contexts/peer-context';
 import PlugDisconnectedFillIcon from '@/_shared/components/icons/plug-disconnected-fill-icon';
 
@@ -50,7 +50,7 @@ export default function ReconnectModal() {
         </ModalBody>
         <ModalFooter>
           <Button
-            onClick={() => window.location.reload()}
+            onPress={() => window.location.reload()}
             className="w-full rounded bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500 sm:w-max"
             aria-label="Reload this page"
           >

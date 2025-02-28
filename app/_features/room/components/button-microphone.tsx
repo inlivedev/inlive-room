@@ -9,8 +9,8 @@ import {
   DropdownItem,
   ButtonGroup,
   Button,
-} from "@heroui/react";
-import type { Selection } from "@heroui/react";
+} from '@heroui/react';
+import type { Selection } from '@heroui/react';
 import MicrophoneOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import MicrophoneOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import { useSelectDevice } from '@/_features/room/hooks/use-select-device';
@@ -112,7 +112,7 @@ export default function ButtonMicrophone({
         variant="flat"
         aria-label="Toggle Microphone"
         className="w-12 bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-        onClick={handleClick}
+        onPress={handleClick}
       >
         {deviceTypes.activeMic ? (
           <MicrophoneOnIcon width={20} height={20} />

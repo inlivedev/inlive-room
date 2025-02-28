@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Button } from "@heroui/react";
+import { Button } from '@heroui/react';
 import MicOffIcon from '@/_shared/components/icons/microphone-off-icon';
 import MicOnIcon from '@/_shared/components/icons/microphone-on-icon';
 import CameraOffIcon from '@/_shared/components/icons/camera-off-icon';
@@ -30,7 +30,7 @@ export default function ParticipantListSidebar({
           <div className="text-[0px] leading-[0]">
             <Button
               className="h-auto min-h-0 min-w-0 rounded-full bg-transparent p-1.5 text-zinc-900 antialiased hover:bg-zinc-200 active:bg-zinc-100"
-              onClick={() =>
+              onPress={() =>
                 document.dispatchEvent(
                   new CustomEvent('close:right-sidebar', {
                     detail: { menu: 'participants' },

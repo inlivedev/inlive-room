@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from "@heroui/react";
+import { Button } from '@heroui/react';
 import { useChatContext } from '@/_features/room/contexts/chat-context';
 import ChatIcon from '@/_shared/components/icons/chat-icon';
 import ChatIconWithCircle from '@/_shared/components/icons/chat-icon-with-circle';
@@ -56,7 +56,7 @@ export default function ButtonChat({ sidebar }: { sidebar: Sidebar }) {
       variant="flat"
       aria-label="Toggle chat menu"
       className="relative bg-zinc-700/70 hover:bg-zinc-600 active:bg-zinc-500"
-      onClick={() => {
+      onPress={() => {
         if (sidebar === 'chat') {
           document.dispatchEvent(
             new CustomEvent('close:right-sidebar', {

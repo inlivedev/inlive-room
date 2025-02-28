@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button } from '@heroui/react';
 import { useToggle } from '@/_shared/hooks/use-toggle';
 
 export default function ConferenceNotification({
@@ -18,7 +18,7 @@ export default function ConferenceNotification({
       <div>
         <Button
           className="h-7 rounded bg-transparent px-3 text-xs font-medium text-blue-300 ring-1 ring-blue-300"
-          onClick={() => setInActive()}
+          onPress={() => setInActive()}
         >
           Dismiss
         </Button>

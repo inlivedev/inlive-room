@@ -8,7 +8,7 @@ import {
   DropdownItem,
   ButtonGroup,
   Button,
-} from "@heroui/react";
+} from '@heroui/react';
 import HangUpIcon from '@/_shared/components/icons/hang-up-icon';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useDataChannelContext } from '@/_features/room/contexts/datachannel-context';
@@ -16,7 +16,11 @@ import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import ArrowDownFillIcon from '@/_shared/components/icons/arrow-down-fill-icon';
 import { ParticipantVideo } from './conference';
 
-export default function ButtonLeave({streams}: {streams: ParticipantVideo[]}) {
+export default function ButtonLeave({
+  streams,
+}: {
+  streams: ParticipantVideo[];
+}) {
   const { clientID, roomID } = useClientContext();
   const { datachannels } = useDataChannelContext();
   const { isModerator, roomType } = useMetadataContext();
@@ -93,7 +97,7 @@ export default function ButtonLeave({streams}: {streams: ParticipantVideo[]}) {
         variant="flat"
         aria-label="Leave from this room"
         className="bg-red-600/70 hover:bg-red-600 focus:outline-zinc-100 active:bg-red-500"
-        onClick={handleLeaveRoom}
+        onPress={handleLeaveRoom}
       >
         <HangUpIcon width={20} height={20} />
       </Button>
