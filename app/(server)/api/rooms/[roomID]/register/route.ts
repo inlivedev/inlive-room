@@ -21,8 +21,8 @@ export async function POST(
       message: 'invalid request body, please check again',
     });
 
-  if (!reqBody.name)
-    return NextResponse.json({ code: 400, message: 'name is empty' });
+  // if (!reqBody.name)
+  //   return NextResponse.json({ code: 400, message: 'name is empty' });
 
   try {
     const clientData = await roomService.createClient(

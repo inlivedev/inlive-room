@@ -53,7 +53,7 @@ export class RoomService {
 
   async createClient(
     roomId: string,
-    clientName: string,
+    clientName?: string,
     clientID?: string
   ): Promise<Client> {
     const sdk = await this.getSDK();
@@ -62,11 +62,14 @@ export class RoomService {
       throw new ServiceError('RoomService', 'sdk not initialized', 500);
     }
 
+    const body: any = {
+      enableVAD: true,
+    };
+
+    if (clientName && clientName != '') body.clientName = clientName;
+
     if (!this._roomRepo.isPersistent()) {
-      const clientResponse = await sdk.createClient(roomId, {
-        clientName: clientName,
-        enableVAD: true,
-      });
+      const clientResponse = await sdk.createClient(roomId, body);
 
       if (clientResponse && clientResponse.code === 409) {
         Sentry.captureMessage(

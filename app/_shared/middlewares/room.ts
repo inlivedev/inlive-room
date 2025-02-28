@@ -10,17 +10,22 @@ import type { RoomType } from '@/_shared/types/room';
 import type { AuthType } from '@/_shared/types/auth';
 import type { ClientType } from '@/_shared/types/client';
 import type { EventType } from '@/_shared/types/event';
-import { customAlphabet } from 'nanoid';
+// import { customAlphabet } from 'nanoid';
 import { cookies } from 'next/headers';
 
 const registerClient = async (
   roomID: string,
-  clientName: string,
+  clientName?: string,
   clientID?: string | null
 ): Promise<RoomType.CreateClientResponse | undefined> => {
   try {
+    const body: any = { clientID };
+
+    // Only send the name if provided (may be empty now)
+    if (clientName) body.name = clientName;
+
     return await InternalApiFetcher.post(`/api/rooms/${roomID}/register`, {
-      body: JSON.stringify({ name: clientName, clientID }),
+      body: JSON.stringify(body),
     });
   } catch (error) {
     Sentry.captureException(error, {
@@ -45,11 +50,21 @@ const getClientName = (
       ? JSON.parse(userAuthHeader)
       : userAuthHeader;
 
-  const userName = user?.name || '';
+  // Priority:
+  // 1. Client cookie name (if available)
+  // 2. User authentication name (if logged in)
+  // 3. Empty string - let the client side handle name requirements
+
   const clientName = request.cookies.get('client_name')?.value || '';
+  const userName = user?.name || '';
+
+  // Return the first available name in priority order, or empty string
   return clientName || userName;
 };
 
+// Comment out or remove the generateName function since we no longer use it
+// We now require a real name input from the user
+/*
 const generateName = (name = ''): string => {
   if (name.trim().length > 0) return name;
 
@@ -62,6 +77,7 @@ const generateName = (name = ''): string => {
 
   return `guest-${id}`;
 };
+*/
 
 const handleEventRedirect = (
   request: NextRequest,
@@ -153,8 +169,9 @@ export function withRoomMiddleware(middleware: NextMiddleware) {
         }
 
         if (!newName) {
+          // Get client name but don't generate one if empty
           const clientName = getClientName(request, response);
-          newName = generateName(clientName);
+          newName = clientName; // No longer using generateName()
         }
 
         const registeredClient = await registerClient(

@@ -47,14 +47,14 @@ export async function PUT(
       { status: 200 }
     );
 
-    const thirtyDays = 60 * 60 * 24 * 30;
+    const aYear = 60 * 60 * 24 * 30 * 365;
 
     routeResponse.cookies.set({
       name: 'client_name',
       value: setNameResponse.name || clientName,
       path: pathname,
       sameSite: 'lax',
-      maxAge: thirtyDays,
+      maxAge: aYear,
     });
 
     return routeResponse;

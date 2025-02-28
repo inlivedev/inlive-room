@@ -6,11 +6,7 @@ import { useToggle } from '@/_shared/hooks/use-toggle';
 import { useClientContext } from '@/_features/room/contexts/client-context';
 import { useMetadataContext } from '@/_features/room/contexts/metadata-context';
 import SetDisplayNameModal from '@/_features/room/components/set-display-name-modal';
-import {
-  getUserMedia,
-  videoConstraints,
-  audioConstraints,
-} from '@/_shared/utils/get-user-media';
+import { getUserMedia, audioConstraints } from '@/_shared/utils/get-user-media';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import { AudioOutputContext } from '@/_features/room/contexts/device-context';
 
@@ -57,12 +53,28 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
   );
 
   const { clientID, clientName } = useClientContext();
+  const [isNameRequired, setIsNameRequired] = useState(false);
+  // Check for empty name on component mount
+  useEffect(() => {
+    if (!clientName) {
+      // Force name input if no stored name exists
+      setIsNameRequired(true);
+      document.dispatchEvent(new CustomEvent('open:set-display-name-modal'));
+    }
+  }, [clientName]);
 
   const openUpdateClientForm = useCallback(() => {
     document.dispatchEvent(new CustomEvent('open:set-display-name-modal'));
   }, []);
 
   const openConferenceRoom = useCallback(async () => {
+    // Don't allow joining if name is required but not set
+    if (isNameRequired && !clientName) {
+      alert('Please set your display name before joining the room');
+      openUpdateClientForm();
+      return;
+    }
+
     if (!isSubmitting) {
       setIsSubmitting(true);
 
@@ -145,9 +157,9 @@ export default function ConferenceLobby({ roomID }: LobbyProps) {
         }
       }
     }
-  }, [roomID, isSubmitting]);
+  }, [roomID, isSubmitting, clientName, isNameRequired, openUpdateClientForm]);
 
-  const isError = !clientID || !clientName;
+  const isError = !clientID;
 
   useEffect(() => {
     if (isError) {
