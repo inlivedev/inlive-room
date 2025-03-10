@@ -9,9 +9,9 @@ import { useRef } from 'react';
 export default function ButtonScreenShare() {
   const { startScreenCapture, stopScreenCapture, screenCaptureActive } =
     useScreenShare();
-  const isSafari = useRef(
-    /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-  );
+
+  const agent = typeof window !== 'undefined' ? window.navigator.userAgent : '';
+  const isSafari = useRef(/^((?!chrome|android).)*safari/i.test(agent));
 
   const screenShareHandler = () => {
     if (screenCaptureActive) {
@@ -20,7 +20,7 @@ export default function ButtonScreenShare() {
     }
 
     // Safari-specific implementation
-    if (isSafari.current) {
+    if (typeof window !== 'undefined' && isSafari.current) {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
         alert('This browser does not support screen sharing.');
         return;
