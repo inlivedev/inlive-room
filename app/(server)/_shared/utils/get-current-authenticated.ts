@@ -28,12 +28,12 @@ export const getCurrentAuthenticated = async (token: string) => {
     if (!response.ok) {
       Sentry.captureMessage(
         `API call error when trying to get current auth data. ${
-          response?.message || ''
+          response?.error || ''
         }`,
         'error'
       );
 
-      throw new Error(response.message || '');
+      throw new Error(response.error || '');
     }
 
     if (!persistentData) {

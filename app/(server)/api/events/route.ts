@@ -66,9 +66,25 @@ export async function GET(req: Request) {
         .parse(status);
     }
 
-    const getUserResp = await getCurrentAuthenticated(
-      requestToken?.value || ''
-    );
+    const token = requestToken?.value || '';
+    if (token == '') {
+      return NextResponse.json(
+        {
+          code: 401,
+          ok: false,
+          message: 'Please check if token is provided in the cookie',
+          meta: {
+            current_page: 1,
+            total_page: 1,
+            per_page: 10,
+            total_record: 0,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    const getUserResp = await getCurrentAuthenticated(token);
     const user = getUserResp.data ? getUserResp.data : null;
 
     if (!user) {

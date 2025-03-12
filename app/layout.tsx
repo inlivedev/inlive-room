@@ -38,7 +38,12 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         {/* charset and viewport are added automatically */}
-        <link rel="icon" href="/images/favicon/favicon.ico" sizes="any" />
+        <link
+          rel="icon"
+          href="/images/favicon/favicon.ico"
+          sizes="any"
+          fetchPriority="high"
+        />
         <link
           rel="icon"
           href="/images/favicon/favicon.svg"

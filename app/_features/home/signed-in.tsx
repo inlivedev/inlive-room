@@ -8,7 +8,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Spinner,
-} from "@heroui/react";
+} from '@heroui/react';
 import * as Sentry from '@sentry/nextjs';
 import { Mixpanel } from '@/_shared/components/analytics/mixpanel';
 import type { RoomType } from '@/_shared/types/room';
@@ -144,7 +144,11 @@ export default function SignedIn({
                 aria-label="Create a room menu"
                 onAction={onCreateRoomSelection}
               >
-                <DropdownItem key="meeting" classNames={{ wrapper: 'group' }}>
+                <DropdownItem
+                  key="meeting"
+                  classNames={{ wrapper: 'group' }}
+                  textValue="meeting"
+                >
                   <div className="text-sm font-medium text-zinc-200">
                     <span className="inline-block">Meeting</span>
                   </div>
@@ -152,7 +156,11 @@ export default function SignedIn({
                     Personal or group meetings
                   </div>
                 </DropdownItem>
-                <DropdownItem key="event" classNames={{ wrapper: 'group' }}>
+                <DropdownItem
+                  key="event"
+                  classNames={{ wrapper: 'group' }}
+                  textValue="webinar"
+                >
                   <div className="flex justify-between text-sm font-medium text-zinc-200">
                     <span className="inline-block">Webinar</span>
                     <div className="inline-flex items-center">
